@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CCST Smart Portal</title>
+    <style>
+        :root { --primary: #004080; --bg: #f4f6f9; --staff: #6a1b9a; }
+        body { margin: 0; font-family: sans-serif; background: var(--bg); -webkit-tap-highlight-color: transparent; }
+        .container { padding: 20px; max-width: 450px; margin: auto; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; margin-top: 50px; }
+        input { font-size: 16px !important; width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; margin: 8px 0; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
+        .hidden { display: none; }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; align-items: center; justify-content: center; z-index: 999; }
+    </style>
+</head>
+<body>
+
+<div id="loader"><b>Processing...</b></div>
+
+<div class="container">
+    <div class="card">
+        <h2 id="loginTitle" style="color: var(--primary);">Student Login</h2>
+        
+        <input id="userId" type="text" placeholder="Student ID / Staff Username">
+        <input id="userPass" type="password" placeholder="Password">
+        
+        <div id="studentBox">
+            <button onclick="handleLogin()" style="background: var(--primary);">LOGIN</button>
+            <button onclick="handleRegister()" style="background: #27ae60;">CREATE ACCOUNT</button>
+        </div>
+
+        <div id="staffBox" class="hidden">
+            <button onclick="staffLogin()" style="background: var(--staff);">STAFF SIGN IN</button>
+        </div>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <p id="toggleText" onclick="togglePortal()" style="color: #666; font-size: 0.85rem; cursor: pointer; font-weight: bold;">
+            Staff Access? Click Here
+        </p>
+    </div>
+</div>
+
+<script>
+    // 1. PASTE YOUR CLEAN URL HERE (No /u/0/)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8QaW9FpjLKVxgk3WCmyAiCkPW1TllrsLOUL-AegMG6sk3aT-0hcGPfCxMjGZBSdKevQ/exec";
+    
+    let isStaffMode = false;
+
+    function togglePortal() {
+        isStaffMode = !isStaffMode;
+        document.getElementById('loginTitle').innerText = isStaffMode ? "Staff Portal" : "Student Login";
+        document.getElementById('loginTitle').style.color = isStaffMode ? "var(--staff)" : "var(--primary)";
+        document.getElementById('studentBox').classList.toggle('hidden', isStaffMode);
+        document.getElementById('staffBox').classList.toggle('hidden', !isStaffMode);
+        document.getElementById('toggleText').innerText = isStaffMode ? "Back to Student Login" : "Staff Access? Click Here";
+    }
+
+    async function handleLogin() {
+        const id = document.getElementById('userId').value.trim();
+        const pass = document.getElementById('userPass').value;
+        if (!id || !pass) return alert("Enter ID and Password");
+
+        document.getElementById('loader').style.display = 'flex';
+        try {
+            // Using direct GET request for login to avoid CORS issues
+            const res = await fetch(`${SCRIPT_URL}?id=${encodeURIComponent(id)}&password=${encodeURIComponent(pass)}`);
+            const data = await res.json();
+            document.getElementById('loader').style.display = 'none';
+            
+            if (data.error) {
+                alert("❌ " + data.error);
+            } else {
+                alert("✅ Welcome " + data.profile.name);
+                // Store data and redirect or show dashboard
+                localStorage.setItem('userData', JSON.stringify(data));
+                // window.location.href = "dashboard.html"; 
+            }
+        } catch (e) {
+            document.getElementById('loader').style.display = 'none';
+            alert("Connection Failed. Check your Script URL.");
+        }
+    }
+
+    async function handleRegister() {
+        const id = document.getElementById('userId').value.trim();
+        const pass = document.getElementById('userPass').value;
+        if (!id || !pass) return alert("Enter ID and Password to Register");
+
+        document.getElementById('loader').style.display = 'flex';
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Essential for Google Apps Script POST
+                cache: 'no-cache',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'register', id: id, password: pass })
+            });
+            document.getElementById('loader').style.display = 'none';
+            alert("✅ Registration Requested! Please wait for admin approval or try logging in.");
+        } catch (e) {
+            document.getElementById('loader').style.display = 'none';
+            alert("Registration failed to send.");
+        }
+    }
+
+    function staffLogin() {
+        const user = document.getElementById('userId').value;
+        const pass = document.getElementById('userPass').value;
+        if (user === "admin" && pass === "ccst2026") {
+            window.location.href = "accountant.html";
+        } else {
+            alert("Invalid Staff Password");
+        }
+    }
+</script>
+</body>
+</html>

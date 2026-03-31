@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accountant Tool | CCST</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; max-width: 450px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
+        button { background: #004080; color: white; border: none; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2 style="color: #004080;">Finance Control</h2>
+    <input id="searchId" placeholder="Enter Student ID">
+    <button onclick="search()">SEARCH STUDENT</button>
+
+    <div id="result" style="display:none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+        <h3 id="resName"></h3>
+        <p id="resInfo"></p>
+        <h2 id="resBal" style="color: #e74c3c;"></h2>
+        <button id="toggleBtn" onclick="toggleStatus()"></button>
+    </div>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzu4S8q-_dXggYWq7D8aNbiWwdXlJoZiZZz09ASKfe1yxJWW-S3Ef0ddpvm1OdjUa9qkA/exec";
+    let currentStudent = null;
+
+    async function search() {
+        const id = document.getElementById('searchId').value.trim();
+        if(!id) return;
+        const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`);
+        const data = await res.json();
+        if(data.error) return alert(data.error);
+        
+        currentStudent = data;
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('resName').innerText = data.name;
+        document.getElementById('resInfo').innerText = `${data.program} | Level ${data.level}`;
+        document.getElementById('resBal').innerText = "Balance: GHC " + data.balance;
+        updateUI(data.isCleared);
+    }
+
+    function updateUI(s) {
+        const btn = document.getElementById('toggleBtn');
+        btn.innerText = s ? "✅ CLEARED" : "❌ NOT CLEARED";
+        btn.style.background = s ? "#27ae60" : "#e74c3c";
+    }
+
+    async function toggleStatus() {
+        const status = !currentStudent.isCleared;
+        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_clearance', id: currentStudent.id, status })});
+        currentStudent.isCleared = status;
+        updateUI(status);
+        alert("Status Updated!");
+    }
+</script>
+</body>
+</html>
