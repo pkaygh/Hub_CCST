@@ -64,6 +64,22 @@
             display: none;
         }
 
+        /* Message Toast Styles */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            display: none;
+            z-index: 10000;
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
         #loader {
             position: fixed;
             top: 0;
@@ -82,17 +98,21 @@
 <body>
 
     <div id="loader"><b>Processing...</b></div>
+    <div id="toast"></div>
 
     <div class="container">
         <div class="card">
             <h2 id="loginTitle" style="color: var(--primary);">Student Login</h2>
 
-            <input id="userId" type="text" placeholder="Student ID / Staff Username">
+            <input id="userId" type="text" placeholder="ID / Username">
             <input id="userPass" type="password" placeholder="Password">
 
             <div id="studentBox">
                 <button onclick="handleLogin()" style="background: var(--primary);">LOGIN</button>
                 <button onclick="handleRegister()" style="background: #27ae60;">CREATE ACCOUNT</button>
+                <p><a href="#" onclick="forgotPassword()"
+                        style="color: var(--primary); font-size: 0.85rem; text-decoration: none; margin-top: 10px; display: block;">Forgot
+                        Password?</a></p>
             </div>
 
             <div id="staffBox" class="hidden">
@@ -107,25 +127,17 @@
         </div>
     </div>
 
-    <div id="loginPage" class="container">
-        <div class="card" style="margin-top: 50px;">
-            <h2 style="color: var(--primary);">Student Login</h2>
-            <input id="stuId" placeholder="Student ID">
-            <input id="stuPass" type="password" placeholder="Password">
-            <button onclick="handleAuth('login')">LOGIN</button>
-            <button onclick="handleAuth('register')" style="background:#27ae60;">REGISTER ACCOUNT</button>
-
-            <p><a href="#" onclick="forgotPassword()"
-                    style="color: var(--primary); font-size: 0.85rem; text-decoration: none; margin-top: 10px; display: block;">Forgot
-                    Password?</a></p>
-        </div>
-    </div>
-
     <script>
-        // 1. PASTE YOUR CLEAN URL HERE (No /u/0/)
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8QaW9FpjLKVxgk3WCmyAiCkPW1TllrsLOUL-AegMG6sk3aT-0hcGPfCxMjGZBSdKevQ/exec";
-
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxtZksaBcqkdWQJaaEd7xyouBOf73HMqEWgc8QVTBXd-OflPWr-y7-_08t-qnNIOzHiXA/exec";
         let isStaffMode = false;
+
+        // Unified Notification System
+        function notify(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        }
 
         function togglePortal() {
             isStaffMode = !isStaffMode;
@@ -139,11 +151,10 @@
         async function handleLogin() {
             const id = document.getElementById('userId').value.trim();
             const pass = document.getElementById('userPass').value;
-            if (!id || !pass) return notify("Enter ID and Password");
+            if (!id || !pass) return notify("⚠️ Enter ID and Password");
 
             document.getElementById('loader').style.display = 'flex';
             try {
-                // Using direct GET request for login to avoid CORS issues
                 const res = await fetch(`${SCRIPT_URL}?id=${encodeURIComponent(id)}&password=${encodeURIComponent(pass)}`);
                 const data = await res.json();
                 document.getElementById('loader').style.display = 'none';
@@ -152,54 +163,49 @@
                     notify("❌ " + data.error);
                 } else {
                     notify("✅ Welcome " + data.profile.name);
-                    // Store data and redirect or show dashboard
                     localStorage.setItem('userData', JSON.stringify(data));
-                    // window.location.href = "dashboard.html"; 
+                    // Redirect to your dashboard page here
+                    // window.location.href = "dashboard.html";
                 }
             } catch (e) {
                 document.getElementById('loader').style.display = 'none';
-                notify("Connection Failed. Check your Script URL.");
+                notify("❌ Connection Failed. Check internet.");
             }
         }
 
         async function handleRegister() {
             const id = document.getElementById('userId').value.trim();
             const pass = document.getElementById('userPass').value;
-            if (!id || !pass) return notify("Enter ID and Password to Register");
+            if (!id || !pass) return notify("⚠️ Enter ID and Password to Register");
 
             document.getElementById('loader').style.display = 'flex';
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // Essential for Google Apps Script POST
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'no-cors',
                     body: JSON.stringify({ action: 'register', id: id, password: pass })
                 });
                 document.getElementById('loader').style.display = 'none';
-                notify("✅ Registration Requested! Please wait for admin approval or try logging in.");
+                notify("✅ Registration Sent! Try logging in now.");
             } catch (e) {
                 document.getElementById('loader').style.display = 'none';
-                notify("Registration failed to send.");
+                notify("❌ Registration failed to send.");
             }
         }
 
         function staffLogin() {
-            const user = document.getElementById('userId').value;
+            const user = document.getElementById('userId').value.trim();
             const pass = document.getElementById('userPass').value;
             if (user === "admin" && pass === "ccst2026") {
                 window.location.href = "accountant.html";
             } else {
-                notify("Invalid Staff Password");
+                notify("❌ Invalid Staff Credentials");
             }
         }
 
         function forgotPassword() {
-            notify("ℹ️ Please contact the IT Department to reset your password.");
+            notify("ℹ️ Contact the IT Department to reset your password.");
         }
-
-
-
     </script>
 </body>
 
