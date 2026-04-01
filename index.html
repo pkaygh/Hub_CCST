@@ -10,6 +10,7 @@
             --primary: #004080;
             --bg: #f4f6f9;
             --staff: #6a1b9a;
+            --success: #27ae60;
         }
 
         body {
@@ -52,6 +53,11 @@
             cursor: pointer;
             color: white;
             margin: 8px 0;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
         }
 
         .hidden {
@@ -92,26 +98,47 @@
 
     <div class="container">
         <div class="card">
-            <h2 id="loginTitle" style="color: var(--primary);">Student Login</h2>
-            <input id="userId" placeholder="ID / Username">
-            <input id="userPass" type="password" placeholder="Password">
 
-            <div id="studentBox">
-                <button onclick="handleLogin()" style="background: var(--primary);">LOGIN</button>
-                <button onclick="handleRegister()" style="background: #27ae60;">CREATE ACCOUNT</button>
+            <div id="loginSection">
+                <h2 id="loginTitle" style="color: var(--primary);">Student Login</h2>
+                <input id="userId" placeholder="ID / Username">
+                <input id="userPass" type="password" placeholder="Password">
+
+                <div id="studentBox">
+                    <button onclick="handleLogin()" style="background: var(--primary);">LOGIN</button>
+                    <p style="margin: 15px 0 5px; color: #666; font-size: 0.9rem;">New here?</p>
+                    <button onclick="showRegisterForm()"
+                        style="background: var(--success); margin-top: 0;">REGISTER</button>
+                </div>
+
+                <div id="staffBox" class="hidden">
+                    <button onclick="staffLogin()" style="background: var(--staff);">STAFF SIGN IN</button>
+                </div>
+
+                <p id="toggleText" onclick="togglePortal()"
+                    style="color: #666; font-size: 0.85rem; cursor: pointer; margin-top: 15px;">Staff Access? Click Here
+                </p>
             </div>
 
-            <div id="staffBox" class="hidden">
-                <button onclick="staffLogin()" style="background: var(--staff);">STAFF SIGN IN</button>
+            <div id="registerSection" class="hidden">
+                <h2 style="color: var(--success);">Create Account</h2>
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">Enter your details to register</p>
+
+                <input id="regName" placeholder="Full Name">
+                <input id="regId" placeholder="Desired Student ID">
+                <input id="regPass" type="password" placeholder="Create Password">
+                <input id="regProgram" placeholder="Program (e.g. Computer Science)">
+
+                <button onclick="submitRegistration()" style="background: var(--success);">SUBMIT REGISTRATION</button>
+                <button onclick="hideRegisterForm()" style="background: #666;">CANCEL</button>
             </div>
 
-            <p id="toggleText" onclick="togglePortal()"
-                style="color: #666; font-size: 0.85rem; cursor: pointer; margin-top: 15px;">Staff Access? Click Here</p>
         </div>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2eW8CLdKqkmErg6gIP_pDOawCLq_dgn_B4YnOU1_xeeeKcq60Tve1LZ5Q4_-h4K9EOw/exec";
+        // Update this URL with your latest Apps Script deployment URL
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7MCBPqzDEy5u3h6AzHXZ6ectdLDE6uZI0fY43H1mcO4fOFL3iZTLiqVeaz8swnHxyig/exec";
         let isStaffMode = false;
 
         function notify(msg) {
@@ -121,6 +148,7 @@
             setTimeout(() => { toast.style.display = 'none'; }, 3500);
         }
 
+        // VIEW SWITCHING LOGIC
         function togglePortal() {
             isStaffMode = !isStaffMode;
             document.getElementById('loginTitle').innerText = isStaffMode ? "Staff Portal" : "Student Login";
@@ -128,6 +156,17 @@
             document.getElementById('staffBox').classList.toggle('hidden', !isStaffMode);
         }
 
+        function showRegisterForm() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('registerSection').classList.remove('hidden');
+        }
+
+        function hideRegisterForm() {
+            document.getElementById('registerSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+        }
+
+        // AUTHENTICATION LOGIC
         async function handleLogin() {
             const id = document.getElementById('userId').value.trim();
             const pass = document.getElementById('userPass').value;
@@ -142,18 +181,16 @@
                     document.getElementById('loader').style.display = 'none';
                     notify("❌ " + data.error);
                 } else {
-                    // Fetch detailed academic results
+                    // Fetch results immediately upon login
                     const resFetch = await fetch(`${SCRIPT_URL}?action=get_results&id=${id}`);
                     const resData = await resFetch.json();
 
-                    // Save data to browser memory
                     localStorage.setItem('userData', JSON.stringify(data));
                     localStorage.setItem('userResults', JSON.stringify(resData.results));
 
                     document.getElementById('loader').style.display = 'none';
                     notify("✅ Welcome " + data.profile.name);
 
-                    // Redirect after a short delay so user sees the welcome message
                     setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
                 }
             } catch (e) {
@@ -172,6 +209,7 @@
                 const res = await fetch(`${SCRIPT_URL}?action=staff_login&user=${user}&pass=${pass}`);
                 const data = await res.json();
                 document.getElementById('loader').style.display = 'none';
+
                 if (data.authorized) {
                     window.location.href = "accountant.html";
                 } else {
@@ -183,19 +221,35 @@
             }
         }
 
-        async function handleRegister() {
-            const id = document.getElementById('userId').value.trim();
-            const pass = document.getElementById('userPass').value;
-            if (!id || !pass) return notify("⚠️ Enter ID and Password");
+        // REGISTRATION FORM SUBMISSION
+        async function submitRegistration() {
+            const name = document.getElementById('regName').value.trim();
+            const id = document.getElementById('regId').value.trim();
+            const pass = document.getElementById('regPass').value;
+            const program = document.getElementById('regProgram').value.trim();
+
+            if (!name || !id || !pass || !program) {
+                return notify("⚠️ Please fill all fields");
+            }
 
             document.getElementById('loader').style.display = 'flex';
             try {
-                await fetch(SCRIPT_URL, {
+                const payload = {
+                    action: 'register',
+                    name: name,
+                    id: id,
+                    password: pass,
+                    program: program
+                };
+
+                const res = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'register', id, password: pass })
+                    body: JSON.stringify(payload)
                 });
+
                 document.getElementById('loader').style.display = 'none';
-                notify("✅ Registration Sent!");
+                notify("✅ Registration Successful! You can now login.");
+                hideRegisterForm(); // Return to login view
             } catch (e) {
                 document.getElementById('loader').style.display = 'none';
                 notify("❌ Registration Failed.");
