@@ -30,6 +30,7 @@
             border-radius: 8px;
             border: 1px solid #ccc;
             font-size: 16px;
+            box-sizing: border-box;
         }
 
         button {
@@ -39,21 +40,32 @@
             font-weight: bold;
             cursor: pointer;
         }
+
+        hr {
+            margin: 20px 0;
+            border: 0;
+            border-top: 1px solid #eee;
+        }
     </style>
 </head>
 
 <body>
-
     <div class="card">
-        <h2 style="color: #004080;">Finance Control</h2>
+        <h2 style="color: #004080;">Finance & Academic Control</h2>
         <input id="searchId" placeholder="Enter Student ID">
         <button onclick="search()">SEARCH STUDENT</button>
 
-        <div id="result" style="display:none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+        <div id="result" style="display:none; margin-top: 20px;">
             <h3 id="resName"></h3>
             <p id="resInfo"></p>
             <h2 id="resBal" style="color: #e74c3c;"></h2>
             <button id="toggleBtn" onclick="toggleStatus()"></button>
+
+            <hr>
+            <h4>Upload Semester Results</h4>
+            <input id="resSemester" placeholder="Semester (e.g. Sem 1 2024)">
+            <input id="resGPA" placeholder="GPA / Average">
+            <button onclick="uploadResults()" style="background: #27ae60;">UPLOAD RESULT</button>
         </div>
     </div>
 
@@ -87,7 +99,19 @@
             await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_clearance', id: currentStudent.id, status }) });
             currentStudent.isCleared = status;
             updateUI(status);
-            alert("Status Updated!");
+            alert("Clearance Updated!");
+        }
+
+        async function uploadResults() {
+            if (!currentStudent) return alert("Search for a student first!");
+            const sem = document.getElementById('resSemester').value;
+            const gpa = document.getElementById('resGPA').value;
+            if (!sem || !gpa) return alert("Fill all result fields");
+
+            const payload = { action: 'upload_results', id: currentStudent.id, semester: sem, gpa: gpa, details: "Uploaded by Admin" };
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const data = await res.json();
+            if (data.success) alert("Result Uploaded Successfully!");
         }
     </script>
 </body>

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CCST Smart Portal</title>
     <style>
         :root {
@@ -16,7 +16,6 @@
             margin: 0;
             font-family: sans-serif;
             background: var(--bg);
-            -webkit-tap-highlight-color: transparent;
         }
 
         .container {
@@ -35,13 +34,13 @@
         }
 
         input {
-            font-size: 16px !important;
             width: 100%;
             padding: 12px;
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 8px;
             box-sizing: border-box;
+            font-size: 16px;
         }
 
         button {
@@ -53,18 +52,12 @@
             cursor: pointer;
             color: white;
             margin: 8px 0;
-            transition: 0.2s;
-        }
-
-        button:active {
-            transform: scale(0.98);
         }
 
         .hidden {
             display: none;
         }
 
-        /* Message Toast Styles */
         #toast {
             position: fixed;
             bottom: 20px;
@@ -75,9 +68,7 @@
             padding: 12px 25px;
             border-radius: 30px;
             display: none;
-            z-index: 10000;
-            font-size: 14px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
         }
 
         #loader {
@@ -96,34 +87,26 @@
 </head>
 
 <body>
-
     <div id="loader"><b>Processing...</b></div>
     <div id="toast"></div>
 
     <div class="container">
         <div class="card">
             <h2 id="loginTitle" style="color: var(--primary);">Student Login</h2>
-
-            <input id="userId" type="text" placeholder="ID / Username">
+            <input id="userId" placeholder="ID / Username">
             <input id="userPass" type="password" placeholder="Password">
 
             <div id="studentBox">
                 <button onclick="handleLogin()" style="background: var(--primary);">LOGIN</button>
                 <button onclick="handleRegister()" style="background: #27ae60;">CREATE ACCOUNT</button>
-                <p><a href="#" onclick="forgotPassword()"
-                        style="color: var(--primary); font-size: 0.85rem; text-decoration: none; margin-top: 10px; display: block;">Forgot
-                        Password?</a></p>
             </div>
 
             <div id="staffBox" class="hidden">
                 <button onclick="staffLogin()" style="background: var(--staff);">STAFF SIGN IN</button>
             </div>
 
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
             <p id="toggleText" onclick="togglePortal()"
-                style="color: #666; font-size: 0.85rem; cursor: pointer; font-weight: bold;">
-                Staff Access? Click Here
-            </p>
+                style="color: #666; font-size: 0.85rem; cursor: pointer; margin-top: 15px;">Staff Access? Click Here</p>
         </div>
     </div>
 
@@ -131,21 +114,17 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyeIzjnFRnInJVTCBc-NwpZQMJY3z6xFY9ATFvi5ONfzpdztyLmOkQSi4G9TZ3J3p5TXw/exec";
         let isStaffMode = false;
 
-        // Unified Notification System
         function notify(msg) {
             const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.style.display = 'block';
+            toast.innerText = msg; toast.style.display = 'block';
             setTimeout(() => { toast.style.display = 'none'; }, 3500);
         }
 
         function togglePortal() {
             isStaffMode = !isStaffMode;
             document.getElementById('loginTitle').innerText = isStaffMode ? "Staff Portal" : "Student Login";
-            document.getElementById('loginTitle').style.color = isStaffMode ? "var(--staff)" : "var(--primary)";
             document.getElementById('studentBox').classList.toggle('hidden', isStaffMode);
             document.getElementById('staffBox').classList.toggle('hidden', !isStaffMode);
-            document.getElementById('toggleText').innerText = isStaffMode ? "Back to Student Login" : "Staff Access? Click Here";
         }
 
         async function handleLogin() {
@@ -155,56 +134,52 @@
 
             document.getElementById('loader').style.display = 'flex';
             try {
-                const res = await fetch(`${SCRIPT_URL}?id=${encodeURIComponent(id)}&password=${encodeURIComponent(pass)}`);
+                const res = await fetch(`${SCRIPT_URL}?id=${id}&password=${pass}`);
                 const data = await res.json();
-                document.getElementById('loader').style.display = 'none';
 
                 if (data.error) {
+                    document.getElementById('loader').style.display = 'none';
                     notify("❌ " + data.error);
                 } else {
-                    notify("✅ Welcome " + data.profile.name);
+                    // Fetch student results immediately after successful login
+                    const resFetch = await fetch(`${SCRIPT_URL}?action=get_results&id=${id}`);
+                    const resData = await resFetch.json();
+
                     localStorage.setItem('userData', JSON.stringify(data));
-                    // Redirect to your dashboard page here
+                    localStorage.setItem('userResults', JSON.stringify(resData.results));
+
+                    document.getElementById('loader').style.display = 'none';
+                    notify("✅ Welcome " + data.profile.name);
                     // window.location.href = "dashboard.html";
                 }
             } catch (e) {
                 document.getElementById('loader').style.display = 'none';
-                notify("❌ Connection Failed. Check internet.");
+                notify("❌ Connection Failed.");
             }
+        }
+
+        async function staffLogin() {
+            const user = document.getElementById('userId').value.trim();
+            const pass = document.getElementById('userPass').value;
+            document.getElementById('loader').style.display = 'flex';
+            try {
+                // FIXED: Now uses secure backend verification
+                const res = await fetch(`${SCRIPT_URL}?action=staff_login&user=${user}&pass=${pass}`);
+                const data = await res.json();
+                document.getElementById('loader').style.display = 'none';
+                if (data.authorized) window.location.href = "accountant.html";
+                else notify("❌ " + data.error);
+            } catch (e) { notify("❌ Verification failed."); }
         }
 
         async function handleRegister() {
             const id = document.getElementById('userId').value.trim();
             const pass = document.getElementById('userPass').value;
-            if (!id || !pass) return notify("⚠️ Enter ID and Password to Register");
-
+            if (!id || !pass) return notify("⚠️ Enter ID and Password");
             document.getElementById('loader').style.display = 'flex';
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ action: 'register', id: id, password: pass })
-                });
-                document.getElementById('loader').style.display = 'none';
-                notify("✅ Registration Sent! Try logging in now.");
-            } catch (e) {
-                document.getElementById('loader').style.display = 'none';
-                notify("❌ Registration failed to send.");
-            }
-        }
-
-        function staffLogin() {
-            const user = document.getElementById('userId').value.trim();
-            const pass = document.getElementById('userPass').value;
-            if (user === "admin" && pass === "ccst2026") {
-                window.location.href = "accountant.html";
-            } else {
-                notify("❌ Invalid Staff Credentials");
-            }
-        }
-
-        function forgotPassword() {
-            notify("ℹ️ Contact the IT Department to reset your password.");
+            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'register', id, password: pass }) });
+            document.getElementById('loader').style.display = 'none';
+            notify("✅ Registration Sent!");
         }
     </script>
 </body>
