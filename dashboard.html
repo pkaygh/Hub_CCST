@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard | CCST</title>
+    <style>
+        :root {
+            --primary: #004080;
+            --bg: #f4f6f9;
+            --success: #27ae60;
+            --danger: #e74c3c;
+        }
+
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            background: var(--bg);
+            color: #333;
+        }
+
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        /* Profile Section */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #ddd;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+            margin-top: 5px;
+        }
+
+        .cleared {
+            background: var(--success);
+        }
+
+        .not-cleared {
+            background: var(--danger);
+        }
+
+        /* Results Styling */
+        .semester-box {
+            border-left: 5px solid var(--primary);
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .course-name {
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .course-grade {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        <div style="font-weight: bold; letter-spacing: 1px;">CCST PORTAL</div>
+        <button class="logout-btn" onclick="logout()">LOGOUT</button>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="profile-header">
+                <img id="userPhoto" src="https://via.placeholder.com/80" class="profile-pic">
+                <div>
+                    <h2 id="userName" style="margin: 0;">Loading...</h2>
+                    <p id="userDetails" style="margin: 5px 0; color: #666; font-size: 0.9rem;"></p>
+                    <div id="clearanceStatus" class="status-badge">Checking...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top: 0; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                Academic Transcript</h3>
+            <div id="resultsContainer">
+                <p style="text-align: center; color: #999;">Searching for academic records...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function () {
+            // 1. Get data saved during login
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            const userResults = JSON.parse(localStorage.getItem('userResults'));
+
+            // 2. Security: Redirect to login if no data is found
+            if (!userData) {
+                window.location.replace("index.html");
+                return;
+            }
+
+            // 3. Populate Profile
+            const p = userData.profile;
+            document.getElementById('userName').innerText = p.name;
+            document.getElementById('userDetails').innerText = `${p.program} | Level ${p.level} | ID: ${p.id}`;
+            if (p.photoUrl) document.getElementById('userPhoto').src = p.photoUrl;
+
+            // 4. Update Financial Status
+            const statusBox = document.getElementById('clearanceStatus');
+            if (p.isCleared === true || p.isCleared === "TRUE") {
+                statusBox.innerText = "FINANCIALLY CLEARED";
+                statusBox.className = "status-badge cleared";
+            } else {
+                statusBox.innerText = "NOT CLEARED (Contact Accounts)";
+                statusBox.className = "status-badge not-cleared";
+            }
+
+            // 5. Populate Detailed Results
+            const container = document.getElementById('resultsContainer');
+            if (userResults && userResults.length > 0) {
+                container.innerHTML = ""; // Clear loader
+
+                userResults.forEach(sem => {
+                    let courseRows = "";
+
+                    // Generate rows for each course in this semester
+                    sem.details.forEach(course => {
+                        courseRows += `
+                            <div class="course-name">${course.name}</div>
+                            <div class="course-grade">${course.grade}</div>
+                        `;
+                    });
+
+                    // Create the semester card
+                    container.innerHTML += `
+                        <div class="semester-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <h4 style="margin:0; color:#333;">${sem.semester}</h4>
+                                <span style="font-weight:bold; color:var(--primary);">GPA: ${sem.gpa}</span>
+                            </div>
+                            <div class="course-grid">
+                                ${courseRows}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = "<p style='text-align:center; color:#999;'>No examination results found.</p>";
+            }
+        };
+
+        // Complete Logout Logic
+        function logout() {
+            if (confirm("Are you sure you want to logout?")) {
+                localStorage.clear(); // Clears all student entries
+                sessionStorage.clear();
+                window.location.replace("index.html"); // Redirect and clear history
+            }
+        }
+    </script>
+</body>
+
+</html>

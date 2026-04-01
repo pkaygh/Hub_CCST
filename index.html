@@ -111,12 +111,13 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzY6qUwoVkeeA5rj_o-tMezUHSJMZuZDv097iy97d_1Bwcdhf-y999WsD95GVFwOQOfcg/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2eW8CLdKqkmErg6gIP_pDOawCLq_dgn_B4YnOU1_xeeeKcq60Tve1LZ5Q4_-h4K9EOw/exec";
         let isStaffMode = false;
 
         function notify(msg) {
             const toast = document.getElementById('toast');
-            toast.innerText = msg; toast.style.display = 'block';
+            toast.innerText = msg;
+            toast.style.display = 'block';
             setTimeout(() => { toast.style.display = 'none'; }, 3500);
         }
 
@@ -141,16 +142,19 @@
                     document.getElementById('loader').style.display = 'none';
                     notify("❌ " + data.error);
                 } else {
-                    // Fetch student results immediately after successful login
+                    // Fetch detailed academic results
                     const resFetch = await fetch(`${SCRIPT_URL}?action=get_results&id=${id}`);
                     const resData = await resFetch.json();
 
+                    // Save data to browser memory
                     localStorage.setItem('userData', JSON.stringify(data));
                     localStorage.setItem('userResults', JSON.stringify(resData.results));
 
                     document.getElementById('loader').style.display = 'none';
                     notify("✅ Welcome " + data.profile.name);
-                    // window.location.href = "dashboard.html";
+
+                    // Redirect after a short delay so user sees the welcome message
+                    setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
                 }
             } catch (e) {
                 document.getElementById('loader').style.display = 'none';
@@ -161,25 +165,41 @@
         async function staffLogin() {
             const user = document.getElementById('userId').value.trim();
             const pass = document.getElementById('userPass').value;
+            if (!user || !pass) return notify("⚠️ Enter Staff Credentials");
+
             document.getElementById('loader').style.display = 'flex';
             try {
-                // FIXED: Now uses secure backend verification
                 const res = await fetch(`${SCRIPT_URL}?action=staff_login&user=${user}&pass=${pass}`);
                 const data = await res.json();
                 document.getElementById('loader').style.display = 'none';
-                if (data.authorized) window.location.href = "accountant.html";
-                else notify("❌ " + data.error);
-            } catch (e) { notify("❌ Verification failed."); }
+                if (data.authorized) {
+                    window.location.href = "accountant.html";
+                } else {
+                    notify("❌ " + data.error);
+                }
+            } catch (e) {
+                document.getElementById('loader').style.display = 'none';
+                notify("❌ Verification failed.");
+            }
         }
 
         async function handleRegister() {
             const id = document.getElementById('userId').value.trim();
             const pass = document.getElementById('userPass').value;
             if (!id || !pass) return notify("⚠️ Enter ID and Password");
+
             document.getElementById('loader').style.display = 'flex';
-            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'register', id, password: pass }) });
-            document.getElementById('loader').style.display = 'none';
-            notify("✅ Registration Sent!");
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'register', id, password: pass })
+                });
+                document.getElementById('loader').style.display = 'none';
+                notify("✅ Registration Sent!");
+            } catch (e) {
+                document.getElementById('loader').style.display = 'none';
+                notify("❌ Registration Failed.");
+            }
         }
     </script>
 </body>
