@@ -705,7 +705,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyuIbSc_QLyhR8Txs5gPcsvq_rTySSDYtJRxkW9znPhZefmIiwG7q2uEMhu1uJvgGLp/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyw3Q2cg-HDEfaEGW1IqaooHWn3qhV9FB7SM79DyWdoK4DYFBNm6u095Vms-UYDBUC6/exec";
         let currentStudent = null;
         let csvData = null;
         let parsedResults = [];
@@ -758,7 +758,7 @@
                 currentStudent = data;
                 document.getElementById('studentResult').style.display = 'block';
                 document.getElementById('resName').innerText = data.name;
-                document.getElementById('resInfo').innerText = `${data.program} | Level ${data.level} | ID: ${data.id} | Balance: ₦${(data.balance || 0).toLocaleString()}`;
+                document.getElementById('resInfo').innerText = `${data.program} | Level ${data.level} | ID: ${data.id} | Balance: GH₵${(data.balance || 0).toLocaleString()}`;
 
                 if (data.program) document.getElementById('resProgram').value = data.program;
                 if (data.level) document.getElementById('resLevel').value = data.level;

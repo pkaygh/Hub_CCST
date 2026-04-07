@@ -376,7 +376,7 @@
 
             <button type="submit" id="loginBtn">
                 <span id="loginText">LOGIN</span>
-                <span id="loginSpinner" class="spinner" style="display:inline-block;"></span>
+                <span id="loginSpinner" class="spinner"></span>
             </button>
 
             <div class="error-message" id="errorMessage"></div>
@@ -452,8 +452,9 @@
                 </div>
 
                 <div class="btn-group">
-                    <button type="submit" class="success-btn" style="background: #27ae60;">
-                        <i class="fas fa-check"></i> Register
+                    <button type="submit" id="registerBtn" class="success-btn" style="background: #27ae60;">
+                        <i class="fas fa-check"></i> <span id="registerText">Register</span>
+                        <span id="registerSpinner" class="spinner" style="border-top-color: white;"></span>
                     </button>
                     <button type="button" class="btn-cancel" onclick="closeRegisterModal()">
                         <i class="fas fa-times"></i> Cancel
@@ -467,7 +468,7 @@
 
     <script>
         // Configuration - Replace YOUR_SCRIPT_ID_HERE with your actual Google Apps Script Deployment ID
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyuIbSc_QLyhR8Txs5gPcsvq_rTySSDYtJRxkW9znPhZefmIiwG7q2uEMhu1uJvgGLp/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyw3Q2cg-HDEfaEGW1IqaooHWn3qhV9FB7SM79DyWdoK4DYFBNm6u095Vms-UYDBUC6/exec";
         let deferredPrompt;
         let currentRole = 'student';
 
@@ -644,6 +645,9 @@
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
             const errorMsg = document.getElementById('registerError');
+            const registerBtn = document.getElementById('registerBtn');
+            const registerText = document.getElementById('registerText');
+            const registerSpinner = document.getElementById('registerSpinner');
 
             if (!name || !id || !program || !level || !password) {
                 errorMsg.innerText = "All fields are required";
@@ -662,6 +666,12 @@
                 errorMsg.style.display = 'block';
                 return;
             }
+
+            // Disable button and show loading
+            registerBtn.disabled = true;
+            registerText.style.display = 'none';
+            registerSpinner.style.display = 'inline-block';
+            errorMsg.style.display = 'none';
 
             try {
                 if (!navigator.onLine) {
@@ -699,6 +709,11 @@
                 console.error('Registration error:', e);
                 errorMsg.innerText = "Connection error. Please try again.";
                 errorMsg.style.display = 'block';
+            } finally {
+                // Re-enable button
+                registerBtn.disabled = false;
+                registerText.style.display = 'inline';
+                registerSpinner.style.display = 'none';
             }
         }
 
