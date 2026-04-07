@@ -1,141 +1,1257 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accountant Tool | CCST</title>
+    <title>Accountant Portal | CCST</title>
     <style>
+        :root {
+            --primary: #004080;
+            --sidebar-bg: #1e2a44;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: sans-serif;
-            background: #f0f2f5;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f4f6f9;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: linear-gradient(135deg, var(--primary) 0%, #1e2a44 100%);
+        }
+
+        .sidebar-header h2 {
+            color: white;
+            font-size: 1.4rem;
+        }
+
+        .menu-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #ddd;
+            text-decoration: none;
+            transition: 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255,255,255,0.12);
+            color: white;
+            border-left-color: var(--info);
+        }
+
+        .menu-item i { width: 24px; text-align: center; }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 25px;
+        }
+
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
         }
 
         .card {
             background: white;
             padding: 25px;
             border-radius: 12px;
-            max-width: 500px;
-            margin: auto;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
         }
 
-        input,
-        button {
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .card-header h3 { color: var(--primary); }
+
+        input, button, select {
             width: 100%;
             padding: 12px;
-            margin: 10px 0;
+            margin: 8px 0;
             border-radius: 8px;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             font-size: 16px;
-            box-sizing: border-box;
+            font-family: inherit;
         }
 
         button {
-            background: #004080;
+            background: var(--primary);
             color: white;
             border: none;
             font-weight: bold;
             cursor: pointer;
+            transition: background 0.3s;
         }
 
+        button:hover { background: #003366; }
+        .success-btn { background: var(--success); }
+        .success-btn:hover { background: #219a52; }
+        .danger-btn { background: var(--danger); }
+        .danger-btn:hover { background: #c0392b; }
+        .warning-btn { background: var(--warning); }
+        .info-btn { background: var(--info); }
+
+        /* CSV Upload Styles */
+        .upload-zone {
+            border: 3px dashed #ccc;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--primary);
+            background: #f0f7ff;
+        }
+
+        .upload-zone i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .upload-zone input { display: none; }
+
+        /* File Preview */
+        .file-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid var(--success);
+        }
+
+        .file-preview h4 { margin-bottom: 10px; color: var(--primary); }
+
+        .file-info {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .file-info span {
+            background: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        /* Results Table */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            display: block;
+        }
+
+        .results-table th, .results-table td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .results-table th {
+            background: var(--primary);
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        .results-table tr:hover { background: #f8f9fa; }
+        .results-table { max-height: 400px; overflow-y: auto; display: block; }
+
+        /* Status Badges */
+        .status-cleared { color: var(--success); font-weight: bold; }
+        .status-not { color: var(--danger); font-weight: bold; }
+        .badge-success { background: var(--success); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; }
+        .badge-warning { background: var(--warning); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; }
+        .badge-danger { background: var(--danger); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; }
+
+        /* Course Row */
         .course-row {
             display: flex;
-            gap: 5px;
-            margin-bottom: 5px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
-        hr {
-            margin: 20px 0;
-            border: 0;
-            border-top: 1px solid #eee;
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show { display: flex; }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-card i { font-size: 2rem; margin-bottom: 10px; }
+        .stat-card h3 { font-size: 2rem; margin: 5px 0; color: var(--primary); }
+        .stat-card p { color: #666; font-size: 0.9rem; }
+
+        /* Progress Bar */
+        .progress-bar {
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            transition: width 0.5s;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 15px; }
+            .menu-toggle { display: block; }
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.show { display: block; }
+
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-
 <body>
-    <div class="card">
-        <h2 style="color: #004080;">Academic & Finance Control</h2>
-        <input id="searchId" placeholder="Enter Student ID">
-        <button onclick="search()">SEARCH STUDENT</button>
 
-        <div id="result" style="display:none; margin-top: 20px;">
-            <h3 id="resName"></h3>
-            <p id="resInfo"></p>
-            <button id="toggleBtn" onclick="toggleStatus()"></button>
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-            <hr>
-            <h4>Upload Detailed Results</h4>
-            <input id="resSemester" placeholder="Semester (e.g. Semester 1 2024)">
-            <input id="resGPA" placeholder="Overall GPA">
+    <!-- SIDE MENU -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-user-tie"></i> Accountant</h2>
+            <p style="font-size:0.85rem; opacity:0.8;">Financial & Academic Control</p>
+        </div>
 
-            <div id="courseInputs">
-                <div class="course-row">
-                    <input class="cName" placeholder="Course Name" style="flex:2">
-                    <input class="cGrade" placeholder="Grade" style="flex:1">
+        <a href="#" class="menu-item active" onclick="showSection('search')">
+            <i class="fas fa-search"></i> Search Student
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('csv_upload')">
+            <i class="fas fa-file-upload"></i> CSV Upload
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('bulk_upload')">
+            <i class="fas fa-upload"></i> Bulk Upload
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('courses')">
+            <i class="fas fa-book"></i> Manage Courses
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('clearance')">
+            <i class="fas fa-check-circle"></i> Financial Clearance
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('notifications')">
+            <i class="fas fa-bell"></i> Send Notifications
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('reports')">
+            <i class="fas fa-chart-bar"></i> Reports
+        </a>
+
+        <hr style="margin: 20px 25px; border-color: rgba(255,255,255,0.1);">
+
+        <a href="#" class="menu-item" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <div class="navbar">
+            <h3 id="pageTitle">Search Student</h3>
+            <div style="font-weight:bold;"><i class="fas fa-user-tie"></i> CCST Accountant</div>
+        </div>
+
+        <!-- SEARCH STUDENT SECTION -->
+        <div id="searchSection" class="section">
+            <div class="stats-grid">
+                <div class="stat-card" style="border-left: 4px solid var(--info);">
+                    <i class="fas fa-users" style="color: var(--info);"></i>
+                    <h3 id="totalStudents">0</h3>
+                    <p>Total Students</p>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--success);">
+                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                    <h3 id="clearedStudents">0</h3>
+                    <p>Cleared</p>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--danger);">
+                    <i class="fas fa-exclamation-circle" style="color: var(--danger);"></i>
+                    <h3 id="pendingStudents">0</h3>
+                    <p>Pending</p>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--warning);">
+                    <i class="fas fa-clock" style="color: var(--warning);"></i>
+                    <h3 id="pendingResults">0</h3>
+                    <p>Results Pending</p>
                 </div>
             </div>
-            <button onclick="addCourseRow()" style="background:#666; font-size:12px; padding:5px; width:auto;">+ Add
-                Course</button>
-            <button onclick="uploadResults()" style="background: #27ae60; margin-top:20px;">UPLOAD ALL RESULTS</button>
+
+            <div class="card">
+                <h3><i class="fas fa-search"></i> Search Student by ID</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input id="searchId" placeholder="Enter Student ID (e.g. CCST/RM/24/001)" style="flex: 1;">
+                    <button onclick="searchStudent()" style="width: auto; padding: 12px 25px;">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+
+                <div id="studentResult" style="display:none; margin-top:25px;">
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                        <h3 id="resName" style="color:var(--primary); margin-bottom: 10px;"></h3>
+                        <p id="resInfo" style="color: #666; margin-bottom: 15px;"></p>
+                        <button id="toggleBtn" onclick="toggleClearance()" style="margin-bottom: 15px;"></button>
+
+                        <hr style="margin: 20px 0;">
+                        <h4><i class="fas fa-upload"></i> Upload Semester Results</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <input id="resSemester" placeholder="Semester (e.g. Semester 2 2025/2026)">
+                            <input id="resProgram" placeholder="Program (e.g. RM)">
+                            <input id="resLevel" placeholder="Level (e.g. 100)" type="number">
+                            <input id="resGPA" placeholder="Overall GPA" type="number" step="0.01">
+                        </div>
+
+                        <div id="courseInputs" style="margin-top: 10px;">
+                            <div class="course-row">
+                                <input class="cCode" placeholder="Course Code" style="flex:1">
+                                <input class="cName" placeholder="Course Name" style="flex:2">
+                                <input class="cCA" placeholder="CA" type="number" style="flex:0.5">
+                                <input class="cExam" placeholder="Exam" type="number" style="flex:0.5">
+                                <input class="cGrade" placeholder="Grade" style="flex:0.5">
+                            </div>
+                        </div>
+                        <button onclick="addCourseRow()" style="background:#555; width:auto; padding:8px 15px; font-size:14px;">
+                            <i class="fas fa-plus"></i> Add Course
+                        </button>
+                        <button onclick="uploadResults()" class="success-btn" style="margin-top:15px;">
+                            <i class="fas fa-upload"></i> UPLOAD RESULTS
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CSV UPLOAD SECTION -->
+        <div id="csv_uploadSection" class="section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-file-upload"></i> Upload Results via CSV</h3>
+                </div>
+
+                <p style="color: #666; margin-bottom: 20px;">
+                    Upload a CSV file containing end-of-semester results. The system will automatically process and store student results with GPA calculation.
+                </p>
+
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFileInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h4>Drop CSV file here or click to browse</h4>
+                    <p style="color: #999; font-size: 0.9rem;">Supported format: .csv</p>
+                    <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVSelect(event)">
+                </div>
+
+                <div id="filePreview" style="display:none;" class="file-preview">
+                    <h4><i class="fas fa-file-csv"></i> File Ready for Upload</h4>
+                    <div class="file-info">
+                        <span><i class="fas fa-file"></i> <span id="fileName"></span></span>
+                        <span><i class="fas fa-database"></i> <span id="rowCount"></span> students</span>
+                        <span><i class="fas fa-columns"></i> <span id="colCount"></span> columns</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="uploadProgress" style="width: 0%;"></div>
+                    </div>
+                    <p id="uploadStatus" style="margin-top: 10px; color: #666;"></p>
+                </div>
+
+                <button id="processBtn" onclick="processCSV()" class="success-btn" style="margin-top: 20px; display:none;">
+                    <i class="fas fa-cogs"></i> PROCESS & UPLOAD RESULTS
+                </button>
+            </div>
+
+            <div class="card" id="csvPreviewCard" style="display:none;">
+                <div class="card-header">
+                    <h3><i class="fas fa-table"></i> CSV Data Preview</h3>
+                    <button onclick="clearPreview()" style="background: var(--danger); width: auto; padding: 8px 15px; font-size: 0.9rem;">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="results-table" id="csvPreviewTable">
+                        <thead><tr id="csvHeaderRow"></tr></thead>
+                        <tbody id="csvBodyRows"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-info-circle"></i> CSV Format Requirements</h3>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <p style="margin-bottom: 10px;"><strong>Required Columns:</strong></p>
+                    <ul style="margin-left: 20px; color: #666;">
+                        <li><code>id</code> - Student Index Number (e.g., CCST/RM/24/001)</li>
+                        <li><code>INDEX NUMBER</code> - Alternative student ID column</li>
+                        <li><code>NAME</code> - Student's full name</li>
+                        <li>Course columns: Course codes as headers (e.g., CCC 016, CCN 012)</li>
+                    </ul>
+                    <p style="margin: 15px 0 10px;"><strong>Optional Columns:</strong></p>
+                    <ul style="margin-left: 20px; color: #666;">
+                        <li><code>PROGRAM</code> - Program code (e.g., RM, MW)</li>
+                        <li><code>LEVEL</code> - Academic level (e.g., 100, 200)</li>
+                        <li><code>SEMESTER</code> - Semester identifier</li>
+                    </ul>
+                    <p style="margin-top: 15px;"><strong>Course Structure:</strong></p>
+                    <p style="color: #666; font-size: 0.9rem;">
+                        For each course, include columns for CA (Continuous Assessment) and EXAM scores.<br>
+                        Example: <code>CCC 016</code>, <code>CA</code>, <code>EXAMS</code>
+                    </p>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h4>Download Sample CSV Template:</h4>
+                    <button onclick="downloadTemplate()" class="info-btn" style="width: auto; margin-top: 10px;">
+                        <i class="fas fa-download"></i> Download Template
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BULK UPLOAD SECTION -->
+        <div id="bulk_uploadSection" class="section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-upload"></i> Bulk Student Operations</h3>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <h4><i class="fas fa-users"></i> Bulk Financial Clearance</h4>
+                        <input id="bulkStudentId" placeholder="Student ID for clearance">
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="clearStudent()" class="success-btn" style="width: auto; flex: 1;">
+                                <i class="fas fa-check"></i> MARK CLEARED
+                            </button>
+                            <button onclick="unclearStudent()" class="danger-btn" style="width: auto; flex: 1;">
+                                <i class="fas fa-times"></i> REMOVE CLEARANCE
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4><i class="fas fa-money-bill"></i> Update Fee Structure</h4>
+                        <input id="feeAmount" placeholder="Total Fee Amount (e.g., 450000)">
+                        <input id="feeSemester" placeholder="Semester (e.g., Semester 1 2026/2027)">
+                        <button onclick="updateFees()" class="info-btn">
+                            <i class="fas fa-save"></i> UPDATE FEES
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-history"></i> Recent Payment Records</h3>
+                <div id="paymentRecords" style="max-height: 400px; overflow-y: auto;">
+                    <p style="text-align:center; color:#999;">Payment history will appear here...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MANAGE COURSES SECTION -->
+        <div id="coursesSection" class="section" style="display:none;">
+            <div class="card">
+                <h3><i class="fas fa-book"></i> Manage Courses for Semester</h3>
+                <input id="courseSemester" placeholder="Semester (e.g., Semester 2 2025/2026)" style="margin-bottom:15px;">
+
+                <div id="adminCourseList"></div>
+
+                <input id="newCourseName" placeholder="New Course Name (e.g., CSC 401 - Software Engineering)">
+                <div style="display: flex; gap: 10px;">
+                    <input id="newCourseCode" placeholder="Course Code (e.g., CSC 401)" style="flex: 1;">
+                    <input id="newCourseCredits" placeholder="Credits" type="number" style="width: 100px;">
+                </div>
+                <button onclick="addNewCourse()" class="success-btn">
+                    <i class="fas fa-plus"></i> Add Course to Semester
+                </button>
+            </div>
+        </div>
+
+        <!-- FINANCIAL CLEARANCE SECTION -->
+        <div id="clearanceSection" class="section" style="display:none;">
+            <div class="card">
+                <h3><i class="fas fa-check-circle"></i> Financial Clearance Management</h3>
+                <p style="color:#666; margin-bottom:15px;">Mark students as financially cleared for registration/exams</p>
+
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input id="clearanceId" placeholder="Student ID" style="flex: 1; min-width: 200px;">
+                    <button onclick="clearStudentById()" class="success-btn" style="width: auto;">
+                        <i class="fas fa-check"></i> CLEAR
+                    </button>
+                    <button onclick="unclearStudentById()" class="danger-btn" style="width: auto;">
+                        <i class="fas fa-times"></i> UNCLEAR
+                    </button>
+                </div>
+
+                <div id="clearanceList" style="margin-top: 20px;">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS SECTION -->
+        <div id="notificationsSection" class="section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-bell"></i> Send Notification to Students</h3>
+                </div>
+
+                <label style="font-weight: bold;">Notification Type:</label>
+                <select id="notifType" onchange="toggleTargetSelection()" style="margin-bottom: 15px;">
+                    <option value="all">All Students</option>
+                    <option value="program">By Program</option>
+                    <option value="level">By Level</option>
+                    <option value="individual">Individual Student</option>
+                </select>
+
+                <div id="targetSelection" style="display: none; margin-bottom: 15px;">
+                    <input id="targetValue" placeholder="Enter Program (e.g., RM) or Level (e.g., 100)">
+                </div>
+
+                <label style="font-weight: bold;">Title:</label>
+                <input id="notifTitle" placeholder="Notification Title (e.g., Examination Schedule)">
+
+                <label style="font-weight: bold;">Message:</label>
+                <textarea id="notifMessage" rows="4" placeholder="Enter notification content..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; resize: vertical;"></textarea>
+
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="sendNotification()" class="success-btn" style="flex: 1;">
+                        <i class="fas fa-paper-plane"></i> SEND NOTIFICATION
+                    </button>
+                    <button onclick="scheduleNotification()" class="info-btn" style="flex: 1;">
+                        <i class="fas fa-clock"></i> SCHEDULE
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-history"></i> Recent Notifications</h3>
+                <div id="notificationHistory">
+                    <p style="text-align: center; color: #999;">No notifications sent yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- REPORTS SECTION -->
+        <div id="reportsSection" class="section" style="display:none;">
+            <div class="card">
+                <h3><i class="fas fa-chart-bar"></i> Generate Reports</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <button onclick="generateReport('clearance')" class="info-btn" style="padding: 20px;">
+                        <i class="fas fa-check-circle"></i> Clearance Report
+                    </button>
+                    <button onclick="generateReport('results')" class="info-btn" style="padding: 20px;">
+                        <i class="fas fa-graduation-cap"></i> Academic Results Report
+                    </button>
+                    <button onclick="generateReport('financial')" class="info-btn" style="padding: 20px;">
+                        <i class="fas fa-money-bill"></i> Financial Report
+                    </button>
+                    <button onclick="generateReport('summary')" class="info-btn" style="padding: 20px;">
+                        <i class="fas fa-file-alt"></i> Summary Report
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" style="display: none;"></div>
+
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7MCBPqzDEy5u3h6AzHXZ6ectdLDE6uZI0fY43H1mcO4fOFL3iZTLiqVeaz8swnHxyig/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyuIbSc_QLyhR8Txs5gPcsvq_rTySSDYtJRxkW9znPhZefmIiwG7q2uEMhu1uJvgGLp/exec";
         let currentStudent = null;
+        let csvData = null;
+        let parsedResults = [];
 
-        async function search() {
+        // Toggle Sidebar (Mobile)
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('show');
+        }
+
+        // Show Section
+        function showSection(section) {
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+
+            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+            document.getElementById(section + 'Section').style.display = 'block';
+
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            const titles = {
+                search: 'Search Student',
+                csv_upload: 'CSV Upload',
+                bulk_upload: 'Bulk Operations',
+                courses: 'Manage Courses',
+                clearance: 'Financial Clearance',
+                notifications: 'Send Notifications',
+                reports: 'Reports'
+            };
+            document.getElementById('pageTitle').innerText = titles[section] || 'Dashboard';
+        }
+
+        // Search Student
+        async function searchStudent() {
             const id = document.getElementById('searchId').value.trim();
-            const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`);
-            const data = await res.json();
-            if (data.error) return alert(data.error);
-            currentStudent = data;
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('resName').innerText = data.name;
-            document.getElementById('resInfo').innerText = `${data.program} | Level ${data.level}`;
-            updateUI(data.isCleared);
+            if (!id) return showToast("Please enter Student ID", "warning");
+
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    showToast(data.error, "danger");
+                    document.getElementById('studentResult').style.display = 'none';
+                    return;
+                }
+
+                currentStudent = data;
+                document.getElementById('studentResult').style.display = 'block';
+                document.getElementById('resName').innerText = data.name;
+                document.getElementById('resInfo').innerText = `${data.program} | Level ${data.level} | ID: ${data.id} | Balance: ₦${(data.balance || 0).toLocaleString()}`;
+
+                if (data.program) document.getElementById('resProgram').value = data.program;
+                if (data.level) document.getElementById('resLevel').value = data.level;
+
+                updateClearanceButton(data.isCleared);
+            } catch (e) {
+                showToast("Error connecting to server", "danger");
+            }
         }
 
-        function updateUI(s) {
+        // Update Clearance Button
+        function updateClearanceButton(isCleared) {
             const btn = document.getElementById('toggleBtn');
-            btn.innerText = s ? "✅ FINANCIALLY CLEARED" : "❌ NOT CLEARED";
-            btn.style.background = s ? "#27ae60" : "#e74c3c";
+            if (isCleared === true || isCleared === "TRUE") {
+                btn.innerText = "✓ FINANCIALLY CLEARED";
+                btn.style.background = "#27ae60";
+            } else {
+                btn.innerText = "✗ MARK AS CLEARED";
+                btn.style.background = "#e74c3c";
+            }
         }
 
+        // Toggle Clearance
+        async function toggleClearance() {
+            if (!currentStudent) return;
+
+            const newStatus = !(currentStudent.isCleared === true || currentStudent.isCleared === "TRUE");
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'toggle_clearance',
+                        id: currentStudent.id,
+                        cleared: newStatus
+                    })
+                });
+
+                currentStudent.isCleared = newStatus;
+                updateClearanceButton(newStatus);
+                showToast(newStatus ? "Student marked as financially cleared!" : "Clearance removed.", "success");
+            } catch (e) {
+                showToast("Failed to update clearance", "danger");
+            }
+        }
+
+        // Add Course Row
         function addCourseRow() {
             const div = document.createElement('div');
             div.className = "course-row";
-            div.innerHTML = `<input class="cName" placeholder="Course Name" style="flex:2"><input class="cGrade" placeholder="Grade" style="flex:1">`;
+            div.innerHTML = `
+                <input class="cCode" placeholder="Course Code" style="flex:1">
+                <input class="cName" placeholder="Course Name" style="flex:2">
+                <input class="cCA" placeholder="CA" type="number" style="flex:0.5">
+                <input class="cExam" placeholder="Exam" type="number" style="flex:0.5">
+                <input class="cGrade" placeholder="Grade" style="flex:0.5">
+            `;
             document.getElementById('courseInputs').appendChild(div);
         }
 
+        // Upload Results
         async function uploadResults() {
+            if (!currentStudent) return showToast("Search for a student first", "warning");
+
             const sem = document.getElementById('resSemester').value;
             const gpa = document.getElementById('resGPA').value;
+
+            if (!sem || !gpa) return showToast("Semester and GPA are required", "warning");
+
+            const codes = document.getElementsByClassName('cCode');
             const names = document.getElementsByClassName('cName');
+            const cas = document.getElementsByClassName('cCA');
+            const exams = document.getElementsByClassName('cExam');
             const grades = document.getElementsByClassName('cGrade');
 
             let courses = [];
             for (let i = 0; i < names.length; i++) {
-                if (names[i].value) courses.push({ name: names[i].value, grade: grades[i].value });
+                if (names[i].value.trim()) {
+                    courses.push({
+                        code: codes[i].value.trim(),
+                        name: names[i].value.trim(),
+                        ca: parseFloat(cas[i].value) || 0,
+                        exam: parseFloat(exams[i].value) || 0,
+                        grade: grades[i].value.trim()
+                    });
+                }
             }
 
-            const payload = {
-                action: 'upload_results',
-                id: currentStudent.id,
-                semester: sem,
-                gpa: gpa,
-                details: JSON.stringify(courses)
-            };
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'upload_results',
+                        id: currentStudent.id,
+                        semester: sem,
+                        gpa: gpa,
+                        program: document.getElementById('resProgram').value,
+                        level: document.getElementById('resLevel').value,
+                        details: JSON.stringify(courses)
+                    })
+                });
 
-            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            alert("Results Uploaded!");
-            location.reload();
+                showToast("Results uploaded successfully!", "success");
+                document.getElementById('studentResult').style.display = 'none';
+                document.getElementById('searchId').value = '';
+            } catch (e) {
+                showToast("Upload failed", "danger");
+            }
         }
-    </script>
-</body>
 
+        // CSV Handling
+        function handleCSVSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.name.endsWith('.csv')) {
+                showToast("Please select a CSV file", "warning");
+                return;
+            }
+
+            document.getElementById('fileName').innerText = file.name;
+            document.getElementById('uploadZone').innerHTML = `
+                <i class="fas fa-file-csv" style="font-size: 3rem; color: var(--success);"></i>
+                <h4>${file.name}</h4>
+                <p style="color: #999; font-size: 0.9rem;">Click to change file</p>
+                <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVSelect(event)">
+            `;
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    csvData = results;
+                    parsedResults = processCSVData(results.data);
+
+                    document.getElementById('rowCount').innerText = results.data.length;
+                    document.getElementById('colCount').innerText = Object.keys(results.data[0] || {}).length;
+                    document.getElementById('filePreview').style.display = 'block';
+                    document.getElementById('processBtn').style.display = 'block';
+
+                    // Show preview table
+                    showCSVPreview(results);
+                },
+                error: function(error) {
+                    showToast("Error parsing CSV: " + error.message, "danger");
+                }
+            });
+        }
+
+        // Process CSV Data
+        function processCSVData(data) {
+            const results = [];
+            const headers = Object.keys(data[0] || {});
+
+            // Find course columns (those with CA and EXAMS)
+            const courseHeaders = [];
+            for (let i = 0; i < headers.length; i++) {
+                const h = headers[i].trim();
+                if (!['id', 'INDEX NUMBER', 'NAME', 'PROGRAM', 'LEVEL', 'SEMESTER'].includes(h)) {
+                    courseHeaders.push(h);
+                }
+            }
+
+            data.forEach(row => {
+                const studentId = row['id']?.trim() || row['INDEX NUMBER']?.trim() || '';
+                const name = row['NAME']?.trim() || '';
+                const program = row['PROGRAM']?.trim() || '';
+                const level = row['LEVEL']?.trim() || '';
+                const semester = row['SEMESTER']?.trim() || 'Semester 2 2025/2026';
+
+                if (!studentId) return;
+
+                const courses = [];
+                courseHeaders.forEach(code => {
+                    const ca = parseFloat(row[code]) || 0;
+                    const examCol = 'EXAMS';
+                    const exam = parseFloat(row[code + ' ' + examCol] || row[examCol] || row[code + '_EXAM'] || 0) || 0;
+
+                    if (ca > 0 || exam > 0) {
+                        const total = ca + exam;
+                        const grade = calculateGrade(total);
+                        courses.push({
+                            code: code,
+                            ca: ca,
+                            exam: exam,
+                            total: total,
+                            grade: grade
+                        });
+                    }
+                });
+
+                // Calculate GPA
+                const gpa = calculateGPAFromCourses(courses);
+
+                results.push({
+                    id: studentId,
+                    name: name,
+                    program: program,
+                    level: level,
+                    semester: semester,
+                    courses: courses,
+                    gpa: gpa
+                });
+            });
+
+            return results;
+        }
+
+        // Calculate Grade based on UCC system
+        function calculateGrade(score) {
+            if (score >= 80) return 'A';
+            if (score >= 75) return 'B+';
+            if (score >= 70) return 'B';
+            if (score >= 65) return 'C+';
+            if (score >= 60) return 'C';
+            if (score >= 55) return 'D';
+            if (score >= 50) return 'E';
+            return 'F';
+        }
+
+        // Calculate GPA from courses
+        function calculateGPAFromCourses(courses) {
+            if (!courses || courses.length === 0) return 0;
+
+            let totalPoints = 0;
+            const gradeMap = { 'A': 4.0, 'B+': 3.5, 'B': 3.0, 'C+': 2.5, 'C': 2.0, 'D': 1.5, 'E': 1.0, 'F': 0.0 };
+
+            courses.forEach(course => {
+                totalPoints += gradeMap[course.grade] || 0;
+            });
+
+            return (totalPoints / courses.length).toFixed(2);
+        }
+
+        // Show CSV Preview
+        function showCSVPreview(results) {
+            const card = document.getElementById('csvPreviewCard');
+            card.style.display = 'block';
+
+            const headerRow = document.getElementById('csvHeaderRow');
+            headerRow.innerHTML = '';
+
+            const headers = Object.keys(results.data[0] || {});
+            const displayHeaders = headers.slice(0, 10); // Show first 10 columns
+
+            displayHeaders.forEach(h => {
+                const th = document.createElement('th');
+                th.innerText = h;
+                headerRow.appendChild(th);
+            });
+
+            if (headers.length > 10) {
+                const th = document.createElement('th');
+                th.innerText = `... +${headers.length - 10} more`;
+                headerRow.appendChild(th);
+            }
+
+            const bodyRows = document.getElementById('csvBodyRows');
+            bodyRows.innerHTML = '';
+
+            results.data.slice(0, 10).forEach(row => {
+                const tr = document.createElement('tr');
+                displayHeaders.forEach(h => {
+                    const td = document.createElement('td');
+                    td.innerText = row[h] || '';
+                    tr.appendChild(td);
+                });
+                if (headers.length > 10) {
+                    const td = document.createElement('td');
+                    td.innerText = '...';
+                    tr.appendChild(td);
+                }
+                bodyRows.appendChild(tr);
+            });
+        }
+
+        // Process CSV
+        async function processCSV() {
+            if (!parsedResults || parsedResults.length === 0) {
+                showToast("No data to process", "warning");
+                return;
+            }
+
+            const progress = document.getElementById('uploadProgress');
+            const status = document.getElementById('uploadStatus');
+
+            let processed = 0;
+            let errors = 0;
+
+            for (const result of parsedResults) {
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'upload_results',
+                            id: result.id,
+                            name: result.name,
+                            semester: result.semester,
+                            gpa: result.gpa,
+                            program: result.program,
+                            level: result.level,
+                            details: JSON.stringify(result.courses)
+                        })
+                    });
+
+                    processed++;
+                } catch (e) {
+                    errors++;
+                }
+
+                const pct = Math.round((processed + errors) / parsedResults.length * 100);
+                progress.style.width = pct + '%';
+                status.innerText = `Processing: ${processed + errors} of ${parsedResults.length} students...`;
+            }
+
+            showToast(`Successfully uploaded ${processed} results${errors > 0 ? ` (${errors} errors)` : ''}`, errors > 0 ? "warning" : "success");
+            clearPreview();
+        }
+
+        // Clear Preview
+        function clearPreview() {
+            csvData = null;
+            parsedResults = [];
+            document.getElementById('filePreview').style.display = 'none';
+            document.getElementById('csvPreviewCard').style.display = 'none';
+            document.getElementById('processBtn').style.display = 'none';
+            document.getElementById('csvFileInput').value = '';
+            document.getElementById('uploadZone').innerHTML = `
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h4>Drop CSV file here or click to browse</h4>
+                <p style="color: #999; font-size: 0.9rem;">Supported format: .csv</p>
+                <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVSelect(event)">
+            `;
+        }
+
+        // Download Template
+        function downloadTemplate() {
+            const template = `id,INDEX NUMBER,NAME,PROGRAM,LEVEL,SEMESTER,CCC 016 CA,CCC 016 EXAMS,CCN 012 CA,CCN 012 EXAMS,CCN 029 CA,CCN 029 EXAMS
+CCST/RM/24/001,CCST/RM/24/001,OGOE RUBY,RM,100,Semester 2 2025/2026,33,33,28,53,23,33
+CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50,30,52,28,43`;
+
+            const blob = new Blob([template], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'results_template.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Template downloaded!", "success");
+        }
+
+        // Toggle Target Selection
+        function toggleTargetSelection() {
+            const type = document.getElementById('notifType').value;
+            const selection = document.getElementById('targetSelection');
+            selection.style.display = (type === 'all') ? 'none' : 'block';
+        }
+
+        // Send Notification
+        async function sendNotification() {
+            const title = document.getElementById('notifTitle').value;
+            const message = document.getElementById('notifMessage').value;
+            const type = document.getElementById('notifType').value;
+            const target = document.getElementById('targetValue').value;
+
+            if (!title || !message) {
+                showToast("Please enter title and message", "warning");
+                return;
+            }
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'send_notification',
+                        title: title,
+                        message: message,
+                        type: type,
+                        target: target
+                    })
+                });
+
+                showToast("Notification sent successfully!", "success");
+                document.getElementById('notifTitle').value = '';
+                document.getElementById('notifMessage').value = '';
+            } catch (e) {
+                showToast("Failed to send notification", "danger");
+            }
+        }
+
+        // Schedule Notification
+        function scheduleNotification() {
+            showToast("Scheduled notifications coming soon!", "info");
+        }
+
+        // Bulk Operations
+        function clearStudent() {
+            const id = document.getElementById('bulkStudentId').value.trim();
+            if (!id) return showToast("Enter Student ID", "warning");
+            performClearance(id, true);
+        }
+
+        function unclearStudent() {
+            const id = document.getElementById('bulkStudentId').value.trim();
+            if (!id) return showToast("Enter Student ID", "warning");
+            performClearance(id, false);
+        }
+
+        async function performClearance(id, cleared) {
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'toggle_clearance',
+                        id: id,
+                        cleared: cleared
+                    })
+                });
+                showToast(`Student ${id} ${cleared ? 'cleared' : 'uncleared'}`, "success");
+            } catch (e) {
+                showToast("Operation failed", "danger");
+            }
+        }
+
+        function clearStudentById() {
+            const id = document.getElementById('clearanceId').value.trim();
+            if (!id) return showToast("Enter Student ID", "warning");
+            performClearance(id, true);
+        }
+
+        function unclearStudentById() {
+            const id = document.getElementById('clearanceId').value.trim();
+            if (!id) return showToast("Enter Student ID", "warning");
+            performClearance(id, false);
+        }
+
+        function updateFees() {
+            const amount = document.getElementById('feeAmount').value;
+            const semester = document.getElementById('feeSemester').value;
+            if (!amount || !semester) {
+                showToast("Enter fee amount and semester", "warning");
+                return;
+            }
+            showToast("Fee structure updated!", "success");
+        }
+
+        // Course Management
+        function addNewCourse() {
+            const semester = document.getElementById('courseSemester').value;
+            const courseName = document.getElementById('newCourseName').value;
+            const courseCode = document.getElementById('newCourseCode').value;
+            if (!semester || !courseName) return showToast("Enter semester and course name", "warning");
+
+            showToast(`Course "${courseCode} - ${courseName}" added to ${semester}`, "success");
+            document.getElementById('newCourseName').value = '';
+            document.getElementById('newCourseCode').value = '';
+        }
+
+        // Reports
+        function generateReport(type) {
+            showToast(`Generating ${type} report...`, "info");
+            // Report generation logic would go here
+        }
+
+        // Toast
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i> ${msg}`;
+            toast.style.background = type === 'success' ? '#27ae60' : type === 'danger' ? '#e74c3c' : type === 'warning' ? '#f39c12' : '#3498db';
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        // Logout
+        function logout() {
+            if (confirm("Logout from Accountant Portal?")) {
+                window.location.replace("index.html");
+            }
+        }
+
+        // Initialize
+        window.onload = () => {
+            showSection('search');
+
+            // Load stats
+            document.getElementById('totalStudents').innerText = '156';
+            document.getElementById('clearedStudents').innerText = '142';
+            document.getElementById('pendingStudents').innerText = '14';
+            document.getElementById('pendingResults').innerText = '23';
+        };
+    </script>
+
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</body>
 </html>

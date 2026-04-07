@@ -1,261 +1,433 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CCST Smart Portal</title>
+    <meta name="theme-color" content="#004080">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <title>CCST Student Portal</title>
     <style>
-        :root {
-            --primary: #004080;
-            --bg: #f4f6f9;
-            --staff: #6a1b9a;
-            --success: #27ae60;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            margin: 0;
-            font-family: sans-serif;
-            background: var(--bg);
-        }
-
-        .container {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #004080 0%, #1e2a44 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
-            max-width: 450px;
-            margin: auto;
         }
 
-        .card {
+        .login-container {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .logo {
             text-align: center;
-            margin-top: 50px;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: #004080;
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #004080 0%, #0066cc 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 2.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
         }
 
         input {
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-sizing: border-box;
+            padding: 14px 14px 14px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
             font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #004080;
         }
 
         button {
             width: 100%;
             padding: 15px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #004080 0%, #0066cc 100%);
+            color: white;
             border: none;
+            border-radius: 10px;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
-            color: white;
-            margin: 8px 0;
-            transition: 0.3s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         button:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 64, 128, 0.3);
         }
 
-        .hidden {
-            display: none;
+        button:active {
+            transform: translateY(0);
         }
 
-        #toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
+        .portal-links {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .portal-links button {
+            flex: 1;
+            padding: 12px;
+            font-size: 0.9rem;
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .portal-links button:hover {
+            background: #eee;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .portal-links button.accountant {
+            background: #1e2a44;
             color: white;
-            padding: 12px 25px;
-            border-radius: 30px;
-            display: none;
-            z-index: 1000;
+            border-color: #1e2a44;
         }
 
-        #loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
+        .portal-links button.accountant:hover {
+            background: #2a3a5a;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 10px;
             display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
+            text-align: center;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #004080;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .offline-notice {
+            background: #f39c12;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .offline-notice.show {
+            display: block;
+        }
+
+        .install-banner {
+            background: #27ae60;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+            cursor: pointer;
+        }
+
+        .install-banner.show {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .logo h1 {
+                font-size: 1.6rem;
+            }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-
 <body>
-    <div id="loader"><b>Processing...</b></div>
-    <div id="toast"></div>
 
-    <div class="container">
-        <div class="card">
+    <div class="login-container">
+        <div class="offline-notice" id="offlineNotice">
+            <i class="fas fa-wifi-slash"></i> You are offline. Some features may not work.
+        </div>
 
-            <div id="loginSection">
-                <h2 id="loginTitle" style="color: var(--primary);">Student Login</h2>
-                <input id="userId" placeholder="ID / Username">
-                <input id="userPass" type="password" placeholder="Password">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h1>CCST Portal</h1>
+            <p>Student Information System</p>
+        </div>
 
-                <div id="studentBox">
-                    <button onclick="handleLogin()" style="background: var(--primary);">LOGIN</button>
-                    <p style="margin: 15px 0 5px; color: #666; font-size: 0.9rem;">New here?</p>
-                    <button onclick="showRegisterForm()"
-                        style="background: var(--success); margin-top: 0;">REGISTER</button>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Student ID</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="studentId" placeholder="Enter your student ID" required autocomplete="username">
                 </div>
-
-                <div id="staffBox" class="hidden">
-                    <button onclick="staffLogin()" style="background: var(--staff);">STAFF SIGN IN</button>
-                </div>
-
-                <p id="toggleText" onclick="togglePortal()"
-                    style="color: #666; font-size: 0.85rem; cursor: pointer; margin-top: 15px;">Staff Access? Click Here
-                </p>
             </div>
 
-            <div id="registerSection" class="hidden">
-                <h2 style="color: var(--success);">Create Account</h2>
-                <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">Enter your details to register</p>
-
-                <input id="regName" placeholder="Full Name">
-                <input id="regId" placeholder="Desired Student ID">
-                <input id="regPass" type="password" placeholder="Create Password">
-                <input id="regProgram" placeholder="Program (e.g. Computer Science)">
-
-                <button onclick="submitRegistration()" style="background: var(--success);">SUBMIT REGISTRATION</button>
-                <button onclick="hideRegisterForm()" style="background: #666;">CANCEL</button>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
             </div>
 
+            <button type="submit" id="loginBtn">
+                <span id="loginText">LOGIN</span>
+                <span id="loginSpinner" class="spinner" style="display:none;"></span>
+            </button>
+
+            <div class="error-message" id="errorMessage"></div>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">Connecting...</p>
+        </div>
+
+        <div class="portal-links">
+            <button onclick="window.location.href='dashboard.html'">
+                <i class="fas fa-home"></i> Student Portal
+            </button>
+            <button class="accountant" onclick="window.location.href='accountant.html'">
+                <i class="fas fa-user-tie"></i> Accountant
+            </button>
+        </div>
+
+        <div class="install-banner" id="installBanner" onclick="installPWA()">
+            <i class="fas fa-download"></i> Install App for Offline Use
         </div>
     </div>
 
     <script>
-        // Update this URL with your latest Apps Script deployment URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7MCBPqzDEy5u3h6AzHXZ6ectdLDE6uZI0fY43H1mcO4fOFL3iZTLiqVeaz8swnHxyig/exec";
-        let isStaffMode = false;
+        // Configuration - Replace YOUR_SCRIPT_ID_HERE with your actual Google Apps Script Deployment ID
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyuIbSc_QLyhR8Txs5gPcsvq_rTySSDYtJRxkW9znPhZefmIiwG7q2uEMhu1uJvgGLp/exec";
+        let deferredPrompt;
 
-        function notify(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        // Check online status
+        function updateOnlineStatus() {
+            const notice = document.getElementById('offlineNotice');
+            if (!navigator.onLine) {
+                notice.classList.add('show');
+            } else {
+                notice.classList.remove('show');
+            }
         }
 
-        // VIEW SWITCHING LOGIC
-        function togglePortal() {
-            isStaffMode = !isStaffMode;
-            document.getElementById('loginTitle').innerText = isStaffMode ? "Staff Portal" : "Student Login";
-            document.getElementById('studentBox').classList.toggle('hidden', isStaffMode);
-            document.getElementById('staffBox').classList.toggle('hidden', !isStaffMode);
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // PWA Install prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBanner').classList.add('show');
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the A2HS prompt');
+                    }
+                    deferredPrompt = null;
+                    document.getElementById('installBanner').classList.remove('show');
+                });
+            }
         }
 
-        function showRegisterForm() {
-            document.getElementById('loginSection').classList.add('hidden');
-            document.getElementById('registerSection').classList.remove('hidden');
-        }
+        // Handle Login
+        async function handleLogin(event) {
+            event.preventDefault();
 
-        function hideRegisterForm() {
-            document.getElementById('registerSection').classList.add('hidden');
-            document.getElementById('loginSection').classList.remove('hidden');
-        }
+            const studentId = document.getElementById('studentId').value.trim();
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginText = document.getElementById('loginText');
+            const errorMsg = document.getElementById('errorMessage');
 
-        // AUTHENTICATION LOGIC
-        async function handleLogin() {
-            const id = document.getElementById('userId').value.trim();
-            const pass = document.getElementById('userPass').value;
-            if (!id || !pass) return notify("⚠️ Enter ID and Password");
+            if (!studentId || !password) {
+                showError("Please enter both ID and password");
+                return;
+            }
 
-            document.getElementById('loader').style.display = 'flex';
+            // Show loading
+            loginBtn.disabled = true;
+            loginText.style.display = 'none';
+            document.getElementById('loginSpinner').style.display = 'block';
+            errorMsg.style.display = 'none';
+
             try {
-                const res = await fetch(`${SCRIPT_URL}?id=${id}&password=${pass}`);
-                const data = await res.json();
+                // Check if online
+                if (!navigator.onLine) {
+                    // Try offline login
+                    const cachedData = localStorage.getItem('userData');
+                    if (cachedData) {
+                        const data = JSON.parse(cachedData);
+                        if (data.profile && data.profile.id === studentId) {
+                            window.location.href = 'dashboard.html';
+                            return;
+                        }
+                    }
+                    showError("You are offline. Please connect to login.");
+                    return;
+                }
+
+                const response = await fetch(`${SCRIPT_URL}?id=${studentId}&password=${password}`);
+                const data = await response.json();
 
                 if (data.error) {
-                    document.getElementById('loader').style.display = 'none';
-                    notify("❌ " + data.error);
-                } else {
-                    // Fetch results immediately upon login
-                    const resFetch = await fetch(`${SCRIPT_URL}?action=get_results&id=${id}`);
-                    const resData = await resFetch.json();
-
-                    localStorage.setItem('userData', JSON.stringify(data));
-                    localStorage.setItem('userResults', JSON.stringify(resData.results));
-
-                    document.getElementById('loader').style.display = 'none';
-                    notify("✅ Welcome " + data.profile.name);
-
-                    setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
+                    showError(data.error);
+                    return;
                 }
-            } catch (e) {
-                document.getElementById('loader').style.display = 'none';
-                notify("❌ Connection Failed.");
-            }
-        }
 
-        async function staffLogin() {
-            const user = document.getElementById('userId').value.trim();
-            const pass = document.getElementById('userPass').value;
-            if (!user || !pass) return notify("⚠️ Enter Staff Credentials");
+                // Save to localStorage
+                localStorage.setItem('userData', JSON.stringify(data));
+                localStorage.setItem('studentId', studentId);
 
-            document.getElementById('loader').style.display = 'flex';
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=staff_login&user=${user}&pass=${pass}`);
-                const data = await res.json();
-                document.getElementById('loader').style.display = 'none';
-
-                if (data.authorized) {
-                    window.location.href = "accountant.html";
-                } else {
-                    notify("❌ " + data.error);
+                // Fetch results for dashboard
+                try {
+                    const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`);
+                    const resultsData = await resultsRes.json();
+                    if (resultsData.results) {
+                        localStorage.setItem('userResults', JSON.stringify(resultsData.results));
+                    }
+                } catch (e) {
+                    console.log('Could not fetch results:', e);
                 }
+
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+
             } catch (e) {
-                document.getElementById('loader').style.display = 'none';
-                notify("❌ Verification failed.");
+                console.error('Login error:', e);
+                showError("Connection error. Please try again.");
+            } finally {
+                loginBtn.disabled = false;
+                loginText.style.display = 'block';
+                document.getElementById('loginSpinner').style.display = 'none';
             }
         }
 
-        // REGISTRATION FORM SUBMISSION
-        async function submitRegistration() {
-            const name = document.getElementById('regName').value.trim();
-            const id = document.getElementById('regId').value.trim();
-            const pass = document.getElementById('regPass').value;
-            const program = document.getElementById('regProgram').value.trim();
+        function showError(msg) {
+            const errorMsg = document.getElementById('errorMessage');
+            errorMsg.innerText = msg;
+            errorMsg.style.display = 'block';
 
-            if (!name || !id || !pass || !program) {
-                return notify("⚠️ Please fill all fields");
-            }
-
-            document.getElementById('loader').style.display = 'flex';
-            try {
-                const payload = {
-                    action: 'register',
-                    name: name,
-                    id: id,
-                    password: pass,
-                    program: program
-                };
-
-                const res = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-
-                document.getElementById('loader').style.display = 'none';
-                notify("✅ Registration Successful! You can now login.");
-                hideRegisterForm(); // Return to login view
-            } catch (e) {
-                document.getElementById('loader').style.display = 'none';
-                notify("❌ Registration Failed.");
-            }
+            setTimeout(() => {
+                errorMsg.style.display = 'none';
+            }, 5000);
         }
+
+        // Check if already logged in
+        window.onload = function() {
+            updateOnlineStatus();
+
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+                // Optionally auto-redirect to dashboard
+                // window.location.href = 'dashboard.html';
+            }
+
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW registered:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('SW registration failed:', error);
+                    });
+            }
+        };
     </script>
 </body>
-
 </html>
