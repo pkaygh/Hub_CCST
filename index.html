@@ -31,12 +31,12 @@
             border-radius: 16px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 420px;
+            max-width: 450px;
         }
 
         .logo {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .logo h1 {
@@ -63,15 +63,54 @@
             font-size: 2.5rem;
         }
 
+        /* Role Selector */
+        .role-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .role-btn.active {
+            border-color: #004080;
+            background: #004080;
+            color: white;
+        }
+
+        .role-btn:hover:not(.active) {
+            border-color: #004080;
+            color: #004080;
+        }
+
+        .role-btn i {
+            display: block;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        /* Form Styles */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: #333;
+            font-size: 0.9rem;
         }
 
         .input-wrapper {
@@ -100,7 +139,7 @@
             border-color: #004080;
         }
 
-        button {
+        button[type="submit"] {
             width: 100%;
             padding: 15px;
             background: linear-gradient(135deg, #004080 0%, #0066cc 100%);
@@ -111,46 +150,12 @@
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
         }
 
-        button:hover {
+        button[type="submit"]:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 64, 128, 0.3);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .portal-links {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .portal-links button {
-            flex: 1;
-            padding: 12px;
-            font-size: 0.9rem;
-            background: #f8f9fa;
-            color: #333;
-            border: 1px solid #ddd;
-        }
-
-        .portal-links button:hover {
-            background: #eee;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .portal-links button.accountant {
-            background: #1e2a44;
-            color: white;
-            border-color: #1e2a44;
-        }
-
-        .portal-links button.accountant:hover {
-            background: #2a3a5a;
         }
 
         .error-message {
@@ -159,26 +164,20 @@
             margin-top: 10px;
             display: none;
             text-align: center;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .loading.show {
-            display: block;
+            padding: 10px;
+            background: #ffe6e6;
+            border-radius: 8px;
         }
 
         .spinner {
-            width: 30px;
-            height: 30px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #004080;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-top: 2px solid #004080;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto;
+            display: none;
         }
 
         @keyframes spin {
@@ -186,6 +185,38 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Register Link */
+        .register-section {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .register-section p {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .register-btn {
+            background: transparent;
+            border: 2px solid #004080;
+            color: #004080;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .register-btn:hover {
+            background: #004080;
+            color: white;
+        }
+
+        /* Offline Notice */
         .offline-notice {
             background: #f39c12;
             color: white;
@@ -200,13 +231,14 @@
             display: block;
         }
 
+        /* Install Banner */
         .install-banner {
             background: #27ae60;
             color: white;
             padding: 12px;
             border-radius: 8px;
             text-align: center;
-            margin-top: 20px;
+            margin-top: 15px;
             display: none;
             cursor: pointer;
         }
@@ -215,9 +247,80 @@
             display: block;
         }
 
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            color: #004080;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-content input {
+            padding-left: 15px;
+        }
+
+        .modal-content input:focus + i,
+        .modal-content .input-wrapper i {
+            color: #004080;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-group button {
+            flex: 1;
+            padding: 12px;
+        }
+
+        .btn-cancel {
+            background: #ccc !important;
+        }
+
         @media (max-width: 480px) {
             .login-container {
-                padding: 30px 20px;
+                padding: 25px 20px;
             }
 
             .logo h1 {
@@ -242,12 +345,24 @@
             <p>Student Information System</p>
         </div>
 
+        <!-- Role Selector -->
+        <div class="role-selector">
+            <div class="role-btn active" id="studentRole" onclick="selectRole('student')">
+                <i class="fas fa-user-graduate"></i>
+                Student
+            </div>
+            <div class="role-btn" id="adminRole" onclick="selectRole('admin')">
+                <i class="fas fa-user-tie"></i>
+                Admin
+            </div>
+        </div>
+
         <form id="loginForm" onsubmit="handleLogin(event)">
             <div class="form-group">
-                <label>Student ID</label>
+                <label id="idLabel">Student ID</label>
                 <div class="input-wrapper">
                     <i class="fas fa-user"></i>
-                    <input type="text" id="studentId" placeholder="Enter your student ID" required autocomplete="username">
+                    <input type="text" id="loginId" placeholder="Enter your ID" required autocomplete="username">
                 </div>
             </div>
 
@@ -261,23 +376,16 @@
 
             <button type="submit" id="loginBtn">
                 <span id="loginText">LOGIN</span>
-                <span id="loginSpinner" class="spinner" style="display:none;"></span>
+                <span id="loginSpinner" class="spinner" style="display:inline-block;"></span>
             </button>
 
             <div class="error-message" id="errorMessage"></div>
         </form>
 
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p style="margin-top: 10px; color: #666;">Connecting...</p>
-        </div>
-
-        <div class="portal-links">
-            <button onclick="window.location.href='dashboard.html'">
-                <i class="fas fa-home"></i> Student Portal
-            </button>
-            <button class="accountant" onclick="window.location.href='accountant.html'">
-                <i class="fas fa-user-tie"></i> Accountant
+        <div class="register-section">
+            <p>Don't have an account?</p>
+            <button class="register-btn" onclick="openRegisterModal()">
+                <i class="fas fa-user-plus"></i> Register as New Student
             </button>
         </div>
 
@@ -286,10 +394,99 @@
         </div>
     </div>
 
+    <!-- Registration Modal -->
+    <div class="modal-overlay" id="registerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-plus"></i> Student Registration</h2>
+                <button class="modal-close" onclick="closeRegisterModal()">&times;</button>
+            </div>
+
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="regName" placeholder="Enter your full name" required style="padding-left: 45px;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Student ID</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="regId" placeholder="e.g., CCST/RM/24/001" required style="padding-left: 45px;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Program</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-book"></i>
+                        <input type="text" id="regProgram" placeholder="e.g., RM, MW, DN" required style="padding-left: 45px;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Level</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-layer-group"></i>
+                        <input type="number" id="regLevel" placeholder="e.g., 100, 200, 300" required style="padding-left: 45px;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Create Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="regPassword" placeholder="Create a password" required style="padding-left: 45px;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="regConfirmPassword" placeholder="Confirm your password" required style="padding-left: 45px;">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="success-btn" style="background: #27ae60;">
+                        <i class="fas fa-check"></i> Register
+                    </button>
+                    <button type="button" class="btn-cancel" onclick="closeRegisterModal()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+
+                <div class="error-message" id="registerError" style="margin-top: 15px;"></div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Configuration - Replace YOUR_SCRIPT_ID_HERE with your actual Google Apps Script Deployment ID
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyuIbSc_QLyhR8Txs5gPcsvq_rTySSDYtJRxkW9znPhZefmIiwG7q2uEMhu1uJvgGLp/exec";
         let deferredPrompt;
+        let currentRole = 'student';
+
+        // Select Role (Student/Admin)
+        function selectRole(role) {
+            currentRole = role;
+
+            if (role === 'student') {
+                document.getElementById('studentRole').classList.add('active');
+                document.getElementById('adminRole').classList.remove('active');
+                document.getElementById('idLabel').innerText = 'Student ID';
+                document.getElementById('loginId').placeholder = 'Enter your student ID';
+            } else {
+                document.getElementById('adminRole').classList.add('active');
+                document.getElementById('studentRole').classList.remove('active');
+                document.getElementById('idLabel').innerText = 'Admin ID';
+                document.getElementById('loginId').placeholder = 'Enter admin ID';
+            }
+        }
 
         // Check online status
         function updateOnlineStatus() {
@@ -328,13 +525,13 @@
         async function handleLogin(event) {
             event.preventDefault();
 
-            const studentId = document.getElementById('studentId').value.trim();
+            const loginId = document.getElementById('loginId').value.trim();
             const password = document.getElementById('password').value;
             const loginBtn = document.getElementById('loginBtn');
             const loginText = document.getElementById('loginText');
             const errorMsg = document.getElementById('errorMessage');
 
-            if (!studentId || !password) {
+            if (!loginId || !password) {
                 showError("Please enter both ID and password");
                 return;
             }
@@ -342,17 +539,16 @@
             // Show loading
             loginBtn.disabled = true;
             loginText.style.display = 'none';
-            document.getElementById('loginSpinner').style.display = 'block';
+            document.getElementById('loginSpinner').style.display = 'inline-block';
             errorMsg.style.display = 'none';
 
             try {
-                // Check if online
                 if (!navigator.onLine) {
                     // Try offline login
                     const cachedData = localStorage.getItem('userData');
                     if (cachedData) {
                         const data = JSON.parse(cachedData);
-                        if (data.profile && data.profile.id === studentId) {
+                        if (data.profile && data.profile.id === loginId) {
                             window.location.href = 'dashboard.html';
                             return;
                         }
@@ -361,31 +557,50 @@
                     return;
                 }
 
-                const response = await fetch(`${SCRIPT_URL}?id=${studentId}&password=${password}`);
-                const data = await response.json();
+                if (currentRole === 'admin') {
+                    // Admin login
+                    const response = await fetch(`${SCRIPT_URL}?action=staff_login&user=${loginId}&pass=${password}`);
+                    const data = await response.json();
 
-                if (data.error) {
-                    showError(data.error);
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+
+                    if (data.authorized) {
+                        localStorage.setItem('adminData', JSON.stringify({ role: 'admin', id: loginId }));
+                        window.location.href = 'accountant.html';
+                        return;
+                    }
+                } else {
+                    // Student login
+                    const response = await fetch(`${SCRIPT_URL}?id=${loginId}&password=${password}`);
+                    const data = await response.json();
+
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+
+                    // Save to localStorage
+                    localStorage.setItem('userData', JSON.stringify(data));
+                    localStorage.setItem('studentId', loginId);
+
+                    // Fetch results for dashboard
+                    try {
+                        const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${loginId}`);
+                        const resultsData = await resultsRes.json();
+                        if (resultsData.results) {
+                            localStorage.setItem('userResults', JSON.stringify(resultsData.results));
+                        }
+                    } catch (e) {
+                        console.log('Could not fetch results:', e);
+                    }
+
+                    // Redirect to dashboard
+                    window.location.href = 'dashboard.html';
                     return;
                 }
-
-                // Save to localStorage
-                localStorage.setItem('userData', JSON.stringify(data));
-                localStorage.setItem('studentId', studentId);
-
-                // Fetch results for dashboard
-                try {
-                    const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`);
-                    const resultsData = await resultsRes.json();
-                    if (resultsData.results) {
-                        localStorage.setItem('userResults', JSON.stringify(resultsData.results));
-                    }
-                } catch (e) {
-                    console.log('Could not fetch results:', e);
-                }
-
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
 
             } catch (e) {
                 console.error('Login error:', e);
@@ -407,15 +622,89 @@
             }, 5000);
         }
 
-        // Check if already logged in
+        // Registration Modal Functions
+        function openRegisterModal() {
+            document.getElementById('registerModal').classList.add('show');
+            document.getElementById('registerError').style.display = 'none';
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('registerModal').classList.remove('show');
+            document.getElementById('registerForm').reset();
+        }
+
+        // Handle Registration
+        async function handleRegister(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('regName').value.trim();
+            const id = document.getElementById('regId').value.trim();
+            const program = document.getElementById('regProgram').value.trim();
+            const level = document.getElementById('regLevel').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const errorMsg = document.getElementById('registerError');
+
+            if (!name || !id || !program || !level || !password) {
+                errorMsg.innerText = "All fields are required";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                errorMsg.innerText = "Passwords do not match";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorMsg.innerText = "Password must be at least 6 characters";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            try {
+                if (!navigator.onLine) {
+                    errorMsg.innerText = "Registration requires internet connection";
+                    errorMsg.style.display = 'block';
+                    return;
+                }
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'register',
+                        name: name,
+                        id: id,
+                        program: program,
+                        level: level,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert("Registration successful! Please login with your Student ID and password.");
+                    closeRegisterModal();
+
+                    // Pre-fill login form
+                    document.getElementById('loginId').value = id;
+                    selectRole('student');
+                } else {
+                    errorMsg.innerText = data.error || "Registration failed. Please try again.";
+                    errorMsg.style.display = 'block';
+                }
+            } catch (e) {
+                console.error('Registration error:', e);
+                errorMsg.innerText = "Connection error. Please try again.";
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        // Initialize
         window.onload = function() {
             updateOnlineStatus();
-
-            const userData = localStorage.getItem('userData');
-            if (userData) {
-                // Optionally auto-redirect to dashboard
-                // window.location.href = 'dashboard.html';
-            }
 
             // Register service worker
             if ('serviceWorker' in navigator) {
@@ -428,6 +717,13 @@
                     });
             }
         };
+
+        // Close modal on outside click
+        document.getElementById('registerModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRegisterModal();
+            }
+        });
     </script>
 </body>
 </html>
