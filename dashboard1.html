@@ -1,0 +1,37 @@
+<div class="card">
+    <div class="card-header"><h3>Student Finance</h3></div>
+    <div class="finance-summary">
+        <div class="summary-item">
+            <span>Previous Arrears:</span>
+            <strong id="summaryArrears" style="color: #8b0000;">GH₵ 0.00</strong>
+        </div>
+        <div class="summary-item">
+            <span>Current Semester Fee:</span>
+            <strong id="summaryTotal">GH₵ 0.00</strong>
+        </div>
+        <div class="summary-item">
+            <span>Amount Paid:</span>
+            <strong id="summaryPaid">GH₵ 0.00</strong>
+        </div>
+    </div>
+    <button id="refreshBtn" onclick="fetchStudentData()">Refresh Records</button>
+</div>
+
+<script>
+    async function fetchStudentData() {
+        const btn = document.getElementById('refreshBtn');
+        btn.classList.add('btn-loading'); // Added via global CSS in index.html logic
+
+        try {
+            const resp = await fetch(`https://script.google.com/macros/s/AKfycbxM7aa5hj1MtCJB6YdwjG8iHq4C8_2ry1ddGirBvYKRHjv-jD2OBKqHOSm1cO9QB2e_/exec'?action=accountant_search&id=${studentId}`);
+            const data = await resp.json();
+            
+            // Update UI with Arrears 
+            document.getElementById('summaryArrears').innerText = `GH₵ ${data.arrears || 0}`;
+            document.getElementById('summaryTotal').innerText = `GH₵ ${data.totalFee}`;
+            document.getElementById('summaryPaid').innerText = `GH₵ ${data.amountPaid}`;
+        } finally {
+            btn.classList.remove('btn-loading');
+        }
+    }
+</script>

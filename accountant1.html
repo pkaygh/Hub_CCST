@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Accountant Portal | CCST</title>
+    <style>
+        /* [cite: 1] Theme Styles */
+        :root { --primary: #6b8e23; --primary-dark: #1a472a; --bg: #f5f5dc; }
+        body { font-family: sans-serif; background: var(--bg); padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; border: 2px solid var(--primary); margin-bottom: 20px; }
+        
+        /* Loading States */
+        .btn-loading { position: relative; color: transparent !important; pointer-events: none; }
+        .btn-loading::after {
+            content: ""; position: absolute; width: 18px; height: 18px; top: 50%; left: 50%;
+            margin: -9px 0 0 -9px; border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        button { background: var(--primary-dark); color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h3>Student Search</h3>
+        <input type="text" id="searchId" placeholder="Enter Student ID">
+        <button id="searchBtn" onclick="searchStudent()">Search</button>
+    </div>
+
+    <div id="resultCard" class="card" style="display:none;">
+        <h3>Student Details</h3>
+        <p>Name: <span id="resName"></span></p>
+        <p>Arrears (Previous Sem): <strong id="resArrears" style="color:red;"></strong></p>
+        <p>Current Balance: <strong id="resBalance"></strong></p>
+    </div>
+
+    <script>
+        async function searchStudent() {
+            const btn = document.getElementById('searchBtn');
+            const id = document.getElementById('searchId').value;
+            btn.classList.add('btn-loading');
+
+            try {
+                const resp = await fetch('https://script.google.com/macros/s/AKfycbxM7aa5hj1MtCJB6YdwjG8iHq4C8_2ry1ddGirBvYKRHjv-jD2OBKqHOSm1cO9QB2e_/exec'?action=accountant_search&id=${id}`);
+                const data = await resp.json();
+                if (data.error) { alert(data.error); } 
+                else {
+                    document.getElementById('resultCard').style.display = 'block';
+                    document.getElementById('resName').innerText = data.name;
+                    document.getElementById('resArrears').innerText = `GH₵ ${data.arrears || 0}`;
+                    document.getElementById('resBalance').innerText = `GH₵ ${data.balance}`;
+                }
+            } finally {
+                btn.classList.remove('btn-loading');
+            }
+        }
+    </script>
+</body>
+</html>
