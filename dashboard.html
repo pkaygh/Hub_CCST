@@ -3,31 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#004080">
+    <meta name="theme-color" content="#1a472a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Student Dashboard | CCST</title>
     <style>
+        /* NEW THEME: Dots halftone grunge brush yellow green with white on dark green */
         :root {
-            --primary: #004080;
-            --primary-light: #0066cc;
-            --bg: #f4f6f9;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --sidebar-bg: #1e2a44;
-            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            --primary: #6b8e23; /* Yellow Green/Olive Drab */
+            --primary-light: #9acd32; /* Yellow Green */
+            --primary-dark: #1a472a; /* Dark Green */
+            --bg: #f5f5dc; /* Beige background */
+            --success: #556b2f; /* Dark Olive Green */
+            --danger: #8b0000; /* Dark Red */
+            --warning: #daa520; /* Goldenrod */
+            --sidebar-bg: #1a472a; /* Dark Green */
+            --card-shadow: 0 4px 15px rgba(26, 71, 42, 0.15);
+            --white: #ffffff;
+            --text-dark: #2f4f2f; /* Dark Slate Gray */
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* Halftone dots background pattern */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
-            color: #333;
+            background-image: radial-gradient(circle, rgba(107, 142, 35, 0.1) 1px, transparent 1px);
+            background-size: 8px 8px;
+            color: var(--text-dark);
             display: flex;
             min-height: 100vh;
             overflow-x: hidden;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         /* Mobile Menu Toggle */
         .menu-toggle {
@@ -55,6 +63,11 @@
             overflow-y: auto;
             transition: transform 0.3s ease;
             z-index: 1000;
+            /* Grunge brush texture effect */
+            background-image:
+                linear-gradient(135deg, rgba(85, 107, 47, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(0,0,0,0.1) 0%, transparent 40%);
         }
 
         .sidebar-overlay {
@@ -72,7 +85,7 @@
             padding: 25px 20px;
             text-align: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            background: linear-gradient(135deg, var(--primary) 0%, #1e2a44 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
         }
 
         .profile-pic-sidebar {
@@ -80,9 +93,10 @@
             height: 80px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid rgba(255,255,255,0.3);
+            border: 3px solid var(--primary-light);
             cursor: pointer;
             transition: transform 0.3s, border-color 0.3s;
+            box-shadow: 0 0 15px rgba(154, 205, 50, 0.3);
         }
 
         .profile-pic-sidebar:hover {
@@ -94,12 +108,14 @@
             color: white;
             font-size: 1rem;
             margin-top: 12px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
         .sidebar-header p {
             font-size: 0.8rem;
-            opacity: 0.8;
+            opacity: 0.9;
             margin-top: 4px;
+            color: var(--primary-light);
         }
 
         .menu-item {
@@ -107,14 +123,14 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            color: #ddd;
+            color: rgba(255,255,255,0.85);
             text-decoration: none;
             transition: 0.3s;
             border-left: 4px solid transparent;
         }
 
         .menu-item:hover, .menu-item.active {
-            background: rgba(255,255,255,0.12);
+            background: rgba(107, 142, 35, 0.3);
             color: white;
             border-left-color: var(--primary-light);
         }
@@ -123,7 +139,10 @@
             font-size: 1.1rem;
             width: 24px;
             text-align: center;
+            color: var(--primary-light);
         }
+
+        .menu-item.active i { color: white; }
 
         .menu-item .badge {
             margin-left: auto;
@@ -143,7 +162,7 @@
         }
 
         .navbar {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
             color: white;
             padding: 15px 25px;
             display: flex;
@@ -151,6 +170,7 @@
             align-items: center;
             border-radius: 12px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.25);
         }
 
         .card {
@@ -159,6 +179,7 @@
             border-radius: 12px;
             box-shadow: var(--card-shadow);
             margin-bottom: 25px;
+            border: 2px solid rgba(107, 142, 35, 0.2);
         }
 
         .card-header {
@@ -167,12 +188,10 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #eee;
+            border-bottom: 3px solid var(--primary);
         }
 
-        .card-header h3 {
-            color: var(--primary);
-        }
+        .card-header h3 { color: var(--primary-dark); }
 
         /* Profile Section */
         .profile-container {
@@ -186,20 +205,17 @@
             height: 100px;
             border-radius: 50%;
             object-fit: cover;
-            border: 4px solid white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 4px solid var(--primary-light);
+            box-shadow: 0 4px 12px rgba(26, 71, 42, 0.2);
             cursor: pointer;
         }
 
         .profile-info h2 {
             margin-bottom: 5px;
-            color: var(--primary);
+            color: var(--primary-dark);
         }
 
-        .profile-info p {
-            color: #666;
-            font-size: 0.95rem;
-        }
+        .profile-info p { color: #666; font-size: 0.95rem; }
 
         .status-badge {
             display: inline-block;
@@ -218,7 +234,7 @@
         .semester-card {
             border-left: 5px solid var(--primary);
             padding: 20px;
-            background: #f8f9fa;
+            background: linear-gradient(to right, rgba(107, 142, 35, 0.05), transparent);
             border-radius: 10px;
             margin-bottom: 20px;
         }
@@ -231,7 +247,7 @@
         }
 
         .gpa-badge {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
             padding: 8px 15px;
             border-radius: 20px;
@@ -245,14 +261,15 @@
             padding: 10px;
             background: white;
             border-radius: 8px;
+            border: 1px solid rgba(107, 142, 35, 0.2);
         }
 
         .course-header {
             font-weight: bold;
-            color: #666;
+            color: var(--primary-dark);
             font-size: 0.85rem;
             padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid rgba(107, 142, 35, 0.2);
         }
 
         .course-item {
@@ -260,24 +277,22 @@
             border-bottom: 1px solid #f0f0f0;
         }
 
-        .grade-a { color: #27ae60; font-weight: bold; }
-        .grade-b { color: #3498db; font-weight: bold; }
-        .grade-c { color: #f39c12; font-weight: bold; }
-        .grade-d { color: #e67e22; font-weight: bold; }
-        .grade-f { color: #e74c3c; font-weight: bold; }
+        .grade-a { color: var(--success); font-weight: bold; }
+        .grade-b { color: var(--primary); font-weight: bold; }
+        .grade-c { color: var(--warning); font-weight: bold; }
+        .grade-d { color: #cd853f; font-weight: bold; }
+        .grade-f { color: var(--danger); font-weight: bold; }
 
         /* UCC Grading Scale */
         .grading-scale {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, rgba(107, 142, 35, 0.1), rgba(154, 205, 50, 0.1));
             padding: 15px;
             border-radius: 8px;
             margin-top: 20px;
+            border: 1px solid rgba(107, 142, 35, 0.3);
         }
 
-        .grading-scale h4 {
-            margin-bottom: 10px;
-            color: var(--primary);
-        }
+        .grading-scale h4 { margin-bottom: 10px; color: var(--primary-dark); }
 
         .grade-table {
             display: grid;
@@ -290,6 +305,7 @@
             padding: 8px;
             background: white;
             border-radius: 6px;
+            border: 1px solid rgba(107, 142, 35, 0.2);
         }
 
         .grade-item .points { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
@@ -308,12 +324,13 @@
             padding: 20px;
             border-radius: 10px;
             text-align: center;
+            color: white;
         }
 
-        .finance-card.total { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .finance-card.paid { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
-        .finance-card.balance { background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); color: white; }
-        .finance-card.cgpa { background: linear-gradient(135deg, #004080 0%, #0066cc 100%); color: white; }
+        .finance-card.total { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); }
+        .finance-card.paid { background: linear-gradient(135deg, var(--success) 0%, #8fbc8f 100%); }
+        .finance-card.balance { background: linear-gradient(135deg, var(--danger) 0%, #cd5c5c 100%); }
+        .finance-card.cgpa { background: linear-gradient(135deg, var(--warning) 0%, #f0e68c 100%); color: var(--text-dark); }
 
         .finance-card h4 { font-size: 0.9rem; opacity: 0.9; }
         .finance-card h2 { font-size: 1.8rem; margin-top: 5px; }
@@ -323,10 +340,10 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            background: #f8f9fa;
+            background: linear-gradient(to right, rgba(107, 142, 35, 0.05), transparent);
             border-radius: 8px;
             margin-bottom: 10px;
-            border-left: 4px solid var(--success);
+            border-left: 4px solid var(--primary);
         }
 
         .payment-details strong { display: block; }
@@ -338,28 +355,29 @@
             display: flex;
             gap: 15px;
             padding: 15px;
-            background: #f8f9fa;
+            background: linear-gradient(to right, rgba(107, 142, 35, 0.03), white);
             border-radius: 10px;
             margin-bottom: 15px;
             border-left: 4px solid var(--primary);
             transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
         }
 
         .notification-item:hover {
             transform: translateX(5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(26, 71, 42, 0.15);
         }
 
         .notification-item.unread {
-            border-left-color: var(--danger);
-            background: #fff5f5;
+            border-left-color: var(--warning);
+            background: linear-gradient(to right, rgba(218, 165, 32, 0.1), white);
         }
 
         .notification-icon {
             width: 45px;
             height: 45px;
             border-radius: 50%;
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
             display: flex;
             align-items: center;
@@ -369,7 +387,7 @@
         }
 
         .notification-content { flex: 1; }
-        .notification-content h4 { margin-bottom: 5px; color: #333; }
+        .notification-content h4 { margin-bottom: 5px; color: var(--text-dark); }
         .notification-content p { color: #666; font-size: 0.9rem; }
         .notification-meta { font-size: 0.8rem; color: #999; margin-top: 8px; }
 
@@ -393,18 +411,36 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #333;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
             color: white;
             padding: 12px 25px;
             border-radius: 30px;
             z-index: 10000;
             animation: slideUp 0.3s ease;
+            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.3);
         }
 
         @keyframes slideUp {
             from { transform: translateX(-50%) translateY(100px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
+
+        /* Session Timeout Warning */
+        .session-warning {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--danger);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 0 0 10px 10px;
+            z-index: 10001;
+            display: none;
+            font-weight: bold;
+        }
+
+        .session-warning.show { display: block; }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -638,11 +674,18 @@
         </div>
     </div>
 
+    <!-- Session Timeout Warning -->
+    <div id="sessionWarning" class="session-warning">
+        <i class="fas fa-clock"></i> Session expires in <span id="sessionTimer">5:00</span> - Move mouse to stay active
+    </div>
+
     <script>
         // Configuration
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyw3Q2cg-HDEfaEGW1IqaooHWn3qhV9FB7SM79DyWdoK4DYFBNm6u095Vms-UYDBUC6/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0TyIzP3RX7HIuktyZJTkOm5RF4vL1eE4uS50wnyo6GGPF-OI3ffpo6PyZtAMR2YI0/exec";
         const DB_NAME = 'CCSTStudentDB';
         const DB_VERSION = 1;
+        const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
+        const WARNING_BEFORE = 60 * 1000; // Show warning 1 minute before timeout
 
         // State
         let studentData = null;
@@ -650,6 +693,9 @@
         let userPayments = [];
         let notifications = [];
         let db = null;
+        let lastActivity = Date.now();
+        let sessionTimeoutId = null;
+        let warningTimeoutId = null;
 
         // Initialize IndexedDB for offline support
         function initDB() {
@@ -728,6 +774,72 @@
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('open');
             document.querySelector('.sidebar-overlay').classList.toggle('show');
+        }
+
+        // Session Timeout Management
+        function resetSessionTimer() {
+            lastActivity = Date.now();
+            hideSessionWarning();
+            clearTimeouts();
+            startSessionTimer();
+        }
+
+        function clearTimeouts() {
+            if (sessionTimeoutId) clearTimeout(sessionTimeoutId);
+            if (warningTimeoutId) clearTimeout(warningTimeoutId);
+        }
+
+        function hideSessionWarning() {
+            document.getElementById('sessionWarning').classList.remove('show');
+        }
+
+        function showSessionWarning() {
+            const warning = document.getElementById('sessionWarning');
+            warning.classList.add('show');
+            let secondsLeft = Math.floor(WARNING_BEFORE / 1000);
+
+            const updateTimer = () => {
+                const minutes = Math.floor(secondsLeft / 60);
+                const seconds = secondsLeft % 60;
+                document.getElementById('sessionTimer').innerText =
+                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                if (secondsLeft <= 0) {
+                    performLogout();
+                } else {
+                    secondsLeft--;
+                    setTimeout(updateTimer, 1000);
+                }
+            };
+            updateTimer();
+        }
+
+        function startSessionTimer() {
+            // Show warning before timeout
+            warningTimeoutId = setTimeout(() => {
+                showSessionWarning();
+            }, SESSION_TIMEOUT - WARNING_BEFORE);
+
+            // Auto logout after timeout
+            sessionTimeoutId = setTimeout(() => {
+                performLogout();
+            }, SESSION_TIMEOUT);
+        }
+
+        function performLogout() {
+            localStorage.removeItem('userData');
+            localStorage.removeItem('userResults');
+            localStorage.removeItem('readNotifications'); // Clear read notifications
+            sessionStorage.clear();
+            window.location.replace("index.html");
+        }
+
+        // Set up activity listeners
+        function setupActivityListeners() {
+            const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+            events.forEach(event => {
+                document.addEventListener(event, resetSessionTimer, { passive: true });
+            });
         }
 
         // Show Section
@@ -908,14 +1020,14 @@
 
             const p = studentData.profile;
 
-            // Sample finance data - in production, fetch from backend
+            // Finance data - using Ghana Cedis (GH₵)
             const totalFee = p.totalFee || 450000;
             const amountPaid = p.amountPaid || p.balance ? (totalFee - p.balance) : 320000;
             const balance = p.balance || (totalFee - amountPaid);
 
-            document.getElementById('totalFee').innerText = `₦${totalFee.toLocaleString()}`;
-            document.getElementById('amountPaid').innerText = `₦${amountPaid.toLocaleString()}`;
-            document.getElementById('balance').innerText = `₦${balance.toLocaleString()}`;
+            document.getElementById('totalFee').innerText = `GH₵${totalFee.toLocaleString()}`;
+            document.getElementById('amountPaid').innerText = `GH₵${amountPaid.toLocaleString()}`;
+            document.getElementById('balance').innerText = `GH₵${balance.toLocaleString()}`;
 
             // Payment history
             const historyContainer = document.getElementById('paymentHistory');
@@ -928,7 +1040,7 @@
                                 <strong>${payment.description || 'Payment'}</strong>
                                 <small>${payment.date || 'N/A'}</small>
                             </div>
-                            <div class="payment-amount">₦${(payment.amount || 0).toLocaleString()}</div>
+                            <div class="payment-amount">GH₵${(payment.amount || 0).toLocaleString()}</div>
                         </div>
                     `;
                 });
@@ -941,14 +1053,14 @@
                             <strong>First Semester Tuition</strong>
                             <small>January 15, 2026</small>
                         </div>
-                        <div class="payment-amount">₦150,000</div>
+                        <div class="payment-amount">GH₵150,000</div>
                     </div>
                     <div class="payment-history-item">
                         <div class="payment-details">
                             <strong>Registration Fee</strong>
                             <small>February 10, 2026</small>
                         </div>
-                        <div class="payment-amount">₦170,000</div>
+                        <div class="payment-amount">GH₵170,000</div>
                     </div>
                 `;
             }
@@ -957,11 +1069,11 @@
             const statusEl = document.getElementById('clearanceStatusFinance');
             statusEl.style.display = 'block';
             if (p.isCleared === true || p.isCleared === "TRUE") {
-                statusEl.innerHTML = '<i class="fas fa-check-circle" style="color: #27ae60;"></i> FINANCIALLY CLEARED - You are eligible to register and write examinations';
-                statusEl.style.background = '#e8f5e8';
+                statusEl.innerHTML = '<i class="fas fa-check-circle" style="color: var(--success);"></i> FINANCIALLY CLEARED - You are eligible to register and write examinations';
+                statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
             } else {
-                statusEl.innerHTML = '<i class="fas fa-exclamation-circle" style="color: #e74c3c;"></i> NOT CLEARED - Please contact the Accountant to clear your fees';
-                statusEl.style.background = '#fce8e8';
+                statusEl.innerHTML = '<i class="fas fa-exclamation-circle" style="color: var(--danger);"></i> NOT CLEARED - Please contact the Accountant to clear your fees';
+                statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
             }
         }
 
@@ -970,14 +1082,17 @@
             const container = document.getElementById('notificationList');
             const badge = document.getElementById('notifBadge');
 
+            // Get read notification IDs from sessionStorage (persists until logout)
+            let readNotifIds = JSON.parse(sessionStorage.getItem('readNotifications') || '[]');
+
             if (!notifications || notifications.length === 0) {
                 // Sample notifications - in production, fetch from backend
                 notifications = [
-                    { id: 1, title: "Mid-Semester Examination Schedule", content: "Examinations begin on April 15, 2026. Please check your course schedule.", date: "Today", type: "exam", read: false },
-                    { id: 2, title: "Campus Tech Innovation Fair", content: "All students are encouraged to participate. Register at the student affairs office.", date: "2 days ago", type: "event", read: false },
-                    { id: 3, title: "Fee Payment Reminder", content: "Last day for balance payment is April 10, 2026. Late payments incur a 10% penalty.", date: "1 week ago", type: "finance", read: true },
-                    { id: 4, title: "New Course Materials Available", content: "Updated course materials for Semester 2 are now available on the portal.", date: "3 days ago", type: "academic", read: true },
-                    { id: 5, title: "Library Hours Extended", content: "The library will operate from 7 AM to 10 PM during the examination period.", date: "Yesterday", type: "general", read: false }
+                    { id: 1, title: "Mid-Semester Examination Schedule", content: "Examinations begin on April 15, 2026. Please check your course schedule.", date: "Today", type: "exam" },
+                    { id: 2, title: "Campus Tech Innovation Fair", content: "All students are encouraged to participate. Register at the student affairs office.", date: "2 days ago", type: "event" },
+                    { id: 3, title: "Fee Payment Reminder", content: "Last day for balance payment is April 10, 2026. Late payments incur a 10% penalty.", date: "1 week ago", type: "finance" },
+                    { id: 4, title: "New Course Materials Available", content: "Updated course materials for Semester 2 are now available on the portal.", date: "3 days ago", type: "academic" },
+                    { id: 5, title: "Library Hours Extended", content: "The library will operate from 7 AM to 10 PM during the examination period.", date: "Yesterday", type: "general" }
                 ];
             }
 
@@ -985,7 +1100,9 @@
             let unreadCount = 0;
 
             notifications.forEach(notif => {
-                if (!notif.read) unreadCount++;
+                // Check if this notification was read in this session
+                const isRead = readNotifIds.includes(notif.id);
+                if (!isRead) unreadCount++;
 
                 const iconMap = {
                     exam: 'fa-file-alt',
@@ -996,7 +1113,7 @@
                 };
 
                 html += `
-                    <div class="notification-item ${notif.read ? '' : 'unread'}" onclick="markRead(${notif.id})">
+                    <div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${notif.id})">
                         <div class="notification-icon">
                             <i class="fas ${iconMap[notif.type] || 'fa-bell'}"></i>
                         </div>
@@ -1005,7 +1122,7 @@
                             <p>${notif.content}</p>
                             <div class="notification-meta">
                                 <i class="far fa-clock"></i> ${notif.date}
-                                ${notif.read ? '' : '<span style="color: #e74c3c;"> • New</span>'}
+                                ${isRead ? '<span style="color: var(--success);"> • Read</span>' : '<span style="color: var(--warning);"> • New</span>'}
                             </div>
                         </div>
                     </div>
@@ -1022,19 +1139,27 @@
             }
         }
 
-        // Mark notification as read
+        // Mark notification as read (persists until logout)
         function markRead(id) {
-            const notif = notifications.find(n => n.id === id);
-            if (notif) {
-                notif.read = true;
-                loadNotifications();
-                saveToDB('notifications', { id: 'all', data: notifications });
+            // Get current read notifications from sessionStorage
+            let readNotifIds = JSON.parse(sessionStorage.getItem('readNotifications') || '[]');
+
+            // Add this notification ID if not already there
+            if (!readNotifIds.includes(id)) {
+                readNotifIds.push(id);
+                sessionStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
             }
+
+            // Reload notifications to reflect the change
+            loadNotifications();
+            saveToDB('notifications', { id: 'all', data: notifications });
         }
 
         // Mark all as read
         function markAllRead() {
-            notifications.forEach(n => n.read = true);
+            // Get all notification IDs
+            let readNotifIds = notifications.map(n => n.id);
+            sessionStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
             loadNotifications();
             saveToDB('notifications', { id: 'all', data: notifications });
             showToast('All notifications marked as read');
@@ -1084,8 +1209,10 @@
         // Logout
         function logout() {
             if (confirm("Are you sure you want to logout?")) {
+                clearTimeouts();
                 localStorage.removeItem('userData');
                 localStorage.removeItem('userResults');
+                sessionStorage.removeItem('readNotifications'); // Clear read notifications on logout
                 sessionStorage.clear();
                 window.location.replace("index.html");
             }
@@ -1187,6 +1314,10 @@
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
             updateOnlineStatus();
+
+            // Set up session timeout
+            setupActivityListeners();
+            startSessionTimer();
 
             // Load profile
             loadProfile();
