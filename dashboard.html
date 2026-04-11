@@ -676,7 +676,7 @@
 
     <!-- Session Timeout Warning -->
     <div id="sessionWarning" class="session-warning">
-        <i class="fas fa-clock"></i> Session expires in <span id="sessionTimer">5:00</span> - Move mouse to stay active
+        <i class="fas fa-clock"></i> Session expires in <span id="sessionTimer">3:00</span> - Move mouse to stay active
     </div>
 
     <script>
@@ -1022,7 +1022,7 @@
 
             // Finance data - using Ghana Cedis (GH₵)
             const totalFee = p.totalFee || 450000;
-            const amountPaid = p.amountPaid || p.balance ? (totalFee - p.balance) : 320000;
+            const amountPaid = p.amountPaid || p.balance ? (totalFee - p.balance) : 0;
             const balance = p.balance || (totalFee - amountPaid);
 
             document.getElementById('totalFee').innerText = `GH₵${totalFee.toLocaleString()}`;
@@ -1088,9 +1088,9 @@
             if (!notifications || notifications.length === 0) {
                 // Sample notifications - in production, fetch from backend
                 notifications = [
-                    { id: 1, title: "Mid-Semester Examination Schedule", content: "Examinations begin on April 15, 2026. Please check your course schedule.", date: "Today", type: "exam" },
+                    { id: 1, title: "SRC-WEEK Celebration", content: "SRC-WEEK Celebration will commence come 2nd Semester, be part of it. Please check your course schedule."},
                     { id: 2, title: "Campus Tech Innovation Fair", content: "All students are encouraged to participate. Register at the student affairs office.", date: "2 days ago", type: "event" },
-                    { id: 3, title: "Fee Payment Reminder", content: "Last day for balance payment is April 10, 2026. Late payments incur a 10% penalty.", date: "1 week ago", type: "finance" },
+                    { id: 3, title: "Fee Payment Reminder", content: "Make payment for the upcoming Semester come May 2, 2026. Late payments incur a 10% penalty.", date: "Months to come", type: "finance" },
                     { id: 4, title: "New Course Materials Available", content: "Updated course materials for Semester 2 are now available on the portal.", date: "3 days ago", type: "academic" },
                     { id: 5, title: "Library Hours Extended", content: "The library will operate from 7 AM to 10 PM during the examination period.", date: "Yesterday", type: "general" }
                 ];
