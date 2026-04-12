@@ -935,7 +935,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjBUheA8B-mq6aeur1kDTIBw7f5rrjku0q-AxsQqldZ-HJRfPj6nJmNqNMa1caot5k/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxA3iunqB_YiAgJnErwnewxh8cJyyeO3FkrFy0N4j4FUMleCcS6yTPt8uMkWxybHdIW/exec";
         let currentStudent = null;
         let csvData = null;
         let parsedResults = [];
@@ -1357,35 +1357,57 @@ CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50
 
         // Send Notification
         async function sendNotification() {
-            const title = document.getElementById('notifTitle').value;
-            const message = document.getElementById('notifMessage').value;
-            const type = document.getElementById('notifType').value;
-            const target = document.getElementById('targetValue').value;
+    const title = document.getElementById('notifTitle').value;
+    const message = document.getElementById('notifMessage').value;
+    const type = document.getElementById('notifType').value;
+    const target = document.getElementById('targetValue').value;
+    const btnId = 'send-notif-btn'; // Make sure your button has this ID
 
-            if (!title || !message) {
-                showToast("Please enter title and message", "warning");
-                return;
-            }
+    if (!title || !message) {
+        showToast("Please enter title and message", "warning");
+        return;
+    }
 
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'send_notification',
-                        title: title,
-                        message: message,
-                        type: type,
-                        target: target
-                    })
-                });
+    // 1. START LOADING SPINNER
+    toggleLoading(btnId, true);
 
-                showToast("Notification sent successfully!", "success");
-                document.getElementById('notifTitle').value = '';
-                document.getElementById('notifMessage').value = '';
-            } catch (e) {
-                showToast("Failed to send notification", "danger");
-            }
-        }
+    // 2. CAPTURE COMPUTER DATE AND TIME
+    const now = new Date();
+    const computerTime = now.toLocaleString('en-GB', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: true 
+    });
+
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Important for Google Apps Script POST
+            body: JSON.stringify({
+                action: 'send_notification',
+                timestamp: computerTime, // Send the time from your PC
+                title: title,
+                message: message,
+                type: type,
+                target: target
+            })
+        });
+
+        showToast("Notification sent successfully!", "success");
+        
+        // Clear fields
+        document.getElementById('notifTitle').value = '';
+        document.getElementById('notifMessage').value = '';
+    } catch (e) {
+        showToast("Failed to send notification", "danger");
+    } finally {
+        // 3. STOP LOADING SPINNER
+        toggleLoading(btnId, false);
+    }
+}
 
         // Schedule Notification
         function scheduleNotification() {
