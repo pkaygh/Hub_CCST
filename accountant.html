@@ -935,7 +935,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyQcnzBSBLcTEkSGccMUHGhD6UTrvfF3IRMDqdgPitZ5g1LCSrwfnNXZIBe4cD6VF5/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIcf85XlviB_YmlYQoaL4-nxFATLUrTIT_vX9g3j0jJiIJ4fAvHErqmM6yRwjXIV5v/exec";
         let currentStudent = null;
         let csvData = null;
         let parsedResults = [];
@@ -947,6 +947,20 @@
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('open');
             document.querySelector('.sidebar-overlay').classList.toggle('show');
+        }
+
+        // Show loading state on button
+        function setButtonLoading(button, isLoading, originalText) {
+            if (isLoading) {
+                button.disabled = true;
+                button.dataset.originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                button.style.opacity = '0.7';
+            } else {
+                button.disabled = false;
+                button.innerHTML = button.dataset.originalText || originalText;
+                button.style.opacity = '1';
+            }
         }
 
         // Show Section
@@ -980,8 +994,11 @@
 
         // Search Student
         async function searchStudent() {
+            const searchBtn = event.target.closest('button');
             const id = document.getElementById('searchId').value.trim();
             if (!id) return showToast("Please enter Student ID", "warning");
+
+            setButtonLoading(searchBtn, true, '<i class="fas fa-search"></i> Search');
 
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`);
@@ -996,7 +1013,7 @@
                 currentStudent = data;
                 document.getElementById('studentResult').style.display = 'block';
                 document.getElementById('resName').innerText = data.name;
-                document.getElementById('resInfo').innerText = `${data.program} | Level ${data.level} | ID: ${data.id} | Balance: GH₵${(data.balance || 0).toLocaleString()}`;
+                document.getElementById('resInfo').innerText = `${data.program} | Level ${data.level} | ID: ${data.id} | Balance: GH₵${(data.balance || 0).toLocaleString()} | Arrears: GH₵${(data.arrears || 0).toLocaleString()}`;
 
                 if (data.program) document.getElementById('resProgram').value = data.program;
                 if (data.level) document.getElementById('resLevel').value = data.level;
@@ -1004,6 +1021,8 @@
                 updateClearanceButton(data.isCleared);
             } catch (e) {
                 showToast("Error connecting to server", "danger");
+            } finally {
+                setButtonLoading(searchBtn, false, '<i class="fas fa-search"></i> Search');
             }
         }
 
@@ -1023,6 +1042,9 @@
         async function toggleClearance() {
             if (!currentStudent) return;
 
+            const toggleBtn = document.getElementById('toggleBtn');
+            setButtonLoading(toggleBtn, true);
+
             const newStatus = !(currentStudent.isCleared === true || currentStudent.isCleared === "TRUE");
 
             try {
@@ -1040,6 +1062,8 @@
                 showToast(newStatus ? "Student marked as financially cleared!" : "Clearance removed.", "success");
             } catch (e) {
                 showToast("Failed to update clearance", "danger");
+            } finally {
+                setButtonLoading(toggleBtn, false);
             }
         }
 
@@ -1061,10 +1085,17 @@
         async function uploadResults() {
             if (!currentStudent) return showToast("Search for a student first", "warning");
 
+            const uploadBtn = event.target.closest('button');
+            setButtonLoading(uploadBtn, true, '<i class="fas fa-upload"></i> UPLOAD RESULTS');
+
             const sem = document.getElementById('resSemester').value;
             const gpa = document.getElementById('resGPA').value;
 
-            if (!sem || !gpa) return showToast("Semester and GPA are required", "warning");
+            if (!sem || !gpa) {
+                showToast("Semester and GPA are required", "warning");
+                setButtonLoading(uploadBtn, false, '<i class="fas fa-upload"></i> UPLOAD RESULTS');
+                return;
+            }
 
             const codes = document.getElementsByClassName('cCode');
             const names = document.getElementsByClassName('cName');
@@ -1104,6 +1135,8 @@
                 document.getElementById('searchId').value = '';
             } catch (e) {
                 showToast("Upload failed", "danger");
+            } finally {
+                setButtonLoading(uploadBtn, false, '<i class="fas fa-upload"></i> UPLOAD RESULTS');
             }
         }
 
@@ -1275,10 +1308,13 @@
 
         // Process CSV
         async function processCSV() {
+            const processBtn = document.getElementById('processBtn');
             if (!parsedResults || parsedResults.length === 0) {
                 showToast("No data to process", "warning");
                 return;
             }
+
+            setButtonLoading(processBtn, true, '<i class="fas fa-cogs"></i> PROCESS & UPLOAD RESULTS');
 
             const progress = document.getElementById('uploadProgress');
             const status = document.getElementById('uploadStatus');
@@ -1314,6 +1350,7 @@
 
             showToast(`Successfully uploaded ${processed} results${errors > 0 ? ` (${errors} errors)` : ''}`, errors > 0 ? "warning" : "success");
             clearPreview();
+            setButtonLoading(processBtn, false, '<i class="fas fa-cogs"></i> PROCESS & UPLOAD RESULTS');
         }
 
         // Clear Preview
@@ -1357,6 +1394,7 @@ CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50
 
         // Send Notification
         async function sendNotification() {
+            const sendBtn = event.target.closest('button');
             const title = document.getElementById('notifTitle').value;
             const message = document.getElementById('notifMessage').value;
             const type = document.getElementById('notifType').value;
@@ -1366,6 +1404,8 @@ CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50
                 showToast("Please enter title and message", "warning");
                 return;
             }
+
+            setButtonLoading(sendBtn, true, '<i class="fas fa-paper-plane"></i> SEND NOTIFICATION');
 
             try {
                 await fetch(SCRIPT_URL, {
@@ -1384,6 +1424,8 @@ CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50
                 document.getElementById('notifMessage').value = '';
             } catch (e) {
                 showToast("Failed to send notification", "danger");
+            } finally {
+                setButtonLoading(sendBtn, false, '<i class="fas fa-paper-plane"></i> SEND NOTIFICATION');
             }
         }
 
@@ -1728,6 +1770,7 @@ CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
 
         // Clear Selected Students
         async function clearSelectedStudents() {
+            const clearBtn = event.target.closest('button');
             const checkboxes = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]'))
                 .filter(cb => cb.checked);
 
@@ -1735,6 +1778,8 @@ CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
                 showToast("Please select at least one student", "warning");
                 return;
             }
+
+            setButtonLoading(clearBtn, true, '<i class="fas fa-check"></i> CLEAR SELECTED');
 
             const ids = checkboxes.map(cb => cb.dataset.id);
 
@@ -1753,11 +1798,14 @@ CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
                 loadStudentClearanceList();
             } catch (e) {
                 showToast("Failed to clear students", "danger");
+            } finally {
+                setButtonLoading(clearBtn, false, '<i class="fas fa-check"></i> CLEAR SELECTED');
             }
         }
 
         // Unclear Selected Students
         async function unclearSelectedStudents() {
+            const unclearBtn = event.target.closest('button');
             const checkboxes = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]'))
                 .filter(cb => cb.checked);
 
@@ -1765,6 +1813,8 @@ CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
                 showToast("Please select at least one student", "warning");
                 return;
             }
+
+            setButtonLoading(unclearBtn, true, '<i class="fas fa-times"></i> UNCLEAR SELECTED');
 
             const ids = checkboxes.map(cb => cb.dataset.id);
 
@@ -1783,6 +1833,8 @@ CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
                 loadStudentClearanceList();
             } catch (e) {
                 showToast("Failed to unclear students", "danger");
+            } finally {
+                setButtonLoading(unclearBtn, false, '<i class="fas fa-times"></i> UNCLEAR SELECTED');
             }
         }
 

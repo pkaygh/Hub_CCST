@@ -647,6 +647,10 @@
                         <h4><i class="fas fa-exclamation-circle"></i> Balance</h4>
                         <h2 id="balance">GH₵0.00</h2>
                     </div>
+                    <div class="finance-card cgpa" style="background: linear-gradient(135deg, #8b0000 0%, #cd5c5c 100%);">
+                        <h4><i class="fas fa-history"></i> Arrears</h4>
+                        <h2 id="arrears">GH₵0.00</h2>
+                    </div>
                 </div>
 
                 <div id="clearanceStatusFinance" style="padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 20px; display: none;"></div>
@@ -681,7 +685,7 @@
 
     <script>
         // Configuration
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyQcnzBSBLcTEkSGccMUHGhD6UTrvfF3IRMDqdgPitZ5g1LCSrwfnNXZIBe4cD6VF5/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIcf85XlviB_YmlYQoaL4-nxFATLUrTIT_vX9g3j0jJiIJ4fAvHErqmM6yRwjXIV5v/exec";
         const DB_NAME = 'CCSTStudentDB';
         const DB_VERSION = 1;
         const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
@@ -1024,10 +1028,12 @@
             const totalFee = p.totalFee || 450000;
             const amountPaid = p.amountPaid || p.balance ? (totalFee - p.balance) : 320000;
             const balance = p.balance || (totalFee - amountPaid);
+            const arrears = p.arrears || 0;
 
             document.getElementById('totalFee').innerText = `GH₵${totalFee.toLocaleString()}`;
             document.getElementById('amountPaid').innerText = `GH₵${amountPaid.toLocaleString()}`;
             document.getElementById('balance').innerText = `GH₵${balance.toLocaleString()}`;
+            document.getElementById('arrears').innerText = `GH₵${arrears.toLocaleString()}`;
 
             // Payment history
             const historyContainer = document.getElementById('paymentHistory');
