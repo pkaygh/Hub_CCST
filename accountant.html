@@ -935,7 +935,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDDe7I7m1pJkn0OndRSpzx1zTAJOotR1ZZjxDv_kwkt_RhYmOX_Vp7VIkptn7Ey61Q/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyQcnzBSBLcTEkSGccMUHGhD6UTrvfF3IRMDqdgPitZ5g1LCSrwfnNXZIBe4cD6VF5/exec";
         let currentStudent = null;
         let csvData = null;
         let parsedResults = [];
@@ -1357,57 +1357,35 @@ CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50
 
         // Send Notification
         async function sendNotification() {
-    const title = document.getElementById('notifTitle').value;
-    const message = document.getElementById('notifMessage').value;
-    const type = document.getElementById('notifType').value;
-    const target = document.getElementById('targetValue').value;
-    const btnId = 'send-notif-btn'; // Make sure your button has this ID
+            const title = document.getElementById('notifTitle').value;
+            const message = document.getElementById('notifMessage').value;
+            const type = document.getElementById('notifType').value;
+            const target = document.getElementById('targetValue').value;
 
-    if (!title || !message) {
-        showToast("Please enter title and message", "warning");
-        return;
-    }
+            if (!title || !message) {
+                showToast("Please enter title and message", "warning");
+                return;
+            }
 
-    // 1. START LOADING SPINNER
-    toggleLoading(btnId, true);
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'send_notification',
+                        title: title,
+                        message: message,
+                        type: type,
+                        target: target
+                    })
+                });
 
-    // 2. CAPTURE COMPUTER DATE AND TIME
-    const now = new Date();
-    const computerTime = now.toLocaleString('en-GB', { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        hour12: true 
-    });
-
-    try {
-        await fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors', // Important for Google Apps Script POST
-            body: JSON.stringify({
-                action: 'send_notification',
-                timestamp: computerTime, // Send the time from your PC
-                title: title,
-                message: message,
-                type: type,
-                target: target
-            })
-        });
-
-        showToast("Notification sent successfully!", "success");
-        
-        // Clear fields
-        document.getElementById('notifTitle').value = '';
-        document.getElementById('notifMessage').value = '';
-    } catch (e) {
-        showToast("Failed to send notification", "danger");
-    } finally {
-        // 3. STOP LOADING SPINNER
-        toggleLoading(btnId, false);
-    }
-}
+                showToast("Notification sent successfully!", "success");
+                document.getElementById('notifTitle').value = '';
+                document.getElementById('notifMessage').value = '';
+            } catch (e) {
+                showToast("Failed to send notification", "danger");
+            }
+        }
 
         // Schedule Notification
         function scheduleNotification() {
@@ -1617,8 +1595,8 @@ CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50
         // Download Financial CSV Template
         function downloadFinanceTemplate() {
             const template = `id,name,total_fee,amount_paid,balance,arrears,semester
-CCST/RM/24/001,Paa Kwesi,4500,2500,2000,0,Semester 1 2026/2027
-CCST/RM/24/002,Abena Arhin,4500,4500,0,0,Semester 1 2026/2027
+CCST/RM/24/001,John Doe,4500,2500,2000,0,Semester 1 2026/2027
+CCST/RM/24/002,Jane Smith,4500,4500,0,0,Semester 1 2026/2027
 CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
 
             const blob = new Blob([template], { type: 'text/csv' });
