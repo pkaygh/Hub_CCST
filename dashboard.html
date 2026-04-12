@@ -63,6 +63,7 @@
             overflow-y: auto;
             transition: transform 0.3s ease;
             z-index: 1000;
+            /* Grunge brush texture effect */
             background-image:
                 linear-gradient(135deg, rgba(85, 107, 47, 0.3) 0%, transparent 50%),
                 radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 0%, transparent 30%),
@@ -192,6 +193,7 @@
 
         .card-header h3 { color: var(--primary-dark); }
 
+        /* Profile Section */
         .profile-container {
             display: flex;
             align-items: center;
@@ -281,12 +283,57 @@
         .grade-d { color: #cd853f; font-weight: bold; }
         .grade-f { color: var(--danger); font-weight: bold; }
 
-        /* Finance Section */
-        .finance-summary-list {
-            background: #f8f9fa;
+        /* UCC Grading Scale */
+        .grading-scale {
+            background: linear-gradient(135deg, rgba(107, 142, 35, 0.1), rgba(154, 205, 50, 0.1));
             padding: 15px;
-            border-radius: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid rgba(107, 142, 35, 0.3);
         }
+
+        .grading-scale h4 { margin-bottom: 10px; color: var(--primary-dark); }
+
+        .grade-table {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .grade-item {
+            text-align: center;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid rgba(107, 142, 35, 0.2);
+        }
+
+        .grade-item .points { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+        .grade-item .letter { font-size: 1rem; font-weight: bold; }
+        .grade-item .range { font-size: 0.8rem; color: #666; }
+
+        /* Finance Section */
+        .finance-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .finance-card {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+        }
+
+        .finance-card.total { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); }
+        .finance-card.paid { background: linear-gradient(135deg, var(--success) 0%, #8fbc8f 100%); }
+        .finance-card.balance { background: linear-gradient(135deg, var(--danger) 0%, #cd5c5c 100%); }
+        .finance-card.cgpa { background: linear-gradient(135deg, var(--warning) 0%, #f0e68c 100%); color: var(--text-dark); }
+
+        .finance-card h4 { font-size: 0.9rem; opacity: 0.9; }
+        .finance-card h2 { font-size: 1.8rem; margin-top: 5px; }
 
         .payment-history-item {
             display: flex;
@@ -378,6 +425,7 @@
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
 
+        /* Session Timeout Warning */
         .session-warning {
             position: fixed;
             top: 0;
@@ -394,6 +442,7 @@
 
         .session-warning.show { display: block; }
 
+        /* Responsive */
         @media (max-width: 768px) {
             .menu-toggle { display: block; }
             .sidebar { transform: translateX(-100%); }
@@ -402,6 +451,7 @@
             .main-content { margin-left: 0; padding: 15px; padding-top: 60px; }
             .profile-container { flex-direction: column; text-align: center; }
             .course-grid { grid-template-columns: 1fr 1fr; }
+            .finance-summary { grid-template-columns: 1fr 1fr; }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -413,6 +463,7 @@
     </button>
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
+    <!-- SIDE MENU -->
     <div class="sidebar">
         <div class="sidebar-header">
             <img id="sidebarPhoto" src="https://via.placeholder.com/80" class="profile-pic-sidebar" onclick="document.getElementById('photoUpload').click()">
@@ -442,6 +493,7 @@
         </a>
     </div>
 
+    <!-- MAIN CONTENT -->
     <div class="main-content">
         <div class="offline-indicator" id="offlineIndicator">
             <i class="fas fa-wifi-slash"></i> You are offline. Viewing cached data.
@@ -455,6 +507,7 @@
             </div>
         </div>
 
+        <!-- PROFILE SECTION -->
         <div id="profileSection" class="section">
             <div class="card">
                 <div class="card-header">
@@ -473,7 +526,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="card">
                 <h3 style="color: var(--primary); margin-bottom: 15px;"><i class="fas fa-info-circle"></i> Account Information</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
@@ -497,6 +550,7 @@
             </div>
         </div>
 
+        <!-- ACADEMIC SECTION -->
         <div id="academicSection" class="section" style="display:none;">
             <div class="card">
                 <div class="card-header">
@@ -507,15 +561,15 @@
                 </div>
 
                 <div id="academicSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
-                    <div class="card" style="background: linear-gradient(135deg, var(--warning) 0%, #f0e68c 100%); text-align: center; color: var(--text-dark); border:none;">
+                    <div class="finance-card cgpa">
                         <h4>CGPA</h4>
                         <h2 id="cgpaDisplay">--</h2>
                     </div>
-                    <div class="card" style="background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); text-align: center; color: white; border:none;">
+                    <div class="finance-card total">
                         <h4>Total Credits</h4>
                         <h2 id="totalCredits">--</h2>
                     </div>
-                    <div class="card" style="background: linear-gradient(135deg, var(--success) 0%, #8fbc8f 100%); text-align: center; color: white; border:none;">
+                    <div class="finance-card paid">
                         <h4>Status</h4>
                         <h2 id="academicStatus">--</h2>
                     </div>
@@ -524,226 +578,89 @@
                 <div id="resultsContainer">
                     <p style="text-align: center; color: #999; padding: 40px;">Loading academic records...</p>
                 </div>
+
+                <div class="grading-scale">
+                    <h4><i class="fas fa-table"></i> UCC Grading System</h4>
+                    <div class="grade-table">
+                        <div class="grade-item">
+                            <div class="points">4.0</div>
+                            <div class="letter" style="color: #27ae60;">A</div>
+                            <div class="range">80-100%</div>
+                        </div>
+                        <div class="grade-item">
+                            <div class="points">3.5</div>
+                            <div class="letter" style="color: #3498db;">B+</div>
+                            <div class="range">75-79%</div>
+                        </div>
+                        <div class="grade-item">
+                            <div class="points">3.0</div>
+                            <div class="letter" style="color: #3498db;">B</div>
+                            <div class="range">70-74%</div>
+                        </div>
+                        <div class="grade-item">
+                            <div class="points">2.5</div>
+                            <div class="letter" style="color: #f39c12;">C+</div>
+                            <div class="range">65-69%</div>
+                        </div>
+                        <div class="grade-item">
+                            <div class="points">2.0</div>
+                            <div class="letter" style="color: #f39c12;">C</div>
+                            <div class="range">60-64%</div>
+                        </div>
+                        <div class="grade-item">
+                            <div class="points">1.5</div>
+                            <div class="letter" style="color: #e67e22;">D</div>
+                            <div class="range">55-59%</div>
+                        </div>
+                        <div class="grade-item">
+                            <div class="points">1.0</div>
+                            <div class="letter" style="color: #e74c3c;">E</div>
+                            <div class="range">50-54%</div>
+                        </div>
+                        <div class="grade-item">
+                            <div class="points">0.0</div>
+                            <div class="letter" style="color: #e74c3c;">F</div>
+                            <div class="range">0-49%</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div id="financeSection" class="section" style="display:none;">
-            <div class="card" style="background: var(--white); padding: 25px; border-radius: 12px; box-shadow: var(--card-shadow);">
-                <h3 style="color: var(--primary-dark); margin-bottom: 20px;"><i class="fas fa-money-bill-wave"></i> Financial Summary</h3>
-                
-                <div class="finance-summary-list" style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
-                        <span>Previous Arrears:</span>
-                        <strong id="disp-arrears">GH₵ 0.00</strong>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
-                        <span>Current Semester Fees:</span>
-                        <strong id="disp-fees">GH₵ 0.00</strong>
-                    </div>
+        <!-- FINANCE SECTION -->
+        <div class="card" style="background: var(--white); padding: 20px; border-radius: 12px; box-shadow: var(--card-shadow);">
+    <h3 style="color: var(--primary-dark); margin-bottom: 15px;">Financial Summary</h3>
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <span>Previous Arrears:</span>
+        <strong id="disp-arrears">GH₵ 0.00</strong>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <span>Current Semester Fees:</span>
+        <strong id="disp-fees">GH₵ 0.00</strong>
+    </div>
 
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
-                        <span>Amount Paid:</span>
-                        <strong id="disp-paid" style="color: var(--success);">GH₵ 0.00</strong>
-                    </div>
+    <div style="border-top: 1px solid #ddd; margin: 10px 0; padding-top: 10px; display: flex; justify-content: space-between;">
+        <span style="font-weight: bold;">Total Outstanding:</span>
+        <strong id="disp-balance" style="color: var(--danger); font-size: 1.2rem;">GH₵ 0.00</strong>
+    </div>
 
-                    <div style="display: flex; justify-content: space-between; padding: 15px 0; margin-top: 10px;">
-                        <span style="font-weight: bold; font-size: 1.1rem;">Total Outstanding:</span>
-                        <strong id="disp-balance" style="color: var(--danger); font-size: 1.3rem;">GH₵ 0.00</strong>
-                    </div>
+    <button id="pay-btn" class="btn-primary" onclick="handlePayment()" style="width: 100%; margin-top: 15px;">
+        <span id="pay-text">Pay Fees</span>
+        <div id="pay-spinner" class="spinner" style="display:none;"></div>
+    </button>
+</div>
                 </div>
 
                 <div id="clearanceStatusFinance" style="padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 20px; display: none;"></div>
 
-                <button id="pay-btn" class="btn-primary" onclick="handlePayment()" style="width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
-                    <i class="fas fa-credit-card"></i> Pay Fees
-                </button>
-
-                <h4 style="color: var(--primary); margin: 25px 0 15px;"><i class="fas fa-history"></i> Payment History</h4>
+                <h4 style="color: var(--primary); margin-bottom: 15px;"><i class="fas fa-history"></i> Payment History</h4>
                 <div id="paymentHistory">
                     <p style="text-align: center; color: #999;">No payment records found.</p>
                 </div>
             </div>
         </div>
-
-        <div id="notificationsSection" class="section" style="display:none;">
-            <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-bell"></i> Campus Notifications</h3>
-                    <button onclick="markAllRead()" style="background: var(--success); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">
-                        <i class="fas fa-check-double"></i> Mark All Read
-                    </button>
-                </div>
-                <div id="notificationList">
-                    <p style="text-align: center; color: #999; padding: 40px;">Loading notifications...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="sessionWarning" class="session-warning">
-        <i class="fas fa-clock"></i> Session expires in <span id="sessionTimer">3:00</span> - Move mouse to stay active
-    </div>
-
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxA3iunqB_YiAgJnErwnewxh8cJyyeO3FkrFy0N4j4FUMleCcS6yTPt8uMkWxybHdIW/exec";
-        const DB_NAME = 'CCSTStudentDB';
-        const DB_VERSION = 1;
-        const SESSION_TIMEOUT = 15 * 60 * 1000;
-        const WARNING_BEFORE = 60 * 1000;
-
-        let studentData = null;
-        let userResults = [];
-        let userPayments = [];
-        let notifications = [];
-        let db = null;
-        let lastActivity = Date.now();
-        let sessionTimeoutId = null;
-        let warningTimeoutId = null;
-
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => { db = request.result; resolve(db); };
-                request.onupgradeneeded = (event) => {
-                    const database = event.target.result;
-                    if (!database.objectStoreNames.contains('studentData')) database.createObjectStore('studentData', { keyPath: 'id' });
-                    if (!database.objectStoreNames.contains('results')) database.createObjectStore('results', { keyPath: 'semester' });
-                    if (!database.objectStoreNames.contains('payments')) database.createObjectStore('payments', { keyPath: 'id', autoIncrement: true });
-                    if (!database.objectStoreNames.contains('notifications')) database.createObjectStore('notifications', { keyPath: 'id', autoIncrement: true });
-                };
-            });
-        }
-
-        async function saveToDB(storeName, data) {
-            const transaction = db.transaction([storeName], 'readwrite');
-            transaction.objectStore(storeName).put(data);
-        }
-
-        async function getFromDB(storeName) {
-            return new Promise((resolve) => {
-                const transaction = db.transaction([storeName], 'readonly');
-                const request = transaction.objectStore(storeName).getAll();
-                request.onsuccess = () => resolve(request.result);
-            });
-        }
-
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('open');
-            document.querySelector('.sidebar-overlay').classList.toggle('show');
-        }
-
-        function showSection(section) {
-            if (window.innerWidth <= 768 && document.querySelector('.sidebar').classList.contains('open')) {
-                toggleSidebar();
-            }
-            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
-            document.getElementById(section + 'Section').style.display = 'block';
-            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-            if (event) event.currentTarget.classList.add('active');
-            
-            const titles = { profile: 'My Profile', academic: 'Academic Results', finance: 'Financial Summary', notifications: 'Campus Notifications' };
-            document.getElementById('pageTitle').innerText = titles[section] || 'Dashboard';
-        }
-
-        function loadProfile() {
-            if (!studentData || !studentData.profile) return;
-            const p = studentData.profile;
-            document.getElementById('profileName').innerText = p.name || "Student Name";
-            document.getElementById('profileProgram').innerText = `${p.program || "Program"} | Level ${p.level || "100"}`;
-            document.getElementById('profileId').innerText = `ID: ${p.id || "N/A"}`;
-            document.getElementById('sidebarName').innerText = p.name || "Student";
-            document.getElementById('sidebarDetails').innerText = `Level ${p.level || "100"} | ${p.program || "Program"}`;
-            document.getElementById('studentNameHeader').innerText = p.name || "";
-            document.getElementById('infoId').innerText = p.id || "N/A";
-            document.getElementById('infoProgram').innerText = p.program || "N/A";
-            document.getElementById('infoLevel').innerText = p.level || "N/A";
-            document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Cleared" : "Pending";
-            
-            if (p.photoUrl) {
-                document.getElementById('profilePic').src = p.photoUrl;
-                document.getElementById('sidebarPhoto').src = p.photoUrl;
-            }
-
-            const statusBox = document.getElementById('clearanceStatus');
-            if (p.isCleared === true || p.isCleared === "TRUE") {
-                statusBox.innerText = "FINANCIALLY CLEARED";
-                statusBox.className = "status-badge cleared";
-            } else {
-                statusBox.innerText = "NOT CLEARED";
-                statusBox.className = "status-badge not-cleared";
-            }
-        }
-
- function loadFinance() {
-    if (!studentData || !studentData.profile) return;
-    const p = studentData.profile;
-
-    // 1. Pull the data sent from the script
-    const arrears = parseFloat(p.arrears) || 0;
-    const currentFees = parseFloat(p.totalFee) || 0;
-    const paid = parseFloat(p.amountPaid) || 0;
-    const totalOutstanding = parseFloat(p.balance) || 0;
-
-    // 2. Create a currency formatter for GH₵
-    const format = (num) => `GH₵ ${num.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-
-    // 3. Update the specific HTML elements
-    document.getElementById('disp-arrears').innerText = format(arrears);
-    document.getElementById('disp-fees').innerText = format(currentFees);
-    document.getElementById('disp-paid').innerText = format(paid);
-    document.getElementById('disp-balance').innerText = format(totalOutstanding);
-
-    // 4. Update the Clearance Status Badge
-    const statusEl = document.getElementById('clearanceStatusFinance');
-    statusEl.style.display = 'block';
-    
-    if (p.isCleared === true || p.isCleared === "TRUE") {
-        statusEl.innerHTML = '<i class="fas fa-check-circle"></i> FINANCIALLY CLEARED';
-        statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
-        statusEl.style.color = 'var(--success)';
-    } else {
-        statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> NOT CLEARED';
-        statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
-        statusEl.style.color = 'var(--danger)';
-    }
-}
-        async function fetchStudentData() {
-            if (!navigator.onLine) { loadFromCache(); return; }
-            try {
-                const userData = JSON.parse(localStorage.getItem('userData'));
-                const studentId = userData.profile.id;
-                const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`);
-                const resultsData = await resultsRes.json();
-                if (resultsData.results) {
-                    userResults = resultsData.results;
-                    saveToDB('results', { semester: 'all', data: userResults });
-                }
-                loadFinance();
-                loadAcademicResults();
-                loadNotifications();
-            } catch (e) { loadFromCache(); }
-        }
-
-        function logout() {
-            if (confirm("Logout?")) {
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.replace("index.html");
-            }
-        }
-
-        window.onload = async function () {
-            const storedData = localStorage.getItem('userData');
-            if (!storedData) { window.location.replace("index.html"); return; }
-            studentData = JSON.parse(storedData);
-            await initDB();
-            loadProfile();
-            fetchStudentData();
-            showSection('profile');
-        };
-    </script>
 
         <!-- NOTIFICATIONS SECTION -->
         <div id="notificationsSection" class="section" style="display:none;">
@@ -768,7 +685,7 @@
 
     <script>
         // Configuration
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9INCgJv5xrnmrGykXem7QDOKGFBkuk4OcqGkSl1zEWGMJVQuWTnVkQjtInhOQ-4RS/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxA3iunqB_YiAgJnErwnewxh8cJyyeO3FkrFy0N4j4FUMleCcS6yTPt8uMkWxybHdIW/exec";
         const DB_NAME = 'CCSTStudentDB';
         const DB_VERSION = 1;
         const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
