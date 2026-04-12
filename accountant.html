@@ -5,21 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accountant Portal | CCST</title>
     <style>
+        /* Theme: Dots halftone grunge brush yellow green with white on dark green */
         :root {
-            --primary: #004080;
-            --sidebar-bg: #1e2a44;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --info: #3498db;
+            --primary: #6b8e23; /* Yellow Green/Olive Drab */
+            --primary-light: #9acd32; /* Yellow Green */
+            --primary-dark: #1a472a; /* Dark Green */
+            --sidebar-bg: #1a472a;
+            --success: #556b2f; /* Dark Olive Green */
+            --danger: #8b0000; /* Dark Red */
+            --warning: #daa520; /* Goldenrod */
+            --info: #9acd32;
+            --bg: #f5f5dc; /* Beige */
+            --text-dark: #2f4f2f;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f4f6f9;
+            background: var(--bg);
+            background-image: radial-gradient(circle, rgba(107, 142, 35, 0.1) 1px, transparent 1px);
+            background-size: 8px 8px;
             display: flex;
             min-height: 100vh;
+            color: var(--text-dark);
         }
 
         /* Sidebar */
@@ -32,13 +40,17 @@
             height: 100vh;
             overflow-y: auto;
             transition: transform 0.3s;
+            background-image:
+                linear-gradient(135deg, rgba(85, 107, 47, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(0,0,0,0.1) 0%, transparent 40%);
         }
 
         .sidebar-header {
             padding: 25px 20px;
             text-align: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            background: linear-gradient(135deg, var(--primary) 0%, #1e2a44 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
         }
 
         .sidebar-header h2 {
@@ -51,19 +63,20 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            color: #ddd;
+            color: rgba(255,255,255,0.85);
             text-decoration: none;
             transition: 0.3s;
             border-left: 4px solid transparent;
         }
 
         .menu-item:hover, .menu-item.active {
-            background: rgba(255,255,255,0.12);
+            background: rgba(107, 142, 35, 0.3);
             color: white;
-            border-left-color: var(--info);
+            border-left-color: var(--primary-light);
         }
 
-        .menu-item i { width: 24px; text-align: center; }
+        .menu-item i { width: 24px; text-align: center; color: var(--primary-light); }
+        .menu-item.active i { color: white; }
 
         /* Main Content */
         .main-content {
@@ -73,7 +86,7 @@
         }
 
         .navbar {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
             color: white;
             padding: 15px 25px;
             border-radius: 12px;
@@ -81,14 +94,16 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.25);
         }
 
         .card {
             background: white;
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.15);
             margin-bottom: 25px;
+            border: 2px solid rgba(107, 142, 35, 0.2);
         }
 
         .card-header {
@@ -97,52 +112,52 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #eee;
+            border-bottom: 3px solid var(--primary);
         }
 
-        .card-header h3 { color: var(--primary); }
+        .card-header h3 { color: var(--primary-dark); }
 
         input, button, select {
             width: 100%;
             padding: 12px;
             margin: 8px 0;
             border-radius: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid rgba(107, 142, 35, 0.3);
             font-size: 16px;
             font-family: inherit;
         }
 
         button {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
             border: none;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
         }
 
-        button:hover { background: #003366; }
-        .success-btn { background: var(--success); }
-        .success-btn:hover { background: #219a52; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        .success-btn { background: linear-gradient(135deg, var(--success) 0%, #6b8e23 100%); }
+        .success-btn:hover { background: var(--success); }
         .danger-btn { background: var(--danger); }
-        .danger-btn:hover { background: #c0392b; }
+        .danger-btn:hover { background: #a00000; }
         .warning-btn { background: var(--warning); }
-        .info-btn { background: var(--info); }
+        .info-btn { background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%); }
 
         /* CSV Upload Styles */
         .upload-zone {
-            border: 3px dashed #ccc;
+            border: 3px dashed var(--primary);
             border-radius: 12px;
             padding: 40px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
-            background: #fafafa;
+            background: rgba(107, 142, 35, 0.05);
         }
 
         .upload-zone:hover, .upload-zone.dragover {
-            border-color: var(--primary);
-            background: #f0f7ff;
+            border-color: var(--primary-dark);
+            background: rgba(107, 142, 35, 0.1);
         }
 
         .upload-zone i {
@@ -155,14 +170,14 @@
 
         /* File Preview */
         .file-preview {
-            background: #f8f9fa;
+            background: rgba(107, 142, 35, 0.05);
             padding: 15px;
             border-radius: 8px;
             margin-top: 15px;
-            border-left: 4px solid var(--success);
+            border-left: 4px solid var(--primary);
         }
 
-        .file-preview h4 { margin-bottom: 10px; color: var(--primary); }
+        .file-preview h4 { margin-bottom: 10px; color: var(--primary-dark); }
 
         .file-info {
             display: flex;
@@ -176,6 +191,7 @@
             padding: 5px 12px;
             border-radius: 20px;
             font-size: 0.85rem;
+            border: 1px solid rgba(107, 142, 35, 0.2);
         }
 
         /* Results Table */
@@ -191,17 +207,17 @@
         .results-table th, .results-table td {
             padding: 10px 8px;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid rgba(107, 142, 35, 0.2);
         }
 
         .results-table th {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
             color: white;
             position: sticky;
             top: 0;
         }
 
-        .results-table tr:hover { background: #f8f9fa; }
+        .results-table tr:hover { background: rgba(107, 142, 35, 0.05); }
         .results-table { max-height: 400px; overflow-y: auto; display: block; }
 
         /* Status Badges */
@@ -264,12 +280,13 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: #333;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
             color: white;
             padding: 15px 25px;
             border-radius: 8px;
             z-index: 10000;
             animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.3);
         }
 
         @keyframes slideIn {
@@ -290,7 +307,8 @@
             padding: 20px;
             border-radius: 12px;
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(26, 71, 42, 0.1);
+            border: 1px solid rgba(107, 142, 35, 0.2);
         }
 
         .stat-card i { font-size: 2rem; margin-bottom: 10px; }
@@ -300,7 +318,7 @@
         /* Progress Bar */
         .progress-bar {
             height: 8px;
-            background: #eee;
+            background: rgba(107, 142, 35, 0.2);
             border-radius: 4px;
             overflow: hidden;
             margin-top: 8px;
@@ -308,8 +326,61 @@
 
         .progress-fill {
             height: 100%;
-            background: var(--success);
+            background: linear-gradient(135deg, var(--success) 0%, var(--primary-light) 100%);
             transition: width 0.5s;
+        }
+
+        /* Student List for Clearance */
+        .student-list-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid rgba(107, 142, 35, 0.2);
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .student-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(107, 142, 35, 0.1);
+            transition: background 0.2s;
+        }
+
+        .student-list-item:hover {
+            background: rgba(107, 142, 35, 0.05);
+        }
+
+        .student-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .student-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .student-name {
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+
+        .student-details {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .clearance-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .clearance-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
         }
 
         /* Responsive */
@@ -349,6 +420,38 @@
 
         @media (max-width: 768px) {
             .menu-toggle { display: block; }
+        }
+
+        /* Tab Styles */
+        .tab-container {
+            margin-bottom: 20px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: rgba(107, 142, 35, 0.1);
+            color: var(--primary-dark);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .tab-btn:hover {
+            background: rgba(107, 142, 35, 0.2);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -559,29 +662,110 @@
         <div id="bulk_uploadSection" class="section" style="display:none;">
             <div class="card">
                 <div class="card-header">
-                    <h3><i class="fas fa-upload"></i> Bulk Student Operations</h3>
+                    <h3><i class="fas fa-upload"></i> Bulk Operations</h3>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <h4><i class="fas fa-users"></i> Bulk Financial Clearance</h4>
-                        <input id="bulkStudentId" placeholder="Student ID for clearance">
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="clearStudent()" class="success-btn" style="width: auto; flex: 1;">
-                                <i class="fas fa-check"></i> MARK CLEARED
-                            </button>
-                            <button onclick="unclearStudent()" class="danger-btn" style="width: auto; flex: 1;">
-                                <i class="fas fa-times"></i> REMOVE CLEARANCE
-                            </button>
+                <!-- Tab Buttons -->
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchBulkTab('clearance')" id="tabClearance">
+                            <i class="fas fa-check-circle"></i> Financial Clearance
+                        </button>
+                        <button class="tab-btn" onclick="switchBulkTab('fees')" id="tabFees">
+                            <i class="fas fa-money-bill"></i> Update Fees
+                        </button>
+                        <button class="tab-btn" onclick="switchBulkTab('financeCSV')" id="tabFinanceCSV">
+                            <i class="fas fa-file-csv"></i> Financial CSV Upload
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Financial Clearance Tab -->
+                <div id="bulkClearanceTab">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <h4><i class="fas fa-users"></i> Bulk Financial Clearance</h4>
+                            <input id="bulkStudentId" placeholder="Student ID for clearance">
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="clearStudent()" class="success-btn" style="width: auto; flex: 1;">
+                                    <i class="fas fa-check"></i> MARK CLEARED
+                                </button>
+                                <button onclick="unclearStudent()" class="danger-btn" style="width: auto; flex: 1;">
+                                    <i class="fas fa-times"></i> REMOVE CLEARANCE
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4><i class="fas fa-layer-group"></i> Filter by Program/Level</h4>
+                            <select id="filterProgram" onchange="filterStudentList()">
+                                <option value="">All Programs</option>
+                                <option value="RM">RM (Records Management)</option>
+                                <option value="MW">MW (Medical Works)</option>
+                                <option value="DN">DN (Dental Nursing)</option>
+                            </select>
+                            <select id="filterLevel" onchange="filterStudentList()">
+                                <option value="">All Levels</option>
+                                <option value="100">Level 100</option>
+                                <option value="200">Level 200</option>
+                                <option value="300">Level 300</option>
+                            </select>
                         </div>
                     </div>
+                </div>
 
-                    <div>
-                        <h4><i class="fas fa-money-bill"></i> Update Fee Structure</h4>
-                        <input id="feeAmount" placeholder="Total Fee Amount (e.g., 450000)">
+                <!-- Update Fees Tab -->
+                <div id="bulkFeesTab" style="display:none;">
+                    <h4><i class="fas fa-money-bill"></i> Update Fee Structure</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <input id="feeAmount" placeholder="Total Fee Amount (e.g., 4500)">
                         <input id="feeSemester" placeholder="Semester (e.g., Semester 1 2026/2027)">
-                        <button onclick="updateFees()" class="info-btn">
-                            <i class="fas fa-save"></i> UPDATE FEES
+                    </div>
+                    <button onclick="updateFees()" class="info-btn" style="width: auto; margin-top: 10px;">
+                        <i class="fas fa-save"></i> UPDATE FEES
+                    </button>
+                </div>
+
+                <!-- Financial CSV Upload Tab -->
+                <div id="bulkFinanceCSVTab" style="display:none;">
+                    <h4><i class="fas fa-file-csv"></i> Upload Financial Records via CSV</h4>
+                    <p style="color: #666; margin-bottom: 20px;">
+                        Upload a CSV file containing student financial data. Format: Student ID, Name, Total Fees, Amount Paid, Balance, Arrears.
+                    </p>
+
+                    <div class="upload-zone" id="financeUploadZone" onclick="document.getElementById('financeFileInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h4>Drop CSV file here or click to browse</h4>
+                        <p style="color: #999; font-size: 0.9rem;">Supported format: .csv</p>
+                        <input type="file" id="financeFileInput" accept=".csv" onchange="handleFinanceCSVSelect(event)">
+                    </div>
+
+                    <div id="financeFilePreview" style="display:none;" class="file-preview">
+                        <h4><i class="fas fa-file-csv"></i> Financial Data Ready for Upload</h4>
+                        <div class="file-info">
+                            <span><i class="fas fa-file"></i> <span id="financeFileName"></span></span>
+                            <span><i class="fas fa-database"></i> <span id="financeRowCount"></span> records</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="financeUploadProgress" style="width: 0%;"></div>
+                        </div>
+                        <p id="financeUploadStatus" style="margin-top: 10px; color: #666;"></p>
+                    </div>
+
+                    <button id="processFinanceBtn" onclick="processFinanceCSV()" class="success-btn" style="margin-top: 20px; display:none;">
+                        <i class="fas fa-cogs"></i> PROCESS & UPLOAD FINANCIAL DATA
+                    </button>
+
+                    <div style="margin-top: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <h4>CSV Format for Financial Records:</h4>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
+                            <strong>Required Columns:</strong><br>
+                            id, name, total_fee, amount_paid, balance, arrears, semester<br><br>
+                            <strong>Example:</strong><br>
+                            CCST/RM/24/001, John Doe, 4500, 2500, 2000, 0, Semester 1 2026/2027
+                        </p>
+                        <button onclick="downloadFinanceTemplate()" class="info-btn" style="width: auto; margin-top: 15px;">
+                            <i class="fas fa-download"></i> Download Template
                         </button>
                     </div>
                 </div>
@@ -620,18 +804,64 @@
                 <h3><i class="fas fa-check-circle"></i> Financial Clearance Management</h3>
                 <p style="color:#666; margin-bottom:15px;">Mark students as financially cleared for registration/exams</p>
 
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <input id="clearanceId" placeholder="Student ID" style="flex: 1; min-width: 200px;">
-                    <button onclick="clearStudentById()" class="success-btn" style="width: auto;">
-                        <i class="fas fa-check"></i> CLEAR
-                    </button>
-                    <button onclick="unclearStudentById()" class="danger-btn" style="width: auto;">
-                        <i class="fas fa-times"></i> UNCLEAR
-                    </button>
+                <!-- Filter by Program/Level -->
+                <div style="background: rgba(107, 142, 35, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 10px;"><i class="fas fa-filter"></i> Filter Students</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                        <select id="clearanceProgramFilter" onchange="loadStudentClearanceList()">
+                            <option value="">All Programs</option>
+                            <option value="RM">RM (Records Management)</option>
+                            <option value="MW">MW (Medical Works)</option>
+                            <option value="DN">DN (Dental Nursing)</option>
+                        </select>
+                        <select id="clearanceLevelFilter" onchange="loadStudentClearanceList()">
+                            <option value="">All Levels</option>
+                            <option value="100">Level 100</option>
+                            <option value="200">Level 200</option>
+                            <option value="300">Level 300</option>
+                        </select>
+                        <select id="clearanceStatusFilter" onchange="loadStudentClearanceList()">
+                            <option value="">All Status</option>
+                            <option value="cleared">Cleared</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button onclick="clearSelectedStudents()" class="success-btn" style="width: auto; flex: 1;">
+                            <i class="fas fa-check"></i> CLEAR SELECTED
+                        </button>
+                        <button onclick="unclearSelectedStudents()" class="danger-btn" style="width: auto; flex: 1;">
+                            <i class="fas fa-times"></i> UNCLEAR SELECTED
+                        </button>
+                    </div>
                 </div>
 
-                <div id="clearanceList" style="margin-top: 20px;">
-                    <!-- Populated dynamically -->
+                <!-- Select All -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="selectAllStudents" onchange="toggleSelectAll()">
+                        <strong>Select All</strong>
+                    </label>
+                    <span id="selectedCount" style="color: #666;">0 selected</span>
+                </div>
+
+                <!-- Scrollable Student List -->
+                <div id="clearanceList" class="student-list-container">
+                    <p style="text-align: center; color: #999; padding: 40px;">Loading students...</p>
+                </div>
+
+                <!-- Individual Clearance -->
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(107, 142, 35, 0.2);">
+                    <h4 style="margin-bottom: 10px;"><i class="fas fa-user"></i> Individual Student Clearance</h4>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <input id="clearanceId" placeholder="Student ID" style="flex: 1; min-width: 200px;">
+                        <button onclick="clearStudentById()" class="success-btn" style="width: auto;">
+                            <i class="fas fa-check"></i> CLEAR
+                        </button>
+                        <button onclick="unclearStudentById()" class="danger-btn" style="width: auto;">
+                            <i class="fas fa-times"></i> UNCLEAR
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -705,10 +935,13 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwKpILQkv8mCN2tnSO7z91K6-mKDGmT_t3OzMleC3oVKQyTU383yTjPNvtoudAQdxA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDDe7I7m1pJkn0OndRSpzx1zTAJOotR1ZZjxDv_kwkt_RhYmOX_Vp7VIkptn7Ey61Q/exec";
         let currentStudent = null;
         let csvData = null;
         let parsedResults = [];
+        let financeCSVData = null;
+        let parsedFinanceData = [];
+        let allStudents = []; // For clearance list
 
         // Toggle Sidebar (Mobile)
         function toggleSidebar() {
@@ -738,6 +971,11 @@
                 reports: 'Reports'
             };
             document.getElementById('pageTitle').innerText = titles[section] || 'Dashboard';
+
+            // Load clearance list when showing clearance section
+            if (section === 'clearance') {
+                loadStudentClearanceList();
+            }
         }
 
         // Search Student
@@ -1119,35 +1357,57 @@ CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50
 
         // Send Notification
         async function sendNotification() {
-            const title = document.getElementById('notifTitle').value;
-            const message = document.getElementById('notifMessage').value;
-            const type = document.getElementById('notifType').value;
-            const target = document.getElementById('targetValue').value;
+    const title = document.getElementById('notifTitle').value;
+    const message = document.getElementById('notifMessage').value;
+    const type = document.getElementById('notifType').value;
+    const target = document.getElementById('targetValue').value;
+    const btnId = 'send-notif-btn'; // Make sure your button has this ID
 
-            if (!title || !message) {
-                showToast("Please enter title and message", "warning");
-                return;
-            }
+    if (!title || !message) {
+        showToast("Please enter title and message", "warning");
+        return;
+    }
 
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'send_notification',
-                        title: title,
-                        message: message,
-                        type: type,
-                        target: target
-                    })
-                });
+    // 1. START LOADING SPINNER
+    toggleLoading(btnId, true);
 
-                showToast("Notification sent successfully!", "success");
-                document.getElementById('notifTitle').value = '';
-                document.getElementById('notifMessage').value = '';
-            } catch (e) {
-                showToast("Failed to send notification", "danger");
-            }
-        }
+    // 2. CAPTURE COMPUTER DATE AND TIME
+    const now = new Date();
+    const computerTime = now.toLocaleString('en-GB', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: true 
+    });
+
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Important for Google Apps Script POST
+            body: JSON.stringify({
+                action: 'send_notification',
+                timestamp: computerTime, // Send the time from your PC
+                title: title,
+                message: message,
+                type: type,
+                target: target
+            })
+        });
+
+        showToast("Notification sent successfully!", "success");
+        
+        // Clear fields
+        document.getElementById('notifTitle').value = '';
+        document.getElementById('notifMessage').value = '';
+    } catch (e) {
+        showToast("Failed to send notification", "danger");
+    } finally {
+        // 3. STOP LOADING SPINNER
+        toggleLoading(btnId, false);
+    }
+}
 
         // Schedule Notification
         function scheduleNotification() {
@@ -1221,6 +1481,331 @@ CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50
         function generateReport(type) {
             showToast(`Generating ${type} report...`, "info");
             // Report generation logic would go here
+        }
+
+        // Switch Bulk Operations Tab
+        function switchBulkTab(tab) {
+            // Hide all tabs
+            document.getElementById('bulkClearanceTab').style.display = 'none';
+            document.getElementById('bulkFeesTab').style.display = 'none';
+            document.getElementById('bulkFinanceCSVTab').style.display = 'none';
+
+            // Remove active class from all buttons
+            document.getElementById('tabClearance').classList.remove('active');
+            document.getElementById('tabFees').classList.remove('active');
+            document.getElementById('tabFinanceCSV').classList.remove('active');
+
+            // Show selected tab and activate button
+            if (tab === 'clearance') {
+                document.getElementById('bulkClearanceTab').style.display = 'block';
+                document.getElementById('tabClearance').classList.add('active');
+            } else if (tab === 'fees') {
+                document.getElementById('bulkFeesTab').style.display = 'block';
+                document.getElementById('tabFees').classList.add('active');
+            } else if (tab === 'financeCSV') {
+                document.getElementById('bulkFinanceCSVTab').style.display = 'block';
+                document.getElementById('tabFinanceCSV').classList.add('active');
+            }
+        }
+
+        // Handle Financial CSV Selection
+        function handleFinanceCSVSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.name.endsWith('.csv')) {
+                showToast("Please select a CSV file", "warning");
+                return;
+            }
+
+            document.getElementById('financeFileName').innerText = file.name;
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    financeCSVData = results;
+                    parsedFinanceData = processFinanceCSVData(results.data);
+
+                    document.getElementById('financeRowCount').innerText = results.data.length;
+                    document.getElementById('financeFilePreview').style.display = 'block';
+                    document.getElementById('processFinanceBtn').style.display = 'block';
+                    document.getElementById('financeUploadStatus').innerText = `Found ${results.data.length} financial records`;
+                },
+                error: function(error) {
+                    showToast("Error parsing CSV: " + error.message, "danger");
+                }
+            });
+        }
+
+        // Process Financial CSV Data
+        function processFinanceCSVData(data) {
+            const results = [];
+            data.forEach(row => {
+                const id = row['id']?.trim() || row['ID']?.trim() || '';
+                const name = row['name']?.trim() || row['NAME']?.trim() || '';
+                const totalFee = parseFloat(row['total_fee'] || row['Total Fee'] || row['TOTAL_FEE'] || 0);
+                const amountPaid = parseFloat(row['amount_paid'] || row['Amount Paid'] || row['AMOUNT_PAID'] || 0);
+                const balance = parseFloat(row['balance'] || row['BALANCE'] || 0);
+                const arrears = parseFloat(row['arrears'] || row['ARREARS'] || 0);
+                const semester = row['semester']?.trim() || row['SEMESTER']?.trim() || '';
+
+                if (id) {
+                    results.push({
+                        id: id,
+                        name: name,
+                        totalFee: totalFee,
+                        amountPaid: amountPaid,
+                        balance: balance,
+                        arrears: arrears,
+                        semester: semester
+                    });
+                }
+            });
+            return results;
+        }
+
+        // Process Financial CSV Upload
+        async function processFinanceCSV() {
+            if (!parsedFinanceData || parsedFinanceData.length === 0) {
+                showToast("No data to process", "warning");
+                return;
+            }
+
+            const progress = document.getElementById('financeUploadProgress');
+            const status = document.getElementById('financeUploadStatus');
+
+            let processed = 0;
+            let errors = 0;
+
+            for (const record of parsedFinanceData) {
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'upload_finance',
+                            id: record.id,
+                            name: record.name,
+                            totalFee: record.totalFee,
+                            amountPaid: record.amountPaid,
+                            balance: record.balance,
+                            arrears: record.arrears,
+                            semester: record.semester
+                        })
+                    });
+                    processed++;
+                } catch (e) {
+                    errors++;
+                }
+
+                const pct = Math.round((processed + errors) / parsedFinanceData.length * 100);
+                progress.style.width = pct + '%';
+                status.innerText = `Processing: ${processed + errors} of ${parsedFinanceData.length} records...`;
+            }
+
+            showToast(`Successfully uploaded ${processed} financial records${errors > 0 ? ` (${errors} errors)` : ''}`, errors > 0 ? "warning" : "success");
+
+            // Reset
+            financeCSVData = null;
+            parsedFinanceData = [];
+            document.getElementById('financeFilePreview').style.display = 'none';
+            document.getElementById('processFinanceBtn').style.display = 'none';
+            document.getElementById('financeFileInput').value = '';
+            progress.style.width = '0%';
+        }
+
+        // Download Financial CSV Template
+        function downloadFinanceTemplate() {
+            const template = `id,name,total_fee,amount_paid,balance,arrears,semester
+CCST/RM/24/001,Paa Kwesi,4500,2500,2000,0,Semester 1 2026/2027
+CCST/RM/24/002,Abena Arhin,4500,4500,0,0,Semester 1 2026/2027
+CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
+
+            const blob = new Blob([template], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'financial_template.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Financial template downloaded!", "success");
+        }
+
+        // Filter Student List
+        function filterStudentList() {
+            loadStudentClearanceList();
+        }
+
+        // Load Student Clearance List
+        async function loadStudentClearanceList() {
+            const container = document.getElementById('clearanceList');
+            const programFilter = document.getElementById('clearanceProgramFilter')?.value || '';
+            const levelFilter = document.getElementById('clearanceLevelFilter')?.value || '';
+            const statusFilter = document.getElementById('clearanceStatusFilter')?.value || '';
+
+            try {
+                // Fetch all students
+                const res = await fetch(`${SCRIPT_URL}?action=get_all_students`);
+                const data = await res.json();
+
+                if (data.students) {
+                    allStudents = data.students;
+
+                    // Apply filters
+                    let filtered = allStudents;
+                    if (programFilter) {
+                        filtered = filtered.filter(s => s.program === programFilter);
+                    }
+                    if (levelFilter) {
+                        filtered = filtered.filter(s => s.level === levelFilter);
+                    }
+
+                    // Build list
+                    let html = '';
+                    if (filtered.length === 0) {
+                        html = '<p style="text-align: center; color: #999; padding: 40px;">No students found matching the criteria.</p>';
+                    } else {
+                        filtered.forEach(student => {
+                            const isCleared = student.isCleared === true || student.isCleared === "TRUE";
+                            const matchesStatus = !statusFilter ||
+                                (statusFilter === 'cleared' && isCleared) ||
+                                (statusFilter === 'pending' && !isCleared);
+
+                            if (!statusFilter || matchesStatus) {
+                                html += `
+                                    <div class="student-list-item">
+                                        <div class="student-info">
+                                            <span class="student-name">${student.name || 'N/A'}</span>
+                                            <span class="student-details">${student.program || ''} | Level ${student.level || ''} | ID: ${student.id || ''}</span>
+                                        </div>
+                                        <div class="clearance-checkbox">
+                                            <span class="${isCleared ? 'status-cleared' : 'status-not'}">
+                                                ${isCleared ? '<i class="fas fa-check-circle"></i> Cleared' : '<i class="fas fa-times-circle"></i> Pending'}
+                                            </span>
+                                            <input type="checkbox" data-id="${student.id}" onchange="updateSelectedCount()">
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        });
+                    }
+
+                    container.innerHTML = html || '<p style="text-align: center; color: #999; padding: 40px;">No students found matching the criteria.</p>';
+                }
+            } catch (e) {
+                // Sample data for demo
+                allStudents = [
+                    { id: 'CCST/RM/24/001', name: 'John Doe', program: 'RM', level: '100', isCleared: true },
+                    { id: 'CCST/RM/24/002', name: 'Jane Smith', program: 'RM', level: '100', isCleared: false },
+                    { id: 'CCST/MW/24/001', name: 'Michael Johnson', program: 'MW', level: '200', isCleared: true },
+                    { id: 'CCST/DN/24/001', name: 'Sarah Williams', program: 'DN', level: '100', isCleared: false },
+                    { id: 'CCST/RM/23/001', name: 'David Brown', program: 'RM', level: '200', isCleared: true },
+                    { id: 'CCST/MW/23/002', name: 'Emily Davis', program: 'MW', level: '300', isCleared: false },
+                ];
+
+                let filtered = allStudents;
+                if (programFilter) {
+                    filtered = filtered.filter(s => s.program === programFilter);
+                }
+                if (levelFilter) {
+                    filtered = filtered.filter(s => s.level === levelFilter);
+                }
+
+                let html = '';
+                filtered.forEach(student => {
+                    const isCleared = student.isCleared;
+                    html += `
+                        <div class="student-list-item">
+                            <div class="student-info">
+                                <span class="student-name">${student.name}</span>
+                                <span class="student-details">${student.program} | Level ${student.level} | ID: ${student.id}</span>
+                            </div>
+                            <div class="clearance-checkbox">
+                                <span class="${isCleared ? 'status-cleared' : 'status-not'}">
+                                    ${isCleared ? '<i class="fas fa-check-circle"></i> Cleared' : '<i class="fas fa-times-circle"></i> Pending'}
+                                </span>
+                                <input type="checkbox" data-id="${student.id}" onchange="updateSelectedCount()">
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html || '<p style="text-align: center; color: #999; padding: 40px;">No students found matching the criteria.</p>';
+            }
+        }
+
+        // Update Selected Count
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('#clearanceList input[type="checkbox"]');
+            const selected = Array.from(checkboxes).filter(cb => cb.checked).length;
+            document.getElementById('selectedCount').innerText = `${selected} selected`;
+        }
+
+        // Toggle Select All
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAllStudents');
+            const checkboxes = document.querySelectorAll('#clearanceList input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateSelectedCount();
+        }
+
+        // Clear Selected Students
+        async function clearSelectedStudents() {
+            const checkboxes = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]'))
+                .filter(cb => cb.checked);
+
+            if (checkboxes.length === 0) {
+                showToast("Please select at least one student", "warning");
+                return;
+            }
+
+            const ids = checkboxes.map(cb => cb.dataset.id);
+
+            try {
+                for (const id of ids) {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'toggle_clearance',
+                            id: id,
+                            cleared: true
+                        })
+                    });
+                }
+                showToast(`${ids.length} students cleared successfully!`, "success");
+                loadStudentClearanceList();
+            } catch (e) {
+                showToast("Failed to clear students", "danger");
+            }
+        }
+
+        // Unclear Selected Students
+        async function unclearSelectedStudents() {
+            const checkboxes = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]'))
+                .filter(cb => cb.checked);
+
+            if (checkboxes.length === 0) {
+                showToast("Please select at least one student", "warning");
+                return;
+            }
+
+            const ids = checkboxes.map(cb => cb.dataset.id);
+
+            try {
+                for (const id of ids) {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'toggle_clearance',
+                            id: id,
+                            cleared: false
+                        })
+                    });
+                }
+                showToast(`${ids.length} students uncleared successfully!`, "success");
+                loadStudentClearanceList();
+            } catch (e) {
+                showToast("Failed to unclear students", "danger");
+            }
         }
 
         // Toast
