@@ -700,9 +700,9 @@
                             <h4><i class="fas fa-layer-group"></i> Filter by Program/Level</h4>
                             <select id="filterProgram" onchange="filterStudentList()">
                                 <option value="">All Programs</option>
-                                <option value="RM">RM (Records Management)</option>
-                                <option value="MW">MW (Medical Works)</option>
-                                <option value="DN">DN (Dental Nursing)</option>
+                                <option value="RM">RM (Registered Midwifery)</option>
+                                <option value="MW">RN (Registered General Nursing)</option>
+                                <option value="DN">ML (Medical Laboratory Technology)</option>
                             </select>
                             <select id="filterLevel" onchange="filterStudentList()">
                                 <option value="">All Levels</option>
@@ -762,7 +762,7 @@
                             <strong>Required Columns:</strong><br>
                             id, name, total_fee, amount_paid, balance, arrears, semester<br><br>
                             <strong>Example:</strong><br>
-                            CCST/RM/24/001, John Doe, 4500, 2500, 2000, 0, Semester 1 2026/2027
+                            CCST/RM/24/001, Akosua Manu , 4500, 2500, 2000, 0, Semester 1 2026/2027
                         </p>
                         <button onclick="downloadFinanceTemplate()" class="info-btn" style="width: auto; margin-top: 15px;">
                             <i class="fas fa-download"></i> Download Template
@@ -1637,9 +1637,9 @@ CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50
         // Download Financial CSV Template
         function downloadFinanceTemplate() {
             const template = `id,name,total_fee,amount_paid,balance,arrears,semester
-CCST/RM/24/001,John Doe,4500,2500,2000,0,Semester 1 2026/2027
-CCST/RM/24/002,Jane Smith,4500,4500,0,0,Semester 1 2026/2027
-CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
+CCST/RM/24/001,Comfort Botwe,4500,2500,2000,0,Semester 1 2026/2027
+CCST/RN/24/002,Godfred Boadi,4500,4500,0,0,Semester 1 2026/2027
+CCST/MW/24/001,Justus Anim,4500,3000,1500,500,Semester 1 2026/2027`;
 
             const blob = new Blob([template], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
@@ -1715,12 +1715,12 @@ CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
             } catch (e) {
                 // Sample data for demo
                 allStudents = [
-                    { id: 'CCST/RM/24/001', name: 'John Doe', program: 'RM', level: '100', isCleared: true },
-                    { id: 'CCST/RM/24/002', name: 'Jane Smith', program: 'RM', level: '100', isCleared: false },
-                    { id: 'CCST/MW/24/001', name: 'Michael Johnson', program: 'MW', level: '200', isCleared: true },
-                    { id: 'CCST/DN/24/001', name: 'Sarah Williams', program: 'DN', level: '100', isCleared: false },
-                    { id: 'CCST/RM/23/001', name: 'David Brown', program: 'RM', level: '200', isCleared: true },
-                    { id: 'CCST/MW/23/002', name: 'Emily Davis', program: 'MW', level: '300', isCleared: false },
+                    { id: 'CCST/RM/24/001', name: 'Dorcus Anderson', program: 'RM', level: '100', isCleared: true },
+                    { id: 'CCST/RM/24/002', name: 'Justina Arhin', program: 'RN', level: '100', isCleared: false },
+                    { id: 'CCST/MW/24/001', name: 'Akosua Johnson', program: 'ML', level: '200', isCleared: true },
+                    { id: 'CCST/DN/24/001', name: 'Evelyn Prah', program: 'ML', level: '100', isCleared: false },
+                    { id: 'CCST/RM/23/001', name: 'Ernest Ahenkrah', program: 'RN', level: '200', isCleared: true },
+                    { id: 'CCST/MW/23/002', name: 'Alice Essel', program: 'ML', level: '300', isCleared: false },
                 ];
 
                 let filtered = allStudents;
