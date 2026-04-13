@@ -639,7 +639,7 @@
                     </ul>
                     <p style="margin: 15px 0 10px;"><strong>Optional Columns:</strong></p>
                     <ul style="margin-left: 20px; color: #666;">
-                        <li><code>PROGRAM</code> - Program code (e.g., RM, MW)</li>
+                        <li><code>PROGRAM</code> - Program code (e.g., RM, ML)</li>
                         <li><code>LEVEL</code> - Academic level (e.g., 100, 200)</li>
                         <li><code>SEMESTER</code> - Semester identifier</li>
                     </ul>
@@ -701,8 +701,8 @@
                             <select id="filterProgram" onchange="filterStudentList()">
                                 <option value="">All Programs</option>
                                 <option value="RM">RM (Registered Midwifery)</option>
-                                <option value="MW">RN (Registered General Nursing)</option>
-                                <option value="DN">ML (Medical Laboratory Technology)</option>
+                                <option value="RGN">RN (Registered General Nursing)</option>
+                                <option value="ML">ML (Medical Laboratory Technology)</option>
                             </select>
                             <select id="filterLevel" onchange="filterStudentList()">
                                 <option value="">All Levels</option>
@@ -810,9 +810,9 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
                         <select id="clearanceProgramFilter" onchange="loadStudentClearanceList()">
                             <option value="">All Programs</option>
-                            <option value="RM">RM (Records Management)</option>
-                            <option value="MW">MW (Medical Works)</option>
-                            <option value="DN">DN (Dental Nursing)</option>
+                            <option value="RM">RM (Registered Midwifery)</option>
+                            <option value="ML">ML (Medical Laboratory Technology)</option>
+                            <option value="RGN">RGN (Registered General Nursing)</option>
                         </select>
                         <select id="clearanceLevelFilter" onchange="loadStudentClearanceList()">
                             <option value="">All Levels</option>
@@ -935,7 +935,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw28ucEPCaGV_NMqHN-Y2TYmw5p11-wNY1LLSc3UpYGxbRATwb4AeKGCa89Jv2LWm18/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3Z0Gy6hr-255wQFRxd7or4enc5EoVgy7mwzXr3iUWb6j10xfLTrdWD6xRIxEndmE_/exec";
         let currentStudent = null;
         let csvData = null;
         let parsedResults = [];
@@ -1716,11 +1716,11 @@ CCST/MW/24/001,Justus Anim,4500,3000,1500,500,Semester 1 2026/2027`;
                 // Sample data for demo
                 allStudents = [
                     { id: 'CCST/RM/24/001', name: 'Dorcus Anderson', program: 'RM', level: '100', isCleared: true },
-                    { id: 'CCST/RM/24/002', name: 'Justina Arhin', program: 'RN', level: '100', isCleared: false },
-                    { id: 'CCST/MW/24/001', name: 'Akosua Johnson', program: 'ML', level: '200', isCleared: true },
-                    { id: 'CCST/DN/24/001', name: 'Evelyn Prah', program: 'ML', level: '100', isCleared: false },
+                    { id: 'CCST/RN/24/002', name: 'Justina Arhin', program: 'RN', level: '100', isCleared: false },
+                    { id: 'CCST/ML/24/001', name: 'Akosua Johnson', program: 'ML', level: '200', isCleared: true },
+                    { id: 'CCST/ML/24/001', name: 'Evelyn Prah', program: 'ML', level: '100', isCleared: false },
                     { id: 'CCST/RM/23/001', name: 'Ernest Ahenkrah', program: 'RN', level: '200', isCleared: true },
-                    { id: 'CCST/MW/23/002', name: 'Alice Essel', program: 'ML', level: '300', isCleared: false },
+                    { id: 'CCST/ML/23/002', name: 'Alice Essel', program: 'ML', level: '300', isCleared: false },
                 ];
 
                 let filtered = allStudents;

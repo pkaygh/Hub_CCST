@@ -685,7 +685,7 @@
 
     <script>
         // Configuration
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw28ucEPCaGV_NMqHN-Y2TYmw5p11-wNY1LLSc3UpYGxbRATwb4AeKGCa89Jv2LWm18/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3Z0Gy6hr-255wQFRxd7or4enc5EoVgy7mwzXr3iUWb6j10xfLTrdWD6xRIxEndmE_/exec";
         const DB_NAME = 'CCSTStudentDB';
         const DB_VERSION = 1;
         const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
@@ -1170,6 +1170,68 @@
             saveToDB('notifications', { id: 'all', data: notifications });
             showToast('All notifications marked as read');
         }
+
+
+        async function uploadPhoto(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Check file size (Don't even try to process if > 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        showToast("File is too large! Please pick a smaller image.", "danger");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            // Create a small canvas to resize the image
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 300; // Small size for profile pics
+            const scaleSize = MAX_WIDTH / img.width;
+            canvas.width = MAX_WIDTH;
+            canvas.height = img.height * scaleSize;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            // Convert to a compressed JPEG (0.7 quality)
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+            // UPDATE UI
+            document.getElementById('profilePic').src = compressedBase64;
+            document.getElementById('sidebarPhoto').src = compressedBase64;
+
+            // SAVE TO GOOGLE SHEET
+            savePhotoToServer(compressedBase64);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// Helper function to send to Apps Script
+async function savePhotoToServer(base64Data) {
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'upload_photo',
+                id: studentData.profile.id,
+                photoData: base64Data
+            })
+        });
+        const result = await response.json();
+        if (result.success) {
+            studentData.profile.photoUrl = base64Data;
+            localStorage.setItem('userData', JSON.stringify(studentData));
+            showToast("Photo updated successfully!", "success");
+        }
+    } catch (e) {
+        showToast("Server error saving photo", "danger");
+    }
+}
 
         // Upload Photo (simulated - save to localStorage for offline)
         function uploadPhoto(e) {
