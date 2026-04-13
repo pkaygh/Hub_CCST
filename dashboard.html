@@ -1025,8 +1025,8 @@
             const p = studentData.profile;
 
             // Finance data - using Ghana Cedis (GH₵)
-            const totalFee = p.totalFee || 450000;
-            const amountPaid = p.amountPaid || p.balance ? (totalFee - p.balance) : 320000;
+            const totalFee = p.totalFee || 0;
+            const amountPaid = p.amountPaid || p.balance ? (totalFee - p.balance) : 0;
             const balance = p.balance || (totalFee - amountPaid);
             const arrears = p.arrears || 0;
 
