@@ -897,7 +897,7 @@
                 statusBox.innerText = "FINANCIALLY CLEARED";
                 statusBox.className = "status-badge cleared";
             } else {
-                statusBox.innerText = "NOT CLEARED";
+                statusBox.innerText = "NOT CLEARED!";
                 statusBox.className = "status-badge not-cleared";
             }
         }
@@ -930,24 +930,37 @@
                 let semCredits = sem.details.length * 3; // Assuming 3 credits per course
 
                 sem.details.forEach(course => {
-                    semPoints += getGradePoints(course.grade) * 3;
-                });
+    // Adjusting these indices to match the 7-column template above
+    const courseName = course[1];  // Column B
+    const credits = course[5];     // Column F (NEW)
+    const grade = course[6];       // Column G
+    
+    const points = getGradePoints(grade);
+    const weightedPoints = (points * credits).toFixed(1);
+
+    courseRows += `
+        <div class="course-item">
+            <div>${courseName}</div>
+            <div style="text-align: center;">${credits}</div>
+            <div style="text-align: center;">${weightedPoints}</div>
+            <div style="text-align: center;" class="${getGradeClass(grade)}">${grade}</div>
+        </div>
+    `;
+});
 
                 totalPoints += semPoints;
                 totalCredits += semCredits;
 
                 // Build course rows
-                let courseRows = '';
-                sem.details.forEach(course => {
-                    const gradeClass = getGradeClass(course.grade);
-                    courseRows += `
-                        <div class="course-item">
-                            <div>${course.name}</div>
-                            <div style="text-align: center;">${getGradePoints(course.grade).toFixed(1)}</div>
-                            <div style="text-align: center;" class="${gradeClass}">${course.grade}</div>
-                        </div>
-                    `;
-                });
+
+                // REPLACE the mapping logic in your results loop
+                ${results.map(row => `
+                <div class="course-item">${row[1] || 'Unknown Course'}</div> <div class="course-item" style="text-align: center; font-weight: bold;">
+                        ${row[6] || 'N/A'} </div>
+                    <div class="course-item" style="text-align: center;">
+                        ${row[5] || '0'} </div>
+                `).join('')}
+
 
                 container.innerHTML += `
                     <div class="semester-card" data-semester="${sem.semester}">
@@ -1285,6 +1298,63 @@ async function savePhotoToServer(base64Data) {
                 window.location.replace("index.html");
             }
         }
+
+        /**
+ * Renders the filtered results into the dashboard UI
+ * Grouped by Semester with UCC-style Weighted calculations
+ */
+function displayFilteredTable(results) {
+    const container = document.getElementById('resultsContainer');
+    let html = '';
+
+    if (!results || results.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666;">
+                <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.3;"></i>
+                <p>No academic records match the selected filters.</p>
+            </div>`;
+        return;
+    }
+
+    // 1. Group results by Semester (Index 2 in your Google Sheet)
+    const grouped = {};
+    results.forEach(row => {
+        const sem = row[2] || "Other";
+        if (!grouped[sem]) grouped[sem] = [];
+        grouped[sem].push(row);
+    });
+
+    // 2. Generate HTML for each Semester block
+    for (const sem in grouped) {
+        // Pull the GPA from Index 3 (Column D)
+        const semesterGPA = grouped[sem][0][3] || "0.00"; 
+        
+        html += `
+            <div class="semester-card">
+                <div class="semester-header">
+                    <h3>${sem}</h3>
+                    <div class="gpa-badge">GPA: ${semesterGPA}</div>
+                </div>
+                
+                <div class="course-grid">
+                    <div class="course-header">Course Name</div>
+                    <div class="course-header" style="text-align: center;">Credits</div>
+                    <div class="course-header" style="text-align: center;">Grade</div>
+                    
+                    ${grouped[sem].map(row => {
+                        const grade = row[6] || 'N/A'; // Index 6 is Column G
+                        return `
+                            <div class="course-item">${row[1]}</div> <div class="course-item" style="text-align: center;">${row[5] || '0'}</div> <div class="course-item ${getGradeClass(grade)}" style="text-align: center;">
+                                ${grade}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>`;
+    }
+    
+    container.innerHTML = html;
+}
 
         // Fetch data from server
         async function fetchStudentData() {
