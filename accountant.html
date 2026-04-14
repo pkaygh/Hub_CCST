@@ -812,7 +812,7 @@
                             <option value="">All Programs</option>
                             <option value="RM">Dip. Midwifery</option>
                             <option value="ML">HND Medical Laboratory Technology</option>
-                            <option value="RGN">Dip. Nursing)</option>
+                            <option value="RN">Dip. Nursing</option>
                         </select>
                         <select id="clearanceLevelFilter" onchange="loadStudentClearanceList()">
                             <option value="">All Levels</option>
@@ -1370,20 +1370,29 @@
         }
 
         // Download Template
-        function downloadTemplate() {
-            const template = `id,INDEX NUMBER,NAME,PROGRAM,LEVEL,SEMESTER,CCC 016 CA,CCC 016 EXAMS,CCN 012 CA,CCN 012 EXAMS,CCN 029 CA,CCN 029 EXAMS
-CCST/RM/24/001,CCST/RM/24/001,OGOE RUBY,RM,100,Semester 2 2025/2026,33,33,28,53,23,33
-CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50,30,52,28,43`;
+        function downloadResultsTemplate() {
+    // These headers MUST match your apps-script indexing (0 to 6)
+    const headers = ["StudentID", "CourseName", "Semester", "GPA", "Program", "Credits", "Grade"];
+    const rows = [
+        ["CCST/RM/24/001", "Database Management", "Level 100 Sem 1", "0.00", "MSc Information Technology", "3", "A"],
+        ["CCST/RM/24/001", "Academic Writing", "Level 100 Sem 1", "0.00", "MSc Information Technology", "2", "B+"]
+    ];
 
-            const blob = new Blob([template], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'results_template.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Template downloaded!", "success");
-        }
+    let csvContent = "data:text/csv;charset=utf-8," 
+        + headers.join(",") + "\n"
+        + rows.map(e => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "CCST_Results_Template.csv");
+    document.body.appendChild(link);
+    link.click();
+}
+
+
+
+    
 
         // Toggle Target Selection
         function toggleTargetSelection() {
@@ -1635,21 +1644,26 @@ CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50
         }
 
         // Download Financial CSV Template
-        function downloadFinanceTemplate() {
-            const template = `id,name,total_fee,amount_paid,balance,arrears,semester
-CCST/RM/24/001,Comfort Botwe,4500,2500,2000,0,Semester 1 2026/2027
-CCST/RN/24/002,Godfred Boadi,4500,4500,0,0,Semester 1 2026/2027
-CCST/MW/24/001,Justus Anim,4500,3000,1500,500,Semester 1 2026/2027`;
+        function downloadStudentTemplate() {
+    // Columns A through K
+    const headers = [
+        "Name", "ID", "Password", "Program", "Level", 
+        "Contact", "CurrentFees", "AmountPaid", "ClearanceStatus", "Arrears", "Photo"
+    ];
+    
+    const sample = ["Godfed Boadi", "CCST/001", "123456", "MSc IT", "100", "0240000000", "2500", "1500", "FALSE", "500", ""];
 
-            const blob = new Blob([template], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'financial_template.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Financial template downloaded!", "success");
-        }
+    let csvContent = "data:text/csv;charset=utf-8," 
+        + headers.join(",") + "\n"
+        + sample.join(",");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "CCST_Student_Bulk_Template.csv");
+    document.body.appendChild(link);
+    link.click();
+}
 
         // Filter Student List
         function filterStudentList() {
