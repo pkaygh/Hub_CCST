@@ -3,89 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1a472a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Student Dashboard | CCST</title>
     <style>
-        /* NEW THEME: Dots halftone grunge brush yellow green with white on dark green */
-        :root {
-            --primary: #6b8e23; /* Yellow Green/Olive Drab */
-            --primary-light: #9acd32; /* Yellow Green */
-            --primary-dark: #1a472a; /* Dark Green */
-            --bg: #f5f5dc; /* Beige background */
-            --success: #556b2f; /* Dark Olive Green */
-            --danger: #8b0000; /* Dark Red */
-            --warning: #daa520; /* Goldenrod */
-            --sidebar-bg: #1a472a; /* Dark Green */
-            --card-shadow: 0 4px 15px rgba(26, 71, 42, 0.15);
-            --white: #ffffff;
-            --text-dark: #2f4f2f; /* Dark Slate Gray */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        /* Halftone dots background pattern */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
+            background: #f5f5dc;
             background-image: radial-gradient(circle, rgba(107, 142, 35, 0.1) 1px, transparent 1px);
             background-size: 8px 8px;
-            color: var(--text-dark);
+            color: #2f4f2f;
             display: flex;
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        /* Mobile Menu Toggle */
-        .menu-toggle {
-            display: none;
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1001;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-
-        /* Sidebar */
         .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
+            background: #1a472a;
             color: white;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
             transition: transform 0.3s ease;
             z-index: 1000;
-            /* Grunge brush texture effect */
-            background-image:
-                linear-gradient(135deg, rgba(85, 107, 47, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 0%, transparent 30%),
-                radial-gradient(circle at 80% 70%, rgba(0,0,0,0.1) 0%, transparent 40%);
-        }
-
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
         }
 
         .sidebar-header {
             padding: 25px 20px;
             text-align: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: linear-gradient(135deg, #6b8e23 0%, #1a472a 100%);
         }
 
         .profile-pic-sidebar {
@@ -93,29 +44,8 @@
             height: 80px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid var(--primary-light);
-            cursor: pointer;
-            transition: transform 0.3s, border-color 0.3s;
-            box-shadow: 0 0 15px rgba(154, 205, 50, 0.3);
-        }
-
-        .profile-pic-sidebar:hover {
-            transform: scale(1.1);
-            border-color: white;
-        }
-
-        .sidebar-header h3 {
-            color: white;
-            font-size: 1rem;
-            margin-top: 12px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
-
-        .sidebar-header p {
-            font-size: 0.8rem;
-            opacity: 0.9;
-            margin-top: 4px;
-            color: var(--primary-light);
+            border: 3px solid #9acd32;
+            margin-bottom: 10px;
         }
 
         .menu-item {
@@ -125,6 +55,7 @@
             gap: 12px;
             color: rgba(255,255,255,0.85);
             text-decoration: none;
+            cursor: pointer;
             transition: 0.3s;
             border-left: 4px solid transparent;
         }
@@ -132,52 +63,36 @@
         .menu-item:hover, .menu-item.active {
             background: rgba(107, 142, 35, 0.3);
             color: white;
-            border-left-color: var(--primary-light);
+            border-left-color: #9acd32;
         }
 
         .menu-item i {
-            font-size: 1.1rem;
             width: 24px;
-            text-align: center;
-            color: var(--primary-light);
+            color: #9acd32;
         }
 
-        .menu-item.active i { color: white; }
-
-        .menu-item .badge {
-            margin-left: auto;
-            background: var(--danger);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-        }
-
-        /* Main Content */
         .main-content {
             margin-left: 280px;
             flex: 1;
             padding: 20px;
-            transition: margin-left 0.3s;
         }
 
         .navbar {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            background: linear-gradient(135deg, #1a472a 0%, #6b8e23 100%);
             color: white;
             padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.25);
         }
 
         .card {
             background: white;
             padding: 25px;
             border-radius: 12px;
-            box-shadow: var(--card-shadow);
+            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.15);
             margin-bottom: 25px;
             border: 2px solid rgba(107, 142, 35, 0.2);
         }
@@ -188,16 +103,22 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 3px solid var(--primary);
+            border-bottom: 3px solid #6b8e23;
         }
 
-        .card-header h3 { color: var(--primary-dark); }
+        .section {
+            display: none;
+        }
 
-        /* Profile Section */
+        .section.active {
+            display: block;
+        }
+
         .profile-container {
             display: flex;
             align-items: center;
             gap: 25px;
+            flex-wrap: wrap;
         }
 
         .profile-pic {
@@ -205,17 +126,18 @@
             height: 100px;
             border-radius: 50%;
             object-fit: cover;
-            border: 4px solid var(--primary-light);
-            box-shadow: 0 4px 12px rgba(26, 71, 42, 0.2);
-            cursor: pointer;
+            border: 4px solid #9acd32;
         }
 
         .profile-info h2 {
-            margin-bottom: 5px;
-            color: var(--primary-dark);
+            color: #1a472a;
+            margin-bottom: 10px;
         }
 
-        .profile-info p { color: #666; font-size: 0.95rem; }
+        .profile-info p {
+            margin: 5px 0;
+            color: #555;
+        }
 
         .status-badge {
             display: inline-block;
@@ -226,93 +148,34 @@
             margin-top: 10px;
         }
 
-        .cleared { background: var(--success); color: white; }
-        .not-cleared { background: var(--danger); color: white; }
-        .pending { background: var(--warning); color: white; }
+        .status-cleared { background: #556b2f; color: white; }
+        .status-pending { background: #8b0000; color: white; }
 
-        /* Academic Results */
-        .semester-card {
-            border-left: 5px solid var(--primary);
-            padding: 20px;
-            background: linear-gradient(to right, rgba(107, 142, 35, 0.05), transparent);
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .semester-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .gpa-badge {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-
-        .course-grid {
+        .info-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 10px;
-            padding: 10px;
-            background: white;
-            border-radius: 8px;
-            border: 1px solid rgba(107, 142, 35, 0.2);
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
         }
 
-        .course-header {
-            font-weight: bold;
-            color: var(--primary-dark);
-            font-size: 0.85rem;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(107, 142, 35, 0.2);
-        }
-
-        .course-item {
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .grade-a { color: var(--success); font-weight: bold; }
-        .grade-b { color: var(--primary); font-weight: bold; }
-        .grade-c { color: var(--warning); font-weight: bold; }
-        .grade-d { color: #cd853f; font-weight: bold; }
-        .grade-f { color: var(--danger); font-weight: bold; }
-
-        /* UCC Grading Scale */
-        .grading-scale {
-            background: linear-gradient(135deg, rgba(107, 142, 35, 0.1), rgba(154, 205, 50, 0.1));
+        .info-card {
+            background: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
-            margin-top: 20px;
-            border: 1px solid rgba(107, 142, 35, 0.3);
-        }
-
-        .grading-scale h4 { margin-bottom: 10px; color: var(--primary-dark); }
-
-        .grade-table {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-        }
-
-        .grade-item {
             text-align: center;
-            padding: 8px;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid rgba(107, 142, 35, 0.2);
         }
 
-        .grade-item .points { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
-        .grade-item .letter { font-size: 1rem; font-weight: bold; }
-        .grade-item .range { font-size: 0.8rem; color: #666; }
+        .info-card small {
+            color: #666;
+            display: block;
+            margin-bottom: 5px;
+        }
 
-        /* Finance Section */
+        .info-card strong {
+            font-size: 1.2rem;
+            color: #1a472a;
+        }
+
         .finance-summary {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -327,536 +190,508 @@
             color: white;
         }
 
-        .finance-card.total { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); }
-        .finance-card.paid { background: linear-gradient(135deg, var(--success) 0%, #8fbc8f 100%); }
-        .finance-card.balance { background: linear-gradient(135deg, var(--danger) 0%, #cd5c5c 100%); }
-        .finance-card.cgpa { background: linear-gradient(135deg, var(--warning) 0%, #f0e68c 100%); color: var(--text-dark); }
+        .finance-card.total { background: linear-gradient(135deg, #1a472a 0%, #6b8e23 100%); }
+        .finance-card.paid { background: linear-gradient(135deg, #556b2f 0%, #8fbc8f 100%); }
+        .finance-card.balance { background: linear-gradient(135deg, #8b0000 0%, #cd5c5c 100%); }
 
-        .finance-card h4 { font-size: 0.9rem; opacity: 0.9; }
-        .finance-card h2 { font-size: 1.8rem; margin-top: 5px; }
+        .semester-card {
+            border-left: 5px solid #6b8e23;
+            padding: 20px;
+            background: rgba(107, 142, 35, 0.05);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
 
-        .payment-history-item {
+        .semester-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
-            background: linear-gradient(to right, rgba(107, 142, 35, 0.05), transparent);
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .gpa-badge {
+            background: linear-gradient(135deg, #6b8e23 0%, #1a472a 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(107, 142, 35, 0.05);
             border-radius: 8px;
             margin-bottom: 10px;
-            border-left: 4px solid var(--primary);
+            border-left: 4px solid #6b8e23;
         }
 
-        .payment-details strong { display: block; }
-        .payment-details small { color: #666; }
-        .payment-amount { font-weight: bold; color: var(--success); }
-
-        /* Notifications */
-        .notification-item {
-            display: flex;
-            gap: 15px;
-            padding: 15px;
-            background: linear-gradient(to right, rgba(107, 142, 35, 0.03), white);
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--primary);
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-        }
-
-        .notification-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 4px 12px rgba(26, 71, 42, 0.15);
-        }
-
-        .notification-item.unread {
-            border-left-color: var(--warning);
-            background: linear-gradient(to right, rgba(218, 165, 32, 0.1), white);
-        }
-
-        .notification-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-
-        .notification-content { flex: 1; }
-        .notification-content h4 { margin-bottom: 5px; color: var(--text-dark); }
-        .notification-content p { color: #666; font-size: 0.9rem; }
-        .notification-meta { font-size: 0.8rem; color: #999; margin-top: 8px; }
-
-        /* Offline Indicator */
-        .offline-indicator {
-            display: none;
-            background: var(--warning);
-            color: white;
-            text-align: center;
-            padding: 8px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .offline-indicator.show { display: block; }
-
-        /* Toast Notification */
         .toast {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            background: #1a472a;
             color: white;
             padding: 12px 25px;
             border-radius: 30px;
             z-index: 10000;
-            animation: slideUp 0.3s ease;
-            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.3);
-        }
-
-        @keyframes slideUp {
-            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-
-        /* Session Timeout Warning */
-        .session-warning {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--danger);
-            color: white;
-            padding: 10px 30px;
-            border-radius: 0 0 10px 10px;
-            z-index: 10001;
             display: none;
-            font-weight: bold;
         }
 
-        .session-warning.show { display: block; }
+        button {
+            background: #6b8e23;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
 
-        /* Responsive */
+        hr {
+            margin: 20px 25px;
+            border-color: rgba(255,255,255,0.1);
+        }
+
         @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .sidebar-overlay.show { display: block; }
-            .main-content { margin-left: 0; padding: 15px; padding-top: 60px; }
-            .profile-container { flex-direction: column; text-align: center; }
-            .course-grid { grid-template-columns: 1fr 1fr; }
-            .finance-summary { grid-template-columns: 1fr 1fr; }
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                z-index: 1001;
+                background: #6b8e23;
+                padding: 10px;
+                border-radius: 8px;
+                cursor: pointer;
+            }
+        }
+
+        .menu-toggle {
+            display: none;
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
-    <button class="menu-toggle" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-    </button>
-    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<button class="menu-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+</button>
 
-    <!-- SIDE MENU -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <img id="sidebarPhoto" src="https://via.placeholder.com/80" class="profile-pic-sidebar" onclick="document.getElementById('photoUpload').click()">
-            <input type="file" id="photoUpload" accept="image/*" style="display:none;" onchange="uploadPhoto(event)">
-            <h3 id="sidebarName">Student</h3>
-            <p id="sidebarDetails">Level 100</p>
-        </div>
-
-        <a href="#" class="menu-item active" onclick="showSection('profile')">
-            <i class="fas fa-user"></i> Profile
-        </a>
-        <a href="#" class="menu-item" onclick="showSection('academic')">
-            <i class="fas fa-graduation-cap"></i> Academic
-        </a>
-        <a href="#" class="menu-item" onclick="showSection('finance')">
-            <i class="fas fa-money-bill-wave"></i> Finance
-        </a>
-        <a href="#" class="menu-item" onclick="showSection('notifications')">
-            <i class="fas fa-bell"></i> Notifications
-            <span id="notifBadge" class="badge" style="display:none;">0</span>
-        </a>
-
-        <hr style="margin: 20px 25px; border-color: rgba(255,255,255,0.1);">
-
-        <a href="#" class="menu-item" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <img class="profile-pic-sidebar" id="sidebarPhoto" src="https://via.placeholder.com/80" alt="Profile">
+        <h3 id="sidebarName">Student</h3>
+        <p id="sidebarDetails">CCST Portal</p>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
-        <div class="offline-indicator" id="offlineIndicator">
-            <i class="fas fa-wifi-slash"></i> You are offline. Viewing cached data.
+    <div class="menu-item active" onclick="showSection('profile')">
+        <i class="fas fa-user"></i> Profile
+    </div>
+    <div class="menu-item" onclick="showSection('academic')">
+        <i class="fas fa-graduation-cap"></i> Academic Results
+    </div>
+    <div class="menu-item" onclick="showSection('finance')">
+        <i class="fas fa-money-bill-wave"></i> Finance
+    </div>
+    <div class="menu-item" onclick="showSection('notifications')">
+        <i class="fas fa-bell"></i> Notifications
+    </div>
+
+    <hr>
+
+    <div class="menu-item" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="navbar">
+        <h3 id="pageTitle">My Profile</h3>
+        <div>
+            <span id="studentNameHeader"></span>
+            <i class="fas fa-circle" style="color: #90EE90; font-size: 0.5rem;"></i>
         </div>
+    </div>
 
-        <div class="navbar">
-            <h3 id="pageTitle">Student Dashboard</h3>
-            <div>
-                <span id="studentNameHeader" style="margin-right: 15px;"></span>
-                <span id="onlineStatus" style="color: #90EE90;"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> Online</span>
+    <!-- PROFILE SECTION -->
+    <div id="profileSection" class="section active">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-user-circle"></i> My Profile</h3>
             </div>
-        </div>
-
-        <!-- PROFILE SECTION -->
-        <div id="profileSection" class="section">
-            <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-user-circle"></i> My Profile</h3>
-                    <button onclick="editProfile()" style="background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                </div>
-                <div class="profile-container">
-                    <img id="profilePic" src="https://via.placeholder.com/100" class="profile-pic" onclick="document.getElementById('photoUpload').click()">
-                    <div class="profile-info">
-                        <h2 id="profileName">Loading...</h2>
-                        <p id="profileProgram"></p>
-                        <p id="profileId" style="color: #999; font-size: 0.85rem;"></p>
-                        <div id="clearanceStatus" class="status-badge">Checking...</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3 style="color: var(--primary); margin-bottom: 15px;"><i class="fas fa-info-circle"></i> Account Information</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                        <small style="color: #666;">Student ID</small>
-                        <p id="infoId" style="font-weight: bold; font-size: 1.1rem;"></p>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                        <small style="color: #666;">Program</small>
-                        <p id="infoProgram" style="font-weight: bold; font-size: 1.1rem;"></p>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                        <small style="color: #666;">Level</small>
-                        <p id="infoLevel" style="font-weight: bold; font-size: 1.1rem;"></p>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                        <small style="color: #666;">Academic Status</small>
-                        <p id="infoStatus" style="font-weight: bold; font-size: 1.1rem;"></p>
-                    </div>
+            <div class="profile-container">
+                <img class="profile-pic" id="profilePic" src="https://via.placeholder.com/100" alt="Profile">
+                <div class="profile-info">
+                    <h2 id="profileName">-- Loading --</h2>
+                    <p id="profileId"><i class="fas fa-id-card"></i> --</p>
+                    <p id="profileProgram"><i class="fas fa-book"></i> --</p>
+                    <p id="profileLevel"><i class="fas fa-layer-group"></i> --</p>
+                    <div id="clearanceStatus" class="status-badge status-pending">Checking...</div>
                 </div>
             </div>
         </div>
 
-        <!-- ACADEMIC SECTION -->
-        <div id="academicSection" class="section" style="display:none;">
-            <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-graduation-cap"></i> Examination Results</h3>
-                    <select id="semesterFilter" onchange="filterResults()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd;">
-                        <option value="all">All Semesters</option>
-                    </select>
+        <div class="card">
+            <h3><i class="fas fa-chart-line"></i> Account Information</h3>
+            <div class="info-grid">
+                <div class="info-card">
+                    <small>Student ID</small>
+                    <strong id="infoId">--</strong>
                 </div>
-
-                <div id="academicSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
-                    <div class="finance-card cgpa">
-                        <h4>CGPA</h4>
-                        <h2 id="cgpaDisplay">--</h2>
-                    </div>
-                    <div class="finance-card total">
-                        <h4>Total Credits</h4>
-                        <h2 id="totalCredits">--</h2>
-                    </div>
-                    <div class="finance-card paid">
-                        <h4>Status</h4>
-                        <h2 id="academicStatus">--</h2>
-                    </div>
+                <div class="info-card">
+                    <small>Program</small>
+                    <strong id="infoProgram">--</strong>
                 </div>
-
-                <div id="resultsContainer">
-                    <p style="text-align: center; color: #999; padding: 40px;">Loading academic records...</p>
+                <div class="info-card">
+                    <small>Level</small>
+                    <strong id="infoLevel">--</strong>
                 </div>
-
-                <div class="grading-scale">
-                    <h4><i class="fas fa-table"></i> UCC Grading System</h4>
-                    <div class="grade-table">
-                        <div class="grade-item">
-                            <div class="points">4.0</div>
-                            <div class="letter" style="color: #27ae60;">A</div>
-                            <div class="range">80-100%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">3.5</div>
-                            <div class="letter" style="color: #3498db;">B+</div>
-                            <div class="range">75-79%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">3.0</div>
-                            <div class="letter" style="color: #3498db;">B</div>
-                            <div class="range">70-74%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">2.5</div>
-                            <div class="letter" style="color: #f39c12;">C+</div>
-                            <div class="range">65-69%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">2.0</div>
-                            <div class="letter" style="color: #f39c12;">C</div>
-                            <div class="range">60-64%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">1.5</div>
-                            <div class="letter" style="color: #e67e22;">D</div>
-                            <div class="range">55-59%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">1.0</div>
-                            <div class="letter" style="color: #e74c3c;">E</div>
-                            <div class="range">50-54%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">0.0</div>
-                            <div class="letter" style="color: #e74c3c;">F</div>
-                            <div class="range">0-49%</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- FINANCE SECTION -->
-        <div id="financeSection" class="section" style="display:none;">
-            <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-money-bill-wave"></i> Financial Summary</h3>
-                </div>
-
-                <div class="finance-summary">
-                    <div class="finance-card total">
-                        <h4><i class="fas fa-wallet"></i> Total Semester Fee</h4>
-                        <h2 id="totalFee">GH₵0.00</h2>
-                    </div>
-                    <div class="finance-card paid">
-                        <h4><i class="fas fa-check-circle"></i> Amount Paid</h4>
-                        <h2 id="amountPaid">GH₵0.00</h2>
-                    </div>
-                    <div class="finance-card balance">
-                        <h4><i class="fas fa-exclamation-circle"></i> Balance</h4>
-                        <h2 id="balance">GH₵0.00</h2>
-                    </div>
-                    <div class="finance-card cgpa" style="background: linear-gradient(135deg, #8b0000 0%, #cd5c5c 100%); color: white;">
-                        <h4><i class="fas fa-history"></i> Arrears</h4>
-                        <h2 id="arrears">GH₵0.00</h2>
-                    </div>
-                </div>
-
-                <div id="clearanceStatusFinance" style="padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 20px; display: none;"></div>
-
-                <h4 style="color: var(--primary); margin-bottom: 15px;"><i class="fas fa-history"></i> Payment History</h4>
-                <div id="paymentHistory">
-                    <p style="text-align: center; color: #999;">No payment records found.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- NOTIFICATIONS SECTION -->
-        <div id="notificationsSection" class="section" style="display:none;">
-            <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-bell"></i> Campus Notifications</h3>
-                    <button onclick="markAllRead()" style="background: var(--success); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">
-                        <i class="fas fa-check-double"></i> Mark All Read
-                    </button>
-                </div>
-                <div id="notificationList">
-                    <p style="text-align: center; color: #999; padding: 40px;">Loading notifications...</p>
+                <div class="info-card">
+                    <small>Semester</small>
+                    <strong id="infoSemester">--</strong>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Session Timeout Warning -->
-    <div id="sessionWarning" class="session-warning">
-        <i class="fas fa-clock"></i> Session expires in <span id="sessionTimer">5:00</span> - Move mouse to stay active
+    <!-- ACADEMIC SECTION -->
+    <div id="academicSection" class="section">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-graduation-cap"></i> Academic Results</h3>
+            </div>
+            <div id="resultsContainer">
+                <p style="text-align:center; padding:40px;">No results available.</p>
+            </div>
+        </div>
     </div>
 
-    <script>
-        // 1. CONFIGURATION & STATE
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSiq3BF4Upl898HwUW7oSxQGWyon6UKxm-jNZZ_g3_HvkfGbDAZZHDD_aTc7w5oa_H/exec"; // <--- PASTE YOUR GOOGLE WEB APP URL HERE
-        let studentData = null;
-        let userResults = [];
-        let db;
+    <!-- FINANCE SECTION -->
+    <div id="financeSection" class="section">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-money-bill-wave"></i> Financial Summary</h3>
+            </div>
+            <div class="finance-summary">
+                <div class="finance-card total">
+                    <h4>Total Fee</h4>
+                    <h2 id="totalFee">GHS 0</h2>
+                </div>
+                <div class="finance-card paid">
+                    <h4>Amount Paid</h4>
+                    <h2 id="amountPaid">GHS 0</h2>
+                </div>
+                <div class="finance-card balance">
+                    <h4>Balance</h4>
+                    <h2 id="balance">GHS 0</h2>
+                </div>
+            </div>
+            <h4 style="margin: 20px 0 10px;">Payment History</h4>
+            <div id="paymentHistory">
+                <p style="text-align:center; color:#999;">No payment records.</p>
+            </div>
+        </div>
+    </div>
 
-        // 2. UCC GRADE POINTS & THEME LOGIC
-        function getGradePoints(grade) {
-            const points = { 
-                'A': 4.0, 'B+': 3.5, 'B': 3.0, 
-                'C+': 2.5, 'C': 2.0, 'D+': 1.5, 
-                'D': 1.0, 'F': 0.0 
-            };
-            return points[grade?.toUpperCase().trim()] || 0.0;
-        }
+    <!-- NOTIFICATIONS SECTION -->
+    <div id="notificationsSection" class="section">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-bell"></i> Notifications</h3>
+            </div>
+            <div id="notificationList">
+                <p style="text-align:center; color:#999;">No notifications.</p>
+            </div>
+        </div>
+    </div>
+</div>
 
-        function getGradeClass(grade) {
-            if (!grade) return '';
-            const g = grade.toUpperCase().trim();
-            if (g === 'A') return 'grade-a';
-            if (g.startsWith('B')) return 'grade-b';
-            if (g.startsWith('C')) return 'grade-c';
-            if (g === 'F') return 'grade-f';
-            return '';
-        }
+<div id="toast" class="toast"></div>
 
-        // 3. IMAGE UPLOADER (RESIZER)
-        async function uploadPhoto(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+<script>
+    // ============================================
+    // IMPORTANT: PUT YOUR WEB APP URL HERE
+    // ============================================
+    const SCRIPT_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+    
+    let studentProfile = null;
+    let studentResults = [];
+    let studentPayments = [];
+    let studentNotifications = [];
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 300; 
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+    }
 
-                    document.getElementById('profilePic').src = compressedBase64;
-                    document.getElementById('sidebarPhoto').src = compressedBase64;
-                    savePhotoToServer(compressedBase64);
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function savePhotoToServer(base64Data) {
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'upload_photo',
-                        id: studentData.profile.id,
-                        photoData: base64Data
-                    })
-                });
-                showToast("Profile photo synced to server!", "success");
-            } catch (e) {
-                showToast("Offline: Photo saved locally only", "warning");
-            }
-        }
-
-        // 4. DISPLAY ACADEMIC RESULTS (7-COLUMN WEIGHTED GPA)
-        function displayFilteredTable(results) {
-            const container = document.getElementById('resultsContainer');
-            if (!results || results.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:40px; color:#666;">No results found.</div>';
-                return;
-            }
-
-            const grouped = {};
-            results.forEach(row => {
-                const sem = row[2] || "Other"; // Column C
-                if (!grouped[sem]) grouped[sem] = [];
-                grouped[sem].push(row);
-            });
-
-            let html = '';
-            for (const sem in grouped) {
-                const semGPA = grouped[sem][0][3] || "0.00"; // Column D
-                html += `
-                    <div class="semester-card">
-                        <div class="semester-header">
-                            <h3>${sem}</h3>
-                            <div class="gpa-badge">GPA: ${semGPA}</div>
-                        </div>
-                        <div class="course-grid">
-                            <div class="course-header">Course Title</div>
-                            <div class="course-header" style="text-align:center">Credits</div>
-                            <div class="course-header" style="text-align:center">Grade</div>
-                            ${grouped[sem].map(r => {
-                                const grade = r[6] || 'N/A'; // Column G
-                                return `
-                                    <div class="course-item">${r[1]}</div>
-                                    <div class="course-item" style="text-align:center">${r[5] || '0'}</div>
-                                    <div class="course-item ${getGradeClass(grade)}" style="text-align:center">${grade}</div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>`;
-            }
-            container.innerHTML = html;
-        }
-
-        // 5. DATA FETCHING & UI NAVIGATION
-        async function fetchStudentData() {
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=get_student_data&id=${studentData.profile.id}`);
-                const data = await response.json();
-                if (data.success) {
-                    userResults = data.results;
-                    displayFilteredTable(userResults);
-                    // Update Fees if needed
-                    document.getElementById('profileFees').innerText = 'GHS ' + data.profile.arrears;
-                }
-            } catch (e) {
-                console.log("Using cached data...");
-            }
-        }
-
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-            event?.currentTarget?.classList.add('active');
-        }
-
-        function showToast(msg, type = "info") {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.className = `toast ${type}`;
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 3000);
-        }
-
-        function logout() {
-            if(confirm("Logout of your CCST Portal?")) {
-                localStorage.clear();
-                window.location.replace("index.html");
-            }
-        }
-
-        // 6. INITIALIZATION
-        window.onload = async function () {
-            const storedData = localStorage.getItem('userData');
-            if (!storedData) {
-                window.location.replace("index.html");
-                return;
-            }
-            studentData = JSON.parse(storedData);
-            
-            // Load Basic Profile Info
-            document.getElementById('userName').innerText = studentData.profile.name;
-            document.getElementById('userLevel').innerText = studentData.profile.level;
-            document.getElementById('profileName').innerText = studentData.profile.name;
-            document.getElementById('profileID').innerText = studentData.profile.id;
-            document.getElementById('profileProgram').innerText = studentData.profile.program;
-            
-            if (studentData.profile.photoUrl) {
-                document.getElementById('profilePic').src = studentData.profile.photoUrl;
-                document.getElementById('sidebarPhoto').src = studentData.profile.photoUrl;
-            }
-
-            fetchStudentData();
-            showSection('profile');
+    function showSection(sectionName) {
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+        });
+        document.getElementById(`${sectionName}Section`).classList.add('active');
+        
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        event.currentTarget.classList.add('active');
+        
+        const titles = {
+            profile: 'My Profile',
+            academic: 'Academic Results',
+            finance: 'Financial Summary',
+            notifications: 'Notifications'
         };
-    </script>
+        document.getElementById('pageTitle').innerText = titles[sectionName] || 'Dashboard';
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+
+    function formatMoney(amount) {
+        return `GHS ${(amount || 0).toLocaleString()}`;
+    }
+
+    function displayProfile(profile) {
+        if (!profile) return;
+        
+        document.getElementById('profileName').innerText = profile.name || 'Not Available';
+        document.getElementById('profileId').innerHTML = `<i class="fas fa-id-card"></i> ${profile.id || 'N/A'}`;
+        document.getElementById('profileProgram').innerHTML = `<i class="fas fa-book"></i> ${profile.program || 'N/A'}`;
+        document.getElementById('profileLevel').innerHTML = `<i class="fas fa-layer-group"></i> Level ${profile.level || 'N/A'}`;
+        
+        document.getElementById('infoId').innerText = profile.id || 'N/A';
+        document.getElementById('infoProgram').innerText = profile.program || 'N/A';
+        document.getElementById('infoLevel').innerText = profile.level || 'N/A';
+        document.getElementById('infoSemester').innerText = profile.semester || 'Current';
+        
+        const isCleared = profile.isCleared === true || profile.isCleared === "TRUE";
+        const statusEl = document.getElementById('clearanceStatus');
+        if (isCleared) {
+            statusEl.innerText = '✓ FINANCIALLY CLEARED';
+            statusEl.className = 'status-badge status-cleared';
+        } else {
+            statusEl.innerText = '✗ PENDING CLEARANCE';
+            statusEl.className = 'status-badge status-pending';
+        }
+        
+        document.getElementById('sidebarName').innerText = profile.name || 'Student';
+        document.getElementById('sidebarDetails').innerHTML = `${profile.program || ''} | Level ${profile.level || ''}`;
+        document.getElementById('studentNameHeader').innerText = profile.name || '';
+        
+        if (profile.photoUrl && profile.photoUrl !== '') {
+            document.getElementById('profilePic').src = profile.photoUrl;
+            document.getElementById('sidebarPhoto').src = profile.photoUrl;
+        }
+    }
+
+    function displayFinance(profile, payments) {
+        const totalFee = profile.totalFee || 450000;
+        const amountPaid = profile.amountPaid || 0;
+        const balanceAmount = profile.balance || (totalFee - amountPaid);
+        
+        document.getElementById('totalFee').innerText = formatMoney(totalFee);
+        document.getElementById('amountPaid').innerText = formatMoney(amountPaid);
+        document.getElementById('balance').innerText = formatMoney(balanceAmount);
+        
+        const paymentContainer = document.getElementById('paymentHistory');
+        if (payments && payments.length > 0) {
+            let html = '';
+            payments.forEach(p => {
+                html += `
+                    <div class="payment-item">
+                        <div>
+                            <strong>${p.description || 'Payment'}</strong><br>
+                            <small>${p.date || 'Date not recorded'}</small>
+                        </div>
+                        <div style="font-weight:bold; color:#556b2f;">
+                            ${formatMoney(p.amount)}
+                        </div>
+                    </div>
+                `;
+            });
+            paymentContainer.innerHTML = html;
+        } else {
+            paymentContainer.innerHTML = '<p style="text-align:center; color:#999;">No payment records found.</p>';
+        }
+    }
+
+    function displayResults(results) {
+        const container = document.getElementById('resultsContainer');
+        
+        if (!results || results.length === 0) {
+            container.innerHTML = '<p style="text-align:center; padding:40px; color:#666;">No academic results available.</p>';
+            return;
+        }
+        
+        let html = '';
+        results.forEach(result => {
+            html += `
+                <div class="semester-card">
+                    <div class="semester-header">
+                        <h3>${result.semester || 'Semester'}</h3>
+                        <div class="gpa-badge">GPA: ${result.gpa || '0.00'}</div>
+                    </div>
+            `;
+            
+            const courses = result.details || [];
+            if (courses.length > 0) {
+                html += `<p><strong>Courses:</strong></p><ul style="margin-left:20px;">`;
+                courses.forEach(course => {
+                    html += `<li>${course.name || course.code || 'Course'}: Grade ${course.grade || 'N/A'}</li>`;
+                });
+                html += `</ul>`;
+            }
+            
+            html += `</div>`;
+        });
+        
+        container.innerHTML = html;
+    }
+
+    function displayNotifications(notifications) {
+        const container = document.getElementById('notificationList');
+        
+        if (!notifications || notifications.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#999;">No notifications yet.</p>';
+            return;
+        }
+        
+        let html = '';
+        notifications.forEach(notif => {
+            html += `
+                <div class="payment-item">
+                    <div>
+                        <strong>${notif.title || 'Notification'}</strong><br>
+                        <small>${notif.content || notif.message || ''}</small><br>
+                        <small style="color:#999;">${notif.date || ''}</small>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    async function loadStudentData() {
+        // ✅ FIXED: Check BOTH possible storage locations
+        let studentId = localStorage.getItem('studentId');
+        
+        // If studentId not found, try to get from userData
+        if (!studentId) {
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+                try {
+                    const parsed = JSON.parse(userData);
+                    studentId = parsed.profile?.id || parsed.id;
+                } catch(e) {}
+            }
+        }
+        
+        if (!studentId) {
+            showToast('No student ID found. Please login again.');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+            return;
+        }
+        
+        showToast('Loading your data...');
+        
+        try {
+            const url = `${SCRIPT_URL}?action=get_student_data&id=${encodeURIComponent(studentId)}`;
+            console.log('Fetching:', url);
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            console.log('Response:', data);
+            
+            if (data.success === false) {
+                throw new Error(data.error || 'Failed to load student data');
+            }
+            
+            let profile = null;
+            let results = [];
+            let payments = [];
+            let notifications = [];
+            
+            if (data.profile) {
+                profile = data.profile;
+                results = data.results || [];
+                payments = data.payments || [];
+                notifications = data.notifications || [];
+            } else if (data.name && data.id) {
+                profile = data;
+            } else {
+                throw new Error('Invalid data format from server');
+            }
+            
+            studentProfile = profile;
+            studentResults = results;
+            studentPayments = payments;
+            studentNotifications = notifications;
+            
+            localStorage.setItem('studentData', JSON.stringify({
+                profile: profile,
+                results: results,
+                payments: payments,
+                notifications: notifications
+            }));
+            
+            displayProfile(profile);
+            displayFinance(profile, payments);
+            displayResults(results);
+            displayNotifications(notifications);
+            
+            showToast('Data loaded successfully!');
+            
+        } catch (error) {
+            console.error('Error loading data:', error);
+            showToast('Error: ' + error.message);
+            
+            const cached = localStorage.getItem('studentData');
+            if (cached) {
+                const cachedData = JSON.parse(cached);
+                displayProfile(cachedData.profile);
+                displayFinance(cachedData.profile, cachedData.payments || []);
+                displayResults(cachedData.results || []);
+                displayNotifications(cachedData.notifications || []);
+                showToast('Using cached data (offline mode)');
+            }
+        }
+    }
+
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('studentData');
+            localStorage.removeItem('studentId');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('userResults');
+            window.location.href = 'index.html';
+        }
+    }
+
+    window.onload = function() {
+        loadStudentData();
+    };
+</script>
 </body>
 </html>

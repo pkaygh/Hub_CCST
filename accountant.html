@@ -935,7 +935,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSiq3BF4Upl898HwUW7oSxQGWyon6UKxm-jNZZ_g3_HvkfGbDAZZHDD_aTc7w5oa_H/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLeLGn2HNT492QUhTlMgWZXDuY32EDRPVSNdFjkwsGwDEt4O3_4kBoHzQFfqSwrHza/exec";
         let currentStudent = null;
         let csvData = null;
         let parsedResults = [];
@@ -1122,6 +1122,7 @@
                     body: JSON.stringify({
                         action: 'upload_results',
                         id: currentStudent.id,
+                        name: currentStudent.name,
                         semester: sem,
                         gpa: gpa,
                         program: document.getElementById('resProgram').value,
@@ -1423,8 +1424,9 @@
                         action: 'send_notification',
                         title: title,
                         message: message,
-                        type: type,
-                        target: target
+                        type: 'general',
+                        targetType: type,
+                        target: type === 'all' ? 'all' : target
                     })
                 });
 
