@@ -639,7 +639,7 @@
                     </ul>
                     <p style="margin: 15px 0 10px;"><strong>Optional Columns:</strong></p>
                     <ul style="margin-left: 20px; color: #666;">
-                        <li><code>PROGRAM</code> - Program code (e.g., RM, ML)</li>
+                        <li><code>PROGRAM</code> - Program code (e.g., RM, MW)</li>
                         <li><code>LEVEL</code> - Academic level (e.g., 100, 200)</li>
                         <li><code>SEMESTER</code> - Semester identifier</li>
                     </ul>
@@ -700,9 +700,9 @@
                             <h4><i class="fas fa-layer-group"></i> Filter by Program/Level</h4>
                             <select id="filterProgram" onchange="filterStudentList()">
                                 <option value="">All Programs</option>
-                                <option value="RM">Dip Midwifery</option>
-                                <option value="RGN">Dip Nursing</option>
-                                <option value="ML">HND Medical Laboratory Technology)</option>
+                                <option value="RM">RM (Records Management)</option>
+                                <option value="MW">MW (Medical Works)</option>
+                                <option value="DN">DN (Dental Nursing)</option>
                             </select>
                             <select id="filterLevel" onchange="filterStudentList()">
                                 <option value="">All Levels</option>
@@ -762,7 +762,7 @@
                             <strong>Required Columns:</strong><br>
                             id, name, total_fee, amount_paid, balance, arrears, semester<br><br>
                             <strong>Example:</strong><br>
-                            CCST/RM/24/001, Akosua Manu , 4500, 2500, 2000, 0, Semester 1 2026/2027
+                            CCST/RM/24/001, John Doe, 4500, 2500, 2000, 0, Semester 1 2026/2027
                         </p>
                         <button onclick="downloadFinanceTemplate()" class="info-btn" style="width: auto; margin-top: 15px;">
                             <i class="fas fa-download"></i> Download Template
@@ -810,9 +810,9 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
                         <select id="clearanceProgramFilter" onchange="loadStudentClearanceList()">
                             <option value="">All Programs</option>
-                            <option value="RM">Dip. Midwifery</option>
-                            <option value="ML">HND Medical Laboratory Technology</option>
-                            <option value="RN">Dip. Nursing</option>
+                            <option value="RM">RM (Records Management)</option>
+                            <option value="MW">MW (Medical Works)</option>
+                            <option value="DN">DN (Dental Nursing)</option>
                         </select>
                         <select id="clearanceLevelFilter" onchange="loadStudentClearanceList()">
                             <option value="">All Levels</option>
@@ -935,7 +935,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLeLGn2HNT492QUhTlMgWZXDuY32EDRPVSNdFjkwsGwDEt4O3_4kBoHzQFfqSwrHza/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyQcnzBSBLcTEkSGccMUHGhD6UTrvfF3IRMDqdgPitZ5g1LCSrwfnNXZIBe4cD6VF5/exec";
         let currentStudent = null;
         let csvData = null;
         let parsedResults = [];
@@ -947,20 +947,6 @@
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('open');
             document.querySelector('.sidebar-overlay').classList.toggle('show');
-        }
-
-        // Show loading state on button
-        function setButtonLoading(button, isLoading, originalText) {
-            if (isLoading) {
-                button.disabled = true;
-                button.dataset.originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                button.style.opacity = '0.7';
-            } else {
-                button.disabled = false;
-                button.innerHTML = button.dataset.originalText || originalText;
-                button.style.opacity = '1';
-            }
         }
 
         // Show Section
@@ -994,11 +980,8 @@
 
         // Search Student
         async function searchStudent() {
-            const searchBtn = event.target.closest('button');
             const id = document.getElementById('searchId').value.trim();
             if (!id) return showToast("Please enter Student ID", "warning");
-
-            setButtonLoading(searchBtn, true, '<i class="fas fa-search"></i> Search');
 
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`);
@@ -1013,7 +996,7 @@
                 currentStudent = data;
                 document.getElementById('studentResult').style.display = 'block';
                 document.getElementById('resName').innerText = data.name;
-                document.getElementById('resInfo').innerText = `${data.program} | Level ${data.level} | ID: ${data.id} | Balance: GH₵${(data.balance || 0).toLocaleString()} | Arrears: GH₵${(data.arrears || 0).toLocaleString()}`;
+                document.getElementById('resInfo').innerText = `${data.program} | Level ${data.level} | ID: ${data.id} | Balance: GH₵${(data.balance || 0).toLocaleString()}`;
 
                 if (data.program) document.getElementById('resProgram').value = data.program;
                 if (data.level) document.getElementById('resLevel').value = data.level;
@@ -1021,8 +1004,6 @@
                 updateClearanceButton(data.isCleared);
             } catch (e) {
                 showToast("Error connecting to server", "danger");
-            } finally {
-                setButtonLoading(searchBtn, false, '<i class="fas fa-search"></i> Search');
             }
         }
 
@@ -1042,9 +1023,6 @@
         async function toggleClearance() {
             if (!currentStudent) return;
 
-            const toggleBtn = document.getElementById('toggleBtn');
-            setButtonLoading(toggleBtn, true);
-
             const newStatus = !(currentStudent.isCleared === true || currentStudent.isCleared === "TRUE");
 
             try {
@@ -1062,8 +1040,6 @@
                 showToast(newStatus ? "Student marked as financially cleared!" : "Clearance removed.", "success");
             } catch (e) {
                 showToast("Failed to update clearance", "danger");
-            } finally {
-                setButtonLoading(toggleBtn, false);
             }
         }
 
@@ -1085,17 +1061,10 @@
         async function uploadResults() {
             if (!currentStudent) return showToast("Search for a student first", "warning");
 
-            const uploadBtn = event.target.closest('button');
-            setButtonLoading(uploadBtn, true, '<i class="fas fa-upload"></i> UPLOAD RESULTS');
-
             const sem = document.getElementById('resSemester').value;
             const gpa = document.getElementById('resGPA').value;
 
-            if (!sem || !gpa) {
-                showToast("Semester and GPA are required", "warning");
-                setButtonLoading(uploadBtn, false, '<i class="fas fa-upload"></i> UPLOAD RESULTS');
-                return;
-            }
+            if (!sem || !gpa) return showToast("Semester and GPA are required", "warning");
 
             const codes = document.getElementsByClassName('cCode');
             const names = document.getElementsByClassName('cName');
@@ -1122,7 +1091,6 @@
                     body: JSON.stringify({
                         action: 'upload_results',
                         id: currentStudent.id,
-                        name: currentStudent.name,
                         semester: sem,
                         gpa: gpa,
                         program: document.getElementById('resProgram').value,
@@ -1136,8 +1104,6 @@
                 document.getElementById('searchId').value = '';
             } catch (e) {
                 showToast("Upload failed", "danger");
-            } finally {
-                setButtonLoading(uploadBtn, false, '<i class="fas fa-upload"></i> UPLOAD RESULTS');
             }
         }
 
@@ -1309,13 +1275,10 @@
 
         // Process CSV
         async function processCSV() {
-            const processBtn = document.getElementById('processBtn');
             if (!parsedResults || parsedResults.length === 0) {
                 showToast("No data to process", "warning");
                 return;
             }
-
-            setButtonLoading(processBtn, true, '<i class="fas fa-cogs"></i> PROCESS & UPLOAD RESULTS');
 
             const progress = document.getElementById('uploadProgress');
             const status = document.getElementById('uploadStatus');
@@ -1351,7 +1314,6 @@
 
             showToast(`Successfully uploaded ${processed} results${errors > 0 ? ` (${errors} errors)` : ''}`, errors > 0 ? "warning" : "success");
             clearPreview();
-            setButtonLoading(processBtn, false, '<i class="fas fa-cogs"></i> PROCESS & UPLOAD RESULTS');
         }
 
         // Clear Preview
@@ -1371,29 +1333,20 @@
         }
 
         // Download Template
-        function downloadResultsTemplate() {
-    // These headers MUST match your apps-script indexing (0 to 6)
-    const headers = ["StudentID", "CourseName", "Semester", "GPA", "Program", "Credits", "Grade"];
-    const rows = [
-        ["CCST/RM/24/001", "Database Management", "Level 100 Sem 1", "0.00", "MSc Information Technology", "3", "A"],
-        ["CCST/RM/24/001", "Academic Writing", "Level 100 Sem 1", "0.00", "MSc Information Technology", "2", "B+"]
-    ];
+        function downloadTemplate() {
+            const template = `id,INDEX NUMBER,NAME,PROGRAM,LEVEL,SEMESTER,CCC 016 CA,CCC 016 EXAMS,CCN 012 CA,CCN 012 EXAMS,CCN 029 CA,CCN 029 EXAMS
+CCST/RM/24/001,CCST/RM/24/001,OGOE RUBY,RM,100,Semester 2 2025/2026,33,33,28,53,23,33
+CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50,30,52,28,43`;
 
-    let csvContent = "data:text/csv;charset=utf-8," 
-        + headers.join(",") + "\n"
-        + rows.map(e => e.join(",")).join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "CCST_Results_Template.csv");
-    document.body.appendChild(link);
-    link.click();
-}
-
-
-
-    
+            const blob = new Blob([template], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'results_template.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Template downloaded!", "success");
+        }
 
         // Toggle Target Selection
         function toggleTargetSelection() {
@@ -1404,7 +1357,6 @@
 
         // Send Notification
         async function sendNotification() {
-            const sendBtn = event.target.closest('button');
             const title = document.getElementById('notifTitle').value;
             const message = document.getElementById('notifMessage').value;
             const type = document.getElementById('notifType').value;
@@ -1415,8 +1367,6 @@
                 return;
             }
 
-            setButtonLoading(sendBtn, true, '<i class="fas fa-paper-plane"></i> SEND NOTIFICATION');
-
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -1424,9 +1374,8 @@
                         action: 'send_notification',
                         title: title,
                         message: message,
-                        type: 'general',
-                        targetType: type,
-                        target: type === 'all' ? 'all' : target
+                        type: type,
+                        target: target
                     })
                 });
 
@@ -1435,8 +1384,6 @@
                 document.getElementById('notifMessage').value = '';
             } catch (e) {
                 showToast("Failed to send notification", "danger");
-            } finally {
-                setButtonLoading(sendBtn, false, '<i class="fas fa-paper-plane"></i> SEND NOTIFICATION');
             }
         }
 
@@ -1646,26 +1593,21 @@
         }
 
         // Download Financial CSV Template
-        function downloadStudentTemplate() {
-    // Columns A through K
-    const headers = [
-        "Name", "ID", "Password", "Program", "Level", 
-        "Contact", "CurrentFees", "AmountPaid", "ClearanceStatus", "Arrears", "Photo"
-    ];
-    
-    const sample = ["Godfed Boadi", "CCST/001", "123456", "MSc IT", "100", "0240000000", "2500", "1500", "FALSE", "500", ""];
+        function downloadFinanceTemplate() {
+            const template = `id,name,total_fee,amount_paid,balance,arrears,semester
+CCST/RM/24/001,John Doe,4500,2500,2000,0,Semester 1 2026/2027
+CCST/RM/24/002,Jane Smith,4500,4500,0,0,Semester 1 2026/2027
+CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
 
-    let csvContent = "data:text/csv;charset=utf-8," 
-        + headers.join(",") + "\n"
-        + sample.join(",");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "CCST_Student_Bulk_Template.csv");
-    document.body.appendChild(link);
-    link.click();
-}
+            const blob = new Blob([template], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'financial_template.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Financial template downloaded!", "success");
+        }
 
         // Filter Student List
         function filterStudentList() {
@@ -1731,12 +1673,12 @@
             } catch (e) {
                 // Sample data for demo
                 allStudents = [
-                    { id: 'CCST/RM/24/001', name: 'Dorcus Anderson', program: 'RM', level: '100', isCleared: true },
-                    { id: 'CCST/RN/24/002', name: 'Justina Arhin', program: 'RN', level: '100', isCleared: false },
-                    { id: 'CCST/ML/24/001', name: 'Akosua Johnson', program: 'ML', level: '200', isCleared: true },
-                    { id: 'CCST/ML/24/001', name: 'Evelyn Prah', program: 'ML', level: '100', isCleared: false },
-                    { id: 'CCST/RM/23/001', name: 'Ernest Ahenkrah', program: 'RN', level: '200', isCleared: true },
-                    { id: 'CCST/ML/23/002', name: 'Alice Essel', program: 'ML', level: '300', isCleared: false },
+                    { id: 'CCST/RM/24/001', name: 'John Doe', program: 'RM', level: '100', isCleared: true },
+                    { id: 'CCST/RM/24/002', name: 'Jane Smith', program: 'RM', level: '100', isCleared: false },
+                    { id: 'CCST/MW/24/001', name: 'Michael Johnson', program: 'MW', level: '200', isCleared: true },
+                    { id: 'CCST/DN/24/001', name: 'Sarah Williams', program: 'DN', level: '100', isCleared: false },
+                    { id: 'CCST/RM/23/001', name: 'David Brown', program: 'RM', level: '200', isCleared: true },
+                    { id: 'CCST/MW/23/002', name: 'Emily Davis', program: 'MW', level: '300', isCleared: false },
                 ];
 
                 let filtered = allStudents;
@@ -1786,7 +1728,6 @@
 
         // Clear Selected Students
         async function clearSelectedStudents() {
-            const clearBtn = event.target.closest('button');
             const checkboxes = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]'))
                 .filter(cb => cb.checked);
 
@@ -1794,8 +1735,6 @@
                 showToast("Please select at least one student", "warning");
                 return;
             }
-
-            setButtonLoading(clearBtn, true, '<i class="fas fa-check"></i> CLEAR SELECTED');
 
             const ids = checkboxes.map(cb => cb.dataset.id);
 
@@ -1814,14 +1753,11 @@
                 loadStudentClearanceList();
             } catch (e) {
                 showToast("Failed to clear students", "danger");
-            } finally {
-                setButtonLoading(clearBtn, false, '<i class="fas fa-check"></i> CLEAR SELECTED');
             }
         }
 
         // Unclear Selected Students
         async function unclearSelectedStudents() {
-            const unclearBtn = event.target.closest('button');
             const checkboxes = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]'))
                 .filter(cb => cb.checked);
 
@@ -1829,8 +1765,6 @@
                 showToast("Please select at least one student", "warning");
                 return;
             }
-
-            setButtonLoading(unclearBtn, true, '<i class="fas fa-times"></i> UNCLEAR SELECTED');
 
             const ids = checkboxes.map(cb => cb.dataset.id);
 
@@ -1849,8 +1783,6 @@
                 loadStudentClearanceList();
             } catch (e) {
                 showToast("Failed to unclear students", "danger");
-            } finally {
-                setButtonLoading(unclearBtn, false, '<i class="fas fa-times"></i> UNCLEAR SELECTED');
             }
         }
 
