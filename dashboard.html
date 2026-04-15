@@ -684,801 +684,179 @@
     </div>
 
     <script>
-        // Configuration
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3Z0Gy6hr-255wQFRxd7or4enc5EoVgy7mwzXr3iUWb6j10xfLTrdWD6xRIxEndmE_/exec";
-        const DB_NAME = 'CCSTStudentDB';
-        const DB_VERSION = 1;
-        const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
-        const WARNING_BEFORE = 60 * 1000; // Show warning 1 minute before timeout
-
-        // State
+        // 1. CONFIGURATION & STATE
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5LVXLywNPr3irL55MQxIqBB9TCSTLzKr-LPh_WvLhjre7TtweDu71xGXrnzrLyEU/exec"; // <--- PASTE YOUR GOOGLE WEB APP URL HERE
         let studentData = null;
         let userResults = [];
-        let userPayments = [];
-        let notifications = [];
-        let db = null;
-        let lastActivity = Date.now();
-        let sessionTimeoutId = null;
-        let warningTimeoutId = null;
+        let db;
 
-        // Initialize IndexedDB for offline support
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => {
-                    db = request.result;
-                    resolve(db);
-                };
-
-                request.onupgradeneeded = (event) => {
-                    const database = event.target.result;
-
-                    // Student data store
-                    if (!database.objectStoreNames.contains('studentData')) {
-                        database.createObjectStore('studentData', { keyPath: 'id' });
-                    }
-
-                    // Results store
-                    if (!database.objectStoreNames.contains('results')) {
-                        database.createObjectStore('results', { keyPath: 'semester' });
-                    }
-
-                    // Payments store
-                    if (!database.objectStoreNames.contains('payments')) {
-                        database.createObjectStore('payments', { keyPath: 'id', autoIncrement: true });
-                    }
-
-                    // Notifications store
-                    if (!database.objectStoreNames.contains('notifications')) {
-                        database.createObjectStore('notifications', { keyPath: 'id', autoIncrement: true });
-                    }
-                };
-            });
-        }
-
-        // Save to IndexedDB
-        async function saveToDB(storeName, data) {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction([storeName], 'readwrite');
-                const store = transaction.objectStore(storeName);
-                const request = store.put(data);
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        // Get from IndexedDB
-        async function getFromDB(storeName) {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction([storeName], 'readonly');
-                const store = transaction.objectStore(storeName);
-                const request = store.getAll();
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        // Check online status
-        function updateOnlineStatus() {
-            const indicator = document.getElementById('onlineStatus');
-            if (navigator.onLine) {
-                indicator.innerHTML = '<i class="fas fa-circle" style="font-size: 0.5rem;"></i> Online';
-                indicator.style.color = '#90EE90';
-                document.getElementById('offlineIndicator').classList.remove('show');
-            } else {
-                indicator.innerHTML = '<i class="fas fa-circle" style="font-size: 0.5rem;"></i> Offline';
-                indicator.style.color = '#f39c12';
-                document.getElementById('offlineIndicator').classList.add('show');
-            }
-        }
-
-        // Toggle Sidebar (Mobile)
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('open');
-            document.querySelector('.sidebar-overlay').classList.toggle('show');
-        }
-
-        // Session Timeout Management
-        function resetSessionTimer() {
-            lastActivity = Date.now();
-            hideSessionWarning();
-            clearTimeouts();
-            startSessionTimer();
-        }
-
-        function clearTimeouts() {
-            if (sessionTimeoutId) clearTimeout(sessionTimeoutId);
-            if (warningTimeoutId) clearTimeout(warningTimeoutId);
-        }
-
-        function hideSessionWarning() {
-            document.getElementById('sessionWarning').classList.remove('show');
-        }
-
-        function showSessionWarning() {
-            const warning = document.getElementById('sessionWarning');
-            warning.classList.add('show');
-            let secondsLeft = Math.floor(WARNING_BEFORE / 1000);
-
-            const updateTimer = () => {
-                const minutes = Math.floor(secondsLeft / 60);
-                const seconds = secondsLeft % 60;
-                document.getElementById('sessionTimer').innerText =
-                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-                if (secondsLeft <= 0) {
-                    performLogout();
-                } else {
-                    secondsLeft--;
-                    setTimeout(updateTimer, 1000);
-                }
+        // 2. UCC GRADE POINTS & THEME LOGIC
+        function getGradePoints(grade) {
+            const points = { 
+                'A': 4.0, 'B+': 3.5, 'B': 3.0, 
+                'C+': 2.5, 'C': 2.0, 'D+': 1.5, 
+                'D': 1.0, 'F': 0.0 
             };
-            updateTimer();
+            return points[grade?.toUpperCase().trim()] || 0.0;
         }
 
-        function startSessionTimer() {
-            // Show warning before timeout
-            warningTimeoutId = setTimeout(() => {
-                showSessionWarning();
-            }, SESSION_TIMEOUT - WARNING_BEFORE);
-
-            // Auto logout after timeout
-            sessionTimeoutId = setTimeout(() => {
-                performLogout();
-            }, SESSION_TIMEOUT);
+        function getGradeClass(grade) {
+            if (!grade) return '';
+            const g = grade.toUpperCase().trim();
+            if (g === 'A') return 'grade-a';
+            if (g.startsWith('B')) return 'grade-b';
+            if (g.startsWith('C')) return 'grade-c';
+            if (g === 'F') return 'grade-f';
+            return '';
         }
 
-        function performLogout() {
-            localStorage.removeItem('userData');
-            localStorage.removeItem('userResults');
-            localStorage.removeItem('readNotifications'); // Clear read notifications
-            sessionStorage.clear();
-            window.location.replace("index.html");
-        }
+        // 3. IMAGE UPLOADER (RESIZER)
+        async function uploadPhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        // Set up activity listeners
-        function setupActivityListeners() {
-            const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-            events.forEach(event => {
-                document.addEventListener(event, resetSessionTimer, { passive: true });
-            });
-        }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 300; 
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
 
-        // Show Section
-        function showSection(section) {
-            if (window.innerWidth <= 768) {
-                toggleSidebar();
-            }
-
-            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
-            document.getElementById(section + 'Section').style.display = 'block';
-
-            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-
-            const titles = {
-                profile: 'My Profile',
-                academic: 'Academic Results',
-                finance: 'Financial Summary',
-                notifications: 'Campus Notifications'
+                    document.getElementById('profilePic').src = compressedBase64;
+                    document.getElementById('sidebarPhoto').src = compressedBase64;
+                    savePhotoToServer(compressedBase64);
+                };
+                img.src = e.target.result;
             };
-            document.getElementById('pageTitle').innerText = titles[section] || 'Dashboard';
+            reader.readAsDataURL(file);
         }
 
-        // Load Profile
-        function loadProfile() {
-            if (!studentData || !studentData.profile) return;
-
-            const p = studentData.profile;
-
-            document.getElementById('profileName').innerText = p.name || "Student Name";
-            document.getElementById('profileProgram').innerText = `${p.program || "Program"} | Level ${p.level || "100"}`;
-            document.getElementById('profileId').innerText = `ID: ${p.id || "N/A"}`;
-
-            document.getElementById('sidebarName').innerText = p.name || "Student";
-            document.getElementById('sidebarDetails').innerText = `Level ${p.level || "100"} | ${p.program || "Program"}`;
-            document.getElementById('studentNameHeader').innerText = p.name || "";
-
-            document.getElementById('infoId').innerText = p.id || "N/A";
-            document.getElementById('infoProgram').innerText = p.program || "N/A";
-            document.getElementById('infoLevel').innerText = p.level || "N/A";
-            document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Cleared" : "Pending";
-
-            if (p.photoUrl) {
-                document.getElementById('profilePic').src = p.photoUrl;
-                document.getElementById('sidebarPhoto').src = p.photoUrl;
-            }
-
-            // Clearance status
-            const statusBox = document.getElementById('clearanceStatus');
-            if (p.isCleared === true || p.isCleared === "TRUE") {
-                statusBox.innerText = "FINANCIALLY CLEARED";
-                statusBox.className = "status-badge cleared";
-            } else {
-                statusBox.innerText = "NOT CLEARED!";
-                statusBox.className = "status-badge not-cleared";
+        async function savePhotoToServer(base64Data) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'upload_photo',
+                        id: studentData.profile.id,
+                        photoData: base64Data
+                    })
+                });
+                showToast("Profile photo synced to server!", "success");
+            } catch (e) {
+                showToast("Offline: Photo saved locally only", "warning");
             }
         }
 
-        // Load Academic Results
-        function loadAcademicResults() {
+        // 4. DISPLAY ACADEMIC RESULTS (7-COLUMN WEIGHTED GPA)
+        function displayFilteredTable(results) {
             const container = document.getElementById('resultsContainer');
-            const semesterFilter = document.getElementById('semesterFilter');
-
-            if (!userResults || userResults.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No examination results found. Results will appear here once uploaded by the administrator.</p>';
+            if (!results || results.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px; color:#666;">No results found.</div>';
                 return;
             }
 
-            container.innerHTML = '';
-            semesterFilter.innerHTML = '<option value="all">All Semesters</option>';
-
-            let totalPoints = 0;
-            let totalCredits = 0;
-
-            userResults.forEach((sem, idx) => {
-                // Add to filter
-                const option = document.createElement('option');
-                option.value = sem.semester;
-                option.textContent = sem.semester;
-                semesterFilter.appendChild(option);
-
-                // Calculate grade points
-                let semPoints = 0;
-                let semCredits = sem.details.length * 3; // Assuming 3 credits per course
-
-                sem.details.forEach(course => {
-    // Adjusting these indices to match the 7-column template above
-    const courseName = course[1];  // Column B
-    const credits = course[5];     // Column F (NEW)
-    const grade = course[6];       // Column G
-    
-    const points = getGradePoints(grade);
-    const weightedPoints = (points * credits).toFixed(1);
-
-    courseRows += `
-        <div class="course-item">
-            <div>${courseName}</div>
-            <div style="text-align: center;">${credits}</div>
-            <div style="text-align: center;">${weightedPoints}</div>
-            <div style="text-align: center;" class="${getGradeClass(grade)}">${grade}</div>
-        </div>
-    `;
-});
-
-                totalPoints += semPoints;
-                totalCredits += semCredits;
-
-                // Build course rows
-
-                // REPLACE the mapping logic in your results loop
-                ${results.map(row => `
-                <div class="course-item">${row[1] || 'Unknown Course'}</div> <div class="course-item" style="text-align: center; font-weight: bold;">
-                        ${row[6] || 'N/A'} </div>
-                    <div class="course-item" style="text-align: center;">
-                        ${row[5] || '0'} </div>
-                `).join('')}
-
-
-                container.innerHTML += `
-                    <div class="semester-card" data-semester="${sem.semester}">
-                        <div class="semester-header">
-                            <h4 style="margin: 0;">${sem.semester}</h4>
-                            <span class="gpa-badge">GPA: ${sem.gpa || calculateGPA(sem)}</span>
-                        </div>
-                        <div class="course-grid">
-                            <div class="course-header">Course</div>
-                            <div class="course-header">Points</div>
-                            <div class="course-header">Grade</div>
-                            ${courseRows}
-                        </div>
-                    </div>
-                `;
+            const grouped = {};
+            results.forEach(row => {
+                const sem = row[2] || "Other"; // Column C
+                if (!grouped[sem]) grouped[sem] = [];
+                grouped[sem].push(row);
             });
-
-            // Update summary
-            const cgpa = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '--';
-            document.getElementById('cgpaDisplay').innerText = cgpa;
-            document.getElementById('totalCredits').innerText = totalCredits;
-            document.getElementById('academicStatus').innerText = cgpa >= 2.0 ? 'Good' : 'Review';
-        }
-
-        // Calculate GPA from semester data
-        function calculateGPA(semester) {
-            if (!semester.details || semester.details.length === 0) return 0;
-            let total = 0;
-            semester.details.forEach(c => total += getGradePoints(c.grade));
-            return (total / semester.details.length).toFixed(2);
-        }
-
-        // Get grade points based on UCC system
-        function getGradePoints(grade) {
-            const g = (grade || '').toUpperCase().trim();
-            const gradeMap = {
-                'A': 4.0, 'A+': 4.0,
-                'B+': 3.5, 'B': 3.0,
-                'C+': 2.5, 'C': 2.0,
-                'D': 1.5,
-                'E': 1.0,
-                'F': 0.0
-            };
-            return gradeMap[g] || 0;
-        }
-
-        // Get grade CSS class
-        function getGradeClass(grade) {
-            const g = (grade || '').toUpperCase().trim();
-            if (g.startsWith('A')) return 'grade-a';
-            if (g.startsWith('B')) return 'grade-b';
-            if (g.startsWith('C')) return 'grade-c';
-            if (g === 'D') return 'grade-d';
-            return 'grade-f';
-        }
-
-        // Filter Results
-        function filterResults() {
-            const filter = document.getElementById('semesterFilter').value;
-            const cards = document.querySelectorAll('.semester-card');
-
-            cards.forEach(card => {
-                if (filter === 'all' || card.dataset.semester === filter) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-
-        // Load Finance
-        function loadFinance() {
-            if (!studentData || !studentData.profile) return;
-
-            const p = studentData.profile;
-
-            // Finance data - using Ghana Cedis (GH₵)
-            const totalFee = p.totalFee || 0;
-            const amountPaid = p.amountPaid || p.balance ? (totalFee - p.balance) : 0;
-            const balance = p.balance || (totalFee - amountPaid);
-            const arrears = p.arrears || 0;
-
-            document.getElementById('totalFee').innerText = `GH₵${totalFee.toLocaleString()}`;
-            document.getElementById('amountPaid').innerText = `GH₵${amountPaid.toLocaleString()}`;
-            document.getElementById('balance').innerText = `GH₵${balance.toLocaleString()}`;
-            document.getElementById('arrears').innerText = `GH₵${arrears.toLocaleString()}`;
-
-            // Payment history
-            const historyContainer = document.getElementById('paymentHistory');
-            if (userPayments && userPayments.length > 0) {
-                let html = '';
-                userPayments.forEach(payment => {
-                    html += `
-                        <div class="payment-history-item">
-                            <div class="payment-details">
-                                <strong>${payment.description || 'Payment'}</strong>
-                                <small>${payment.date || 'N/A'}</small>
-                            </div>
-                            <div class="payment-amount">GH₵${(payment.amount || 0).toLocaleString()}</div>
-                        </div>
-                    `;
-                });
-                historyContainer.innerHTML = html;
-            } else {
-                // Sample payments for demo
-                historyContainer.innerHTML = `
-                    <div class="payment-history-item">
-                        <div class="payment-details">
-                            <strong>First Semester Tuition</strong>
-                            <small>January 15, 2026</small>
-                        </div>
-                        <div class="payment-amount">GH₵2,500</div>
-                    </div>
-                    <div class="payment-history-item">
-                        <div class="payment-details">
-                            <strong>Course Registration</strong>
-                            <small>March 10, 2026</small>
-                        </div>
-                        <div class="payment-amount"> 70% of the Semester fess</div>
-                    </div>
-                `;
-            }
-
-            // Clearance status
-            const statusEl = document.getElementById('clearanceStatusFinance');
-            statusEl.style.display = 'block';
-            if (p.isCleared === true || p.isCleared === "TRUE") {
-                statusEl.innerHTML = '<i class="fas fa-check-circle" style="color: var(--success);"></i> FINANCIALLY CLEARED - You are eligible to register and write examinations';
-                statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
-            } else {
-                statusEl.innerHTML = '<i class="fas fa-exclamation-circle" style="color: var(--danger);"></i> NOT CLEARED - Please contact the Accountant to clear your fees';
-                statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
-            }
-        }
-
-        // Load Notifications
-        function loadNotifications() {
-            const container = document.getElementById('notificationList');
-            const badge = document.getElementById('notifBadge');
-
-            // Get read notification IDs from sessionStorage (persists until logout)
-            let readNotifIds = JSON.parse(sessionStorage.getItem('readNotifications') || '[]');
-
-            if (!notifications || notifications.length === 0) {
-                // Sample notifications - in production, fetch from backend
-                notifications = [
-                    { id: 1, title: "Praticum Experience Schedule", content: "It is expected of you to do the Clinicals since it part of your training. It began on April 2, 2026. Please contact your H.O.Ds for schedule.", date: "Today", type: "Clinicals" },
-                    { id: 2, title: "Campus Tech Innovation Fair", content: "All students are encouraged to participate. Register at the student affairs office.", date: "2 Months to come", type: "event" },
-                    { id: 3, title: "Fee Payment Reminder", content: "70% payment for Course registration and 100% for writing examination. Late Course registration incur a penalty.", date: "1 week ago", type: "finance" },
-                    { id: 4, title: "New Course Materials Available", content: "Updated course materials for Semester 2 are now available on the portal.", date: "3 days ago", type: "academic" },
-                    { id: 5, title: "Library Hours Extended", content: "The library will operate from 7 AM to 10 PM during the examination period.", date: "Yesterday", type: "general" }
-                ];
-            }
 
             let html = '';
-            let unreadCount = 0;
-
-            notifications.forEach(notif => {
-                // Check if this notification was read in this session
-                const isRead = readNotifIds.includes(notif.id);
-                if (!isRead) unreadCount++;
-
-                const iconMap = {
-                    exam: 'fa-file-alt',
-                    event: 'fa-calendar-alt',
-                    finance: 'fa-money-bill',
-                    academic: 'fa-graduation-cap',
-                    general: 'fa-info-circle'
-                };
-
+            for (const sem in grouped) {
+                const semGPA = grouped[sem][0][3] || "0.00"; // Column D
                 html += `
-                    <div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${notif.id})">
-                        <div class="notification-icon">
-                            <i class="fas ${iconMap[notif.type] || 'fa-bell'}"></i>
+                    <div class="semester-card">
+                        <div class="semester-header">
+                            <h3>${sem}</h3>
+                            <div class="gpa-badge">GPA: ${semGPA}</div>
                         </div>
-                        <div class="notification-content">
-                            <h4>${notif.title}</h4>
-                            <p>${notif.content}</p>
-                            <div class="notification-meta">
-                                <i class="far fa-clock"></i> ${notif.date}
-                                ${isRead ? '<span style="color: var(--success);"> • Read</span>' : '<span style="color: var(--warning);"> • New</span>'}
-                            </div>
+                        <div class="course-grid">
+                            <div class="course-header">Course Title</div>
+                            <div class="course-header" style="text-align:center">Credits</div>
+                            <div class="course-header" style="text-align:center">Grade</div>
+                            ${grouped[sem].map(r => {
+                                const grade = r[6] || 'N/A'; // Column G
+                                return `
+                                    <div class="course-item">${r[1]}</div>
+                                    <div class="course-item" style="text-align:center">${r[5] || '0'}</div>
+                                    <div class="course-item ${getGradeClass(grade)}" style="text-align:center">${grade}</div>
+                                `;
+                            }).join('')}
                         </div>
-                    </div>
-                `;
-            });
-
+                    </div>`;
+            }
             container.innerHTML = html;
+        }
 
-            if (unreadCount > 0) {
-                badge.style.display = 'block';
-                badge.innerText = unreadCount;
-            } else {
-                badge.style.display = 'none';
+        // 5. DATA FETCHING & UI NAVIGATION
+        async function fetchStudentData() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=get_student_data&id=${studentData.profile.id}`);
+                const data = await response.json();
+                if (data.success) {
+                    userResults = data.results;
+                    displayFilteredTable(userResults);
+                    // Update Fees if needed
+                    document.getElementById('profileFees').innerText = 'GHS ' + data.profile.arrears;
+                }
+            } catch (e) {
+                console.log("Using cached data...");
             }
         }
 
-        // Mark notification as read (persists until logout)
-        function markRead(id) {
-            // Get current read notifications from sessionStorage
-            let readNotifIds = JSON.parse(sessionStorage.getItem('readNotifications') || '[]');
-
-            // Add this notification ID if not already there
-            if (!readNotifIds.includes(id)) {
-                readNotifIds.push(id);
-                sessionStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
-            }
-
-            // Reload notifications to reflect the change
-            loadNotifications();
-            saveToDB('notifications', { id: 'all', data: notifications });
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            event?.currentTarget?.classList.add('active');
         }
 
-        // Mark all as read
-        function markAllRead() {
-            // Get all notification IDs
-            let readNotifIds = notifications.map(n => n.id);
-            sessionStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
-            loadNotifications();
-            saveToDB('notifications', { id: 'all', data: notifications });
-            showToast('All notifications marked as read');
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.className = `toast ${type}`;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
         }
 
-
-        async function uploadPhoto(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Check file size (Don't even try to process if > 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        showToast("File is too large! Please pick a smaller image.", "danger");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-            // Create a small canvas to resize the image
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 300; // Small size for profile pics
-            const scaleSize = MAX_WIDTH / img.width;
-            canvas.width = MAX_WIDTH;
-            canvas.height = img.height * scaleSize;
-
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            // Convert to a compressed JPEG (0.7 quality)
-            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-
-            // UPDATE UI
-            document.getElementById('profilePic').src = compressedBase64;
-            document.getElementById('sidebarPhoto').src = compressedBase64;
-
-            // SAVE TO GOOGLE SHEET
-            savePhotoToServer(compressedBase64);
-        };
-        img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-}
-
-// Helper function to send to Apps Script
-async function savePhotoToServer(base64Data) {
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'upload_photo',
-                id: studentData.profile.id,
-                photoData: base64Data
-            })
-        });
-        const result = await response.json();
-        if (result.success) {
-            studentData.profile.photoUrl = base64Data;
-            localStorage.setItem('userData', JSON.stringify(studentData));
-            showToast("Photo updated successfully!", "success");
-        }
-    } catch (e) {
-        showToast("Server error saving photo", "danger");
-    }
-}
-
-        // Upload Photo (simulated - save to localStorage for offline)
-        function uploadPhoto(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    const photoData = ev.target.result;
-                    document.getElementById('profilePic').src = photoData;
-                    document.getElementById('sidebarPhoto').src = photoData;
-
-                    // Save locally
-                    localStorage.setItem('userPhoto', photoData);
-
-                    if (studentData && studentData.profile) {
-                        studentData.profile.photoUrl = photoData;
-                        saveToDB('studentData', studentData);
-                    }
-
-                    showToast('Profile picture updated!');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Edit Profile (placeholder)
-        function editProfile() {
-            showToast('Profile editing will be available in the next update');
-        }
-
-        // Show Toast
-        function showToast(msg) {
-            const existing = document.querySelector('.toast');
-            if (existing) existing.remove();
-
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `<i class="fas fa-check-circle"></i> ${msg}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        // Logout
         function logout() {
-            if (confirm("Are you sure you want to logout?")) {
-                clearTimeouts();
-                localStorage.removeItem('userData');
-                localStorage.removeItem('userResults');
-                sessionStorage.removeItem('readNotifications'); // Clear read notifications on logout
-                sessionStorage.clear();
+            if(confirm("Logout of your CCST Portal?")) {
+                localStorage.clear();
                 window.location.replace("index.html");
             }
         }
 
-        /**
- * Renders the filtered results into the dashboard UI
- * Grouped by Semester with UCC-style Weighted calculations
- */
-function displayFilteredTable(results) {
-    const container = document.getElementById('resultsContainer');
-    let html = '';
-
-    if (!results || results.length === 0) {
-        container.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #666;">
-                <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.3;"></i>
-                <p>No academic records match the selected filters.</p>
-            </div>`;
-        return;
-    }
-
-    // 1. Group results by Semester (Index 2 in your Google Sheet)
-    const grouped = {};
-    results.forEach(row => {
-        const sem = row[2] || "Other";
-        if (!grouped[sem]) grouped[sem] = [];
-        grouped[sem].push(row);
-    });
-
-    // 2. Generate HTML for each Semester block
-    for (const sem in grouped) {
-        // Pull the GPA from Index 3 (Column D)
-        const semesterGPA = grouped[sem][0][3] || "0.00"; 
-        
-        html += `
-            <div class="semester-card">
-                <div class="semester-header">
-                    <h3>${sem}</h3>
-                    <div class="gpa-badge">GPA: ${semesterGPA}</div>
-                </div>
-                
-                <div class="course-grid">
-                    <div class="course-header">Course Name</div>
-                    <div class="course-header" style="text-align: center;">Credits</div>
-                    <div class="course-header" style="text-align: center;">Grade</div>
-                    
-                    ${grouped[sem].map(row => {
-                        const grade = row[6] || 'N/A'; // Index 6 is Column G
-                        return `
-                            <div class="course-item">${row[1]}</div> <div class="course-item" style="text-align: center;">${row[5] || '0'}</div> <div class="course-item ${getGradeClass(grade)}" style="text-align: center;">
-                                ${grade}
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>`;
-    }
-    
-    container.innerHTML = html;
-}
-
-        // Fetch data from server
-        async function fetchStudentData() {
-            if (!navigator.onLine) {
-                loadFromCache();
-                return;
-            }
-
-            try {
-                const userData = JSON.parse(localStorage.getItem('userData'));
-                if (!userData || !userData.profile) {
-                    window.location.replace("index.html");
-                    return;
-                }
-
-                const studentId = userData.profile.id;
-
-                // Fetch results
-                const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`);
-                const resultsData = await resultsRes.json();
-                if (resultsData.results) {
-                    userResults = resultsData.results;
-                    localStorage.setItem('userResults', JSON.stringify(userResults));
-                    await saveToDB('results', { semester: 'all', data: userResults });
-                }
-
-                // Fetch payments
-                const paymentsRes = await fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`);
-                const paymentsData = await paymentsRes.json();
-                if (paymentsData.payments) {
-                    userPayments = paymentsData.payments;
-                    await saveToDB('payments', { id: 'all', data: userPayments });
-                }
-
-                // Fetch notifications
-                const notifRes = await fetch(`${SCRIPT_URL}?action=get_notifications&id=${studentId}`);
-                const notifData = await notifRes.json();
-                if (notifData.notifications) {
-                    notifications = notifData.notifications;
-                    await saveToDB('notifications', { id: 'all', data: notifications });
-                }
-
-                // Update UI
-                loadAcademicResults();
-                loadFinance();
-                loadNotifications();
-
-            } catch (e) {
-                console.log('Offline mode - loading from cache');
-                loadFromCache();
-            }
-        }
-
-        // Load from IndexedDB cache
-        async function loadFromCache() {
-            try {
-                const cachedResults = await getFromDB('results');
-                if (cachedResults && cachedResults.length > 0) {
-                    userResults = cachedResults[0].data || [];
-                }
-
-                const cachedPayments = await getFromDB('payments');
-                if (cachedPayments && cachedPayments.length > 0) {
-                    userPayments = cachedPayments[0].data || [];
-                }
-
-                const cachedNotifs = await getFromDB('notifications');
-                if (cachedNotifs && cachedNotifs.length > 0) {
-                    notifications = cachedNotifs[0].data || [];
-                }
-
-                loadAcademicResults();
-                loadFinance();
-                loadNotifications();
-            } catch (e) {
-                console.error('Error loading from cache:', e);
-            }
-        }
-
-        // Initialize Dashboard
+        // 6. INITIALIZATION
         window.onload = async function () {
-            // Check if logged in
             const storedData = localStorage.getItem('userData');
             if (!storedData) {
                 window.location.replace("index.html");
                 return;
             }
-
             studentData = JSON.parse(storedData);
+            
+            // Load Basic Profile Info
+            document.getElementById('userName').innerText = studentData.profile.name;
+            document.getElementById('userLevel').innerText = studentData.profile.level;
+            document.getElementById('profileName').innerText = studentData.profile.name;
+            document.getElementById('profileID').innerText = studentData.profile.id;
+            document.getElementById('profileProgram').innerText = studentData.profile.program;
+            
+            if (studentData.profile.photoUrl) {
+                document.getElementById('profilePic').src = studentData.profile.photoUrl;
+                document.getElementById('sidebarPhoto').src = studentData.profile.photoUrl;
+            }
 
-            // Initialize offline database
-            await initDB();
-
-            // Set up online/offline listeners
-            window.addEventListener('online', updateOnlineStatus);
-            window.addEventListener('offline', updateOnlineStatus);
-            updateOnlineStatus();
-
-            // Set up session timeout
-            setupActivityListeners();
-            startSessionTimer();
-
-            // Load profile
-            loadProfile();
-
-            // Fetch latest data
             fetchStudentData();
-
-            // Show profile by default
             showSection('profile');
         };
-
-        // Service Worker Registration for PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(registration => {
-                        console.log('SW registered:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('SW registration failed:', error);
-                    });
-            });
-        }
     </script>
 </body>
 </html>
