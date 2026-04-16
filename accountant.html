@@ -941,7 +941,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhpcPX0p_pkLIKQ6TgvVowfSlLT3zbbZ0oM7NtgNiUcBT8NT66IJt2i4T0Vs4pNitd/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNttnS7s839uHZHNv-0G-RTFavoyXh1PzzmdhqBCmYY1XJZIYWQnBaoPmMQ1RHWWi3/exec";
         let currentStudent = null;
         let csvData = null;
         let parsedResults = [];
@@ -1721,9 +1721,9 @@ CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,Intro
         // Download Financial CSV Template
         function downloadFinanceTemplate() {
             const template = `id,name,total_fee,amount_paid,balance,arrears,semester
-CCST/RM/24/001,John Doe,4500,2500,2000,0,Semester 1 2026/2027
+CCST/ML/24/001,Godfred Boadi,4500,2500,2000,0,Semester 1 2026/2027
 CCST/RM/24/002,Jane Smith,4500,4500,0,0,Semester 1 2026/2027
-CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
+CCST/RN/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
 
             const blob = new Blob([template], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);

@@ -685,7 +685,7 @@
 
     <script>
         // Configuration
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyQcnzBSBLcTEkSGccMUHGhD6UTrvfF3IRMDqdgPitZ5g1LCSrwfnNXZIBe4cD6VF5/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNttnS7s839uHZHNv-0G-RTFavoyXh1PzzmdhqBCmYY1XJZIYWQnBaoPmMQ1RHWWi3/exec";
         const DB_NAME = 'CCSTStudentDB';
         const DB_VERSION = 1;
         const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
@@ -1043,8 +1043,8 @@
             const p = studentData.profile;
 
             // Finance data - using Ghana Cedis (GH₵)
-            const totalFee = p.totalFee || 450000;
-            const amountPaid = p.amountPaid || p.balance ? (totalFee - p.balance) : 320000;
+            const totalFee = p.totalFee || 0;
+            const amountPaid = p.amountPaid || p.balance ? (totalFee - p.balance) : 0;
             const balance = p.balance || (totalFee - amountPaid);
             const arrears = p.arrears || 0;
 
@@ -1077,14 +1077,14 @@
                             <strong>First Semester Tuition</strong>
                             <small>January 15, 2026</small>
                         </div>
-                        <div class="payment-amount">GH₵150,000</div>
+                        <div class="payment-amount">GH₵5,000</div>
                     </div>
                     <div class="payment-history-item">
                         <div class="payment-details">
                             <strong>Registration Fee</strong>
-                            <small>February 10, 2026</small>
+                            <small>May 4, 2026</small>
                         </div>
-                        <div class="payment-amount">GH₵170,000</div>
+                        <div class="payment-amount">70% of this semester clears you to register your Course</div>
                     </div>
                 `;
             }
@@ -1093,7 +1093,7 @@
             const statusEl = document.getElementById('clearanceStatusFinance');
             statusEl.style.display = 'block';
             if (p.isCleared === true || p.isCleared === "TRUE") {
-                statusEl.innerHTML = '<i class="fas fa-check-circle" style="color: var(--success);"></i> FINANCIALLY CLEARED - You are eligible to register and write examinations';
+                statusEl.innerHTML = '<i class="fas fa-check-circle" style="color: var(--success);"></i> FINANCIALLY CLEARED - You are eligible to register your course for the semester';
                 statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
             } else {
                 statusEl.innerHTML = '<i class="fas fa-exclamation-circle" style="color: var(--danger);"></i> NOT CLEARED - Please contact the Accountant to clear your fees';
