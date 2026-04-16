@@ -647,7 +647,7 @@
                         <h4><i class="fas fa-exclamation-circle"></i> Balance</h4>
                         <h2 id="balance">GH₵0.00</h2>
                     </div>
-                    <div class="finance-card balance" style="background: linear-gradient(135deg, #8b0000 0%, #cd5c5c 100%);">
+                    <div class="finance-card cgpa" style="background: linear-gradient(135deg, #8b0000 0%, #cd5c5c 100%);">
                         <h4><i class="fas fa-history"></i> Arrears</h4>
                         <h2 id="arrears">GH₵0.00</h2>
                     </div>
@@ -685,7 +685,7 @@
 
     <script>
         // Configuration
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztrVjbkwe-ZrLBmSZ2oMdPYga3BF9WpYFNLhUzBzmwphUXfEHRbNhPcil8IyJAdWSq/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyQcnzBSBLcTEkSGccMUHGhD6UTrvfF3IRMDqdgPitZ5g1LCSrwfnNXZIBe4cD6VF5/exec";
         const DB_NAME = 'CCSTStudentDB';
         const DB_VERSION = 1;
         const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
@@ -833,10 +833,11 @@
         function performLogout() {
             localStorage.removeItem('userData');
             localStorage.removeItem('userResults');
-            localStorage.removeItem('readNotifications'); // Clear read notifications
+            // Don't clear readNotifications - keep them for next login
+            // localStorage.removeItem('readNotifications');
             sessionStorage.clear();
             window.location.replace("index.html");
-        }
+    }
 
         // Set up activity listeners
         function setupActivityListeners() {
@@ -886,20 +887,17 @@
             document.getElementById('infoLevel').innerText = p.level || "N/A";
             document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Cleared" : "Pending";
 
-            // In loadProfile() function
             if (p.photoUrl) {
-            document.getElementById('profilePic').src = p.photoUrl;
-            document.getElementById('sidebarPhoto').src = p.photoUrl;
-            } else if (p.id) {
-            // Check localStorage for student-specific saved photo
-             const savedPhoto = localStorage.getItem(`userPhoto_${p.id}`);
-             if (savedPhoto) {
-             document.getElementById('profilePic').src = savedPhoto;
-                document.getElementById('sidebarPhoto').src = savedPhoto;
-            // Also update profile object so it persists in session
-            p.photoUrl = savedPhoto;
-    }
-}
+                document.getElementById('profilePic').src = p.photoUrl;
+                document.getElementById('sidebarPhoto').src = p.photoUrl;
+            } else {
+                // Check localStorage for saved photo (fix for photo persistence issue)
+                const savedPhoto = localStorage.getItem('userPhoto');
+                if (savedPhoto) {
+                    document.getElementById('profilePic').src = savedPhoto;
+                    document.getElementById('sidebarPhoto').src = savedPhoto;
+                }
+            }
 
             // Clearance status
             const statusBox = document.getElementById('clearanceStatus');
@@ -1048,7 +1046,7 @@
             // Finance data - using Ghana Cedis (GH₵)
             const totalFee = p.totalFee || 0;
             const amountPaid = p.amountPaid || 0;
-            const balance = p.balance || (totalFee - amountPaid);
+            const balance = p.balance || 0;
             const arrears = p.arrears || 0;
 
             document.getElementById('totalFee').innerText = `GH₵${totalFee.toLocaleString()}`;
@@ -1080,14 +1078,14 @@
                             <strong>First Semester Tuition</strong>
                             <small>January 15, 2026</small>
                         </div>
-                        <div class="payment-amount">GH₵5,000</div>
+                        <div class="payment-amount">GH₵150,000</div>
                     </div>
                     <div class="payment-history-item">
                         <div class="payment-details">
                             <strong>Registration Fee</strong>
-                            <small>May 4, 2026</small>
+                            <small>February 10, 2026</small>
                         </div>
-                        <div class="payment-amount">70% of this semester clears you to register your Course</div>
+                        <div class="payment-amount">GH₵170,000</div>
                     </div>
                 `;
             }
@@ -1096,7 +1094,7 @@
             const statusEl = document.getElementById('clearanceStatusFinance');
             statusEl.style.display = 'block';
             if (p.isCleared === true || p.isCleared === "TRUE") {
-                statusEl.innerHTML = '<i class="fas fa-check-circle" style="color: var(--success);"></i> FINANCIALLY CLEARED - You are eligible to register your course for the semester';
+                statusEl.innerHTML = '<i class="fas fa-check-circle" style="color: var(--success);"></i> FINANCIALLY CLEARED - You are eligible to register and write examinations';
                 statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
             } else {
                 statusEl.innerHTML = '<i class="fas fa-exclamation-circle" style="color: var(--danger);"></i> NOT CLEARED - Please contact the Accountant to clear your fees';
@@ -1110,7 +1108,7 @@
             const badge = document.getElementById('notifBadge');
 
             // Get read notification IDs from sessionStorage (persists until logout)
-            let readNotifIds = JSON.parse(sessionStorage.getItem('readNotifications') || '[]');
+            let readNotifIds = JSON.parse(localStorage.getItem('readNotifications') || '[]');
 
             if (!notifications || notifications.length === 0) {
                 // Sample notifications - in production, fetch from backend
@@ -1168,30 +1166,23 @@
 
         // Mark notification as read (persists until logout)
         function markRead(id) {
-            // Get current read notifications from sessionStorage
-            let readNotifIds = JSON.parse(sessionStorage.getItem('readNotifications') || '[]');
-
-            // Add this notification ID if not already there
-            if (!readNotifIds.includes(id)) {
-                readNotifIds.push(id);
-                sessionStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
-            }
-
-            // Reload notifications to reflect the change
-            loadNotifications();
-            saveToDB('notifications', { id: 'all', data: notifications });
-        }
+    let readNotifIds = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+    if (!readNotifIds.includes(id)) {
+        readNotifIds.push(id);
+        localStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
+    }
+    loadNotifications();
+    saveToDB('notifications', { id: 'all', data: notifications });
+}
 
         // Mark all as read
         function markAllRead() {
-            // Get all notification IDs
             let readNotifIds = notifications.map(n => n.id);
-            sessionStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
-            loadNotifications();
-            saveToDB('notifications', { id: 'all', data: notifications });
-            showToast('All notifications marked as read');
-        }
-
+                localStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
+                loadNotifications();
+                saveToDB('notifications', { id: 'all', data: notifications });
+                showToast('All notifications marked as read');
+}
         // Upload Photo (simulated - save to localStorage for offline)
         function uploadPhoto(e) {
     const file = e.target.files[0];
@@ -1326,19 +1317,17 @@
             }
         }
 
-       
+        // Initialize Dashboard
         // Initialize Dashboard - FIXED VERSION
-           window.onload = async function () {
+window.onload = async function() {
+    // Check if logged in
     const storedData = localStorage.getItem('userData');
-    const role = localStorage.getItem('userRole');
-
-    // FIX: Only kick back if there is NO data OR if an Admin tries to view the Student page
-    if (!storedData || role !== 'student') {
+    if (!storedData) {
         window.location.replace("index.html");
         return;
     }
 
-        studentData = JSON.parse(storedData);
+    studentData = JSON.parse(storedData);
     const studentId = studentData.profile.id;
 
     // Load student-specific photo
@@ -1383,6 +1372,7 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
+
     </script>
 </body>
 </html>
