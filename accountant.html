@@ -560,6 +560,7 @@
                             <div class="course-row">
                                 <input class="cCode" placeholder="Course Code" style="flex:1">
                                 <input class="cName" placeholder="Course Name" style="flex:2">
+                                <input class="cCredits" placeholder="Credits" type="number" value="3" style="flex:0.5">
                                 <input class="cCA" placeholder="CA" type="number" style="flex:0.5">
                                 <input class="cExam" placeholder="Exam" type="number" style="flex:0.5">
                                 <input class="cGrade" placeholder="Grade" style="flex:0.5">
@@ -635,7 +636,7 @@
                         <li><code>id</code> - Student Index Number (e.g., CCST/RM/24/001)</li>
                         <li><code>INDEX NUMBER</code> - Alternative student ID column</li>
                         <li><code>NAME</code> - Student's full name</li>
-                        <li>Course columns: Course codes as headers (e.g., CCC 016, CCN 012)</li>
+                        <li>For each course, include: Course Name, Credits, Grade, CA, Exam</li>
                     </ul>
                     <p style="margin: 15px 0 10px;"><strong>Optional Columns:</strong></p>
                     <ul style="margin-left: 20px; color: #666;">
@@ -643,10 +644,15 @@
                         <li><code>LEVEL</code> - Academic level (e.g., 100, 200)</li>
                         <li><code>SEMESTER</code> - Semester identifier</li>
                     </ul>
-                    <p style="margin-top: 15px;"><strong>Course Structure:</strong></p>
+                    <p style="margin-top: 15px;"><strong>Course Structure for Weighted GPA:</strong></p>
                     <p style="color: #666; font-size: 0.9rem;">
-                        For each course, include columns for CA (Continuous Assessment) and EXAM scores.<br>
-                        Example: <code>CCC 016</code>, <code>CA</code>, <code>EXAMS</code>
+                        For each course, include 5 columns:<br>
+                        <code>CourseName</code> - Full course name (e.g., Introduction to Records Management)<br>
+                        <code>CourseName Credits</code> - Credit hours (e.g., 3)<br>
+                        <code>CourseName Grade</code> - Letter grade (e.g., A, B+, B, C+)<br>
+                        <code>CourseName CA</code> - Continuous Assessment score<br>
+                        <code>CourseName Exam</code> - Exam score<br><br>
+                        <em>Note: Credits are REQUIRED for weighted GPA calculation.</em>
                     </p>
                 </div>
                 <div style="margin-top: 20px;">
@@ -700,9 +706,9 @@
                             <h4><i class="fas fa-layer-group"></i> Filter by Program/Level</h4>
                             <select id="filterProgram" onchange="filterStudentList()">
                                 <option value="">All Programs</option>
-                                <option value="RM">RM (Records Management)</option>
-                                <option value="MW">MW (Medical Works)</option>
-                                <option value="DN">DN (Dental Nursing)</option>
+                                <option value="RM">RM (Registered Midwifery)</option>
+                                <option value="ML">ML (Medical Laboratory)</option>
+                                <option value="RN">RN (Registered Nursing)</option>
                             </select>
                             <select id="filterLevel" onchange="filterStudentList()">
                                 <option value="">All Levels</option>
@@ -810,9 +816,9 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
                         <select id="clearanceProgramFilter" onchange="loadStudentClearanceList()">
                             <option value="">All Programs</option>
-                            <option value="RM">RM (Records Management)</option>
-                            <option value="MW">MW (Medical Works)</option>
-                            <option value="DN">DN (Dental Nursing)</option>
+                            <option value="RM">RM (Registered Midwifery)</option>
+                            <option value="ML">MW (Medical Laboratory)</option>
+                            <option value="RN">RN (Registered Nursing)</option>
                         </select>
                         <select id="clearanceLevelFilter" onchange="loadStudentClearanceList()">
                             <option value="">All Levels</option>
@@ -935,7 +941,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyQcnzBSBLcTEkSGccMUHGhD6UTrvfF3IRMDqdgPitZ5g1LCSrwfnNXZIBe4cD6VF5/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhpcPX0p_pkLIKQ6TgvVowfSlLT3zbbZ0oM7NtgNiUcBT8NT66IJt2i4T0Vs4pNitd/exec";
         let currentStudent = null;
         let csvData = null;
         let parsedResults = [];
@@ -1074,6 +1080,7 @@
             div.innerHTML = `
                 <input class="cCode" placeholder="Course Code" style="flex:1">
                 <input class="cName" placeholder="Course Name" style="flex:2">
+                <input class="cCredits" placeholder="Credits" type="number" value="3" style="flex:0.5">
                 <input class="cCA" placeholder="CA" type="number" style="flex:0.5">
                 <input class="cExam" placeholder="Exam" type="number" style="flex:0.5">
                 <input class="cGrade" placeholder="Grade" style="flex:0.5">
@@ -1099,6 +1106,7 @@
 
             const codes = document.getElementsByClassName('cCode');
             const names = document.getElementsByClassName('cName');
+            const credits = document.getElementsByClassName('cCredits');
             const cas = document.getElementsByClassName('cCA');
             const exams = document.getElementsByClassName('cExam');
             const grades = document.getElementsByClassName('cGrade');
@@ -1109,6 +1117,7 @@
                     courses.push({
                         code: codes[i].value.trim(),
                         name: names[i].value.trim(),
+                        credits: parseInt(credits[i].value) || 3,
                         ca: parseFloat(cas[i].value) || 0,
                         exam: parseFloat(exams[i].value) || 0,
                         grade: grades[i].value.trim()
@@ -1184,45 +1193,116 @@
             const results = [];
             const headers = Object.keys(data[0] || {});
 
-            // Find course columns (those with CA and EXAMS)
-            const courseHeaders = [];
+            // Identify course groupings (each course has: name, credits, grade, ca, exam)
+            const courseMap = {}; // courseCode -> { nameCol, creditsCol, gradeCol, caCol, examCol }
+            const courseCodes = [];
+
             for (let i = 0; i < headers.length; i++) {
                 const h = headers[i].trim();
-                if (!['id', 'INDEX NUMBER', 'NAME', 'PROGRAM', 'LEVEL', 'SEMESTER'].includes(h)) {
-                    courseHeaders.push(h);
+                const upperH = h.toUpperCase();
+
+                // Skip non-course columns
+                if (['ID', 'INDEX NUMBER', 'NAME', 'PROGRAM', 'LEVEL', 'SEMESTER'].includes(upperH)) continue;
+
+                // Check if this is a course name column (not a modifier like Credits, Grade, CA, Exam)
+                const modifierSuffixes = [' CREDITS', ' CREDIT HOURS', ' GRADE', ' CA', ' EXAM', ' EXAMS', ' SCORE'];
+                let isBaseCourse = true;
+                for (const suffix of modifierSuffixes) {
+                    if (upperH.endsWith(suffix)) {
+                        isBaseCourse = false;
+                        break;
+                    }
+                }
+
+                if (isBaseCourse) {
+                    // This is a course name column - extract course code from the header
+                    const courseCode = h;
+                    if (!courseMap[courseCode]) {
+                        courseCodes.push(courseCode);
+                        courseMap[courseCode] = { nameCol: h };
+                    }
                 }
             }
 
+            // Map modifier columns to courses
+            for (let i = 0; i < headers.length; i++) {
+                const h = headers[i].trim();
+                const upperH = h.toUpperCase();
+
+                for (const code of courseCodes) {
+                    const upperCode = code.toUpperCase();
+
+                    // Credits column
+                    if ((upperH.startsWith(upperCode) && upperH.includes('CREDIT')) ||
+                        upperH === code.toUpperCase() + ' CREDITS' ||
+                        upperH === code.toUpperCase() + ' CREDIT HOURS') {
+                        courseMap[code].creditsCol = h;
+                    }
+
+                    // Grade column
+                    if ((upperH.startsWith(upperCode) && upperH.includes('GRADE')) ||
+                        upperH === code.toUpperCase() + ' GRADE') {
+                        courseMap[code].gradeCol = h;
+                    }
+
+                    // CA column
+                    if ((upperH.startsWith(upperCode) && upperH.includes('CA')) ||
+                        upperH === code.toUpperCase() + ' CA') {
+                        courseMap[code].caCol = h;
+                    }
+
+                    // Exam column
+                    if ((upperH.startsWith(upperCode) && upperH.includes('EXAM')) ||
+                        upperH === code.toUpperCase() + ' EXAM' ||
+                        upperH === code.toUpperCase() + ' EXAMS') {
+                        courseMap[code].examCol = h;
+                    }
+                }
+            }
+
+            // Process each row
             data.forEach(row => {
-                const studentId = row['id']?.trim() || row['INDEX NUMBER']?.trim() || '';
-                const name = row['NAME']?.trim() || '';
-                const program = row['PROGRAM']?.trim() || '';
-                const level = row['LEVEL']?.trim() || '';
-                const semester = row['SEMESTER']?.trim() || 'Semester 2 2025/2026';
+                const studentId = row['id']?.trim() || row['INDEX NUMBER']?.trim() || row['index number']?.trim() || '';
+                const name = row['NAME']?.trim() || row['name']?.trim() || '';
+                const program = row['PROGRAM']?.trim() || row['program']?.trim() || '';
+                const level = row['LEVEL']?.trim() || row['level']?.trim() || '';
+                const semester = row['SEMESTER']?.trim() || row['semester']?.trim() || 'Semester 2 2025/2026';
 
                 if (!studentId) return;
 
                 const courses = [];
-                courseHeaders.forEach(code => {
-                    const ca = parseFloat(row[code]) || 0;
-                    const examCol = 'EXAMS';
-                    const exam = parseFloat(row[code + ' ' + examCol] || row[examCol] || row[code + '_EXAM'] || 0) || 0;
 
-                    if (ca > 0 || exam > 0) {
+                // Extract course data
+                courseCodes.forEach(code => {
+                    const cols = courseMap[code];
+                    const courseName = row[cols.nameCol]?.trim() || code;
+                    const credits = parseInt(row[cols.creditsCol]) || 3;
+
+                    // Try to get grade directly, or calculate from CA + Exam
+                    let grade = row[cols.gradeCol]?.trim() || '';
+                    const ca = parseFloat(row[cols.caCol]) || 0;
+                    const exam = parseFloat(row[cols.examCol]) || 0;
+
+                    // If no grade but have scores, calculate from total
+                    if (!grade && (ca > 0 || exam > 0)) {
                         const total = ca + exam;
-                        const grade = calculateGrade(total);
+                        grade = calculateGrade(total);
+                    }
+
+                    if (grade) {
                         courses.push({
                             code: code,
+                            name: courseName,
+                            credits: credits,
                             ca: ca,
                             exam: exam,
-                            total: total,
-                            grade: grade
+                            grade: grade.toUpperCase()
                         });
                     }
                 });
 
-                // Calculate GPA
-                const gpa = calculateGPAFromCourses(courses);
+                // Calculate weighted GPA
+                const gpa = calculateWeightedGPA(courses);
 
                 results.push({
                     id: studentId,
@@ -1238,6 +1318,24 @@
             return results;
         }
 
+        // Calculate weighted GPA from courses
+        function calculateWeightedGPA(courses) {
+            if (!courses || courses.length === 0) return 0;
+
+            let totalWeightedPoints = 0;
+            let totalCredits = 0;
+            const gradeMap = { 'A': 4.0, 'B+': 3.5, 'B': 3.0, 'C+': 2.5, 'C': 2.0, 'D': 1.5, 'E': 1.0, 'F': 0.0 };
+
+            courses.forEach(course => {
+                const credits = course.credits || 3;
+                const points = gradeMap[course.grade] || 0;
+                totalWeightedPoints += points * credits;
+                totalCredits += credits;
+            });
+
+            return totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : 0;
+        }
+
         // Calculate Grade based on UCC system
         function calculateGrade(score) {
             if (score >= 80) return 'A';
@@ -1248,20 +1346,6 @@
             if (score >= 55) return 'D';
             if (score >= 50) return 'E';
             return 'F';
-        }
-
-        // Calculate GPA from courses
-        function calculateGPAFromCourses(courses) {
-            if (!courses || courses.length === 0) return 0;
-
-            let totalPoints = 0;
-            const gradeMap = { 'A': 4.0, 'B+': 3.5, 'B': 3.0, 'C+': 2.5, 'C': 2.0, 'D': 1.5, 'E': 1.0, 'F': 0.0 };
-
-            courses.forEach(course => {
-                totalPoints += gradeMap[course.grade] || 0;
-            });
-
-            return (totalPoints / courses.length).toFixed(2);
         }
 
         // Show CSV Preview
@@ -1371,9 +1455,9 @@
 
         // Download Template
         function downloadTemplate() {
-            const template = `id,INDEX NUMBER,NAME,PROGRAM,LEVEL,SEMESTER,CCC 016 CA,CCC 016 EXAMS,CCN 012 CA,CCN 012 EXAMS,CCN 029 CA,CCN 029 EXAMS
-CCST/RM/24/001,CCST/RM/24/001,OGOE RUBY,RM,100,Semester 2 2025/2026,33,33,28,53,23,33
-CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,34,50,30,52,28,43`;
+            const template = `id,INDEX NUMBER,NAME,PROGRAM,LEVEL,SEMESTER,CCC 016,CCC 016 Credits,CCC 016 Grade,CCC 016 CA,CCC 016 Exam,CCN 012,CCN 012 Credits,CCN 012 Grade,CCN 012 CA,CCN 012 Exam
+CCST/RM/24/001,CCST/RM/24/001,OGOE RUBY,RM,100,Semester 2 2025/2026,Introduction to Records Management,3,B,33,33,Foundations of Information Literacy,3,B+,28,53
+CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,Introduction to Records Management,3,A,34,50,Foundations of Information Literacy,3,B+,30,52`;
 
             const blob = new Blob([template], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
@@ -1715,12 +1799,12 @@ CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
             } catch (e) {
                 // Sample data for demo
                 allStudents = [
-                    { id: 'CCST/RM/24/001', name: 'John Doe', program: 'RM', level: '100', isCleared: true },
-                    { id: 'CCST/RM/24/002', name: 'Jane Smith', program: 'RM', level: '100', isCleared: false },
-                    { id: 'CCST/MW/24/001', name: 'Michael Johnson', program: 'MW', level: '200', isCleared: true },
-                    { id: 'CCST/DN/24/001', name: 'Sarah Williams', program: 'DN', level: '100', isCleared: false },
+                    { id: 'CCST/RM/24/001', name: 'Justina Arhin', program: 'RM', level: '100', isCleared: true },
+                    { id: 'CCST/RM/24/002', name: 'Godfred Boadi', program: 'RM', level: '100', isCleared: false },
+                    { id: 'CCST/ML/24/001', name: 'Paa Kwesi Boadison', program: 'ML', level: '200', isCleared: true },
+                    { id: 'CCST/RN/24/001', name: 'Sarah Williams', program: 'RN', level: '100', isCleared: false },
                     { id: 'CCST/RM/23/001', name: 'David Brown', program: 'RM', level: '200', isCleared: true },
-                    { id: 'CCST/MW/23/002', name: 'Emily Davis', program: 'MW', level: '300', isCleared: false },
+                    { id: 'CCST/ML/23/002', name: 'Emily Davis', program: 'ML', level: '300', isCleared: false },
                 ];
 
                 let filtered = allStudents;

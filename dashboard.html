@@ -889,6 +889,13 @@
             if (p.photoUrl) {
                 document.getElementById('profilePic').src = p.photoUrl;
                 document.getElementById('sidebarPhoto').src = p.photoUrl;
+            } else {
+                // Check localStorage for saved photo (fix for photo persistence issue)
+                const savedPhoto = localStorage.getItem('userPhoto');
+                if (savedPhoto) {
+                    document.getElementById('profilePic').src = savedPhoto;
+                    document.getElementById('sidebarPhoto').src = savedPhoto;
+                }
             }
 
             // Clearance status
@@ -915,7 +922,7 @@
             container.innerHTML = '';
             semesterFilter.innerHTML = '<option value="all">All Semesters</option>';
 
-            let totalPoints = 0;
+            let totalWeightedPoints = 0;
             let totalCredits = 0;
 
             userResults.forEach((sem, idx) => {
@@ -925,24 +932,27 @@
                 option.textContent = sem.semester;
                 semesterFilter.appendChild(option);
 
-                // Calculate grade points
-                let semPoints = 0;
-                let semCredits = sem.details.length * 3; // Assuming 3 credits per course
+                // Calculate weighted grade points per semester
+                let semWeightedPoints = 0;
+                let semCredits = 0;
 
                 sem.details.forEach(course => {
-                    semPoints += getGradePoints(course.grade) * 3;
+                    const credits = course.credits || 3; // Default to 3 credits if not specified
+                    semWeightedPoints += getGradePoints(course.grade) * credits;
+                    semCredits += credits;
                 });
 
-                totalPoints += semPoints;
+                totalWeightedPoints += semWeightedPoints;
                 totalCredits += semCredits;
 
                 // Build course rows
                 let courseRows = '';
                 sem.details.forEach(course => {
                     const gradeClass = getGradeClass(course.grade);
+                    const credits = course.credits || 3;
                     courseRows += `
                         <div class="course-item">
-                            <div>${course.name}</div>
+                            <div>${course.name || course.code} <span style="font-size:0.8rem; color:#666;">(${credits} cr)</span></div>
                             <div style="text-align: center;">${getGradePoints(course.grade).toFixed(1)}</div>
                             <div style="text-align: center;" class="${gradeClass}">${course.grade}</div>
                         </div>
@@ -965,19 +975,27 @@
                 `;
             });
 
-            // Update summary
-            const cgpa = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '--';
+            // Update summary with weighted CGPA
+            const cgpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '--';
             document.getElementById('cgpaDisplay').innerText = cgpa;
             document.getElementById('totalCredits').innerText = totalCredits;
             document.getElementById('academicStatus').innerText = cgpa >= 2.0 ? 'Good' : 'Review';
         }
 
-        // Calculate GPA from semester data
+        // Calculate weighted GPA from semester data
         function calculateGPA(semester) {
             if (!semester.details || semester.details.length === 0) return 0;
-            let total = 0;
-            semester.details.forEach(c => total += getGradePoints(c.grade));
-            return (total / semester.details.length).toFixed(2);
+
+            let totalWeightedPoints = 0;
+            let totalCredits = 0;
+
+            semester.details.forEach(c => {
+                const credits = c.credits || 3;
+                totalWeightedPoints += getGradePoints(c.grade) * credits;
+                totalCredits += credits;
+            });
+
+            return totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : 0;
         }
 
         // Get grade points based on UCC system
