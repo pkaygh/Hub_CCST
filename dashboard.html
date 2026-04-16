@@ -1326,58 +1326,61 @@
             }
         }
 
-        // Initialize Dashboard
-
-                const storedData = localStorage.getItem('userData');
-                    if (storedData) {
-                    studentData = JSON.parse(storedData);
-                const studentId = studentData.profile.id;
-    
-        // Load student-specific photo
-                const savedPhoto = localStorage.getItem(`userPhoto_${studentId}`);
-                    if (savedPhoto && !studentData.profile.photoUrl) {
-                studentData.profile.photoUrl = savedPhoto;
-                    document.getElementById('profilePic').src = savedPhoto;
-                    document.getElementById('sidebarPhoto').src = savedPhoto;
+       
+        // Initialize Dashboard - FIXED VERSION
+            window.onload = async function() {
+        // Check if logged in
+    const storedData = localStorage.getItem('userData');
+    if (!storedData) {
+        window.location.replace("index.html");
+        return;
     }
-}
 
-            studentData = JSON.parse(storedData);
+    studentData = JSON.parse(storedData);
+    const studentId = studentData.profile.id;
 
-            // Initialize offline database
-            await initDB();
+    // Load student-specific photo
+    const savedPhoto = localStorage.getItem(`userPhoto_${studentId}`);
+    if (savedPhoto && !studentData.profile.photoUrl) {
+        studentData.profile.photoUrl = savedPhoto;
+        document.getElementById('profilePic').src = savedPhoto;
+        document.getElementById('sidebarPhoto').src = savedPhoto;
+    }
 
-            // Set up online/offline listeners
-            window.addEventListener('online', updateOnlineStatus);
-            window.addEventListener('offline', updateOnlineStatus);
-            updateOnlineStatus();
+    // Initialize offline database
+    await initDB();
 
-            // Set up session timeout
-            setupActivityListeners();
-            startSessionTimer();
+    // Set up online/offline listeners
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
 
-            // Load profile
-            loadProfile();
+    // Set up session timeout
+    setupActivityListeners();
+    startSessionTimer();
 
-            // Fetch latest data
-            fetchStudentData();
+    // Load profile
+    loadProfile();
 
-            // Show profile by default
-            showSection('profile');
-        };
+    // Fetch latest data
+    fetchStudentData();
 
-        // Service Worker Registration for PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(registration => {
-                        console.log('SW registered:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('SW registration failed:', error);
-                    });
+    // Show profile by default
+    showSection('profile');
+};
+
+// Service Worker Registration for PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(registration => {
+                console.log('SW registered:', registration.scope);
+            })
+            .catch(error => {
+                console.log('SW registration failed:', error);
             });
-        }
+    });
+}
     </script>
 </body>
 </html>
