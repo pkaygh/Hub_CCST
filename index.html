@@ -523,95 +523,121 @@
         }
 
         // Handle Login
-        async function handleLogin(event) {
-            event.preventDefault();
+        // Handle Login
+async function handleLogin(event) {
+    event.preventDefault();
 
-            const loginId = document.getElementById('loginId').value.trim();
-            const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
-            const loginText = document.getElementById('loginText');
-            const errorMsg = document.getElementById('errorMessage');
+    const loginId = document.getElementById('loginId').value.trim();
+    const password = document.getElementById('password').value;
+    const loginBtn = document.getElementById('loginBtn');
+    const loginText = document.getElementById('loginText');
+    const errorMsg = document.getElementById('errorMessage');
 
-            if (!loginId || !password) {
-                showError("Please enter both ID and password");
+    if (!loginId || !password) {
+        showError("Please enter both ID and password");
+        return;
+    }
+
+    // Show loading
+    loginBtn.disabled = true;
+    loginText.style.display = 'none';
+    document.getElementById('loginSpinner').style.display = 'inline-block';
+    errorMsg.style.display = 'none';
+
+    try {
+        if (!navigator.onLine) {
+            // Try offline login
+            if (currentRole === 'admin') {
+                showError("Admin login requires internet connection");
                 return;
             }
-
-            // Show loading
-            loginBtn.disabled = true;
-            loginText.style.display = 'none';
-            document.getElementById('loginSpinner').style.display = 'inline-block';
-            errorMsg.style.display = 'none';
-
-            try {
-                if (!navigator.onLine) {
-                    // Try offline login
-                    const cachedData = localStorage.getItem('userData');
-                    if (cachedData) {
-                        const data = JSON.parse(cachedData);
-                        if (data.profile && data.profile.id === loginId) {
-                            window.location.href = 'dashboard.html';
-                            return;
-                        }
-                    }
-                    showError("You are offline. Please connect to login.");
-                    return;
-                }
-
-                if (currentRole === 'admin') {
-                    // Admin login
-                    const response = await fetch(`${SCRIPT_URL}?action=staff_login&user=${loginId}&pass=${password}`);
-                    const data = await response.json();
-
-                    if (data.error) {
-                        showError(data.error);
-                        return;
-                    }
-
-                    if (data.authorized) {
-                        localStorage.setItem('adminData', JSON.stringify({ role: 'admin', id: loginId }));
-                        window.location.href = 'accountant.html';
-                        return;
-                    }
-                } else {
-                    // Student login
-                    const response = await fetch(`${SCRIPT_URL}?id=${loginId}&password=${password}`);
-                    const data = await response.json();
-
-                    if (data.error) {
-                        showError(data.error);
-                        return;
-                    }
-
-                    // Save to localStorage
-                    localStorage.setItem('userData', JSON.stringify(data));
-                    localStorage.setItem('studentId', loginId);
-
-                    // Fetch results for dashboard
-                    try {
-                        const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${loginId}`);
-                        const resultsData = await resultsRes.json();
-                        if (resultsData.results) {
-                            localStorage.setItem('userResults', JSON.stringify(resultsData.results));
-                        }
-                    } catch (e) {
-                        console.log('Could not fetch results:', e);
-                    }
-
-                    // Redirect to dashboard
+            const cachedData = localStorage.getItem('userData');
+            if (cachedData) {
+                const data = JSON.parse(cachedData);
+                if (data.profile && data.profile.id === loginId) {
                     window.location.href = 'dashboard.html';
                     return;
                 }
+            }
+            showError("You are offline. Please connect to login.");
+            return;
+        }
 
-            } catch (e) {
-                console.error('Login error:', e);
-                showError("Connection error. Please try again.");
-            } finally {
-                loginBtn.disabled = false;
-                loginText.style.display = 'block';
-                document.getElementById('loginSpinner').style.display = 'none';
+        // ADMIN LOGIN
+        if (currentRole === 'admin') {
+            console.log("Attempting admin login for:", loginId);
+            
+            const response = await fetch(`${SCRIPT_URL}?action=staff_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`);
+            const data = await response.json();
+            
+            console.log("Admin login response:", data);
+
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+
+            if (data.authorized === true) {
+                // Store admin session
+                localStorage.setItem('adminData', JSON.stringify({ 
+                    role: 'admin', 
+                    id: loginId,
+                    loginTime: Date.now()
+                }));
+                // Clear any student data to prevent confusion
+                localStorage.removeItem('userData');
+                localStorage.removeItem('userResults');
+                // Redirect to accountant portal
+                window.location.href = 'accountant.html';
+                return;
+            } else {
+                showError("Invalid admin credentials");
+                return;
             }
         }
+        
+        // STUDENT LOGIN
+        else {
+            const response = await fetch(`${SCRIPT_URL}?id=${encodeURIComponent(loginId)}&password=${encodeURIComponent(password)}`);
+            const data = await response.json();
+
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+
+            // Save student data
+            localStorage.setItem('userData', JSON.stringify(data));
+            localStorage.setItem('studentId', loginId);
+
+            // Fetch results for dashboard
+            try {
+                const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${loginId}`);
+                const resultsData = await resultsRes.json();
+                if (resultsData.results) {
+                    localStorage.setItem('userResults', JSON.stringify(resultsData.results));
+                }
+            } catch (e) {
+                console.log('Could not fetch results:', e);
+            }
+
+            // Clear any admin data
+            localStorage.removeItem('adminData');
+            
+            // Redirect to student dashboard
+            window.location.href = 'dashboard.html';
+            return;
+        }
+
+    } catch (e) {
+        console.error('Login error:', e);
+        showError("Connection error. Please try again.");
+    } finally {
+        loginBtn.disabled = false;
+        loginText.style.display = 'block';
+        document.getElementById('loginSpinner').style.display = 'none';
+    }
+}
 
         function showError(msg) {
             const errorMsg = document.getElementById('errorMessage');
