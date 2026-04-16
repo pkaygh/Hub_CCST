@@ -886,17 +886,20 @@
             document.getElementById('infoLevel').innerText = p.level || "N/A";
             document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Cleared" : "Pending";
 
+            // In loadProfile() function
             if (p.photoUrl) {
-                document.getElementById('profilePic').src = p.photoUrl;
-                document.getElementById('sidebarPhoto').src = p.photoUrl;
-            } else {
-                // Check localStorage for saved photo (fix for photo persistence issue)
-                const savedPhoto = localStorage.getItem('userPhoto');
-                if (savedPhoto) {
-                    document.getElementById('profilePic').src = savedPhoto;
-                    document.getElementById('sidebarPhoto').src = savedPhoto;
-                }
-            }
+            document.getElementById('profilePic').src = p.photoUrl;
+            document.getElementById('sidebarPhoto').src = p.photoUrl;
+            } else if (p.id) {
+            // Check localStorage for student-specific saved photo
+             const savedPhoto = localStorage.getItem(`userPhoto_${p.id}`);
+             if (savedPhoto) {
+             document.getElementById('profilePic').src = savedPhoto;
+                document.getElementById('sidebarPhoto').src = savedPhoto;
+            // Also update profile object so it persists in session
+            p.photoUrl = savedPhoto;
+    }
+}
 
             // Clearance status
             const statusBox = document.getElementById('clearanceStatus');
@@ -1191,27 +1194,30 @@
 
         // Upload Photo (simulated - save to localStorage for offline)
         function uploadPhoto(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    const photoData = ev.target.result;
-                    document.getElementById('profilePic').src = photoData;
-                    document.getElementById('sidebarPhoto').src = photoData;
+    const file = e.target.files[0];
+    if (file && studentData && studentData.profile) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const photoData = ev.target.result;
+            document.getElementById('profilePic').src = photoData;
+            document.getElementById('sidebarPhoto').src = photoData;
 
-                    // Save locally
-                    localStorage.setItem('userPhoto', photoData);
-
-                    if (studentData && studentData.profile) {
-                        studentData.profile.photoUrl = photoData;
-                        saveToDB('studentData', studentData);
-                    }
-
-                    showToast('Profile picture updated!');
-                };
-                reader.readAsDataURL(file);
+            // Save with student-specific key
+            const studentId = studentData.profile.id;
+            localStorage.setItem(`userPhoto_${studentId}`, photoData);
+            
+            // Also save in the profile object
+            if (studentData && studentData.profile) {
+                studentData.profile.photoUrl = photoData;
+                localStorage.setItem('userData', JSON.stringify(studentData));
+                saveToDB('studentData', studentData);
             }
-        }
+
+            showToast('Profile picture updated!');
+        };
+        reader.readAsDataURL(file);
+    }
+}
 
         // Edit Profile (placeholder)
         function editProfile() {
@@ -1321,13 +1327,20 @@
         }
 
         // Initialize Dashboard
-        window.onload = async function () {
-            // Check if logged in
-            const storedData = localStorage.getItem('userData');
-            if (!storedData) {
-                window.location.replace("index.html");
-                return;
-            }
+
+                const storedData = localStorage.getItem('userData');
+                    if (storedData) {
+                    studentData = JSON.parse(storedData);
+                const studentId = studentData.profile.id;
+    
+        // Load student-specific photo
+                const savedPhoto = localStorage.getItem(`userPhoto_${studentId}`);
+                    if (savedPhoto && !studentData.profile.photoUrl) {
+                studentData.profile.photoUrl = savedPhoto;
+                    document.getElementById('profilePic').src = savedPhoto;
+                    document.getElementById('sidebarPhoto').src = savedPhoto;
+    }
+}
 
             studentData = JSON.parse(storedData);
 
