@@ -8,7 +8,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Student Dashboard | CCST</title>
     <style>
-        /* NEW THEME: Dots halftone grunge brush yellow green with white on dark green */
         :root {
             --primary: #6b8e23;
             --primary-light: #9acd32;
@@ -60,10 +59,8 @@
             overflow-y: auto;
             transition: transform 0.3s ease;
             z-index: 1000;
-            background-image:
-                linear-gradient(135deg, rgba(85, 107, 47, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 0%, transparent 30%),
-                radial-gradient(circle at 80% 70%, rgba(0,0,0,0.1) 0%, transparent 40%);
+            background-image: linear-gradient(135deg, rgba(85, 107, 47, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 0%, transparent 30%);
         }
 
         .sidebar-overlay {
@@ -91,28 +88,13 @@
             object-fit: cover;
             border: 3px solid var(--primary-light);
             cursor: pointer;
-            transition: transform 0.3s, border-color 0.3s;
-            box-shadow: 0 0 15px rgba(154, 205, 50, 0.3);
+            transition: transform 0.3s;
         }
 
-        .profile-pic-sidebar:hover {
-            transform: scale(1.1);
-            border-color: white;
-        }
+        .profile-pic-sidebar:hover { transform: scale(1.1); }
 
-        .sidebar-header h3 {
-            color: white;
-            font-size: 1rem;
-            margin-top: 12px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
-
-        .sidebar-header p {
-            font-size: 0.8rem;
-            opacity: 0.9;
-            margin-top: 4px;
-            color: var(--primary-light);
-        }
+        .sidebar-header h3 { color: white; font-size: 1rem; margin-top: 12px; }
+        .sidebar-header p { font-size: 0.8rem; opacity: 0.9; color: var(--primary-light); }
 
         .menu-item {
             padding: 14px 25px;
@@ -131,22 +113,15 @@
             border-left-color: var(--primary-light);
         }
 
-        .menu-item i {
-            font-size: 1.1rem;
-            width: 24px;
-            text-align: center;
-            color: var(--primary-light);
-        }
-
+        .menu-item i { width: 24px; text-align: center; color: var(--primary-light); }
         .menu-item.active i { color: white; }
-
         .menu-item .badge {
             margin-left: auto;
             background: var(--danger);
             color: white;
             padding: 2px 8px;
             border-radius: 10px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
         }
 
         .main-content {
@@ -200,15 +175,10 @@
             border-radius: 50%;
             object-fit: cover;
             border: 4px solid var(--primary-light);
-            box-shadow: 0 4px 12px rgba(26, 71, 42, 0.2);
             cursor: pointer;
         }
 
-        .profile-info h2 {
-            margin-bottom: 5px;
-            color: var(--primary-dark);
-        }
-
+        .profile-info h2 { margin-bottom: 5px; color: var(--primary-dark); }
         .profile-info p { color: #666; font-size: 0.95rem; }
 
         .status-badge {
@@ -219,10 +189,8 @@
             font-weight: bold;
             margin-top: 10px;
         }
-
         .cleared { background: var(--success); color: white; }
         .not-cleared { background: var(--danger); color: white; }
-        .pending { background: var(--warning); color: white; }
 
         .semester-card {
             border-left: 5px solid var(--primary);
@@ -265,44 +233,12 @@
             border-bottom: 1px solid rgba(107, 142, 35, 0.2);
         }
 
-        .course-item {
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
+        .course-item { padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
         .grade-a { color: var(--success); font-weight: bold; }
         .grade-b { color: var(--primary); font-weight: bold; }
         .grade-c { color: var(--warning); font-weight: bold; }
         .grade-d { color: #cd853f; font-weight: bold; }
         .grade-f { color: var(--danger); font-weight: bold; }
-
-        .grading-scale {
-            background: linear-gradient(135deg, rgba(107, 142, 35, 0.1), rgba(154, 205, 50, 0.1));
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            border: 1px solid rgba(107, 142, 35, 0.3);
-        }
-
-        .grading-scale h4 { margin-bottom: 10px; color: var(--primary-dark); }
-
-        .grade-table {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-        }
-
-        .grade-item {
-            text-align: center;
-            padding: 8px;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid rgba(107, 142, 35, 0.2);
-        }
-
-        .grade-item .points { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
-        .grade-item .letter { font-size: 1rem; font-weight: bold; }
-        .grade-item .range { font-size: 0.8rem; color: #666; }
 
         .finance-summary {
             display: grid;
@@ -317,14 +253,10 @@
             text-align: center;
             color: white;
         }
-
         .finance-card.total { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); }
         .finance-card.paid { background: linear-gradient(135deg, var(--success) 0%, #8fbc8f 100%); }
         .finance-card.balance { background: linear-gradient(135deg, var(--danger) 0%, #cd5c5c 100%); }
         .finance-card.cgpa { background: linear-gradient(135deg, var(--warning) 0%, #f0e68c 100%); color: var(--text-dark); }
-
-        .finance-card h4 { font-size: 0.9rem; opacity: 0.9; }
-        .finance-card h2 { font-size: 1.8rem; margin-top: 5px; }
 
         .payment-history-item {
             display: flex;
@@ -337,10 +269,6 @@
             border-left: 4px solid var(--primary);
         }
 
-        .payment-details strong { display: block; }
-        .payment-details small { color: #666; }
-        .payment-amount { font-weight: bold; color: var(--success); }
-
         .notification-item {
             display: flex;
             gap: 15px;
@@ -349,19 +277,10 @@
             border-radius: 10px;
             margin-bottom: 15px;
             border-left: 4px solid var(--primary);
-            transition: transform 0.2s, box-shadow 0.2s;
             cursor: pointer;
         }
 
-        .notification-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 4px 12px rgba(26, 71, 42, 0.15);
-        }
-
-        .notification-item.unread {
-            border-left-color: var(--warning);
-            background: linear-gradient(to right, rgba(218, 165, 32, 0.1), white);
-        }
+        .notification-item.unread { border-left-color: var(--warning); background: linear-gradient(to right, rgba(218, 165, 32, 0.1), white); }
 
         .notification-icon {
             width: 45px;
@@ -373,26 +292,96 @@
             align-items: center;
             justify-content: center;
             font-size: 1.2rem;
-            flex-shrink: 0;
         }
 
-        .notification-content { flex: 1; }
-        .notification-content h4 { margin-bottom: 5px; color: var(--text-dark); }
-        .notification-content p { color: #666; font-size: 0.9rem; }
-        .notification-meta { font-size: 0.8rem; color: #999; margin-top: 8px; }
-
-        .offline-indicator {
-            display: none;
-            background: var(--warning);
-            color: white;
-            text-align: center;
-            padding: 8px;
-            font-size: 0.85rem;
+        /* Transcript Styles */
+        .transcript-container {
+            background: white;
+            padding: 20px;
             border-radius: 8px;
-            margin-bottom: 15px;
+            font-family: 'Times New Roman', serif;
         }
 
-        .offline-indicator.show { display: block; }
+        .transcript-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .transcript-header h1 { color: var(--primary-dark); font-size: 1.8rem; }
+        .transcript-header h3 { color: #555; font-size: 1.2rem; }
+
+        .student-info-table {
+            width: 100%;
+            margin-bottom: 25px;
+            border-collapse: collapse;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .student-info-table td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+        }
+
+        .student-info-table td:first-child {
+            font-weight: bold;
+            width: 30%;
+            background: #f0f0f0;
+        }
+
+        .transcript-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.85rem;
+        }
+
+        .transcript-table th {
+            background: var(--primary-dark);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid var(--primary);
+        }
+
+        .transcript-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .transcript-table td:first-child { text-align: left; }
+
+        .semester-summary {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .cgpa-section {
+            margin-top: 30px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(107, 142, 35, 0.1), rgba(154, 205, 50, 0.1));
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--primary);
+        }
+
+        .cgpa-value { font-size: 2rem; font-weight: bold; color: var(--primary); }
+
+        .request-status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .request-pending { background: rgba(218, 165, 32, 0.1); border-left: 4px solid var(--warning); }
+        .request-approved { background: rgba(85, 107, 47, 0.1); border-left: 4px solid var(--success); }
+        .request-rejected { background: rgba(139, 0, 0, 0.1); border-left: 4px solid var(--danger); }
 
         .toast {
             position: fixed;
@@ -405,7 +394,6 @@
             border-radius: 30px;
             z-index: 10000;
             animation: slideUp 0.3s ease;
-            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.3);
         }
 
         @keyframes slideUp {
@@ -413,21 +401,16 @@
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
 
-        .session-warning {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--danger);
-            color: white;
-            padding: 10px 30px;
-            border-radius: 0 0 10px 10px;
-            z-index: 10001;
+        .offline-indicator {
             display: none;
-            font-weight: bold;
+            background: var(--warning);
+            color: white;
+            text-align: center;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 15px;
         }
-
-        .session-warning.show { display: block; }
+        .offline-indicator.show { display: block; }
 
         @media (max-width: 768px) {
             .menu-toggle { display: block; }
@@ -436,8 +419,6 @@
             .sidebar-overlay.show { display: block; }
             .main-content { margin-left: 0; padding: 15px; padding-top: 60px; }
             .profile-container { flex-direction: column; text-align: center; }
-            .course-grid { grid-template-columns: 1fr 1fr; }
-            .finance-summary { grid-template-columns: 1fr 1fr; }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -466,6 +447,13 @@
         </a>
         <a href="#" class="menu-item" onclick="showSection('finance')">
             <i class="fas fa-money-bill-wave"></i> Finance
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('transcript')">
+            <i class="fas fa-file-pdf"></i> My Transcript
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('request_transcript')">
+            <i class="fas fa-envelope"></i> Request Transcript
+            <span id="requestStatusBadge" class="badge" style="display:none;">Pending</span>
         </a>
         <a href="#" class="menu-item" onclick="showSection('notifications')">
             <i class="fas fa-bell"></i> Notifications
@@ -541,35 +529,22 @@
             <div class="card">
                 <div class="card-header">
                     <h3><i class="fas fa-graduation-cap"></i> Examination Results</h3>
-                    <select id="semesterFilter" onchange="filterResults()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd;">
+                    <select id="semesterFilter" onchange="filterResults()" style="padding: 8px 12px; border-radius: 6px;">
                         <option value="all">All Semesters</option>
                     </select>
                 </div>
 
                 <div id="academicSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
-                    <div class="finance-card cgpa">
-                        <h4>CGPA</h4>
-                        <h2 id="cgpaDisplay">--</h2>
-                    </div>
-                    <div class="finance-card total">
-                        <h4>Total Credits</h4>
-                        <h2 id="totalCredits">--</h2>
-                    </div>
-                    <div class="finance-card paid">
-                        <h4>Status</h4>
-                        <h2 id="academicStatus">--</h2>
-                    </div>
+                    <div class="finance-card cgpa"><h4>CGPA</h4><h2 id="cgpaDisplay">--</h2></div>
+                    <div class="finance-card total"><h4>Total Credits</h4><h2 id="totalCredits">--</h2></div>
+                    <div class="finance-card paid"><h4>Status</h4><h2 id="academicStatus">--</h2></div>
                 </div>
 
-                <div id="resultsContainer">
-                    <p style="text-align: center; color: #999; padding: 40px;">Loading academic records...</p>
-                </div>
+                <div id="resultsContainer"><p style="text-align: center; color: #999; padding: 40px;">Loading academic records...</p></div>
 
-                <div class="grading-scale">
+                <div class="card" style="margin-top:20px; background:#f8f9fa;">
                     <h4><i class="fas fa-table"></i> Grading System</h4>
-                    <div class="grade-table" id="gradingTable">
-                        <!-- Dynamic grading table will be inserted here based on program -->
-                    </div>
+                    <div id="gradingTable" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;"></div>
                 </div>
             </div>
         </div>
@@ -577,35 +552,107 @@
         <!-- FINANCE SECTION -->
         <div id="financeSection" class="section" style="display:none;">
             <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-money-bill-wave"></i> Financial Summary</h3>
-                </div>
-
+                <div class="card-header"><h3><i class="fas fa-money-bill-wave"></i> Financial Summary</h3></div>
                 <div class="finance-summary">
-                    <div class="finance-card total">
-                        <h4><i class="fas fa-wallet"></i> Total Semester Fee</h4>
-                        <h2 id="totalFee">GH₵0.00</h2>
-                    </div>
-                    <div class="finance-card paid">
-                        <h4><i class="fas fa-check-circle"></i> Amount Paid</h4>
-                        <h2 id="amountPaid">GH₵0.00</h2>
-                    </div>
-                    <div class="finance-card balance">
-                        <h4><i class="fas fa-exclamation-circle"></i> Balance</h4>
-                        <h2 id="balance">GH₵0.00</h2>
-                    </div>
-                    <div class="finance-card balance" style="background: linear-gradient(135deg, #8b0000 0%, #cd5c5c 100%);">
-                        <h4><i class="fas fa-history"></i> Arrears</h4>
-                        <h2 id="arrears">GH₵0.00</h2>
+                    <div class="finance-card total"><h4>Total Fee</h4><h2 id="totalFee">GH₵0.00</h2></div>
+                    <div class="finance-card paid"><h4>Amount Paid</h4><h2 id="amountPaid">GH₵0.00</h2></div>
+                    <div class="finance-card balance"><h4>Balance</h4><h2 id="balance">GH₵0.00</h2></div>
+                    <div class="finance-card balance" style="background: linear-gradient(135deg, #8b0000 0%, #cd5c5c 100%);"><h4>Arrears</h4><h2 id="arrears">GH₵0.00</h2></div>
+                </div>
+                <div id="clearanceStatusFinance" style="padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none;"></div>
+                <h4><i class="fas fa-history"></i> Payment History</h4>
+                <div id="paymentHistory"><p style="text-align: center; color: #999;">No payment records found.</p></div>
+            </div>
+        </div>
+
+        <!-- MY TRANSCRIPT SECTION -->
+        <div id="transcriptSection" class="section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-file-pdf"></i> My Academic Transcript</h3>
+                    <div>
+                        <button onclick="downloadTranscriptPDF()" class="success-btn" style="background: var(--danger); padding: 10px 20px;">
+                            <i class="fas fa-file-pdf"></i> Download PDF
+                        </button>
+                        <button onclick="printTranscript()" class="info-btn" style="padding: 10px 20px; margin-left: 10px;">
+                            <i class="fas fa-print"></i> Print
+                        </button>
                     </div>
                 </div>
-
-                <div id="clearanceStatusFinance" style="padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 20px; display: none;"></div>
-
-                <h4 style="color: var(--primary); margin-bottom: 15px;"><i class="fas fa-history"></i> Payment History</h4>
-                <div id="paymentHistory">
-                    <p style="text-align: center; color: #999;">No payment records found.</p>
+                <div id="transcriptContent" class="transcript-container">
+                    <p style="text-align: center; padding: 40px;">Loading transcript...</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- REQUEST TRANSCRIPT SECTION -->
+        <div id="request_transcriptSection" class="section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-envelope"></i> Request Official Transcript</h3>
+                </div>
+                
+                <div id="existingRequestStatus" style="display: none;" class="request-status"></div>
+                
+                <div id="requestForm">
+                    <p style="margin-bottom: 20px; color: #666;">
+                        Use this form to request an official academic transcript. Your request will be sent to the Academic Affairs office for processing.
+                        Once approved, you will be notified and can download your transcript.
+                    </p>
+                    
+                    <div class="form-group">
+                        <label style="font-weight: bold;">Purpose of Transcript:</label>
+                        <select id="transcriptPurpose" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
+                            <option value="Further Studies">Further Studies (University Application)</option>
+                            <option value="Employment">Employment / Job Application</option>
+                            <option value="Scholarship">Scholarship Application</option>
+                            <option value="Professional Certification">Professional Certification</option>
+                            <option value="Personal">Personal Records</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="font-weight: bold;">Number of Copies:</label>
+                        <select id="transcriptCopies" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
+                            <option value="1">1 Copy</option>
+                            <option value="2">2 Copies</option>
+                            <option value="3">3 Copies</option>
+                            <option value="5">5 Copies</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="font-weight: bold;">Delivery Address (Optional):</label>
+                        <textarea id="transcriptAddress" rows="2" placeholder="Enter delivery address if you need physical copies..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="font-weight: bold;">Additional Instructions:</label>
+                        <textarea id="transcriptInstructions" rows="2" placeholder="Any special instructions..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;"></textarea>
+                    </div>
+                    
+                    <button onclick="submitTranscriptRequest()" class="success-btn" style="width: 100%;">
+                        <i class="fas fa-paper-plane"></i> SUBMIT REQUEST
+                    </button>
+                </div>
+                
+                <div id="requestHistory" style="margin-top: 30px;">
+                    <h4><i class="fas fa-history"></i> Request History</h4>
+                    <div id="requestHistoryList" style="max-height: 300px; overflow-y: auto; margin-top: 15px;">
+                        <p style="text-align: center; color: #999;">No previous requests.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h4><i class="fas fa-info-circle"></i> Transcript Information</h4>
+                <ul style="margin-left: 20px; color: #666; line-height: 1.8;">
+                    <li>Official transcripts are issued by the Academic Affairs Office</li>
+                    <li>Processing time: 3-5 business days</li>
+                    <li>Fee: GH₵60 per copy (payable at the finance office)</li>
+                    <li>You will receive an email notification when your transcript is ready</li>
+                </ul>
             </div>
         </div>
 
@@ -614,46 +661,26 @@
             <div class="card">
                 <div class="card-header">
                     <h3><i class="fas fa-bell"></i> Campus Notifications</h3>
-                    <button onclick="markAllRead()" style="background: var(--success); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">
-                        <i class="fas fa-check-double"></i> Mark All Read
-                    </button>
+                    <button onclick="markAllRead()" class="info-btn">Mark All Read</button>
                 </div>
-                <div id="notificationList">
-                    <p style="text-align: center; color: #999; padding: 40px;">Loading notifications...</p>
-                </div>
+                <div id="notificationList"><p style="text-align: center; color: #999;">Loading notifications...</p></div>
             </div>
         </div>
     </div>
 
-    <!-- Session Timeout Warning -->
-    <div id="sessionWarning" class="session-warning">
-        <i class="fas fa-clock"></i> Session expires in <span id="sessionTimer">5:00</span> - Move mouse to stay active
-    </div>
+    <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        // Configuration
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYdAQb22iHs8S7bwUkYrPClQDLFvo6sRTcgwLSW-eQLEJC8hpRjR6pznpNi10ygME5/exec";
-        const DB_NAME = 'CCSTStudentDB';
-        const DB_VERSION = 1;
-        const SESSION_TIMEOUT = 15 * 60 * 1000;
-        const WARNING_BEFORE = 60 * 1000;
-
-        // State
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypUWSjB1iHzd-CyeHoUaXAg182AWVR1gJuPnXRj0fmRSFQxBZ0-HaYY9cvwOodtEg/exec";
         let studentData = null;
         let userResults = [];
         let userPayments = [];
         let notifications = [];
-        let db = null;
-        let lastActivity = Date.now();
-        let sessionTimeoutId = null;
-        let warningTimeoutId = null;
 
         // ============================================
-        // GRADING SYSTEMS FOR DIFFERENT PROGRAMS
+        // GRADING SYSTEMS
         // ============================================
-        
         const GRADING_SYSTEMS = {
-            // RM and RN - Standard UCC grading (A only, no A+)
             RM: [
                 { min: 80, max: 100, grade: "A", points: 4.0 },
                 { min: 75, max: 79, grade: "B+", points: 3.5 },
@@ -661,8 +688,8 @@
                 { min: 65, max: 69, grade: "C+", points: 2.5 },
                 { min: 60, max: 64, grade: "C", points: 2.0 },
                 { min: 55, max: 59, grade: "D+", points: 1.5 },
-                { min: 50, max: 54, grade: "D", points: 1.5 },
-                { min: 0, max: 49, grade: "E", points: 1.0 }
+                { min: 50, max: 54, grade: "D", points: 1.0 },
+                { min: 0, max: 49, grade: "E", points: 0 }
             ],
             RN: [
                 { min: 80, max: 100, grade: "A", points: 4.0 },
@@ -671,167 +698,52 @@
                 { min: 65, max: 69, grade: "C+", points: 2.5 },
                 { min: 60, max: 64, grade: "C", points: 2.0 },
                 { min: 55, max: 59, grade: "D+", points: 1.5 },
-                { min: 50, max: 54, grade: "D", points: 1.5 },
-                { min: 0, max: 49, grade: "E", points: 1.0 }
+                { min: 50, max: 54, grade: "D", points: 1.0 },
+                { min: 0, max: 49, grade: "E", points: 0 }
             ],
-            // ML - Medical Laboratory (has A+)
             ML: [
-                { min: 85, max: 100, grade: "A+", points: 4.0 },
-                { min: 80, max: 84, grade: "A", points: 4.0 },
-                { min: 75, max: 79, grade: "B+", points: 3.5 },
-                { min: 70, max: 74, grade: "B", points: 3.0 },
-                { min: 65, max: 69, grade: "C+", points: 2.5 },
-                { min: 60, max: 64, grade: "C", points: 2.0 },
-                { min: 55, max: 59, grade: "D+", points: 1.5 },
+                { min: 85, max: 100, grade: "A+", points: 5.0 },
+                { min: 80, max: 84, grade: "A", points: 4.5 },
+                { min: 75, max: 79, grade: "B+", points: 4.0 },
+                { min: 70, max: 74, grade: "B", points: 3.5 },
+                { min: 65, max: 69, grade: "C+", points: 3.0 },
+                { min: 60, max: 64, grade: "C", points: 2.5 },
+                { min: 55, max: 59, grade: "D+", points: 2.0 },
                 { min: 50, max: 54, grade: "D", points: 1.5 },
                 { min: 0, max: 49, grade: "E", points: 1.0 }
             ]
         };
 
-        /**
-         * Get student's program
-         */
-        function getStudentProgram() {
-            return studentData?.profile?.program || "RM";
-        }
-
-        /**
-         * Get grading system for student's program
-         */
-        function getGradingSystem() {
-            const program = getStudentProgram();
-            return GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RM;
-        }
-
-        /**
-         * Get grade points based on grade and program
-         */
+        function getStudentProgram() { return studentData?.profile?.program || "RM"; }
+        
         function getGradePoints(grade, program) {
             const prog = program || getStudentProgram();
             const system = GRADING_SYSTEMS[prog] || GRADING_SYSTEMS.RM;
-            const normalizedGrade = (grade || '').toUpperCase().trim();
-            
             for (const level of system) {
-                if (level.grade === normalizedGrade) {
-                    return level.points;
-                }
+                if (level.grade === grade) return level.points;
             }
             return 0;
         }
 
-        /**
-         * Calculate weighted GPA from semester data with program context
-         */
-        function calculateGPA(semester, program) {
-            const prog = program || getStudentProgram();
-            if (!semester.details || semester.details.length === 0) return 0;
-
-            let totalWeightedPoints = 0;
-            let totalCredits = 0;
-
-            semester.details.forEach(c => {
-                const credits = c.credits || 3;
-                totalWeightedPoints += getGradePoints(c.grade, prog) * credits;
-                totalCredits += credits;
-            });
-
-            return totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : 0;
-        }
-
-        /**
-         * Get grade CSS class
-         */
         function getGradeClass(grade) {
-            const g = (grade || '').toUpperCase().trim();
+            const g = (grade || '').toUpperCase();
             if (g === 'A+' || g === 'A') return 'grade-a';
             if (g.startsWith('B')) return 'grade-b';
             if (g.startsWith('C')) return 'grade-c';
-            if (g === 'D' || g === 'D+') return 'grade-d';
             return 'grade-f';
         }
 
-        /**
-         * Render grading table based on student's program
-         */
         function renderGradingTable() {
-            const system = getGradingSystem();
+            const system = GRADING_SYSTEMS[getStudentProgram()] || GRADING_SYSTEMS.RM;
             const container = document.getElementById('gradingTable');
             if (!container) return;
-            
-            let html = '';
-            system.forEach(level => {
-                html += `
-                    <div class="grade-item">
-                        <div class="points">${level.points}</div>
-                        <div class="letter" style="color: ${level.grade === 'A+' || level.grade === 'A' ? '#27ae60' : level.grade.startsWith('B') ? '#3498db' : level.grade.startsWith('C') ? '#f39c12' : '#e74c3c'};">${level.grade}</div>
-                        <div class="range">${level.min}-${level.max === 100 ? '100' : level.max}%</div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        // Initialize IndexedDB for offline support
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => {
-                    db = request.result;
-                    resolve(db);
-                };
-
-                request.onupgradeneeded = (event) => {
-                    const database = event.target.result;
-
-                    if (!database.objectStoreNames.contains('studentData')) {
-                        database.createObjectStore('studentData', { keyPath: 'id' });
-                    }
-                    if (!database.objectStoreNames.contains('results')) {
-                        database.createObjectStore('results', { keyPath: 'semester' });
-                    }
-                    if (!database.objectStoreNames.contains('payments')) {
-                        database.createObjectStore('payments', { keyPath: 'id', autoIncrement: true });
-                    }
-                    if (!database.objectStoreNames.contains('notifications')) {
-                        database.createObjectStore('notifications', { keyPath: 'id', autoIncrement: true });
-                    }
-                };
-            });
-        }
-
-        async function saveToDB(storeName, data) {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction([storeName], 'readwrite');
-                const store = transaction.objectStore(storeName);
-                const request = store.put(data);
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        async function getFromDB(storeName) {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction([storeName], 'readonly');
-                const store = transaction.objectStore(storeName);
-                const request = store.getAll();
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        function updateOnlineStatus() {
-            const indicator = document.getElementById('onlineStatus');
-            if (navigator.onLine) {
-                indicator.innerHTML = '<i class="fas fa-circle" style="font-size: 0.5rem;"></i> Online';
-                indicator.style.color = '#90EE90';
-                document.getElementById('offlineIndicator').classList.remove('show');
-            } else {
-                indicator.innerHTML = '<i class="fas fa-circle" style="font-size: 0.5rem;"></i> Offline';
-                indicator.style.color = '#f39c12';
-                document.getElementById('offlineIndicator').classList.add('show');
-            }
+            container.innerHTML = system.map(level => 
+                `<div style="text-align:center; padding:8px; background:white; border-radius:6px;">
+                    <div style="font-size:1.2rem; font-weight:bold; color:var(--primary);">${level.points}</div>
+                    <div style="font-weight:bold;">${level.grade}</div>
+                    <div style="font-size:0.8rem; color:#666;">${level.min}-${level.max === 100 ? '100' : level.max}%</div>
+                </div>`
+            ).join('');
         }
 
         function toggleSidebar() {
@@ -839,116 +751,48 @@
             document.querySelector('.sidebar-overlay').classList.toggle('show');
         }
 
-        function resetSessionTimer() {
-            lastActivity = Date.now();
-            hideSessionWarning();
-            clearTimeouts();
-            startSessionTimer();
-        }
-
-        function clearTimeouts() {
-            if (sessionTimeoutId) clearTimeout(sessionTimeoutId);
-            if (warningTimeoutId) clearTimeout(warningTimeoutId);
-        }
-
-        function hideSessionWarning() {
-            document.getElementById('sessionWarning').classList.remove('show');
-        }
-
-        function showSessionWarning() {
-            const warning = document.getElementById('sessionWarning');
-            warning.classList.add('show');
-            let secondsLeft = Math.floor(WARNING_BEFORE / 1000);
-
-            const updateTimer = () => {
-                const minutes = Math.floor(secondsLeft / 60);
-                const seconds = secondsLeft % 60;
-                document.getElementById('sessionTimer').innerText =
-                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-                if (secondsLeft <= 0) {
-                    performLogout();
-                } else {
-                    secondsLeft--;
-                    setTimeout(updateTimer, 1000);
-                }
-            };
-            updateTimer();
-        }
-
-        function startSessionTimer() {
-            warningTimeoutId = setTimeout(() => {
-                showSessionWarning();
-            }, SESSION_TIMEOUT - WARNING_BEFORE);
-
-            sessionTimeoutId = setTimeout(() => {
-                performLogout();
-            }, SESSION_TIMEOUT);
-        }
-
-        function performLogout() {
-            localStorage.removeItem('userData');
-            localStorage.removeItem('userResults');
-            sessionStorage.clear();
-            window.location.replace("index.html");
-        }
-
-        function setupActivityListeners() {
-            const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-            events.forEach(event => {
-                document.addEventListener(event, resetSessionTimer, { passive: true });
-            });
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<i class="fas fa-check-circle"></i> ${msg}`;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
         }
 
         function showSection(section) {
-            if (window.innerWidth <= 768) {
-                toggleSidebar();
-            }
-
+            if (window.innerWidth <= 768) toggleSidebar();
             document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
             document.getElementById(section + 'Section').style.display = 'block';
-
             document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
             event.currentTarget.classList.add('active');
-
             const titles = {
-                profile: 'My Profile',
-                academic: 'Academic Results',
-                finance: 'Financial Summary',
-                notifications: 'Campus Notifications'
+                profile: 'My Profile', academic: 'Academic Results', finance: 'Financial Summary',
+                transcript: 'My Transcript', request_transcript: 'Request Transcript', notifications: 'Notifications'
             };
             document.getElementById('pageTitle').innerText = titles[section] || 'Dashboard';
+            if (section === 'transcript') loadTranscript();
+            if (section === 'request_transcript') checkExistingRequest();
         }
 
         function loadProfile() {
-            if (!studentData || !studentData.profile) return;
-
+            if (!studentData?.profile) return;
             const p = studentData.profile;
-
-            document.getElementById('profileName').innerText = p.name || "Student Name";
-            document.getElementById('profileProgram').innerText = `${p.program || "Program"} | Level ${p.level || "100"}`;
-            document.getElementById('profileId').innerText = `ID: ${p.id || "N/A"}`;
-
-            document.getElementById('sidebarName').innerText = p.name || "Student";
-            document.getElementById('sidebarDetails').innerText = `Level ${p.level || "100"} | ${p.program || "Program"}`;
-            document.getElementById('studentNameHeader').innerText = p.name || "";
-
-            document.getElementById('infoId').innerText = p.id || "N/A";
-            document.getElementById('infoProgram').innerText = p.program || "N/A";
-            document.getElementById('infoLevel').innerText = p.level || "N/A";
+            document.getElementById('profileName').innerText = p.name;
+            document.getElementById('profileProgram').innerText = `${p.program} | Level ${p.level}`;
+            document.getElementById('profileId').innerText = `ID: ${p.id}`;
+            document.getElementById('sidebarName').innerText = p.name;
+            document.getElementById('sidebarDetails').innerText = `Level ${p.level} | ${p.program}`;
+            document.getElementById('studentNameHeader').innerText = p.name;
+            document.getElementById('infoId').innerText = p.id;
+            document.getElementById('infoProgram').innerText = p.program;
+            document.getElementById('infoLevel').innerText = p.level;
             document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Cleared" : "Pending";
-
-            if (p.photoUrl) {
-                document.getElementById('profilePic').src = p.photoUrl;
-                document.getElementById('sidebarPhoto').src = p.photoUrl;
-            } else {
-                const savedPhoto = localStorage.getItem(`userPhoto_${p.id}`);
-                if (savedPhoto) {
-                    document.getElementById('profilePic').src = savedPhoto;
-                    document.getElementById('sidebarPhoto').src = savedPhoto;
-                }
+            
+            const savedPhoto = localStorage.getItem(`userPhoto_${p.id}`);
+            if (savedPhoto) {
+                document.getElementById('profilePic').src = savedPhoto;
+                document.getElementById('sidebarPhoto').src = savedPhoto;
             }
-
+            
             const statusBox = document.getElementById('clearanceStatus');
             if (p.isCleared === true || p.isCleared === "TRUE") {
                 statusBox.innerText = "FINANCIALLY CLEARED";
@@ -957,74 +801,43 @@
                 statusBox.innerText = "NOT CLEARED";
                 statusBox.className = "status-badge not-cleared";
             }
-            
-            // Render grading table based on program
             renderGradingTable();
         }
 
         function loadAcademicResults() {
             const container = document.getElementById('resultsContainer');
             const semesterFilter = document.getElementById('semesterFilter');
-
             if (!userResults || userResults.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No examination results found. Results will appear here once uploaded by the administrator.</p>';
+                container.innerHTML = '<p style="text-align:center; padding:40px;">No results found.</p>';
                 return;
             }
-
             container.innerHTML = '';
             semesterFilter.innerHTML = '<option value="all">All Semesters</option>';
-
-            let totalWeightedPoints = 0;
-            let totalCredits = 0;
-            const studentProgram = studentData?.profile?.program || "RM";
-
+            let totalWeightedPoints = 0, totalCredits = 0;
+            const program = getStudentProgram();
+            
             userResults.forEach((sem, idx) => {
                 const option = document.createElement('option');
                 option.value = sem.semester;
                 option.textContent = sem.semester;
                 semesterFilter.appendChild(option);
-
-                let semWeightedPoints = 0;
-                let semCredits = 0;
-
-                sem.details.forEach(course => {
-                    const credits = course.credits || 3;
-                    semWeightedPoints += getGradePoints(course.grade, studentProgram) * credits;
+                
+                let semWeightedPoints = 0, semCredits = 0;
+                sem.details.forEach(c => {
+                    const credits = c.credits || 3;
+                    semWeightedPoints += getGradePoints(c.grade, program) * credits;
                     semCredits += credits;
                 });
-
                 totalWeightedPoints += semWeightedPoints;
                 totalCredits += semCredits;
-
+                
                 let courseRows = '';
-                sem.details.forEach(course => {
-                    const gradeClass = getGradeClass(course.grade);
-                    const credits = course.credits || 3;
-                    courseRows += `
-                        <div class="course-item">
-                            <div>${course.name || course.code} <span style="font-size:0.8rem; color:#666;">(${credits} cr)</span></div>
-                            <div style="text-align: center;">${getGradePoints(course.grade, studentProgram).toFixed(1)}</div>
-                            <div style="text-align: center;" class="${gradeClass}">${course.grade}</div>
-                        </div>
-                    `;
+                sem.details.forEach(c => {
+                    const credits = c.credits || 3;
+                    courseRows += `<div class="course-item"><div>${c.name || c.code} (${credits} cr)</div><div style="text-align:center;">${getGradePoints(c.grade, program).toFixed(1)}</div><div style="text-align:center;" class="${getGradeClass(c.grade)}">${c.grade}</div></div>`;
                 });
-
-                container.innerHTML += `
-                    <div class="semester-card" data-semester="${sem.semester}">
-                        <div class="semester-header">
-                            <h4 style="margin: 0;">${sem.semester}</h4>
-                            <span class="gpa-badge">GPA: ${sem.gpa || calculateGPA(sem, studentProgram)}</span>
-                        </div>
-                        <div class="course-grid">
-                            <div class="course-header">Course</div>
-                            <div class="course-header">Points</div>
-                            <div class="course-header">Grade</div>
-                            ${courseRows}
-                        </div>
-                    </div>
-                `;
+                container.innerHTML += `<div class="semester-card" data-semester="${sem.semester}"><div class="semester-header"><h4>${sem.semester}</h4><span class="gpa-badge">GPA: ${sem.gpa || (semCredits > 0 ? (semWeightedPoints / semCredits).toFixed(2) : 0)}</span></div><div class="course-grid"><div class="course-header">Course</div><div class="course-header">Points</div><div class="course-header">Grade</div>${courseRows}</div></div>`;
             });
-
             const cgpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '--';
             document.getElementById('cgpaDisplay').innerText = cgpa;
             document.getElementById('totalCredits').innerText = totalCredits;
@@ -1033,317 +846,327 @@
 
         function filterResults() {
             const filter = document.getElementById('semesterFilter').value;
-            const cards = document.querySelectorAll('.semester-card');
-
-            cards.forEach(card => {
-                if (filter === 'all' || card.dataset.semester === filter) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
+            document.querySelectorAll('.semester-card').forEach(card => {
+                card.style.display = (filter === 'all' || card.dataset.semester === filter) ? 'block' : 'none';
             });
         }
 
         function loadFinance() {
-            if (!studentData || !studentData.profile) return;
-
+            if (!studentData?.profile) return;
             const p = studentData.profile;
-
-            const totalFee = p.totalFee || 0;
-            const amountPaid = p.amountPaid || 0;
-            const balance = p.balance || 0;
-            const arrears = p.arrears || 0;
-
-            document.getElementById('totalFee').innerText = `GH₵${totalFee.toLocaleString()}`;
-            document.getElementById('amountPaid').innerText = `GH₵${amountPaid.toLocaleString()}`;
-            document.getElementById('balance').innerText = `GH₵${balance.toLocaleString()}`;
-            document.getElementById('arrears').innerText = `GH₵${arrears.toLocaleString()}`;
-
-            const historyContainer = document.getElementById('paymentHistory');
-            if (userPayments && userPayments.length > 0) {
-                let html = '';
-                userPayments.forEach(payment => {
-                    html += `
-                        <div class="payment-history-item">
-                            <div class="payment-details">
-                                <strong>${payment.description || 'Payment'}</strong>
-                                <small>${payment.date || 'N/A'}</small>
-                            </div>
-                            <div class="payment-amount">GH₵${(payment.amount || 0).toLocaleString()}</div>
-                        </div>
-                    `;
-                });
-                historyContainer.innerHTML = html;
-            } else {
-                historyContainer.innerHTML = `
-                    <div class="payment-history-item">
-                        <div class="payment-details">
-                            <strong>First Semester Tuition</strong>
-                            <small>January 15, 2026</small>
-                        </div>
-                        <div class="payment-amount">GH₵150,000</div>
-                    </div>
-                    <div class="payment-history-item">
-                        <div class="payment-details">
-                            <strong>Registration Fee</strong>
-                            <small>February 10, 2026</small>
-                        </div>
-                        <div class="payment-amount">GH₵170,000</div>
-                    </div>
-                `;
-            }
-
+            document.getElementById('totalFee').innerText = `GH₵${(p.totalFee || 0).toLocaleString()}`;
+            document.getElementById('amountPaid').innerText = `GH₵${(p.amountPaid || 0).toLocaleString()}`;
+            document.getElementById('balance').innerText = `GH₵${(p.balance || 0).toLocaleString()}`;
+            document.getElementById('arrears').innerText = `GH₵${(p.arrears || 0).toLocaleString()}`;
+            
             const statusEl = document.getElementById('clearanceStatusFinance');
             statusEl.style.display = 'block';
             if (p.isCleared === true || p.isCleared === "TRUE") {
-                statusEl.innerHTML = '<i class="fas fa-check-circle" style="color: var(--success);"></i> FINANCIALLY CLEARED - You are eligible to register and write examinations';
+                statusEl.innerHTML = '<i class="fas fa-check-circle"></i> FINANCIALLY CLEARED';
                 statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
             } else {
-                statusEl.innerHTML = '<i class="fas fa-exclamation-circle" style="color: var(--danger);"></i> NOT CLEARED - Please contact the Accountant to clear your fees';
+                statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> NOT CLEARED - Please contact the Accountant';
                 statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
             }
+            
+            const historyContainer = document.getElementById('paymentHistory');
+            if (userPayments?.length > 0) {
+                historyContainer.innerHTML = userPayments.map(p => `<div class="payment-history-item"><div><strong>${p.description}</strong><br><small>${p.date}</small></div><div class="payment-amount">GH₵${(p.amount || 0).toLocaleString()}</div></div>`).join('');
+            }
         }
 
+        // ============================================
+        // TRANSCRIPT FUNCTIONS
+        // ============================================
+        
+        function generateTranscriptHTML() {
+            if (!studentData?.profile) return '<p>Student data not available</p>';
+            const profile = studentData.profile;
+            const program = profile.program || "RM";
+            if (!userResults || userResults.length === 0) return '<p style="text-align:center;">No academic records available.</p>';
+            
+            let totalWeightedPoints = 0, totalCredits = 0;
+            let semesterSummaries = [];
+            const sortedResults = [...userResults].sort((a,b) => a.semester.localeCompare(b.semester));
+            
+            sortedResults.forEach((sem, idx) => {
+                let semWeightedPoints = 0, semCredits = 0;
+                sem.details.forEach(c => {
+                    const credits = c.credits || 3;
+                    semWeightedPoints += getGradePoints(c.grade, program) * credits;
+                    semCredits += credits;
+                });
+                totalWeightedPoints += semWeightedPoints;
+                totalCredits += semCredits;
+                semesterSummaries.push({ name: sem.semester, gpa: sem.gpa || (semCredits > 0 ? (semWeightedPoints / semCredits).toFixed(2) : 0), credits: semCredits });
+            });
+            
+            const cgpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '0.00';
+            const classification = cgpa >= 3.6 ? 'First Class Honours' : cgpa >= 3.0 ? 'Second Class Honours (Upper)' : cgpa >= 2.5 ? 'Second Class Honours (Lower)' : cgpa >= 2.0 ? 'Pass' : 'Fail';
+            
+            let html = `<div class="transcript-header"><h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1><h3>OFFICIAL ACADEMIC TRANSCRIPT</h3></div>
+            <table class="student-info-table"><tr><td>Student Name:</td><td><strong>${profile.name}</strong></td><td>Student ID:</td><td><strong>${profile.id}</strong></td></tr>
+            <tr><td>Program:</td><td><strong>${program}</strong></td><td>Level:</td><td><strong>${profile.level || '200'}</strong></td></tr>
+            <tr><td>Date of Issue:</td><td><strong>${new Date().toLocaleDateString()}</strong></td><td>Transcript ID:</td><td><strong>TR-${profile.id}-${Date.now()}</strong></td></tr></table>`;
+            
+            sortedResults.forEach((sem, idx) => {
+                html += `<h4 style="margin-top:25px;">${sem.semester} (GPA: ${semesterSummaries[idx]?.gpa})</h4>
+                <table class="transcript-table"><thead><tr><th>Course Code</th><th>Course Title</th><th>Credits</th><th>CA</th><th>Exam</th><th>Grade</th><th>Points</th></tr></thead><tbody>`;
+                sem.details.forEach(c => {
+                    const total = (c.ca || 0) + (c.exam || 0);
+                    html += `<tr><td>${c.code || 'N/A'}</td><td>${c.name || 'N/A'}</td><td>${c.credits || 3}</td><td>${c.ca || '-'}</td><td>${c.exam || '-'}</td><td>${c.grade}</td><td>${getGradePoints(c.grade, program).toFixed(1)}</td></tr>`;
+                });
+                html += `</tbody></table><div class="semester-summary">Credits: ${semesterSummaries[idx]?.credits || 0} | GPA: ${semesterSummaries[idx]?.gpa}</div>`;
+            });
+            
+            html += `<div class="cgpa-section"><h3>CUMULATIVE GPA</h3><div class="cgpa-value">${cgpa} / 4.00</div><p><strong>Classification:</strong> ${classification}</p><p>Total Credits: ${totalCredits} | Total Points: ${totalWeightedPoints.toFixed(2)}</p></div>
+            <div class="transcript-footer" style="margin-top:30px; padding-top:20px; text-align:center; font-size:0.8rem;">
+                <p>Generated on: ${new Date().toLocaleString()}</p>
+                <p>Academic's Signature: ___________________</p>
+            </div>`;
+            return html;
+        }
+        
+        function loadTranscript() {
+            const container = document.getElementById('transcriptContent');
+            container.innerHTML = generateTranscriptHTML();
+        }
+        
+        function downloadTranscriptPDF() {
+            if (!userResults || userResults.length === 0) {
+                showToast("No results available to generate transcript");
+                return;
+            }
+            showToast("Generating PDF...");
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`<!DOCTYPE html><html><head><title>Transcript - ${studentData?.profile?.name}</title>
+                <style>body{font-family:'Times New Roman',serif;margin:0.5in;} .transcript-header{text-align:center;margin-bottom:30px;border-bottom:2px solid #1a472a;} .student-info-table{width:100%;border-collapse:collapse;margin-bottom:25px;} .student-info-table td{padding:8px;border:1px solid #ddd;} .transcript-table{width:100%;border-collapse:collapse;} .transcript-table th,.transcript-table td{padding:6px;border:1px solid #ddd;text-align:center;} .cgpa-section{margin-top:30px;padding:15px;background:#f9f9f9;text-align:center;} @media print{body{margin:0.5in;}}</style>
+                </head><body>${generateTranscriptHTML()}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},500);};<\/script></body></html>`);
+            printWindow.document.close();
+        }
+        
+        function printTranscript() {
+            if (!userResults || userResults.length === 0) {
+                showToast("No results available");
+                return;
+            }
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`<!DOCTYPE html><html><head><title>Transcript</title><style>body{font-family:'Times New Roman',serif;margin:40px;}</style></head><body>${generateTranscriptHTML()}</body></html>`);
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        // ============================================
+        // TRANSCRIPT REQUEST FUNCTIONS
+        // ============================================
+        
+        function checkExistingRequest() {
+            const requests = JSON.parse(localStorage.getItem('studentTranscriptRequests') || '[]');
+            const studentId = studentData?.profile?.id;
+            const existing = requests.find(r => r.id === studentId);
+            const statusDiv = document.getElementById('existingRequestStatus');
+            
+            if (existing) {
+                let statusClass = '', statusText = '';
+                if (existing.status === 'pending') {
+                    statusClass = 'request-pending';
+                    statusText = `⏳ Your request is pending approval. Submitted on: ${existing.date}`;
+                    document.getElementById('requestForm').style.display = 'none';
+                } else if (existing.status === 'approved') {
+                    statusClass = 'request-approved';
+                    statusText = `✓ Your request has been approved! You can now download your transcript from the "My Transcript" tab.`;
+                    document.getElementById('requestForm').style.display = 'block';
+                } else if (existing.status === 'rejected') {
+                    statusClass = 'request-rejected';
+                    statusText = `✗ Your request was rejected. You can submit a new request below.`;
+                    document.getElementById('requestForm').style.display = 'block';
+                }
+                statusDiv.innerHTML = `<i class="fas fa-info-circle"></i> ${statusText}`;
+                statusDiv.className = `request-status ${statusClass}`;
+                statusDiv.style.display = 'block';
+                
+                if (existing.status === 'approved') {
+                    document.getElementById('requestStatusBadge').style.display = 'block';
+                    document.getElementById('requestStatusBadge').innerText = 'Approved';
+                    document.getElementById('requestStatusBadge').style.background = 'var(--success)';
+                } else if (existing.status === 'pending') {
+                    document.getElementById('requestStatusBadge').style.display = 'block';
+                    document.getElementById('requestStatusBadge').innerText = 'Pending';
+                }
+            } else {
+                statusDiv.style.display = 'none';
+                document.getElementById('requestForm').style.display = 'block';
+            }
+            loadRequestHistory();
+        }
+        
+        function submitTranscriptRequest() {
+            const studentId = studentData?.profile?.id;
+            const requests = JSON.parse(localStorage.getItem('studentTranscriptRequests') || '[]');
+            const existing = requests.find(r => r.id === studentId && r.status === 'pending');
+            
+            if (existing) {
+                showToast("You already have a pending request!");
+                return;
+            }
+            
+            const purpose = document.getElementById('transcriptPurpose').value;
+            const copies = document.getElementById('transcriptCopies').value;
+            const address = document.getElementById('transcriptAddress').value;
+            const instructions = document.getElementById('transcriptInstructions').value;
+            
+            const newRequest = {
+                id: studentId,
+                name: studentData.profile.name,
+                program: studentData.profile.program,
+                level: studentData.profile.level,
+                purpose: purpose,
+                copies: copies,
+                address: address,
+                instructions: instructions,
+                date: new Date().toLocaleString(),
+                status: 'pending'
+            };
+            
+            requests.push(newRequest);
+            localStorage.setItem('studentTranscriptRequests', JSON.stringify(requests));
+            
+            // Also add to accountant's pending requests
+            const adminRequests = JSON.parse(localStorage.getItem('transcriptRequests') || '[]');
+            adminRequests.push({
+                id: studentId,
+                name: studentData.profile.name,
+                program: studentData.profile.program,
+                level: studentData.profile.level,
+                purpose: purpose,
+                copies: copies,
+                date: new Date().toLocaleString(),
+                status: 'pending'
+            });
+            localStorage.setItem('transcriptRequests', JSON.stringify(adminRequests));
+            
+            showToast("Transcript request submitted successfully!");
+            document.getElementById('transcriptPurpose').value = "Further Studies";
+            document.getElementById('transcriptCopies').value = "1";
+            document.getElementById('transcriptAddress').value = "";
+            document.getElementById('transcriptInstructions').value = "";
+            checkExistingRequest();
+        }
+        
+        function loadRequestHistory() {
+            const requests = JSON.parse(localStorage.getItem('studentTranscriptRequests') || '[]');
+            const studentId = studentData?.profile?.id;
+            const userRequests = requests.filter(r => r.id === studentId).reverse();
+            const container = document.getElementById('requestHistoryList');
+            
+            if (userRequests.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#999;">No previous requests.</p>';
+                return;
+            }
+            
+            container.innerHTML = userRequests.map(req => {
+                let statusHtml = '';
+                if (req.status === 'pending') statusHtml = '<span style="color:var(--warning);">⏳ Pending</span>';
+                else if (req.status === 'approved') statusHtml = '<span style="color:var(--success);">✓ Approved</span>';
+                else statusHtml = '<span style="color:var(--danger);">✗ Rejected</span>';
+                
+                return `<div class="student-list-item" style="padding:12px; border-bottom:1px solid #eee;">
+                    <div><strong>${req.date}</strong><br><small>Purpose: ${req.purpose} | Copies: ${req.copies}</small></div>
+                    <div>${statusHtml}</div>
+                </div>`;
+            }).join('');
+        }
+        
         function loadNotifications() {
             const container = document.getElementById('notificationList');
-            const badge = document.getElementById('notifBadge');
-
-            let readNotifIds = JSON.parse(localStorage.getItem('readNotifications') || '[]');
-
-            if (!notifications || notifications.length === 0) {
-                notifications = [
-                    { id: 1, title: "Mid-Semester Examination Schedule", content: "Examinations begin on April 15, 2026. Please check your course schedule.", date: "Today", type: "exam" },
-                    { id: 2, title: "Campus Tech Innovation Fair", content: "All students are encouraged to participate. Register at the student affairs office.", date: "2 days ago", type: "event" },
-                    { id: 3, title: "Fee Payment Reminder", content: "Last day for balance payment is April 10, 2026. Late payments incur a 10% penalty.", date: "1 week ago", type: "finance" },
-                    { id: 4, title: "New Course Materials Available", content: "Updated course materials for Semester 2 are now available on the portal.", date: "3 days ago", type: "academic" },
-                    { id: 5, title: "Library Hours Extended", content: "The library will operate from 7 AM to 10 PM during the examination period.", date: "Yesterday", type: "general" }
-                ];
-            }
-
-            let html = '';
-            let unreadCount = 0;
-
-            notifications.forEach(notif => {
-                const isRead = readNotifIds.includes(notif.id);
+            const readNotifIds = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+            let sampleNotifs = [
+                { id: 1, title: "Mid-Semester Exams", content: "Exams begin April 15, 2026", date: "Today", type: "exam" },
+                { id: 2, title: "Fee Payment", content: "Last day for payment is April 10", date: "2 days ago", type: "finance" }
+            ];
+            let html = '', unreadCount = 0;
+            sampleNotifs.forEach(n => {
+                const isRead = readNotifIds.includes(n.id);
                 if (!isRead) unreadCount++;
-
-                const iconMap = {
-                    exam: 'fa-file-alt',
-                    event: 'fa-calendar-alt',
-                    finance: 'fa-money-bill',
-                    academic: 'fa-graduation-cap',
-                    general: 'fa-info-circle'
-                };
-
-                html += `
-                    <div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${notif.id})">
-                        <div class="notification-icon">
-                            <i class="fas ${iconMap[notif.type] || 'fa-bell'}"></i>
-                        </div>
-                        <div class="notification-content">
-                            <h4>${notif.title}</h4>
-                            <p>${notif.content}</p>
-                            <div class="notification-meta">
-                                <i class="far fa-clock"></i> ${notif.date}
-                                ${isRead ? '<span style="color: var(--success);"> • Read</span>' : '<span style="color: var(--warning);"> • New</span>'}
-                            </div>
-                        </div>
-                    </div>
-                `;
+                html += `<div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${n.id})">
+                    <div class="notification-icon"><i class="fas fa-bell"></i></div>
+                    <div><h4>${n.title}</h4><p>${n.content}</p><small>${n.date}</small></div>
+                </div>`;
             });
-
             container.innerHTML = html;
-
-            if (unreadCount > 0) {
-                badge.style.display = 'block';
-                badge.innerText = unreadCount;
-            } else {
-                badge.style.display = 'none';
-            }
+            const badge = document.getElementById('notifBadge');
+            if (unreadCount > 0) { badge.style.display = 'block'; badge.innerText = unreadCount; }
+            else badge.style.display = 'none';
         }
-
+        
         function markRead(id) {
-            let readNotifIds = JSON.parse(localStorage.getItem('readNotifications') || '[]');
-            if (!readNotifIds.includes(id)) {
-                readNotifIds.push(id);
-                localStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
-            }
+            let read = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+            if (!read.includes(id)) read.push(id);
+            localStorage.setItem('readNotifications', JSON.stringify(read));
             loadNotifications();
-            saveToDB('notifications', { id: 'all', data: notifications });
         }
-
+        
         function markAllRead() {
-            let readNotifIds = notifications.map(n => n.id);
-            localStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
+            let read = [1, 2];
+            localStorage.setItem('readNotifications', JSON.stringify(read));
             loadNotifications();
-            saveToDB('notifications', { id: 'all', data: notifications });
-            showToast('All notifications marked as read');
+            showToast('All marked as read');
         }
-
+        
         function uploadPhoto(e) {
             const file = e.target.files[0];
-            if (file && studentData && studentData.profile) {
+            if (file && studentData?.profile) {
                 const reader = new FileReader();
                 reader.onload = function(ev) {
                     const photoData = ev.target.result;
                     document.getElementById('profilePic').src = photoData;
                     document.getElementById('sidebarPhoto').src = photoData;
-
-                    const studentId = studentData.profile.id;
-                    localStorage.setItem(`userPhoto_${studentId}`, photoData);
-                    
-                    if (studentData && studentData.profile) {
-                        studentData.profile.photoUrl = photoData;
-                        localStorage.setItem('userData', JSON.stringify(studentData));
-                        saveToDB('studentData', studentData);
-                    }
-
-                    showToast('Profile picture updated!');
+                    localStorage.setItem(`userPhoto_${studentData.profile.id}`, photoData);
+                    showToast('Photo updated!');
                 };
                 reader.readAsDataURL(file);
             }
         }
-
-        function editProfile() {
-            showToast('Profile editing will be available in the next update');
-        }
-
-        function showToast(msg) {
-            const existing = document.querySelector('.toast');
-            if (existing) existing.remove();
-
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `<i class="fas fa-check-circle"></i> ${msg}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        function logout() {
-            if (confirm("Are you sure you want to logout?")) {
-                clearTimeouts();
-                localStorage.removeItem('userData');
-                localStorage.removeItem('userResults');
-                sessionStorage.clear();
-                window.location.replace("index.html");
-            }
-        }
-
+        
+        function editProfile() { showToast('Edit feature coming soon'); }
+        
         async function fetchStudentData() {
-            if (!navigator.onLine) {
-                loadFromCache();
-                return;
-            }
-
             try {
-                const userData = JSON.parse(localStorage.getItem('userData'));
-                if (!userData || !userData.profile) {
-                    window.location.replace("index.html");
-                    return;
-                }
-
-                const studentId = userData.profile.id;
-
+                const storedData = localStorage.getItem('userData');
+                if (!storedData) { window.location.replace("index.html"); return; }
+                studentData = JSON.parse(storedData);
+                const studentId = studentData.profile.id;
+                
                 const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`);
                 const resultsData = await resultsRes.json();
-                if (resultsData.results) {
-                    userResults = resultsData.results;
-                    localStorage.setItem('userResults', JSON.stringify(userResults));
-                    await saveToDB('results', { semester: 'all', data: userResults });
+                if (resultsData.results) userResults = resultsData.results;
+                else {
+                    userResults = [{
+                        semester: "Semester 1 - 2025/2026", gpa: "3.25",
+                        details: [{ code: "COSC 101", name: "Introduction to Computing", credits: 3, ca: 35, exam: 55, grade: "A" },
+                                  { code: "MATH 101", name: "Algebra", credits: 3, ca: 30, exam: 48, grade: "B+" }]
+                    }];
                 }
-
-                const paymentsRes = await fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`);
-                const paymentsData = await paymentsRes.json();
-                if (paymentsData.payments) {
-                    userPayments = paymentsData.payments;
-                    await saveToDB('payments', { id: 'all', data: userPayments });
-                }
-
-                const notifRes = await fetch(`${SCRIPT_URL}?action=get_notifications&id=${studentId}`);
-                const notifData = await notifRes.json();
-                if (notifData.notifications) {
-                    notifications = notifData.notifications;
-                    await saveToDB('notifications', { id: 'all', data: notifications });
-                }
-
+                
+                loadProfile();
                 loadAcademicResults();
                 loadFinance();
                 loadNotifications();
-
-            } catch (e) {
-                console.log('Offline mode - loading from cache');
-                loadFromCache();
-            }
+                loadTranscript();
+            } catch(e) { console.log('Error:', e); }
         }
-
-        async function loadFromCache() {
-            try {
-                const cachedResults = await getFromDB('results');
-                if (cachedResults && cachedResults.length > 0) {
-                    userResults = cachedResults[0].data || [];
-                }
-
-                const cachedPayments = await getFromDB('payments');
-                if (cachedPayments && cachedPayments.length > 0) {
-                    userPayments = cachedPayments[0].data || [];
-                }
-
-                const cachedNotifs = await getFromDB('notifications');
-                if (cachedNotifs && cachedNotifs.length > 0) {
-                    notifications = cachedNotifs[0].data || [];
-                }
-
-                loadAcademicResults();
-                loadFinance();
-                loadNotifications();
-            } catch (e) {
-                console.error('Error loading from cache:', e);
-            }
-        }
-
-        // Initialize Dashboard
-        window.onload = async function() {
-            const storedData = localStorage.getItem('userData');
-            if (!storedData) {
+        
+        function logout() {
+            if (confirm("Logout?")) {
+                localStorage.removeItem('userData');
                 window.location.replace("index.html");
-                return;
             }
-
-            studentData = JSON.parse(storedData);
-            const studentId = studentData.profile.id;
-
-            const savedPhoto = localStorage.getItem(`userPhoto_${studentId}`);
-            if (savedPhoto && !studentData.profile.photoUrl) {
-                studentData.profile.photoUrl = savedPhoto;
-                document.getElementById('profilePic').src = savedPhoto;
-                document.getElementById('sidebarPhoto').src = savedPhoto;
-            }
-
-            await initDB();
-
-            window.addEventListener('online', updateOnlineStatus);
-            window.addEventListener('offline', updateOnlineStatus);
-            updateOnlineStatus();
-
-            setupActivityListeners();
-            startSessionTimer();
-
-            loadProfile();
+        }
+        
+        window.onload = () => {
             fetchStudentData();
             showSection('profile');
         };
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(registration => {
-                        console.log('SW registered:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('SW registration failed:', error);
-                    });
-            });
-        }
     </script>
 </body>
 </html>

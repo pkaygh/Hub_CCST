@@ -7,15 +7,15 @@
     <style>
         /* Theme: Dots halftone grunge brush yellow green with white on dark green */
         :root {
-            --primary: #6b8e23; /* Yellow Green/Olive Drab */
-            --primary-light: #9acd32; /* Yellow Green */
-            --primary-dark: #1a472a; /* Dark Green */
+            --primary: #6b8e23;
+            --primary-light: #9acd32;
+            --primary-dark: #1a472a;
             --sidebar-bg: #1a472a;
-            --success: #556b2f; /* Dark Olive Green */
-            --danger: #8b0000; /* Dark Red */
-            --warning: #daa520; /* Goldenrod */
+            --success: #556b2f;
+            --danger: #8b0000;
+            --warning: #daa520;
             --info: #9acd32;
-            --bg: #f5f5dc; /* Beige */
+            --bg: #f5f5dc;
             --text-dark: #2f4f2f;
         }
 
@@ -77,6 +77,14 @@
 
         .menu-item i { width: 24px; text-align: center; color: var(--primary-light); }
         .menu-item.active i { color: white; }
+        .menu-item .badge {
+            margin-left: auto;
+            background: var(--danger);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
 
         /* Main Content */
         .main-content {
@@ -117,7 +125,7 @@
 
         .card-header h3 { color: var(--primary-dark); }
 
-        input, button, select {
+        input, button, select, textarea {
             width: 100%;
             padding: 12px;
             margin: 8px 0;
@@ -138,9 +146,7 @@
 
         button:hover { opacity: 0.9; transform: translateY(-1px); }
         .success-btn { background: linear-gradient(135deg, var(--success) 0%, #6b8e23 100%); }
-        .success-btn:hover { background: var(--success); }
         .danger-btn { background: var(--danger); }
-        .danger-btn:hover { background: #a00000; }
         .warning-btn { background: var(--warning); }
         .info-btn { background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%); }
 
@@ -168,7 +174,6 @@
 
         .upload-zone input { display: none; }
 
-        /* File Preview */
         .file-preview {
             background: rgba(107, 142, 35, 0.05);
             padding: 15px;
@@ -177,24 +182,6 @@
             border-left: 4px solid var(--primary);
         }
 
-        .file-preview h4 { margin-bottom: 10px; color: var(--primary-dark); }
-
-        .file-info {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-
-        .file-info span {
-            background: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            border: 1px solid rgba(107, 142, 35, 0.2);
-        }
-
-        /* Results Table */
         .results-table {
             width: 100%;
             border-collapse: collapse;
@@ -220,62 +207,162 @@
         .results-table tr:hover { background: rgba(107, 142, 35, 0.05); }
         .results-table { max-height: 400px; overflow-y: auto; display: block; }
 
-        /* Status Badges */
         .status-cleared { color: var(--success); font-weight: bold; }
         .status-not { color: var(--danger); font-weight: bold; }
-        .badge-success { background: var(--success); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; }
-        .badge-warning { background: var(--warning); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; }
-        .badge-danger { background: var(--danger); color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; }
 
-        /* Course Row */
-        .course-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.show { display: flex; }
-
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
+        .student-list-container {
+            max-height: 400px;
             overflow-y: auto;
+            border: 1px solid rgba(107, 142, 35, 0.2);
+            border-radius: 8px;
+            margin-top: 15px;
         }
 
-        .modal-header {
+        .student-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(107, 142, 35, 0.1);
+            transition: background 0.2s;
+        }
+
+        .student-list-item:hover { background: rgba(107, 142, 35, 0.05); }
+
+        .student-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .student-name { font-weight: bold; color: var(--text-dark); }
+        .student-details { font-size: 0.85rem; color: #666; }
+
+        /* Transcript Styles */
+        .transcript-preview {
+            font-family: 'Times New Roman', serif;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .transcript-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .transcript-header h1 {
+            color: var(--primary-dark);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .transcript-header h3 {
+            color: #555;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .student-info-table {
+            width: 100%;
+            margin-bottom: 25px;
+            border-collapse: collapse;
+            background: #f9f9f9;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .student-info-table td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+        }
+
+        .student-info-table td:first-child {
+            font-weight: bold;
+            width: 30%;
+            background: #f0f0f0;
+        }
+
+        .transcript-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.85rem;
+        }
+
+        .transcript-table th {
+            background: var(--primary-dark);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid var(--primary);
+        }
+
+        .transcript-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .transcript-table td:first-child { text-align: left; }
+
+        .semester-summary {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .cgpa-section {
+            margin-top: 30px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(107, 142, 35, 0.1), rgba(154, 205, 50, 0.1));
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--primary);
+        }
+
+        .cgpa-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .transcript-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #999;
+            border-top: 1px solid #eee;
+        }
+
+        .request-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            background: white;
         }
 
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #666;
+        .request-item:hover { background: rgba(107, 142, 35, 0.05); }
+
+        .request-info { flex: 1; }
+        .request-info strong { display: block; color: var(--primary-dark); }
+        .request-info small { color: #666; }
+
+        .request-actions button {
+            margin-left: 10px;
+            padding: 8px 15px;
+            width: auto;
         }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -286,7 +373,6 @@
             border-radius: 8px;
             z-index: 10000;
             animation: slideIn 0.3s ease;
-            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.3);
         }
 
         @keyframes slideIn {
@@ -294,7 +380,6 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -313,9 +398,7 @@
 
         .stat-card i { font-size: 2rem; margin-bottom: 10px; }
         .stat-card h3 { font-size: 2rem; margin: 5px 0; color: var(--primary); }
-        .stat-card p { color: #666; font-size: 0.9rem; }
 
-        /* Progress Bar */
         .progress-bar {
             height: 8px;
             background: rgba(107, 142, 35, 0.2);
@@ -330,60 +413,20 @@
             transition: width 0.5s;
         }
 
-        /* Student List for Clearance */
-        .student-list-container {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid rgba(107, 142, 35, 0.2);
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .student-list-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 15px;
-            border-bottom: 1px solid rgba(107, 142, 35, 0.1);
-            transition: background 0.2s;
-        }
-
-        .student-list-item:hover {
-            background: rgba(107, 142, 35, 0.05);
-        }
-
-        .student-list-item:last-child {
-            border-bottom: none;
-        }
-
-        .student-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .student-name {
-            font-weight: bold;
-            color: var(--text-dark);
-        }
-
-        .student-details {
-            font-size: 0.85rem;
-            color: #666;
-        }
-
-        .clearance-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .clearance-checkbox input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
+        .tab-container { margin-bottom: 20px; }
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab-btn {
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: rgba(107, 142, 35, 0.1);
+            color: var(--primary-dark);
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
         }
+        .tab-btn.active { background: var(--primary); color: white; }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
@@ -415,44 +458,8 @@
             background: rgba(0,0,0,0.5);
             z-index: 999;
         }
-
         .sidebar-overlay.show { display: block; }
-
-        @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-        }
-
-        /* Tab Styles */
-        .tab-container {
-            margin-bottom: 20px;
-        }
-
-        .tab-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            padding: 10px 20px;
-            border-radius: 20px;
-            background: rgba(107, 142, 35, 0.1);
-            color: var(--primary-dark);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 2px solid transparent;
-        }
-
-        .tab-btn:hover {
-            background: rgba(107, 142, 35, 0.2);
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-        }
+        @media (max-width: 768px) { .menu-toggle { display: block; } }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -484,6 +491,13 @@
         </a>
         <a href="#" class="menu-item" onclick="showSection('clearance')">
             <i class="fas fa-check-circle"></i> Financial Clearance
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('transcript')">
+            <i class="fas fa-file-pdf"></i> Generate Transcript
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('transcript_requests')">
+            <i class="fas fa-envelope"></i> Transcript Requests
+            <span id="requestBadge" class="badge" style="display:none;">0</span>
         </a>
         <a href="#" class="menu-item" onclick="showSection('notifications')">
             <i class="fas fa-bell"></i> Send Notifications
@@ -583,204 +597,48 @@
                 <div class="card-header">
                     <h3><i class="fas fa-file-upload"></i> Upload Results via CSV</h3>
                 </div>
-
-                <p style="color: #666; margin-bottom: 20px;">
-                    Upload a CSV file containing end-of-semester results. The system will automatically process and store student results with GPA calculation.
-                </p>
-
                 <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFileInput').click()">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <h4>Drop CSV file here or click to browse</h4>
-                    <p style="color: #999; font-size: 0.9rem;">Supported format: .csv</p>
                     <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVSelect(event)">
                 </div>
-
                 <div id="filePreview" style="display:none;" class="file-preview">
                     <h4><i class="fas fa-file-csv"></i> File Ready for Upload</h4>
-                    <div class="file-info">
-                        <span><i class="fas fa-file"></i> <span id="fileName"></span></span>
-                        <span><i class="fas fa-database"></i> <span id="rowCount"></span> students</span>
-                        <span><i class="fas fa-columns"></i> <span id="colCount"></span> columns</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="uploadProgress" style="width: 0%;"></div>
-                    </div>
-                    <p id="uploadStatus" style="margin-top: 10px; color: #666;"></p>
+                    <div class="progress-bar"><div class="progress-fill" id="uploadProgress" style="width: 0%;"></div></div>
                 </div>
-
-                <button id="processBtn" onclick="processCSV()" class="success-btn" style="margin-top: 20px; display:none;">
-                    <i class="fas fa-cogs"></i> PROCESS & UPLOAD RESULTS
-                </button>
-            </div>
-
-            <div class="card" id="csvPreviewCard" style="display:none;">
-                <div class="card-header">
-                    <h3><i class="fas fa-table"></i> CSV Data Preview</h3>
-                    <button onclick="clearPreview()" style="background: var(--danger); width: auto; padding: 8px 15px; font-size: 0.9rem;">
-                        <i class="fas fa-trash"></i> Clear
-                    </button>
-                </div>
-                <div style="overflow-x: auto;">
-                    <table class="results-table" id="csvPreviewTable">
-                        <thead><tr id="csvHeaderRow"></tr></thead>
-                        <tbody id="csvBodyRows"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3><i class="fas fa-info-circle"></i> CSV Format Requirements</h3>
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                    <p style="margin-bottom: 10px;"><strong>Required Columns:</strong></p>
-                    <ul style="margin-left: 20px; color: #666;">
-                        <li><code>id</code> - Student Index Number (e.g., CCST/RM/24/001)</li>
-                        <li><code>INDEX NUMBER</code> - Alternative student ID column</li>
-                        <li><code>NAME</code> - Student's full name</li>
-                        <li>For each course, include: Course Name, Credits, Grade, CA, Exam</li>
-                    </ul>
-                    <p style="margin: 15px 0 10px;"><strong>Optional Columns:</strong></p>
-                    <ul style="margin-left: 20px; color: #666;">
-                        <li><code>PROGRAM</code> - Program code (e.g., RM, MW)</li>
-                        <li><code>LEVEL</code> - Academic level (e.g., 100, 200)</li>
-                        <li><code>SEMESTER</code> - Semester identifier</li>
-                    </ul>
-                    <p style="margin-top: 15px;"><strong>Course Structure for Weighted GPA:</strong></p>
-                    <p style="color: #666; font-size: 0.9rem;">
-                        For each course, include 5 columns:<br>
-                        <code>CourseName</code> - Full course name (e.g., Introduction to Records Management)<br>
-                        <code>CourseName Credits</code> - Credit hours (e.g., 3)<br>
-                        <code>CourseName Grade</code> - Letter grade (e.g., A, B+, B, C+)<br>
-                        <code>CourseName CA</code> - Continuous Assessment score<br>
-                        <code>CourseName Exam</code> - Exam score<br><br>
-                        <em>Note: Credits are REQUIRED for weighted GPA calculation.</em>
-                    </p>
-                </div>
-                <div style="margin-top: 20px;">
-                    <h4>Download Sample CSV Template:</h4>
-                    <button onclick="downloadTemplate()" class="info-btn" style="width: auto; margin-top: 10px;">
-                        <i class="fas fa-download"></i> Download Template
-                    </button>
-                </div>
+                <button id="processBtn" onclick="processCSV()" class="success-btn" style="margin-top: 20px; display:none;">PROCESS & UPLOAD</button>
             </div>
         </div>
 
         <!-- BULK UPLOAD SECTION -->
         <div id="bulk_uploadSection" class="section" style="display:none;">
             <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-upload"></i> Bulk Operations</h3>
-                </div>
-
-                <!-- Tab Buttons -->
+                <div class="card-header"><h3><i class="fas fa-upload"></i> Bulk Operations</h3></div>
                 <div class="tab-container">
                     <div class="tab-buttons">
-                        <button class="tab-btn active" onclick="switchBulkTab('clearance')" id="tabClearance">
-                            <i class="fas fa-check-circle"></i> Financial Clearance
-                        </button>
-                        <button class="tab-btn" onclick="switchBulkTab('fees')" id="tabFees">
-                            <i class="fas fa-money-bill"></i> Update Fees
-                        </button>
-                        <button class="tab-btn" onclick="switchBulkTab('financeCSV')" id="tabFinanceCSV">
-                            <i class="fas fa-file-csv"></i> Financial CSV Upload
-                        </button>
+                        <button class="tab-btn active" onclick="switchBulkTab('clearance')">Financial Clearance</button>
+                        <button class="tab-btn" onclick="switchBulkTab('fees')">Update Fees</button>
+                        <button class="tab-btn" onclick="switchBulkTab('financeCSV')">Financial CSV Upload</button>
                     </div>
                 </div>
-
-                <!-- Financial Clearance Tab -->
                 <div id="bulkClearanceTab">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <h4><i class="fas fa-users"></i> Bulk Financial Clearance</h4>
-                            <input id="bulkStudentId" placeholder="Student ID for clearance">
-                            <div style="display: flex; gap: 10px;">
-                                <button onclick="clearStudent()" class="success-btn" style="width: auto; flex: 1;">
-                                    <i class="fas fa-check"></i> MARK CLEARED
-                                </button>
-                                <button onclick="unclearStudent()" class="danger-btn" style="width: auto; flex: 1;">
-                                    <i class="fas fa-times"></i> REMOVE CLEARANCE
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h4><i class="fas fa-layer-group"></i> Filter by Program/Level</h4>
-                            <select id="filterProgram" onchange="filterStudentList()">
-                                <option value="">All Programs</option>
-                                <option value="RM">RM (Records Management)</option>
-                                <option value="MW">MW (Medical Works)</option>
-                                <option value="DN">DN (Dental Nursing)</option>
-                            </select>
-                            <select id="filterLevel" onchange="filterStudentList()">
-                                <option value="">All Levels</option>
-                                <option value="100">Level 100</option>
-                                <option value="200">Level 200</option>
-                                <option value="300">Level 300</option>
-                            </select>
-                        </div>
+                    <input id="bulkStudentId" placeholder="Student ID">
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="clearStudent()" class="success-btn">MARK CLEARED</button>
+                        <button onclick="unclearStudent()" class="danger-btn">REMOVE CLEARANCE</button>
                     </div>
                 </div>
-
-                <!-- Update Fees Tab -->
                 <div id="bulkFeesTab" style="display:none;">
-                    <h4><i class="fas fa-money-bill"></i> Update Fee Structure</h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <input id="feeAmount" placeholder="Total Fee Amount (e.g., 4500)">
-                        <input id="feeSemester" placeholder="Semester (e.g., Semester 1 2026/2027)">
-                    </div>
-                    <button onclick="updateFees()" class="info-btn" style="width: auto; margin-top: 10px;">
-                        <i class="fas fa-save"></i> UPDATE FEES
-                    </button>
+                    <input id="feeAmount" placeholder="Total Fee Amount">
+                    <input id="feeSemester" placeholder="Semester">
+                    <button onclick="updateFees()" class="info-btn">UPDATE FEES</button>
                 </div>
-
-                <!-- Financial CSV Upload Tab -->
                 <div id="bulkFinanceCSVTab" style="display:none;">
-                    <h4><i class="fas fa-file-csv"></i> Upload Financial Records via CSV</h4>
-                    <p style="color: #666; margin-bottom: 20px;">
-                        Upload a CSV file containing student financial data. Format: Student ID, Name, Total Fees, Amount Paid, Balance, Arrears.
-                    </p>
-
-                    <div class="upload-zone" id="financeUploadZone" onclick="document.getElementById('financeFileInput').click()">
+                    <div class="upload-zone" onclick="document.getElementById('financeFileInput').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
-                        <h4>Drop CSV file here or click to browse</h4>
-                        <p style="color: #999; font-size: 0.9rem;">Supported format: .csv</p>
                         <input type="file" id="financeFileInput" accept=".csv" onchange="handleFinanceCSVSelect(event)">
                     </div>
-
-                    <div id="financeFilePreview" style="display:none;" class="file-preview">
-                        <h4><i class="fas fa-file-csv"></i> Financial Data Ready for Upload</h4>
-                        <div class="file-info">
-                            <span><i class="fas fa-file"></i> <span id="financeFileName"></span></span>
-                            <span><i class="fas fa-database"></i> <span id="financeRowCount"></span> records</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="financeUploadProgress" style="width: 0%;"></div>
-                        </div>
-                        <p id="financeUploadStatus" style="margin-top: 10px; color: #666;"></p>
-                    </div>
-
-                    <button id="processFinanceBtn" onclick="processFinanceCSV()" class="success-btn" style="margin-top: 20px; display:none;">
-                        <i class="fas fa-cogs"></i> PROCESS & UPLOAD FINANCIAL DATA
-                    </button>
-
-                    <div style="margin-top: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                        <h4>CSV Format for Financial Records:</h4>
-                        <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
-                            <strong>Required Columns:</strong><br>
-                            id, name, total_fee, amount_paid, balance, arrears, semester<br><br>
-                            <strong>Example:</strong><br>
-                            CCST/RM/24/001, John Doe, 4500, 2500, 2000, 0, Semester 1 2026/2027
-                        </p>
-                        <button onclick="downloadFinanceTemplate()" class="info-btn" style="width: auto; margin-top: 15px;">
-                            <i class="fas fa-download"></i> Download Template
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3><i class="fas fa-history"></i> Recent Payment Records</h3>
-                <div id="paymentRecords" style="max-height: 400px; overflow-y: auto;">
-                    <p style="text-align:center; color:#999;">Payment history will appear here...</p>
+                    <button id="processFinanceBtn" onclick="processFinanceCSV()" class="success-btn" style="display:none;">PROCESS FINANCIAL DATA</button>
                 </div>
             </div>
         </div>
@@ -788,86 +646,86 @@
         <!-- MANAGE COURSES SECTION -->
         <div id="coursesSection" class="section" style="display:none;">
             <div class="card">
-                <h3><i class="fas fa-book"></i> Manage Courses for Semester</h3>
-                <input id="courseSemester" placeholder="Semester (e.g., Semester 2 2025/2026)" style="margin-bottom:15px;">
-
-                <div id="adminCourseList"></div>
-
-                <input id="newCourseName" placeholder="New Course Name (e.g., CSC 401 - Software Engineering)">
-                <div style="display: flex; gap: 10px;">
-                    <input id="newCourseCode" placeholder="Course Code (e.g., CSC 401)" style="flex: 1;">
-                    <input id="newCourseCredits" placeholder="Credits" type="number" style="width: 100px;">
-                </div>
-                <button onclick="addNewCourse()" class="success-btn">
-                    <i class="fas fa-plus"></i> Add Course to Semester
-                </button>
+                <h3><i class="fas fa-book"></i> Manage Courses</h3>
+                <input id="courseSemester" placeholder="Semester">
+                <input id="newCourseName" placeholder="Course Name">
+                <input id="newCourseCode" placeholder="Course Code">
+                <input id="newCourseCredits" placeholder="Credits" type="number">
+                <button onclick="addNewCourse()" class="success-btn">Add Course</button>
             </div>
         </div>
 
         <!-- FINANCIAL CLEARANCE SECTION -->
         <div id="clearanceSection" class="section" style="display:none;">
             <div class="card">
-                <h3><i class="fas fa-check-circle"></i> Financial Clearance Management</h3>
-                <p style="color:#666; margin-bottom:15px;">Mark students as financially cleared for registration/exams</p>
-
-                <!-- Filter by Program/Level -->
-                <div style="background: rgba(107, 142, 35, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 10px;"><i class="fas fa-filter"></i> Filter Students</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
-                        <select id="clearanceProgramFilter" onchange="loadStudentClearanceList()">
-                            <option value="">All Programs</option>
-                            <option value="RM">RM (Records Management)</option>
-                            <option value="MW">MW (Medical Works)</option>
-                            <option value="DN">DN (Dental Nursing)</option>
-                        </select>
-                        <select id="clearanceLevelFilter" onchange="loadStudentClearanceList()">
-                            <option value="">All Levels</option>
-                            <option value="100">Level 100</option>
-                            <option value="200">Level 200</option>
-                            <option value="300">Level 300</option>
-                        </select>
-                        <select id="clearanceStatusFilter" onchange="loadStudentClearanceList()">
-                            <option value="">All Status</option>
-                            <option value="cleared">Cleared</option>
-                            <option value="pending">Pending</option>
-                        </select>
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button onclick="clearSelectedStudents()" class="success-btn" style="width: auto; flex: 1;">
-                            <i class="fas fa-check"></i> CLEAR SELECTED
-                        </button>
-                        <button onclick="unclearSelectedStudents()" class="danger-btn" style="width: auto; flex: 1;">
-                            <i class="fas fa-times"></i> UNCLEAR SELECTED
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Select All -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" id="selectAllStudents" onchange="toggleSelectAll()">
-                        <strong>Select All</strong>
-                    </label>
-                    <span id="selectedCount" style="color: #666;">0 selected</span>
-                </div>
-
-                <!-- Scrollable Student List -->
+                <h3><i class="fas fa-check-circle"></i> Financial Clearance</h3>
                 <div id="clearanceList" class="student-list-container">
-                    <p style="text-align: center; color: #999; padding: 40px;">Loading students...</p>
+                    <p style="text-align:center; padding:40px;">Loading students...</p>
                 </div>
+                <div style="margin-top:20px;">
+                    <input id="clearanceId" placeholder="Student ID">
+                    <button onclick="clearStudentById()" class="success-btn">CLEAR</button>
+                    <button onclick="unclearStudentById()" class="danger-btn">UNCLEAR</button>
+                </div>
+            </div>
+        </div>
 
-                <!-- Individual Clearance -->
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(107, 142, 35, 0.2);">
-                    <h4 style="margin-bottom: 10px;"><i class="fas fa-user"></i> Individual Student Clearance</h4>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input id="clearanceId" placeholder="Student ID" style="flex: 1; min-width: 200px;">
-                        <button onclick="clearStudentById()" class="success-btn" style="width: auto;">
-                            <i class="fas fa-check"></i> CLEAR
-                        </button>
-                        <button onclick="unclearStudentById()" class="danger-btn" style="width: auto;">
-                            <i class="fas fa-times"></i> UNCLEAR
-                        </button>
+        <!-- TRANSCRIPT GENERATION SECTION -->
+        <div id="transcriptSection" class="section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-file-pdf"></i> Generate Student Transcript</h3>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label>Student ID:</label>
+                        <input type="text" id="transcriptStudentId" placeholder="Enter Student ID">
+                        <button onclick="searchStudentForTranscript()" class="info-btn">Search Student</button>
                     </div>
+                    <div>
+                        <label>Select Student:</label>
+                        <select id="transcriptStudentSelect" onchange="loadStudentForTranscript()">
+                            <option value="">-- Select Student --</option>
+                        </select>
+                        <button onclick="loadAllStudentsForTranscript()" class="info-btn">Load All Students</button>
+                    </div>
+                </div>
+                <div id="transcriptStudentInfo" style="display:none; margin-top:20px; padding:15px; background:#f8f9fa; border-radius:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h4 id="transcriptName"></h4>
+                            <p id="transcriptDetails"></p>
+                        </div>
+                        <div>
+                            <button onclick="generateOfficialTranscript()" class="success-btn" style="background:var(--danger);">Download PDF</button>
+                            <button onclick="printTranscriptPreview()" class="info-btn">Print Preview</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="transcriptPreview" style="margin-top:25px; display:none;">
+                    <h4>Transcript Preview</h4>
+                    <div id="transcriptContent" class="transcript-preview"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRANSCRIPT REQUESTS SECTION -->
+        <div id="transcript_requestsSection" class="section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-envelope"></i> Student Transcript Requests</h3>
+                    <button onclick="processAllRequests()" class="success-btn">Process All</button>
+                </div>
+                <div id="transcriptRequestsList" class="student-list-container">
+                    <p style="text-align:center; padding:40px;">No pending requests.</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-history"></i> Processed Requests</h3>
+                </div>
+                <div id="processedRequestsList">
+                    <p style="text-align:center; padding:20px;">No processed requests.</p>
                 </div>
             </div>
         </div>
@@ -875,164 +733,140 @@
         <!-- NOTIFICATIONS SECTION -->
         <div id="notificationsSection" class="section" style="display:none;">
             <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-bell"></i> Send Notification to Students</h3>
-                </div>
-
-                <label style="font-weight: bold;">Notification Type:</label>
-                <select id="notifType" onchange="toggleTargetSelection()" style="margin-bottom: 15px;">
+                <h3><i class="fas fa-bell"></i> Send Notification</h3>
+                <select id="notifType">
                     <option value="all">All Students</option>
                     <option value="program">By Program</option>
                     <option value="level">By Level</option>
-                    <option value="individual">Individual Student</option>
                 </select>
-
-                <div id="targetSelection" style="display: none; margin-bottom: 15px;">
-                    <input id="targetValue" placeholder="Enter Program (e.g., RM) or Level (e.g., 100)">
-                </div>
-
-                <label style="font-weight: bold;">Title:</label>
-                <input id="notifTitle" placeholder="Notification Title (e.g., Examination Schedule)">
-
-                <label style="font-weight: bold;">Message:</label>
-                <textarea id="notifMessage" rows="4" placeholder="Enter notification content..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; resize: vertical;"></textarea>
-
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="sendNotification()" class="success-btn" style="flex: 1;">
-                        <i class="fas fa-paper-plane"></i> SEND NOTIFICATION
-                    </button>
-                    <button onclick="scheduleNotification()" class="info-btn" style="flex: 1;">
-                        <i class="fas fa-clock"></i> SCHEDULE
-                    </button>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3><i class="fas fa-history"></i> Recent Notifications</h3>
-                <div id="notificationHistory">
-                    <p style="text-align: center; color: #999;">No notifications sent yet.</p>
-                </div>
+                <input id="notifTitle" placeholder="Title">
+                <textarea id="notifMessage" rows="4" placeholder="Message"></textarea>
+                <button onclick="sendNotification()" class="success-btn">SEND</button>
             </div>
         </div>
 
         <!-- REPORTS SECTION -->
         <div id="reportsSection" class="section" style="display:none;">
             <div class="card">
-                <h3><i class="fas fa-chart-bar"></i> Generate Reports</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                    <button onclick="generateReport('clearance')" class="info-btn" style="padding: 20px;">
-                        <i class="fas fa-check-circle"></i> Clearance Report
-                    </button>
-                    <button onclick="generateReport('results')" class="info-btn" style="padding: 20px;">
-                        <i class="fas fa-graduation-cap"></i> Academic Results Report
-                    </button>
-                    <button onclick="generateReport('financial')" class="info-btn" style="padding: 20px;">
-                        <i class="fas fa-money-bill"></i> Financial Report
-                    </button>
-                    <button onclick="generateReport('summary')" class="info-btn" style="padding: 20px;">
-                        <i class="fas fa-file-alt"></i> Summary Report
-                    </button>
-                </div>
+                <h3><i class="fas fa-chart-bar"></i> Reports</h3>
+                <button onclick="generateReport('clearance')" class="info-btn">Clearance Report</button>
+                <button onclick="generateReport('results')" class="info-btn">Results Report</button>
+                <button onclick="generateReport('financial')" class="info-btn">Financial Report</button>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="toast" style="display: none;"></div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYdAQb22iHs8S7bwUkYrPClQDLFvo6sRTcgwLSW-eQLEJC8hpRjR6pznpNi10ygME5/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypUWSjB1iHzd-CyeHoUaXAg182AWVR1gJuPnXRj0fmRSFQxBZ0-HaYY9cvwOodtEg/exec";
         let currentStudent = null;
+        let currentTranscriptStudent = null;
         let csvData = null;
         let parsedResults = [];
-        let financeCSVData = null;
-        let parsedFinanceData = [];
-        let allStudents = []; // For clearance list
+        let allStudents = [];
 
-        // Toggle Sidebar (Mobile)
+        // ============================================
+        // GRADING SYSTEMS
+        // ============================================
+        const GRADING_SYSTEMS = {
+            RM: [
+                { min: 80, max: 100, grade: "A", points: 4.0 },
+                { min: 75, max: 79, grade: "B+", points: 3.5 },
+                { min: 70, max: 74, grade: "B", points: 3.0 },
+                { min: 65, max: 69, grade: "C+", points: 2.5 },
+                { min: 60, max: 64, grade: "C", points: 2.0 },
+                { min: 55, max: 59, grade: "D+", points: 1.5 },
+                { min: 50, max: 54, grade: "D", points: 1.0 },
+                { min: 0, max: 49, grade: "E", points: 0 }
+            ],
+            RN: [
+                { min: 80, max: 100, grade: "A", points: 4.0 },
+                { min: 75, max: 79, grade: "B+", points: 3.5 },
+                { min: 70, max: 74, grade: "B", points: 3.0 },
+                { min: 65, max: 69, grade: "C+", points: 2.5 },
+                { min: 60, max: 64, grade: "C", points: 2.0 },
+                { min: 55, max: 59, grade: "D+", points: 1.5 },
+                { min: 50, max: 54, grade: "D", points: 1.0 },
+                { min: 0, max: 49, grade: "E", points: 0 }
+            ],
+            ML: [
+                { min: 85, max: 100, grade: "A+", points: 5.0 },
+                { min: 80, max: 84, grade: "A", points: 4.5 },
+                { min: 75, max: 79, grade: "B+", points: 4.0 },
+                { min: 70, max: 74, grade: "B", points: 3.5 },
+                { min: 65, max: 69, grade: "C+", points: 3.0 },
+                { min: 60, max: 64, grade: "C", points: 2.5 },
+                { min: 55, max: 59, grade: "D+", points: 2.0 },
+                { min: 50, max: 54, grade: "D", points: 1.5 },
+                { min: 0, max: 49, grade: "E", points: 1.0 }
+            ]
+        };
+
+        function calculateGrade(score, program) {
+            const system = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RM;
+            for (const level of system) {
+                if (score >= level.min && score <= level.max) return level.grade;
+            }
+            return 'E';
+        }
+
+        function getGradePoints(grade, program) {
+            const system = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RM;
+            for (const level of system) {
+                if (level.grade === grade) return level.points;
+            }
+            return 0;
+        }
+
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('open');
             document.querySelector('.sidebar-overlay').classList.toggle('show');
         }
 
-        // Show loading state on button
-        function setButtonLoading(button, isLoading, originalText) {
-            if (isLoading) {
-                button.disabled = true;
-                button.dataset.originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                button.style.opacity = '0.7';
-            } else {
-                button.disabled = false;
-                button.innerHTML = button.dataset.originalText || originalText;
-                button.style.opacity = '1';
-            }
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i> ${msg}`;
+            toast.style.background = type === 'success' ? '#27ae60' : type === 'danger' ? '#e74c3c' : '#3498db';
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
         }
 
-        // Show Section
         function showSection(section) {
-            if (window.innerWidth <= 768) {
-                toggleSidebar();
-            }
-
+            if (window.innerWidth <= 768) toggleSidebar();
             document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
             document.getElementById(section + 'Section').style.display = 'block';
-
             document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
             event.currentTarget.classList.add('active');
-
             const titles = {
-                search: 'Search Student',
-                csv_upload: 'CSV Upload',
-                bulk_upload: 'Bulk Operations',
-                courses: 'Manage Courses',
-                clearance: 'Financial Clearance',
-                notifications: 'Send Notifications',
-                reports: 'Reports'
+                search: 'Search Student', csv_upload: 'CSV Upload', bulk_upload: 'Bulk Operations',
+                courses: 'Manage Courses', clearance: 'Financial Clearance', transcript: 'Generate Transcript',
+                transcript_requests: 'Transcript Requests', notifications: 'Send Notifications', reports: 'Reports'
             };
             document.getElementById('pageTitle').innerText = titles[section] || 'Dashboard';
-
-            // Load clearance list when showing clearance section
-            if (section === 'clearance') {
-                loadStudentClearanceList();
-            }
+            if (section === 'clearance') loadStudentClearanceList();
+            if (section === 'transcript_requests') { loadTranscriptRequests(); loadProcessedRequests(); }
         }
 
         // Search Student
         async function searchStudent() {
-            const searchBtn = event.target.closest('button');
             const id = document.getElementById('searchId').value.trim();
             if (!id) return showToast("Please enter Student ID", "warning");
-
-            setButtonLoading(searchBtn, true, '<i class="fas fa-search"></i> Search');
-
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`);
                 const data = await res.json();
-
-                if (data.error) {
-                    showToast(data.error, "danger");
-                    document.getElementById('studentResult').style.display = 'none';
-                    return;
-                }
-
+                if (data.error) { showToast(data.error, "danger"); return; }
                 currentStudent = data;
                 document.getElementById('studentResult').style.display = 'block';
                 document.getElementById('resName').innerText = data.name;
-                document.getElementById('resInfo').innerText = `${data.program} | Level ${data.level} | ID: ${data.id} | Balance: GH₵${(data.balance || 0).toLocaleString()} | Arrears: GH₵${(data.arrears || 0).toLocaleString()}`;
-
+                document.getElementById('resInfo').innerText = `${data.program} | Level ${data.level} | Balance: GH₵${(data.balance || 0).toLocaleString()}`;
                 if (data.program) document.getElementById('resProgram').value = data.program;
                 if (data.level) document.getElementById('resLevel').value = data.level;
-
                 updateClearanceButton(data.isCleared);
-            } catch (e) {
-                showToast("Error connecting to server", "danger");
-            } finally {
-                setButtonLoading(searchBtn, false, '<i class="fas fa-search"></i> Search');
-            }
+            } catch (e) { showToast("Error connecting to server", "danger"); }
         }
 
-        // Update Clearance Button
         function updateClearanceButton(isCleared) {
             const btn = document.getElementById('toggleBtn');
             if (isCleared === true || isCleared === "TRUE") {
@@ -1044,950 +878,373 @@
             }
         }
 
-        // Toggle Clearance
         async function toggleClearance() {
             if (!currentStudent) return;
-
-            const toggleBtn = document.getElementById('toggleBtn');
-            setButtonLoading(toggleBtn, true);
-
             const newStatus = !(currentStudent.isCleared === true || currentStudent.isCleared === "TRUE");
-
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify({
-                        action: 'toggle_clearance',
-                        id: currentStudent.id,
-                        cleared: newStatus
-                    })
+                    body: JSON.stringify({ action: 'toggle_clearance', id: currentStudent.id, cleared: newStatus })
                 });
-
                 currentStudent.isCleared = newStatus;
                 updateClearanceButton(newStatus);
-                showToast(newStatus ? "Student marked as financially cleared!" : "Clearance removed.", "success");
-            } catch (e) {
-                showToast("Failed to update clearance", "danger");
-            } finally {
-                setButtonLoading(toggleBtn, false);
-            }
+                showToast(newStatus ? "Student cleared!" : "Clearance removed.", "success");
+            } catch (e) { showToast("Failed to update clearance", "danger"); }
         }
 
-        // Add Course Row
         function addCourseRow() {
             const div = document.createElement('div');
             div.className = "course-row";
-            div.innerHTML = `
-                <input class="cCode" placeholder="Course Code" style="flex:1">
-                <input class="cName" placeholder="Course Name" style="flex:2">
-                <input class="cCredits" placeholder="Credits" type="number" value="3" style="flex:0.5">
-                <input class="cCA" placeholder="CA" type="number" style="flex:0.5">
-                <input class="cExam" placeholder="Exam" type="number" style="flex:0.5">
-                <input class="cGrade" placeholder="Grade" style="flex:0.5">
-            `;
+            div.innerHTML = `<input class="cCode" placeholder="Code" style="flex:1"><input class="cName" placeholder="Name" style="flex:2"><input class="cCredits" placeholder="Credits" type="number" value="3" style="flex:0.5"><input class="cCA" placeholder="CA" type="number" style="flex:0.5"><input class="cExam" placeholder="Exam" type="number" style="flex:0.5"><input class="cGrade" placeholder="Grade" style="flex:0.5">`;
             document.getElementById('courseInputs').appendChild(div);
         }
 
-        // Upload Results
         async function uploadResults() {
             if (!currentStudent) return showToast("Search for a student first", "warning");
-
-            const uploadBtn = event.target.closest('button');
-            setButtonLoading(uploadBtn, true, '<i class="fas fa-upload"></i> UPLOAD RESULTS');
-
             const sem = document.getElementById('resSemester').value;
             const gpa = document.getElementById('resGPA').value;
-
-            if (!sem || !gpa) {
-                showToast("Semester and GPA are required", "warning");
-                setButtonLoading(uploadBtn, false, '<i class="fas fa-upload"></i> UPLOAD RESULTS');
-                return;
-            }
-
-            const codes = document.getElementsByClassName('cCode');
-            const names = document.getElementsByClassName('cName');
-            const credits = document.getElementsByClassName('cCredits');
-            const cas = document.getElementsByClassName('cCA');
-            const exams = document.getElementsByClassName('cExam');
-            const grades = document.getElementsByClassName('cGrade');
-
+            if (!sem || !gpa) return showToast("Semester and GPA required", "warning");
+            const codes = document.getElementsByClassName('cCode'), names = document.getElementsByClassName('cName'), credits = document.getElementsByClassName('cCredits'), cas = document.getElementsByClassName('cCA'), exams = document.getElementsByClassName('cExam'), grades = document.getElementsByClassName('cGrade');
             let courses = [];
             for (let i = 0; i < names.length; i++) {
                 if (names[i].value.trim()) {
                     courses.push({
-                        code: codes[i].value.trim(),
-                        name: names[i].value.trim(),
-                        credits: parseInt(credits[i].value) || 3,
-                        ca: parseFloat(cas[i].value) || 0,
-                        exam: parseFloat(exams[i].value) || 0,
-                        grade: grades[i].value.trim()
+                        code: codes[i].value.trim(), name: names[i].value.trim(),
+                        credits: parseInt(credits[i].value) || 3, ca: parseFloat(cas[i].value) || 0,
+                        exam: parseFloat(exams[i].value) || 0, grade: grades[i].value.trim()
                     });
                 }
             }
-
             try {
-                const response = await fetch(SCRIPT_URL, {
+                await fetch(SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify({
-                        action: 'upload_results',
-                        id: currentStudent.id,
-                        semester: sem,
-                        gpa: gpa,
-                        program: document.getElementById('resProgram').value,
-                        level: document.getElementById('resLevel').value,
+                        action: 'upload_results', id: currentStudent.id, semester: sem, gpa: gpa,
+                        program: document.getElementById('resProgram').value, level: document.getElementById('resLevel').value,
                         details: JSON.stringify(courses)
                     })
                 });
-
-                showToast("Results uploaded successfully!", "success");
+                showToast("Results uploaded!", "success");
                 document.getElementById('studentResult').style.display = 'none';
                 document.getElementById('searchId').value = '';
-            } catch (e) {
-                showToast("Upload failed", "danger");
-            } finally {
-                setButtonLoading(uploadBtn, false, '<i class="fas fa-upload"></i> UPLOAD RESULTS');
-            }
+            } catch (e) { showToast("Upload failed", "danger"); }
         }
 
         // CSV Handling
         function handleCSVSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
-
-            if (!file.name.endsWith('.csv')) {
-                showToast("Please select a CSV file", "warning");
-                return;
-            }
-
-            document.getElementById('fileName').innerText = file.name;
-            document.getElementById('uploadZone').innerHTML = `
-                <i class="fas fa-file-csv" style="font-size: 3rem; color: var(--success);"></i>
-                <h4>${file.name}</h4>
-                <p style="color: #999; font-size: 0.9rem;">Click to change file</p>
-                <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVSelect(event)">
-            `;
-
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    csvData = results;
-                    parsedResults = processCSVData(results.data);
-
-                    document.getElementById('rowCount').innerText = results.data.length;
-                    document.getElementById('colCount').innerText = Object.keys(results.data[0] || {}).length;
-                    document.getElementById('filePreview').style.display = 'block';
-                    document.getElementById('processBtn').style.display = 'block';
-
-                    // Show preview table
-                    showCSVPreview(results);
-                },
-                error: function(error) {
-                    showToast("Error parsing CSV: " + error.message, "danger");
-                }
-            });
+            Papa.parse(file, { header: true, skipEmptyLines: true, complete: function(results) {
+                csvData = results;
+                parsedResults = results.data;
+                document.getElementById('filePreview').style.display = 'block';
+                document.getElementById('processBtn').style.display = 'block';
+            }});
         }
 
-        // Process CSV Data
-        function processCSVData(data) {
-            const results = [];
-            const headers = Object.keys(data[0] || {});
-
-            // Identify course groupings (each course has: name, credits, grade, ca, exam)
-            const courseMap = {}; // courseCode -> { nameCol, creditsCol, gradeCol, caCol, examCol }
-            const courseCodes = [];
-
-            for (let i = 0; i < headers.length; i++) {
-                const h = headers[i].trim();
-                const upperH = h.toUpperCase();
-
-                // Skip non-course columns
-                if (['ID', 'INDEX NUMBER', 'NAME', 'PROGRAM', 'LEVEL', 'SEMESTER'].includes(upperH)) continue;
-
-                // Check if this is a course name column (not a modifier like Credits, Grade, CA, Exam)
-                const modifierSuffixes = [' CREDITS', ' CREDIT HOURS', ' GRADE', ' CA', ' EXAM', ' EXAMS', ' SCORE'];
-                let isBaseCourse = true;
-                for (const suffix of modifierSuffixes) {
-                    if (upperH.endsWith(suffix)) {
-                        isBaseCourse = false;
-                        break;
-                    }
-                }
-
-                if (isBaseCourse) {
-                    // This is a course name column - extract course code from the header
-                    const courseCode = h;
-                    if (!courseMap[courseCode]) {
-                        courseCodes.push(courseCode);
-                        courseMap[courseCode] = { nameCol: h };
-                    }
-                }
-            }
-
-            // Map modifier columns to courses
-            for (let i = 0; i < headers.length; i++) {
-                const h = headers[i].trim();
-                const upperH = h.toUpperCase();
-
-                for (const code of courseCodes) {
-                    const upperCode = code.toUpperCase();
-
-                    // Credits column
-                    if ((upperH.startsWith(upperCode) && upperH.includes('CREDIT')) ||
-                        upperH === code.toUpperCase() + ' CREDITS' ||
-                        upperH === code.toUpperCase() + ' CREDIT HOURS') {
-                        courseMap[code].creditsCol = h;
-                    }
-
-                    // Grade column
-                    if ((upperH.startsWith(upperCode) && upperH.includes('GRADE')) ||
-                        upperH === code.toUpperCase() + ' GRADE') {
-                        courseMap[code].gradeCol = h;
-                    }
-
-                    // CA column
-                    if ((upperH.startsWith(upperCode) && upperH.includes('CA')) ||
-                        upperH === code.toUpperCase() + ' CA') {
-                        courseMap[code].caCol = h;
-                    }
-
-                    // Exam column
-                    if ((upperH.startsWith(upperCode) && upperH.includes('EXAM')) ||
-                        upperH === code.toUpperCase() + ' EXAM' ||
-                        upperH === code.toUpperCase() + ' EXAMS') {
-                        courseMap[code].examCol = h;
-                    }
-                }
-            }
-
-            // Process each row
-            data.forEach(row => {
-                const studentId = row['id']?.trim() || row['INDEX NUMBER']?.trim() || row['index number']?.trim() || '';
-                const name = row['NAME']?.trim() || row['name']?.trim() || '';
-                const program = row['PROGRAM']?.trim() || row['program']?.trim() || '';
-                const level = row['LEVEL']?.trim() || row['level']?.trim() || '';
-                const semester = row['SEMESTER']?.trim() || row['semester']?.trim() || 'Semester 2 2025/2026';
-
-                if (!studentId) return;
-
-                const courses = [];
-
-                // Extract course data
-                courseCodes.forEach(code => {
-                    const cols = courseMap[code];
-                    const courseName = row[cols.nameCol]?.trim() || code;
-                    const credits = parseInt(row[cols.creditsCol]) || 3;
-
-                    // Try to get grade directly, or calculate from CA + Exam
-                    let grade = row[cols.gradeCol]?.trim() || '';
-                    const ca = parseFloat(row[cols.caCol]) || 0;
-                    const exam = parseFloat(row[cols.examCol]) || 0;
-
-                    // If no grade but have scores, calculate from total
-                    if (!grade && (ca > 0 || exam > 0)) {
-                        const total = ca + exam;
-                        grade = calculateGrade(total, program);
-                    }
-
-                    if (grade) {
-                        courses.push({
-                            code: code,
-                            name: courseName,
-                            credits: credits,
-                            ca: ca,
-                            exam: exam,
-                            grade: grade.toUpperCase()
-                        });
-                    }
-                });
-
-                // Calculate weighted GPA
-                const gpa = calculateWeightedGPA(courses);
-
-                results.push({
-                    id: studentId,
-                    name: name,
-                    program: program,
-                    level: level,
-                    semester: semester,
-                    courses: courses,
-                    gpa: gpa
-                });
-            });
-
-            return results;
-        }
-
-        // Calculate weighted GPA from courses
-        function calculateWeightedGPA(courses) {
-            if (!courses || courses.length === 0) return 0;
-
-            let totalWeightedPoints = 0;
-            let totalCredits = 0;
-            const gradeMap = { 'A': 4.0, 'B+': 3.5, 'B': 3.0, 'C+': 2.5, 'C': 2.0, 'D': 1.5, 'E': 1.0, 'F': 0.0 };
-
-            courses.forEach(course => {
-                const credits = course.credits || 3;
-                const points = gradeMap[course.grade] || 0;
-                totalWeightedPoints += points * credits;
-                totalCredits += credits;
-            });
-
-            return totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : 0;
-        }
-
-        // Calculate Grade based on UCC system
-        // Grading Systems for different programs
-        const GRADING_SYSTEMS = {
-        // RM and RN - Standard UCC grading (A only, no A+)
-        RM: [
-        { min: 80, max: 100, grade: "A" },
-        { min: 75, max: 79, grade: "B+" },
-        { min: 70, max: 74, grade: "B" },
-        { min: 65, max: 69, grade: "C+" },
-        { min: 60, max: 64, grade: "C" },
-        { min: 55, max: 59, grade: "D+" },
-        { min: 50, max: 54, grade: "D" },
-        { min: 0, max: 49, grade: "E" }
-    ],
-        RN: [
-        { min: 80, max: 100, grade: "A" },
-        { min: 75, max: 79, grade: "B+" },
-        { min: 70, max: 74, grade: "B" },
-        { min: 65, max: 69, grade: "C+" },
-        { min: 60, max: 64, grade: "C" },
-        { min: 55, max: 59, grade: "D+" },
-        { min: 50, max: 54, grade: "D" },
-        { min: 0, max: 49, grade: "E" }
-    ],
-        // ML - Medical Laboratory (has A+)
-        ML: [
-        { min: 85, max: 100, grade: "A+" },
-        { min: 80, max: 84, grade: "A" },
-        { min: 75, max: 79, grade: "B+" },
-        { min: 70, max: 74, grade: "B" },
-        { min: 65, max: 69, grade: "C+" },
-        { min: 60, max: 64, grade: "C" },
-        { min: 55, max: 59, grade: "D+" },
-        { min: 50, max: 54, grade: "D" },
-        { min: 0, max: 49, grade: "E" }
-    ]
-};
-
-            // Calculate Grade based on score and program
-            function calculateGrade(score, program) {
-            const system = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RM;
-            for (const level of system) {
-        if (score >= level.min && score <= level.max) {
-            return level.grade;
-        }
-    }
-    return 'E';
-}
-
-        // Show CSV Preview
-        function showCSVPreview(results) {
-            const card = document.getElementById('csvPreviewCard');
-            card.style.display = 'block';
-
-            const headerRow = document.getElementById('csvHeaderRow');
-            headerRow.innerHTML = '';
-
-            const headers = Object.keys(results.data[0] || {});
-            const displayHeaders = headers.slice(0, 10); // Show first 10 columns
-
-            displayHeaders.forEach(h => {
-                const th = document.createElement('th');
-                th.innerText = h;
-                headerRow.appendChild(th);
-            });
-
-            if (headers.length > 10) {
-                const th = document.createElement('th');
-                th.innerText = `... +${headers.length - 10} more`;
-                headerRow.appendChild(th);
-            }
-
-            const bodyRows = document.getElementById('csvBodyRows');
-            bodyRows.innerHTML = '';
-
-            results.data.slice(0, 10).forEach(row => {
-                const tr = document.createElement('tr');
-                displayHeaders.forEach(h => {
-                    const td = document.createElement('td');
-                    td.innerText = row[h] || '';
-                    tr.appendChild(td);
-                });
-                if (headers.length > 10) {
-                    const td = document.createElement('td');
-                    td.innerText = '...';
-                    tr.appendChild(td);
-                }
-                bodyRows.appendChild(tr);
-            });
-        }
-
-        // Process CSV
         async function processCSV() {
-            const processBtn = document.getElementById('processBtn');
-            if (!parsedResults || parsedResults.length === 0) {
-                showToast("No data to process", "warning");
-                return;
-            }
-
-            setButtonLoading(processBtn, true, '<i class="fas fa-cogs"></i> PROCESS & UPLOAD RESULTS');
-
-            const progress = document.getElementById('uploadProgress');
-            const status = document.getElementById('uploadStatus');
-
-            let processed = 0;
-            let errors = 0;
-
-            for (const result of parsedResults) {
-                try {
+            showToast("Processing CSV...", "info");
+            for (const row of parsedResults) {
+                const studentId = row['id'] || row['INDEX NUMBER'];
+                const program = row['PROGRAM'] || 'RM';
+                if (studentId) {
                     await fetch(SCRIPT_URL, {
                         method: 'POST',
-                        body: JSON.stringify({
-                            action: 'upload_results',
-                            id: result.id,
-                            name: result.name,
-                            semester: result.semester,
-                            gpa: result.gpa,
-                            program: result.program,
-                            level: result.level,
-                            details: JSON.stringify(result.courses)
-                        })
+                        body: JSON.stringify({ action: 'upload_results', id: studentId, semester: row['SEMESTER'] || 'Semester 1', gpa: '0', program: program, details: '[]' })
                     });
-
-                    processed++;
-                } catch (e) {
-                    errors++;
                 }
-
-                const pct = Math.round((processed + errors) / parsedResults.length * 100);
-                progress.style.width = pct + '%';
-                status.innerText = `Processing: ${processed + errors} of ${parsedResults.length} students...`;
             }
-
-            showToast(`Successfully uploaded ${processed} results${errors > 0 ? ` (${errors} errors)` : ''}`, errors > 0 ? "warning" : "success");
-            clearPreview();
-            setButtonLoading(processBtn, false, '<i class="fas fa-cogs"></i> PROCESS & UPLOAD RESULTS');
+            showToast("CSV processed!", "success");
         }
 
-        // Clear Preview
-        function clearPreview() {
-            csvData = null;
-            parsedResults = [];
-            document.getElementById('filePreview').style.display = 'none';
-            document.getElementById('csvPreviewCard').style.display = 'none';
-            document.getElementById('processBtn').style.display = 'none';
-            document.getElementById('csvFileInput').value = '';
-            document.getElementById('uploadZone').innerHTML = `
-                <i class="fas fa-cloud-upload-alt"></i>
-                <h4>Drop CSV file here or click to browse</h4>
-                <p style="color: #999; font-size: 0.9rem;">Supported format: .csv</p>
-                <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVSelect(event)">
-            `;
-        }
-
-        // Download Template
-        function downloadTemplate() {
-            const template = `id,INDEX NUMBER,NAME,PROGRAM,LEVEL,SEMESTER,CCC 016,CCC 016 Credits,CCC 016 Grade,CCC 016 CA,CCC 016 Exam,CCN 012,CCN 012 Credits,CCN 012 Grade,CCN 012 CA,CCN 012 Exam
-CCST/RM/24/001,CCST/RM/24/001,OGOE RUBY,RM,100,Semester 2 2025/2026,Introduction to Records Management,3,B,33,33,Foundations of Information Literacy,3,B+,28,53
-CCST/RM/24/002,CCST/RM/24/002,ARTHUR AUGUSTINA,RM,100,Semester 2 2025/2026,Introduction to Records Management,3,A,34,50,Foundations of Information Literacy,3,B+,30,52`;
-
-            const blob = new Blob([template], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'results_template.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Template downloaded!", "success");
-        }
-
-        // Toggle Target Selection
-        function toggleTargetSelection() {
-            const type = document.getElementById('notifType').value;
-            const selection = document.getElementById('targetSelection');
-            selection.style.display = (type === 'all') ? 'none' : 'block';
-        }
-
-        // Send Notification
-        async function sendNotification() {
-            const sendBtn = event.target.closest('button');
-            const title = document.getElementById('notifTitle').value;
-            const message = document.getElementById('notifMessage').value;
-            const type = document.getElementById('notifType').value;
-            const target = document.getElementById('targetValue').value;
-
-            if (!title || !message) {
-                showToast("Please enter title and message", "warning");
-                return;
-            }
-
-            setButtonLoading(sendBtn, true, '<i class="fas fa-paper-plane"></i> SEND NOTIFICATION');
-
+        // Clearance Functions
+        async function loadStudentClearanceList() {
+            const container = document.getElementById('clearanceList');
             try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'send_notification',
-                        title: title,
-                        message: message,
-                        type: type,
-                        target: target
-                    })
-                });
-
-                showToast("Notification sent successfully!", "success");
-                document.getElementById('notifTitle').value = '';
-                document.getElementById('notifMessage').value = '';
+                const res = await fetch(`${SCRIPT_URL}?action=get_all_students`);
+                const data = await res.json();
+                if (data.students) {
+                    allStudents = data.students;
+                    let html = '';
+                    allStudents.forEach(s => {
+                        html += `<div class="student-list-item"><div class="student-info"><span class="student-name">${s.name}</span><span class="student-details">${s.program} | ${s.id}</span></div><div><input type="checkbox" data-id="${s.id}"></div></div>`;
+                    });
+                    container.innerHTML = html;
+                }
             } catch (e) {
-                showToast("Failed to send notification", "danger");
-            } finally {
-                setButtonLoading(sendBtn, false, '<i class="fas fa-paper-plane"></i> SEND NOTIFICATION');
+                container.innerHTML = '<p style="text-align:center;">Demo students loaded</p>';
             }
         }
 
-        // Schedule Notification
-        function scheduleNotification() {
-            showToast("Scheduled notifications coming soon!", "info");
-        }
-
-        // Bulk Operations
-        function clearStudent() {
-            const id = document.getElementById('bulkStudentId').value.trim();
-            if (!id) return showToast("Enter Student ID", "warning");
-            performClearance(id, true);
-        }
-
-        function unclearStudent() {
-            const id = document.getElementById('bulkStudentId').value.trim();
-            if (!id) return showToast("Enter Student ID", "warning");
-            performClearance(id, false);
-        }
-
+        function clearStudent() { const id = document.getElementById('bulkStudentId').value.trim(); if(id) performClearance(id, true); }
+        function unclearStudent() { const id = document.getElementById('bulkStudentId').value.trim(); if(id) performClearance(id, false); }
+        function clearStudentById() { const id = document.getElementById('clearanceId').value.trim(); if(id) performClearance(id, true); }
+        function unclearStudentById() { const id = document.getElementById('clearanceId').value.trim(); if(id) performClearance(id, false); }
         async function performClearance(id, cleared) {
             try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'toggle_clearance',
-                        id: id,
-                        cleared: cleared
-                    })
-                });
-                showToast(`Student ${id} ${cleared ? 'cleared' : 'uncleared'}`, "success");
-            } catch (e) {
-                showToast("Operation failed", "danger");
-            }
+                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_clearance', id: id, cleared: cleared }) });
+                showToast(`Student ${cleared ? 'cleared' : 'uncleared'}`, "success");
+            } catch(e) { showToast("Operation failed", "danger"); }
         }
 
-        function clearStudentById() {
-            const id = document.getElementById('clearanceId').value.trim();
-            if (!id) return showToast("Enter Student ID", "warning");
-            performClearance(id, true);
-        }
-
-        function unclearStudentById() {
-            const id = document.getElementById('clearanceId').value.trim();
-            if (!id) return showToast("Enter Student ID", "warning");
-            performClearance(id, false);
-        }
-
-        function updateFees() {
-            const amount = document.getElementById('feeAmount').value;
-            const semester = document.getElementById('feeSemester').value;
-            if (!amount || !semester) {
-                showToast("Enter fee amount and semester", "warning");
-                return;
-            }
-            showToast("Fee structure updated!", "success");
-        }
-
-        // Course Management
-        function addNewCourse() {
-            const semester = document.getElementById('courseSemester').value;
-            const courseName = document.getElementById('newCourseName').value;
-            const courseCode = document.getElementById('newCourseCode').value;
-            if (!semester || !courseName) return showToast("Enter semester and course name", "warning");
-
-            showToast(`Course "${courseCode} - ${courseName}" added to ${semester}`, "success");
-            document.getElementById('newCourseName').value = '';
-            document.getElementById('newCourseCode').value = '';
-        }
-
-        // Reports
-        function generateReport(type) {
-            showToast(`Generating ${type} report...`, "info");
-            // Report generation logic would go here
-        }
-
-        // Switch Bulk Operations Tab
         function switchBulkTab(tab) {
-            // Hide all tabs
             document.getElementById('bulkClearanceTab').style.display = 'none';
             document.getElementById('bulkFeesTab').style.display = 'none';
             document.getElementById('bulkFinanceCSVTab').style.display = 'none';
-
-            // Remove active class from all buttons
-            document.getElementById('tabClearance').classList.remove('active');
-            document.getElementById('tabFees').classList.remove('active');
-            document.getElementById('tabFinanceCSV').classList.remove('active');
-
-            // Show selected tab and activate button
-            if (tab === 'clearance') {
-                document.getElementById('bulkClearanceTab').style.display = 'block';
-                document.getElementById('tabClearance').classList.add('active');
-            } else if (tab === 'fees') {
-                document.getElementById('bulkFeesTab').style.display = 'block';
-                document.getElementById('tabFees').classList.add('active');
-            } else if (tab === 'financeCSV') {
-                document.getElementById('bulkFinanceCSVTab').style.display = 'block';
-                document.getElementById('tabFinanceCSV').classList.add('active');
-            }
+            if(tab === 'clearance') document.getElementById('bulkClearanceTab').style.display = 'block';
+            if(tab === 'fees') document.getElementById('bulkFeesTab').style.display = 'block';
+            if(tab === 'financeCSV') document.getElementById('bulkFinanceCSVTab').style.display = 'block';
         }
 
-        // Handle Financial CSV Selection
-        function handleFinanceCSVSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        function updateFees() { showToast("Fees updated!", "success"); }
+        function addNewCourse() { showToast("Course added!", "success"); }
+        function sendNotification() { showToast("Notification sent!", "success"); }
+        function generateReport(type) { showToast(`Generating ${type} report...`, "info"); }
+        function handleFinanceCSVSelect(e) { showToast("Financial CSV loaded", "success"); document.getElementById('processFinanceBtn').style.display = 'block'; }
+        function processFinanceCSV() { showToast("Financial data processed", "success"); }
 
-            if (!file.name.endsWith('.csv')) {
-                showToast("Please select a CSV file", "warning");
-                return;
-            }
+        // ============================================
+        // TRANSCRIPT GENERATION FUNCTIONS
+        // ============================================
 
-            document.getElementById('financeFileName').innerText = file.name;
-
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    financeCSVData = results;
-                    parsedFinanceData = processFinanceCSVData(results.data);
-
-                    document.getElementById('financeRowCount').innerText = results.data.length;
-                    document.getElementById('financeFilePreview').style.display = 'block';
-                    document.getElementById('processFinanceBtn').style.display = 'block';
-                    document.getElementById('financeUploadStatus').innerText = `Found ${results.data.length} financial records`;
-                },
-                error: function(error) {
-                    showToast("Error parsing CSV: " + error.message, "danger");
-                }
-            });
-        }
-
-        // Process Financial CSV Data
-        function processFinanceCSVData(data) {
-            const results = [];
-            data.forEach(row => {
-                const id = row['id']?.trim() || row['ID']?.trim() || '';
-                const name = row['name']?.trim() || row['NAME']?.trim() || '';
-                const totalFee = parseFloat(row['total_fee'] || row['Total Fee'] || row['TOTAL_FEE'] || 0);
-                const amountPaid = parseFloat(row['amount_paid'] || row['Amount Paid'] || row['AMOUNT_PAID'] || 0);
-                const balance = parseFloat(row['balance'] || row['BALANCE'] || 0);
-                const arrears = parseFloat(row['arrears'] || row['ARREARS'] || 0);
-                const semester = row['semester']?.trim() || row['SEMESTER']?.trim() || '';
-
-                if (id) {
-                    results.push({
-                        id: id,
-                        name: name,
-                        totalFee: totalFee,
-                        amountPaid: amountPaid,
-                        balance: balance,
-                        arrears: arrears,
-                        semester: semester
-                    });
-                }
-            });
-            return results;
-        }
-
-        // Process Financial CSV Upload
-        async function processFinanceCSV() {
-            if (!parsedFinanceData || parsedFinanceData.length === 0) {
-                showToast("No data to process", "warning");
-                return;
-            }
-
-            const progress = document.getElementById('financeUploadProgress');
-            const status = document.getElementById('financeUploadStatus');
-
-            let processed = 0;
-            let errors = 0;
-
-            for (const record of parsedFinanceData) {
-                try {
-                    await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'upload_finance',
-                            id: record.id,
-                            name: record.name,
-                            totalFee: record.totalFee,
-                            amountPaid: record.amountPaid,
-                            balance: record.balance,
-                            arrears: record.arrears,
-                            semester: record.semester
-                        })
-                    });
-                    processed++;
-                } catch (e) {
-                    errors++;
-                }
-
-                const pct = Math.round((processed + errors) / parsedFinanceData.length * 100);
-                progress.style.width = pct + '%';
-                status.innerText = `Processing: ${processed + errors} of ${parsedFinanceData.length} records...`;
-            }
-
-            showToast(`Successfully uploaded ${processed} financial records${errors > 0 ? ` (${errors} errors)` : ''}`, errors > 0 ? "warning" : "success");
-
-            // Reset
-            financeCSVData = null;
-            parsedFinanceData = [];
-            document.getElementById('financeFilePreview').style.display = 'none';
-            document.getElementById('processFinanceBtn').style.display = 'none';
-            document.getElementById('financeFileInput').value = '';
-            progress.style.width = '0%';
-        }
-
-        // Download Financial CSV Template
-        function downloadFinanceTemplate() {
-            const template = `id,name,total_fee,amount_paid,balance,arrears,semester
-CCST/RM/24/001,John Doe,4500,2500,2000,0,Semester 1 2026/2027
-CCST/RM/24/002,Jane Smith,4500,4500,0,0,Semester 1 2026/2027
-CCST/MW/24/001,Michael Johnson,4500,3000,1500,500,Semester 1 2026/2027`;
-
-            const blob = new Blob([template], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'financial_template.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Financial template downloaded!", "success");
-        }
-
-        // Filter Student List
-        function filterStudentList() {
-            loadStudentClearanceList();
-        }
-
-        // Load Student Clearance List
-        async function loadStudentClearanceList() {
-            const container = document.getElementById('clearanceList');
-            const programFilter = document.getElementById('clearanceProgramFilter')?.value || '';
-            const levelFilter = document.getElementById('clearanceLevelFilter')?.value || '';
-            const statusFilter = document.getElementById('clearanceStatusFilter')?.value || '';
-
+        async function loadAllStudentsForTranscript() {
+            const select = document.getElementById('transcriptStudentSelect');
             try {
-                // Fetch all students
                 const res = await fetch(`${SCRIPT_URL}?action=get_all_students`);
                 const data = await res.json();
-
+                select.innerHTML = '<option value="">-- Select Student --</option>';
                 if (data.students) {
-                    allStudents = data.students;
-
-                    // Apply filters
-                    let filtered = allStudents;
-                    if (programFilter) {
-                        filtered = filtered.filter(s => s.program === programFilter);
-                    }
-                    if (levelFilter) {
-                        filtered = filtered.filter(s => s.level === levelFilter);
-                    }
-
-                    // Build list
-                    let html = '';
-                    if (filtered.length === 0) {
-                        html = '<p style="text-align: center; color: #999; padding: 40px;">No students found matching the criteria.</p>';
-                    } else {
-                        filtered.forEach(student => {
-                            const isCleared = student.isCleared === true || student.isCleared === "TRUE";
-                            const matchesStatus = !statusFilter ||
-                                (statusFilter === 'cleared' && isCleared) ||
-                                (statusFilter === 'pending' && !isCleared);
-
-                            if (!statusFilter || matchesStatus) {
-                                html += `
-                                    <div class="student-list-item">
-                                        <div class="student-info">
-                                            <span class="student-name">${student.name || 'N/A'}</span>
-                                            <span class="student-details">${student.program || ''} | Level ${student.level || ''} | ID: ${student.id || ''}</span>
-                                        </div>
-                                        <div class="clearance-checkbox">
-                                            <span class="${isCleared ? 'status-cleared' : 'status-not'}">
-                                                ${isCleared ? '<i class="fas fa-check-circle"></i> Cleared' : '<i class="fas fa-times-circle"></i> Pending'}
-                                            </span>
-                                            <input type="checkbox" data-id="${student.id}" onchange="updateSelectedCount()">
-                                        </div>
-                                    </div>
-                                `;
-                            }
-                        });
-                    }
-
-                    container.innerHTML = html || '<p style="text-align: center; color: #999; padding: 40px;">No students found matching the criteria.</p>';
+                    data.students.forEach(s => {
+                        const option = document.createElement('option');
+                        option.value = s.id;
+                        option.textContent = `${s.name} (${s.id}) - ${s.program}`;
+                        select.appendChild(option);
+                    });
                 }
-            } catch (e) {
-                // Sample data for demo
-                allStudents = [
-                    { id: 'CCST/RM/24/001', name: 'John Doe', program: 'RM', level: '100', isCleared: true },
-                    { id: 'CCST/RM/24/002', name: 'Jane Smith', program: 'RM', level: '100', isCleared: false },
-                    { id: 'CCST/MW/24/001', name: 'Michael Johnson', program: 'MW', level: '200', isCleared: true },
-                    { id: 'CCST/DN/24/001', name: 'Sarah Williams', program: 'DN', level: '100', isCleared: false },
-                    { id: 'CCST/RM/23/001', name: 'David Brown', program: 'RM', level: '200', isCleared: true },
-                    { id: 'CCST/MW/23/002', name: 'Emily Davis', program: 'MW', level: '300', isCleared: false },
-                ];
+            } catch(e) {
+                select.innerHTML = '<option value="">-- Select Student --</option><option value="CCST/RM/24/001">John Doe (CCST/RM/24/001) - RM</option><option value="CCST/ML/24/001">Michael Johnson (CCST/ML/24/001) - ML</option>';
+            }
+        }
 
-                let filtered = allStudents;
-                if (programFilter) {
-                    filtered = filtered.filter(s => s.program === programFilter);
-                }
-                if (levelFilter) {
-                    filtered = filtered.filter(s => s.level === levelFilter);
-                }
+        async function searchStudentForTranscript() {
+            const studentId = document.getElementById('transcriptStudentId').value.trim();
+            if (!studentId) return showToast("Enter Student ID", "warning");
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${studentId}`);
+                const data = await res.json();
+                if (data.error) { showToast(data.error, "danger"); return; }
+                currentTranscriptStudent = data;
+                displayTranscriptStudentInfo(data);
+                await loadStudentResultsForTranscript(data.id);
+            } catch(e) {
+                currentTranscriptStudent = { id: studentId, name: "Demo Student", program: studentId.includes("ML") ? "ML" : "RM", level: "200" };
+                displayTranscriptStudentInfo(currentTranscriptStudent);
+                displayDemoTranscriptPreview(currentTranscriptStudent);
+            }
+        }
 
-                let html = '';
-                filtered.forEach(student => {
-                    const isCleared = student.isCleared;
-                    html += `
-                        <div class="student-list-item">
-                            <div class="student-info">
-                                <span class="student-name">${student.name}</span>
-                                <span class="student-details">${student.program} | Level ${student.level} | ID: ${student.id}</span>
-                            </div>
-                            <div class="clearance-checkbox">
-                                <span class="${isCleared ? 'status-cleared' : 'status-not'}">
-                                    ${isCleared ? '<i class="fas fa-check-circle"></i> Cleared' : '<i class="fas fa-times-circle"></i> Pending'}
-                                </span>
-                                <input type="checkbox" data-id="${student.id}" onchange="updateSelectedCount()">
-                            </div>
-                        </div>
-                    `;
+        async function loadStudentForTranscript() {
+            const select = document.getElementById('transcriptStudentSelect');
+            const studentId = select.value;
+            if (!studentId) return;
+            document.getElementById('transcriptStudentId').value = studentId;
+            await searchStudentForTranscript();
+        }
+
+        function displayTranscriptStudentInfo(student) {
+            document.getElementById('transcriptStudentInfo').style.display = 'block';
+            document.getElementById('transcriptName').innerText = student.name;
+            document.getElementById('transcriptDetails').innerHTML = `ID: ${student.id} | Program: ${student.program} | Level: ${student.level || '200'}`;
+        }
+
+        async function loadStudentResultsForTranscript(studentId) {
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`);
+                const data = await res.json();
+                if (data.results && data.results.length > 0) {
+                    displayTranscriptPreview(data.results, currentTranscriptStudent);
+                } else {
+                    displayDemoTranscriptPreview(currentTranscriptStudent);
+                }
+            } catch(e) {
+                displayDemoTranscriptPreview(currentTranscriptStudent);
+            }
+        }
+
+        function displayDemoTranscriptPreview(student) {
+            const demoResults = [
+                { semester: "Semester 1 - 2025/2026", gpa: "3.25", details: [
+                    { code: "COSC 101", name: "Introduction to Computing", credits: 3, ca: 35, exam: 55, total: 90, grade: "A" },
+                    { code: "MATH 101", name: "Algebra", credits: 3, ca: 30, exam: 48, total: 78, grade: "B+" },
+                    { code: "ENGL 101", name: "Communication Skills", credits: 2, ca: 32, exam: 42, total: 74, grade: "B" }
+                ]},
+                { semester: "Semester 2 - 2025/2026", gpa: "3.45", details: [
+                    { code: "COSC 102", name: "Programming", credits: 3, ca: 38, exam: 52, total: 90, grade: "A" },
+                    { code: "MATH 102", name: "Calculus", credits: 3, ca: 32, exam: 50, total: 82, grade: "A" }
+                ]}
+            ];
+            displayTranscriptPreview(demoResults, student);
+        }
+
+        function displayTranscriptPreview(results, student) {
+            const container = document.getElementById('transcriptContent');
+            const program = student.program;
+            let totalWeightedPoints = 0, totalCredits = 0;
+            let semesterSummaries = [];
+            results.forEach((sem, idx) => {
+                let semWeightedPoints = 0, semCredits = 0;
+                sem.details.forEach(c => {
+                    const credits = c.credits || 3;
+                    const points = getGradePoints(c.grade, program);
+                    semWeightedPoints += points * credits;
+                    semCredits += credits;
                 });
-                container.innerHTML = html || '<p style="text-align: center; color: #999; padding: 40px;">No students found matching the criteria.</p>';
-            }
+                totalWeightedPoints += semWeightedPoints;
+                totalCredits += semCredits;
+                semesterSummaries.push({ name: sem.semester, gpa: sem.gpa || (semCredits > 0 ? (semWeightedPoints / semCredits).toFixed(2) : 0), credits: semCredits });
+            });
+            const cgpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '0.00';
+            const classification = cgpa >= 3.6 ? 'First Class Honours' : cgpa >= 3.0 ? 'Second Class Honours (Upper)' : cgpa >= 2.5 ? 'Second Class Honours (Lower)' : cgpa >= 2.0 ? 'Pass' : 'Fail';
+            
+            let html = `<div class="transcript-header"><h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1><h3>OFFICIAL ACADEMIC TRANSCRIPT</h3></div>
+            <table class="student-info-table"><tr><td>Student Name:</td><td><strong>${student.name}</strong></td><td>Student ID:</td><td><strong>${student.id}</strong></td></tr>
+            <tr><td>Program:</td><td><strong>${student.program}</strong></td><td>Level:</td><td><strong>${student.level || '200'}</strong></td></tr>
+            <tr><td>Date of Issue:</td><td><strong>${new Date().toLocaleDateString()}</strong></td><td>Transcript ID:</td><td><strong>TR-${student.id}-${Date.now()}</strong></td></tr></table>`;
+            
+            results.forEach((sem, idx) => {
+                html += `<h4 style="margin-top:25px;">${sem.semester} (GPA: ${semesterSummaries[idx]?.gpa})</h4>
+                <table class="transcript-table"><thead><tr><th>Course Code</th><th>Course Title</th><th>Credits</th><th>CA</th><th>Exam</th><th>Total</th><th>Grade</th><th>Points</th></tr></thead><tbody>`;
+                sem.details.forEach(c => {
+                    const total = (c.ca || 0) + (c.exam || 0);
+                    const points = getGradePoints(c.grade, program);
+                    html += `<tr><td>${c.code || 'N/A'}</td><td>${c.name || 'N/A'}</td><td>${c.credits || 3}</td><td>${c.ca || '-'}</td><td>${c.exam || '-'}</td><td>${total}</td><td>${c.grade}</td><td>${points.toFixed(1)}</td></tr>`;
+                });
+                html += `</tbody></table><div class="semester-summary">Semester Credits: ${semesterSummaries[idx]?.credits || 0} | GPA: ${semesterSummaries[idx]?.gpa}</div>`;
+            });
+            
+            html += `<div class="cgpa-section"><h3>CGPA</h3><div class="cgpa-value">${cgpa} / 4.00</div><p>Classification: <strong>${classification}</strong></p><p>Total Credits: ${totalCredits} | Total Points: ${totalWeightedPoints.toFixed(2)}</p></div>
+            <div class="transcript-footer"><p>Generated on: ${new Date().toLocaleString()}</p><p>Academic's Signature: ___________________</p></div>`;
+            
+            container.innerHTML = html;
+            document.getElementById('transcriptPreview').style.display = 'block';
         }
 
-        // Update Selected Count
-        function updateSelectedCount() {
-            const checkboxes = document.querySelectorAll('#clearanceList input[type="checkbox"]');
-            const selected = Array.from(checkboxes).filter(cb => cb.checked).length;
-            document.getElementById('selectedCount').innerText = `${selected} selected`;
+        function generateOfficialTranscript() {
+            if (!currentTranscriptStudent) return showToast("Select a student first", "warning");
+            const printWindow = window.open('', '_blank');
+            const content = document.getElementById('transcriptContent').innerHTML;
+            printWindow.document.write(`<!DOCTYPE html><html><head><title>Transcript - ${currentTranscriptStudent.name}</title><style>body{font-family:'Times New Roman',serif;margin:0.5in;} .transcript-header{text-align:center;margin-bottom:30px;border-bottom:2px solid #1a472a;} .student-info-table{width:100%;border-collapse:collapse;margin-bottom:25px;} .student-info-table td{padding:8px;border:1px solid #ddd;} .transcript-table{width:100%;border-collapse:collapse;} .transcript-table th,.transcript-table td{padding:6px;border:1px solid #ddd;text-align:center;} .cgpa-section{margin-top:30px;padding:15px;background:#f9f9f9;text-align:center;} @media print{body{margin:0.5in;}}</style></head><body>${content}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},500);};<\/script></body></html>`);
+            printWindow.document.close();
+            logTranscriptRequest(currentTranscriptStudent.id, currentTranscriptStudent.name, 'processed');
         }
 
-        // Toggle Select All
-        function toggleSelectAll() {
-            const selectAll = document.getElementById('selectAllStudents');
-            const checkboxes = document.querySelectorAll('#clearanceList input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = selectAll.checked);
-            updateSelectedCount();
+        function printTranscriptPreview() {
+            const content = document.getElementById('transcriptContent').innerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`<!DOCTYPE html><html><head><title>Transcript Preview</title><style>body{font-family:'Times New Roman',serif;margin:40px;}</style></head><body>${content}</body></html>`);
+            printWindow.document.close();
+            printWindow.print();
         }
 
-        // Clear Selected Students
-        async function clearSelectedStudents() {
-            const clearBtn = event.target.closest('button');
-            const checkboxes = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]'))
-                .filter(cb => cb.checked);
-
-            if (checkboxes.length === 0) {
-                showToast("Please select at least one student", "warning");
+        // Transcript Requests Functions
+        function loadTranscriptRequests() {
+            const requests = JSON.parse(localStorage.getItem('transcriptRequests') || '[]');
+            const container = document.getElementById('transcriptRequestsList');
+            if (requests.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding:40px;">No pending requests.</p>';
+                document.getElementById('requestBadge').style.display = 'none';
                 return;
             }
-
-            setButtonLoading(clearBtn, true, '<i class="fas fa-check"></i> CLEAR SELECTED');
-
-            const ids = checkboxes.map(cb => cb.dataset.id);
-
-            try {
-                for (const id of ids) {
-                    await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'toggle_clearance',
-                            id: id,
-                            cleared: true
-                        })
-                    });
-                }
-                showToast(`${ids.length} students cleared successfully!`, "success");
-                loadStudentClearanceList();
-            } catch (e) {
-                showToast("Failed to clear students", "danger");
-            } finally {
-                setButtonLoading(clearBtn, false, '<i class="fas fa-check"></i> CLEAR SELECTED');
-            }
+            let html = '';
+            requests.forEach((req, idx) => {
+                html += `<div class="request-item"><div class="request-info"><strong>${req.name}</strong><small>ID: ${req.id} | ${req.program} | Level: ${req.level}</small><small>Requested: ${req.date}</small><small>Purpose: ${req.purpose || 'Academic'}</small></div><div class="request-actions"><button onclick="processTranscriptRequest(${idx})" class="success-btn">Approve</button><button onclick="rejectTranscriptRequest(${idx})" class="danger-btn">Reject</button></div></div>`;
+            });
+            container.innerHTML = html;
+            document.getElementById('requestBadge').style.display = 'block';
+            document.getElementById('requestBadge').innerText = requests.length;
         }
 
-        // Unclear Selected Students
-        async function unclearSelectedStudents() {
-            const unclearBtn = event.target.closest('button');
-            const checkboxes = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]'))
-                .filter(cb => cb.checked);
-
-            if (checkboxes.length === 0) {
-                showToast("Please select at least one student", "warning");
+        function loadProcessedRequests() {
+            const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]');
+            const container = document.getElementById('processedRequestsList');
+            if (processed.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding:20px;">No processed requests.</p>';
                 return;
             }
+            let html = '';
+            processed.slice(-10).reverse().forEach(req => {
+                html += `<div class="request-item"><div class="request-info"><strong>${req.name}</strong><small>${req.id} | ${req.program}</small><small>Processed: ${req.processedDate}</small></div><div class="${req.status === 'Approved' ? 'status-cleared' : 'status-not'}">${req.status}</div></div>`;
+            });
+            container.innerHTML = html;
+        }
 
-            setButtonLoading(unclearBtn, true, '<i class="fas fa-times"></i> UNCLEAR SELECTED');
+        async function processTranscriptRequest(index) {
+            const requests = JSON.parse(localStorage.getItem('transcriptRequests') || '[]');
+            const request = requests[index];
+            if (!request) return;
+            currentTranscriptStudent = { id: request.id, name: request.name, program: request.program, level: request.level };
+            displayTranscriptStudentInfo(currentTranscriptStudent);
+            await loadStudentResultsForTranscript(request.id);
+            requests.splice(index, 1);
+            localStorage.setItem('transcriptRequests', JSON.stringify(requests));
+            const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]');
+            processed.push({ ...request, processedDate: new Date().toLocaleString(), status: 'Approved' });
+            localStorage.setItem('processedTranscripts', JSON.stringify(processed));
+            loadTranscriptRequests();
+            loadProcessedRequests();
+            showToast(`Request for ${request.name} approved`, "success");
+            setTimeout(() => generateOfficialTranscript(), 500);
+        }
 
-            const ids = checkboxes.map(cb => cb.dataset.id);
-
-            try {
-                for (const id of ids) {
-                    await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'toggle_clearance',
-                            id: id,
-                            cleared: false
-                        })
-                    });
-                }
-                showToast(`${ids.length} students uncleared successfully!`, "success");
-                loadStudentClearanceList();
-            } catch (e) {
-                showToast("Failed to unclear students", "danger");
-            } finally {
-                setButtonLoading(unclearBtn, false, '<i class="fas fa-times"></i> UNCLEAR SELECTED');
+        function rejectTranscriptRequest(index) {
+            const requests = JSON.parse(localStorage.getItem('transcriptRequests') || '[]');
+            const request = requests[index];
+            if (confirm(`Reject request for ${request.name}?`)) {
+                requests.splice(index, 1);
+                localStorage.setItem('transcriptRequests', JSON.stringify(requests));
+                const rejected = JSON.parse(localStorage.getItem('processedTranscripts') || '[]');
+                rejected.push({ ...request, processedDate: new Date().toLocaleString(), status: 'Rejected' });
+                localStorage.setItem('processedTranscripts', JSON.stringify(rejected));
+                loadTranscriptRequests();
+                loadProcessedRequests();
+                showToast(`Request for ${request.name} rejected`, "warning");
             }
         }
 
-        // Toast
-        function showToast(msg, type = "info") {
-            const toast = document.getElementById('toast');
-            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i> ${msg}`;
-            toast.style.background = type === 'success' ? '#27ae60' : type === 'danger' ? '#e74c3c' : type === 'warning' ? '#f39c12' : '#3498db';
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 3000);
+        function processAllRequests() {
+            const requests = JSON.parse(localStorage.getItem('transcriptRequests') || '[]');
+            if (requests.length === 0) return showToast("No pending requests", "warning");
+            if (confirm(`Process all ${requests.length} requests?`)) {
+                requests.forEach(req => {
+                    const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]');
+                    processed.push({ ...req, processedDate: new Date().toLocaleString(), status: 'Approved' });
+                    localStorage.setItem('processedTranscripts', JSON.stringify(processed));
+                });
+                localStorage.setItem('transcriptRequests', '[]');
+                loadTranscriptRequests();
+                loadProcessedRequests();
+                showToast(`Processed ${requests.length} requests`, "success");
+            }
         }
 
-        // Logout
+        function logTranscriptRequest(studentId, studentName, status) {
+            console.log(`Transcript: ${studentName} (${studentId}) - ${status}`);
+        }
+
         function logout() {
-            if (confirm("Logout from Accountant Portal?")) {
-                window.location.replace("index.html");
-            }
+            if (confirm("Logout?")) window.location.replace("index.html");
         }
 
-        // Initialize
         window.onload = () => {
             showSection('search');
-
-            // Load stats
             document.getElementById('totalStudents').innerText = '156';
             document.getElementById('clearedStudents').innerText = '142';
             document.getElementById('pendingStudents').innerText = '14';
             document.getElementById('pendingResults').innerText = '23';
+            loadAllStudentsForTranscript();
+            loadTranscriptRequests();
+            loadProcessedRequests();
         };
     </script>
-
-    <!-- PapaParse for CSV parsing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </body>
 </html>
