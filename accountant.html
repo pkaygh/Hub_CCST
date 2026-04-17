@@ -635,29 +635,32 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h4><i class="fas fa-money-bill"></i> Update Fee Structure</h4>
                         <button onclick="downloadFeesTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
-                        <i class="fas fa-download"></i> Download Template
-                        </button>
-                    </div>
-                        <input id="feeAmount" placeholder="Total Fee Amount">
-                        <input id="feeSemester" placeholder="Semester 1 2025/2026">
-                        <button onclick="updateFees()" class="info-btn">UPDATE FEES</button>
-                    </div>
-                <div id="bulkFinanceCSVTab" style="display:none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h4><i class="fas fa-file-csv"></i> Upload Financial Records via CSV</h4>
-                            <button onclick="downloadFinanceTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
                             <i class="fas fa-download"></i> Download Template
                         </button>
                     </div>
-                <div class="upload-zone" onclick="document.getElementById('financeFileInput').click()">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <h4>Drop CSV file here or click to browse</h4>
+                    <input id="feeAmount" placeholder="Total Fee Amount">
+                    <input id="feeSemester" placeholder="Semester 1 2025/2026">
+                    <button onclick="updateFees()" class="info-btn">UPDATE FEES</button>
+                </div>
+                                <div id="bulkFinanceCSVTab" style="display:none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4><i class="fas fa-file-csv"></i> Upload Financial Records via CSV</h4>
+                        <button onclick="downloadFinanceTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                            <i class="fas fa-download"></i> Download Template
+                        </button>
+                    </div>
+                    <div class="upload-zone" onclick="document.getElementById('financeFileInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h4>Drop CSV file here or click to browse</h4>
                         <input type="file" id="financeFileInput" accept=".csv" onchange="handleFinanceCSVSelect(event)">
+                    </div>
+                    <button id="processFinanceBtn" onclick="processFinanceCSV()" class="success-btn" style="display:none;">PROCESS FINANCIAL DATA</button>
                 </div>
-    <button id="processFinanceBtn" onclick="processFinanceCSV()" class="success-btn" style="display:none;">PROCESS FINANCIAL DATA</button>
-                </div>
+            </div>  
+        </div>  
+    </div>  
 
-        </div>
+    <!-- CSV Format Guide -->
         <!-- CSV Format Guide -->
         <div style="margin-top: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
             <h4><i class="fas fa-info-circle"></i> CSV Format Requirements</h4>
