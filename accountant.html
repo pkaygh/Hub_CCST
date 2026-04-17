@@ -591,11 +591,14 @@
             </div>
         </div>
 
-        <!-- CSV UPLOAD SECTION -->
+                <!-- CSV UPLOAD SECTION -->
         <div id="csv_uploadSection" class="section" style="display:none;">
             <div class="card">
                 <div class="card-header">
                     <h3><i class="fas fa-file-upload"></i> Upload Results via CSV</h3>
+                    <button onclick="downloadResultsTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                        <i class="fas fa-download"></i> Download Template
+                    </button>
                 </div>
                 <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFileInput').click()">
                     <i class="fas fa-cloud-upload-alt"></i>
@@ -633,9 +636,16 @@
                     <input id="feeSemester" placeholder="Semester">
                     <button onclick="updateFees()" class="info-btn">UPDATE FEES</button>
                 </div>
-                <div id="bulkFinanceCSVTab" style="display:none;">
+                                <div id="bulkFinanceCSVTab" style="display:none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4><i class="fas fa-file-csv"></i> Upload Financial Records via CSV</h4>
+                        <button onclick="downloadFinanceTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                            <i class="fas fa-download"></i> Download Template
+                        </button>
+                    </div>
                     <div class="upload-zone" onclick="document.getElementById('financeFileInput').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
+                        <h4>Drop CSV file here or click to browse</h4>
                         <input type="file" id="financeFileInput" accept=".csv" onchange="handleFinanceCSVSelect(event)">
                     </div>
                     <button id="processFinanceBtn" onclick="processFinanceCSV()" class="success-btn" style="display:none;">PROCESS FINANCIAL DATA</button>
@@ -1012,6 +1022,55 @@
         function generateReport(type) { showToast(`Generating ${type} report...`, "info"); }
         function handleFinanceCSVSelect(e) { showToast("Financial CSV loaded", "success"); document.getElementById('processFinanceBtn').style.display = 'block'; }
         function processFinanceCSV() { showToast("Financial data processed", "success"); }
+
+                function switchBulkTab(tab) {
+            document.getElementById('bulkClearanceTab').style.display = 'none';
+            document.getElementById('bulkFeesTab').style.display = 'none';
+            document.getElementById('bulkFinanceCSVTab').style.display = 'none';
+            if(tab === 'clearance') document.getElementById('bulkClearanceTab').style.display = 'block';
+            if(tab === 'fees') document.getElementById('bulkFeesTab').style.display = 'block';
+            if(tab === 'financeCSV') document.getElementById('bulkFinanceCSVTab').style.display = 'block';
+        }
+
+        // Download CSV Template for Results Upload
+        function downloadResultsTemplate() {
+            const template = `id,NAME,PROGRAM,LEVEL,SEMESTER,COURSE_CODE_1,COURSE_NAME_1,CREDITS_1,CA_1,EXAM_1,GRADE_1,COURSE_CODE_2,COURSE_NAME_2,CREDITS_2,CA_2,EXAM_2,GRADE_2,COURSE_CODE_3,COURSE_NAME_3,CREDITS_3,CA_3,EXAM_3,GRADE_3
+CCST/RM/24/001,Justina Arhin,RM,100,Semester 1 2025/2026,COSC 101,Introduction to Computing,3,35,55,A,MATH 101,Algebra and Trigonometry,3,30,48,B+,ENGL 101,Communication Skills,2,32,42,B
+CCST/RM/24/002,Jane Smith,RM,100,Semester 1 2025/2026,COSC 101,Introduction to Computing,3,38,52,A,MATH 101,Algebra and Trigonometry,3,28,45,B+,ENGL 101,Communication Skills,2,30,40,B
+CCST/RN/24/001,Comfort Botwe,RN,100,Semester 1 2025/2026,NURS 101,Fundamentals of Nursing,3,40,50,A,NURS 102,Anatomy and Physiology,3,35,48,B+,PHAR 101,Pharmacology,2,32,42,B
+CCST/ML/24/001,Godfred Boadison,ML,100,Semester 1 2025/2026,CLSC 101,Clinical Chemistry,3,38,55,A+,CLSC 102,Hematology,3,35,50,A,CLSC 103,Immunology,2,32,48,B+
+CCST/ML/24/002,Sarah Williams,ML,100,Semester 1 2025/2026,CLSC 101,Clinical Chemistry,3,40,52,A+,CLSC 102,Hematology,3,38,48,A,CLSC 103,Immunology,2,30,45,B+`;
+
+            const blob = new Blob([template], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'CCST_Results_upload_template.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Results template downloaded! Follow the format for RM/RN/ML programs.", "success");
+        }
+
+        // Download Financial CSV Template
+        function downloadFinanceTemplate() {
+            const template = `id,name,program,level,total_fee,amount_paid,balance,arrears,semester
+CCST/RM/24/001,Justina Arhin,RM,100,4500,2500,2000,0,Semester 1 2026/2027
+CCST/RM/24/002,Jane Smith,RM,100,4500,4500,0,0,Semester 1 2026/2027
+CCST/RN/24/001,Mary Johnson,RN,100,4500,3000,1500,0,Semester 1 2026/2027
+CCST/ML/24/001,Godfred Boadison,ML,100,5500,3500,2000,500,Semester 1 2026/2027
+CCST/ML/24/002,Sarah Williams,ML,100,5500,5500,0,0,Semester 1 2026/2027`;
+
+            const blob = new Blob([template], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'CCST_financial_template.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Financial template downloaded! Follow the format.", "success");
+        }
+
+        function updateFees() { showToast("Fees updated!", "success"); }
 
         // ============================================
         // TRANSCRIPT GENERATION FUNCTIONS
