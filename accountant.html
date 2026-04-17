@@ -1090,11 +1090,11 @@ CCST/ML/24/002,Sarah Williams,ML,100,Semester 1 2025/2026,CLSC 101,Clinical Chem
         // Download Financial CSV Template
         function downloadFinanceTemplate() {
             const template = `id,name,program,level,total_fee,amount_paid,balance,arrears,semester
-                CCST/RM/24/001,Justina Arhin,RM,100,4500,2500,2000,0,Semester 1 2026/2027
-                CCST/RM/24/002,Jane Smith,RM,100,4500,4500,0,0,Semester 1 2026/2027
-                CCST/RN/24/001,Mary Johnson,RN,100,4500,3000,1500,0,Semester 1 2026/2027
-                CCST/ML/24/001,Godfred Boadison,ML,100,5500,3500,2000,500,Semester 1 2026/2027
-                CCST/ML/24/002,Sarah Williams,ML,100,5500,5500,0,0,Semester 1 2026/2027`;
+            CCST/RM/24/001,Justina Arhin,RM,100,4500,2500,2000,0,Semester 1 2026/2027
+            CCST/RM/24/002,Jane Smith,RM,100,4500,4500,0,0,Semester 1 2026/2027
+            CCST/RN/24/001,Mary Johnson,RN,100,4500,3000,1500,0,Semester 1 2026/2027
+            CCST/ML/24/001,Godfred Boadison,ML,100,5500,3500,2000,500,Semester 1 2026/2027
+            CCST/ML/24/002,Sarah Williams,ML,100,5500,5500,0,0,Semester 1 2026/2027`;
 
             const blob = new Blob([template], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
