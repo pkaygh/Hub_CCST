@@ -671,7 +671,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypUWSjB1iHzd-CyeHoUaXAg182AWVR1gJuPnXRj0fmRSFQxBZ0-HaYY9cvwOodtEg/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvWyiD6MXnjP3UC8_FRv1w1ZnKWldvPaY58T3bEFDGovCp-GWrTvNP1Smz7HPFuuIb/exec";
         let studentData = null;
         let userResults = [];
         let userPayments = [];
@@ -713,8 +713,17 @@
                 { min: 0, max: 49, grade: "E", points: 0 }
             ]
         };
-
+                
         function getStudentProgram() { return studentData?.profile?.program || "RM"; }
+        // Convert short program code to full name
+        function getFullProgramName(code) {
+            const programNames = {
+                'RM': 'Registered Midwifery',
+                'RN': 'Registered General Nursing',
+                'ML': 'Medical Laboratory Technology'
+            };
+            return programNames[code] || code;
+        }
         
         function getGradePoints(grade, program) {
             const prog = program || getStudentProgram();
@@ -777,13 +786,13 @@
             if (!studentData?.profile) return;
             const p = studentData.profile;
             document.getElementById('profileName').innerText = p.name;
-            document.getElementById('profileProgram').innerText = `${p.program} | Level ${p.level}`;
+            document.getElementById('profileProgram').innerText = `${getFullProgramName(p.program)} | Level ${p.level}`;
             document.getElementById('profileId').innerText = `ID: ${p.id}`;
             document.getElementById('sidebarName').innerText = p.name;
-            document.getElementById('sidebarDetails').innerText = `Level ${p.level} | ${p.program}`;
+            document.getElementById('sidebarDetails').innerText = `Level ${p.level} | ${getFullProgramName(p.program)}`;
             document.getElementById('studentNameHeader').innerText = p.name;
             document.getElementById('infoId').innerText = p.id;
-            document.getElementById('infoProgram').innerText = p.program;
+            document.getElementById('infoProgram').innerText = getFullProgramName(p.program);
             document.getElementById('infoLevel').innerText = p.level;
             document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Cleared" : "Pending";
             
@@ -906,7 +915,7 @@
             
             let html = `<div class="transcript-header"><h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1><h3>OFFICIAL ACADEMIC TRANSCRIPT</h3></div>
             <table class="student-info-table"><tr><td>Student Name:</td><td><strong>${profile.name}</strong></td><td>Student ID:</td><td><strong>${profile.id}</strong></td></tr>
-            <tr><td>Program:</td><td><strong>${program}</strong></td><td>Level:</td><td><strong>${profile.level || '200'}</strong></td></tr>
+            <tr><td>Program:</td><td><strong>${getFullProgramName(program)}</strong></td><td>Level:</td><td><strong>${profile.level || '200'}</strong></td></tr>
             <tr><td>Date of Issue:</td><td><strong>${new Date().toLocaleDateString()}</strong></td><td>Transcript ID:</td><td><strong>TR-${profile.id}-${Date.now()}</strong></td></tr></table>`;
             
             sortedResults.forEach((sem, idx) => {
@@ -1019,6 +1028,7 @@
                 id: studentId,
                 name: studentData.profile.name,
                 program: studentData.profile.program,
+                programFull: getFullProgramName(studentData.profile.program),
                 level: studentData.profile.level,
                 purpose: purpose,
                 copies: copies,
@@ -1037,6 +1047,7 @@
                 id: studentId,
                 name: studentData.profile.name,
                 program: studentData.profile.program,
+                programFull: getFullProgramName(studentData.profile.program),
                 level: studentData.profile.level,
                 purpose: purpose,
                 copies: copies,
