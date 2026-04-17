@@ -671,7 +671,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2cXkNlTbwcMynHKqY0kau084w4eenvv5D34hxMAI0Qy-pV1pEC78qi3qBVz9nOEqv/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzopYouBurmVkx0HR-bazXZiA1UFFkg8_l668w6nbeKTClZ4_OdiBfam1MVs6UQqJ6b/exec";
         let studentData = null;
         let userResults = [];
         let userPayments = [];
@@ -710,7 +710,7 @@
                 { min: 60, max: 64, grade: "C", points: 2.5 },
                 { min: 55, max: 59, grade: "D+", points: 2.0 },
                 { min: 50, max: 54, grade: "D", points: 1.5 },
-                { min: 0, max: 49, grade: "E", points: 0 
+                { min: 0, max: 49, grade: "E", points: 0 },
             ]
         };
 
@@ -773,17 +773,27 @@
             if (section === 'request_transcript') checkExistingRequest();
         }
 
+        // Add this function
+function getFullProgramName(code) {
+    const programNames = {
+        'RM': 'Registered Midwifery',
+        'RN': 'Registered General Nursing',
+        'ML': 'Medical Laboratory Technology'
+    };
+    return programNames[code] || code;
+}
+
         function loadProfile() {
             if (!studentData?.profile) return;
             const p = studentData.profile;
             document.getElementById('profileName').innerText = p.name;
-            document.getElementById('profileProgram').innerText = `${p.program} | Level ${p.level}`;
+            document.getElementById('profileProgram').innerText = `${getFullProgramName(p.program)} | Level ${p.level}`;
             document.getElementById('profileId').innerText = `ID: ${p.id}`;
             document.getElementById('sidebarName').innerText = p.name;
-            document.getElementById('sidebarDetails').innerText = `Level ${p.level} | ${p.program}`;
+            document.getElementById('sidebarDetails').innerText = `Level ${p.level} | ${getFullProgramName(p.program)}`;
             document.getElementById('studentNameHeader').innerText = p.name;
             document.getElementById('infoId').innerText = p.id;
-            document.getElementById('infoProgram').innerText = p.program;
+            document.getElementById('infoProgram').innerText = getFullProgramName(p.program);
             document.getElementById('infoLevel').innerText = p.level;
             document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Cleared" : "Pending";
             
@@ -904,9 +914,9 @@
             const cgpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '0.00';
             const classification = cgpa >= 3.6 ? 'First Class Honours' : cgpa >= 3.0 ? 'Second Class Honours (Upper)' : cgpa >= 2.5 ? 'Second Class Honours (Lower)' : cgpa >= 2.0 ? 'Pass' : 'Fail';
             
-            let html = `<div class="transcript-header"><h1>CHRISTIAN SERVICE UNIVERSITY COLLEGE</h1><h3>OFFICIAL ACADEMIC TRANSCRIPT</h3></div>
+            let html = `<div class="transcript-header"><h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1><h3>OFFICIAL ACADEMIC TRANSCRIPT</h3></div>
             <table class="student-info-table"><tr><td>Student Name:</td><td><strong>${profile.name}</strong></td><td>Student ID:</td><td><strong>${profile.id}</strong></td></tr>
-            <tr><td>Program:</td><td><strong>${program}</strong></td><td>Level:</td><td><strong>${profile.level || '200'}</strong></td></tr>
+            <tr><td>Program:</td><td><strong>${getFullProgramName(program)}</strong></td><td>Level:</td><td><strong>${profile.level || '200'}</strong></td></tr>
             <tr><td>Date of Issue:</td><td><strong>${new Date().toLocaleDateString()}</strong></td><td>Transcript ID:</td><td><strong>TR-${profile.id}-${Date.now()}</strong></td></tr></table>`;
             
             sortedResults.forEach((sem, idx) => {

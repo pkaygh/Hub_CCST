@@ -770,7 +770,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2cXkNlTbwcMynHKqY0kau084w4eenvv5D34hxMAI0Qy-pV1pEC78qi3qBVz9nOEqv/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzopYouBurmVkx0HR-bazXZiA1UFFkg8_l668w6nbeKTClZ4_OdiBfam1MVs6UQqJ6b/exec";
         let currentStudent = null;
         let currentTranscriptStudent = null;
         let csvData = null;
@@ -810,7 +810,7 @@
                 { min: 60, max: 64, grade: "C", points: 2.5 },
                 { min: 55, max: 59, grade: "D+", points: 2.0 },
                 { min: 50, max: 54, grade: "D", points: 1.5 },
-                { min: 0, max: 49, grade: "E", points: 0 
+                { min: 0, max: 49, grade: "E", points: 0 },
             ]
         };
 
@@ -1023,15 +1023,7 @@
         function handleFinanceCSVSelect(e) { showToast("Financial CSV loaded", "success"); document.getElementById('processFinanceBtn').style.display = 'block'; }
         function processFinanceCSV() { showToast("Financial data processed", "success"); }
 
-                function switchBulkTab(tab) {
-            document.getElementById('bulkClearanceTab').style.display = 'none';
-            document.getElementById('bulkFeesTab').style.display = 'none';
-            document.getElementById('bulkFinanceCSVTab').style.display = 'none';
-            if(tab === 'clearance') document.getElementById('bulkClearanceTab').style.display = 'block';
-            if(tab === 'fees') document.getElementById('bulkFeesTab').style.display = 'block';
-            if(tab === 'financeCSV') document.getElementById('bulkFinanceCSVTab').style.display = 'block';
-        }
-
+     
         // Download CSV Template for Results Upload
         function downloadResultsTemplate() {
             const template = `id,NAME,PROGRAM,LEVEL,SEMESTER,COURSE_CODE_1,COURSE_NAME_1,CREDITS_1,CA_1,EXAM_1,GRADE_1,COURSE_CODE_2,COURSE_NAME_2,CREDITS_2,CA_2,EXAM_2,GRADE_2,COURSE_CODE_3,COURSE_NAME_3,CREDITS_3,CA_3,EXAM_3,GRADE_3
