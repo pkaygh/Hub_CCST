@@ -941,7 +941,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyQcnzBSBLcTEkSGccMUHGhD6UTrvfF3IRMDqdgPitZ5g1LCSrwfnNXZIBe4cD6VF5/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYdAQb22iHs8S7bwUkYrPClQDLFvo6sRTcgwLSW-eQLEJC8hpRjR6pznpNi10ygME5/exec";
         let currentStudent = null;
         let csvData = null;
         let parsedResults = [];
@@ -1286,7 +1286,7 @@
                     // If no grade but have scores, calculate from total
                     if (!grade && (ca > 0 || exam > 0)) {
                         const total = ca + exam;
-                        grade = calculateGrade(total);
+                        grade = calculateGrade(total, program);
                     }
 
                     if (grade) {
@@ -1337,16 +1337,53 @@
         }
 
         // Calculate Grade based on UCC system
-        function calculateGrade(score) {
-            if (score >= 80) return 'A';
-            if (score >= 75) return 'B+';
-            if (score >= 70) return 'B';
-            if (score >= 65) return 'C+';
-            if (score >= 60) return 'C';
-            if (score >= 55) return 'D';
-            if (score >= 50) return 'E';
-            return 'F';
+        // Grading Systems for different programs
+        const GRADING_SYSTEMS = {
+        // RM and RN - Standard UCC grading (A only, no A+)
+        RM: [
+        { min: 80, max: 100, grade: "A" },
+        { min: 75, max: 79, grade: "B+" },
+        { min: 70, max: 74, grade: "B" },
+        { min: 65, max: 69, grade: "C+" },
+        { min: 60, max: 64, grade: "C" },
+        { min: 55, max: 59, grade: "D+" },
+        { min: 50, max: 54, grade: "D" },
+        { min: 0, max: 49, grade: "E" }
+    ],
+        RN: [
+        { min: 80, max: 100, grade: "A" },
+        { min: 75, max: 79, grade: "B+" },
+        { min: 70, max: 74, grade: "B" },
+        { min: 65, max: 69, grade: "C+" },
+        { min: 60, max: 64, grade: "C" },
+        { min: 55, max: 59, grade: "D+" },
+        { min: 50, max: 54, grade: "D" },
+        { min: 0, max: 49, grade: "E" }
+    ],
+        // ML - Medical Laboratory (has A+)
+        ML: [
+        { min: 85, max: 100, grade: "A+" },
+        { min: 80, max: 84, grade: "A" },
+        { min: 75, max: 79, grade: "B+" },
+        { min: 70, max: 74, grade: "B" },
+        { min: 65, max: 69, grade: "C+" },
+        { min: 60, max: 64, grade: "C" },
+        { min: 55, max: 59, grade: "D+" },
+        { min: 50, max: 54, grade: "D" },
+        { min: 0, max: 49, grade: "E" }
+    ]
+};
+
+            // Calculate Grade based on score and program
+            function calculateGrade(score, program) {
+            const system = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RM;
+            for (const level of system) {
+        if (score >= level.min && score <= level.max) {
+            return level.grade;
         }
+    }
+    return 'E';
+}
 
         // Show CSV Preview
         function showCSVPreview(results) {

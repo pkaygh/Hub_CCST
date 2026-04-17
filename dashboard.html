@@ -10,20 +10,19 @@
     <style>
         /* NEW THEME: Dots halftone grunge brush yellow green with white on dark green */
         :root {
-            --primary: #6b8e23; /* Yellow Green/Olive Drab */
-            --primary-light: #9acd32; /* Yellow Green */
-            --primary-dark: #1a472a; /* Dark Green */
-            --bg: #f5f5dc; /* Beige background */
-            --success: #556b2f; /* Dark Olive Green */
-            --danger: #8b0000; /* Dark Red */
-            --warning: #daa520; /* Goldenrod */
-            --sidebar-bg: #1a472a; /* Dark Green */
+            --primary: #6b8e23;
+            --primary-light: #9acd32;
+            --primary-dark: #1a472a;
+            --bg: #f5f5dc;
+            --success: #556b2f;
+            --danger: #8b0000;
+            --warning: #daa520;
+            --sidebar-bg: #1a472a;
             --card-shadow: 0 4px 15px rgba(26, 71, 42, 0.15);
             --white: #ffffff;
-            --text-dark: #2f4f2f; /* Dark Slate Gray */
+            --text-dark: #2f4f2f;
         }
 
-        /* Halftone dots background pattern */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
@@ -37,7 +36,6 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* Mobile Menu Toggle */
         .menu-toggle {
             display: none;
             position: fixed;
@@ -53,7 +51,6 @@
             font-size: 1.2rem;
         }
 
-        /* Sidebar */
         .sidebar {
             width: 280px;
             background: var(--sidebar-bg);
@@ -63,7 +60,6 @@
             overflow-y: auto;
             transition: transform 0.3s ease;
             z-index: 1000;
-            /* Grunge brush texture effect */
             background-image:
                 linear-gradient(135deg, rgba(85, 107, 47, 0.3) 0%, transparent 50%),
                 radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 0%, transparent 30%),
@@ -153,7 +149,6 @@
             font-size: 0.75rem;
         }
 
-        /* Main Content */
         .main-content {
             margin-left: 280px;
             flex: 1;
@@ -193,7 +188,6 @@
 
         .card-header h3 { color: var(--primary-dark); }
 
-        /* Profile Section */
         .profile-container {
             display: flex;
             align-items: center;
@@ -230,7 +224,6 @@
         .not-cleared { background: var(--danger); color: white; }
         .pending { background: var(--warning); color: white; }
 
-        /* Academic Results */
         .semester-card {
             border-left: 5px solid var(--primary);
             padding: 20px;
@@ -283,7 +276,6 @@
         .grade-d { color: #cd853f; font-weight: bold; }
         .grade-f { color: var(--danger); font-weight: bold; }
 
-        /* UCC Grading Scale */
         .grading-scale {
             background: linear-gradient(135deg, rgba(107, 142, 35, 0.1), rgba(154, 205, 50, 0.1));
             padding: 15px;
@@ -312,7 +304,6 @@
         .grade-item .letter { font-size: 1rem; font-weight: bold; }
         .grade-item .range { font-size: 0.8rem; color: #666; }
 
-        /* Finance Section */
         .finance-summary {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -350,7 +341,6 @@
         .payment-details small { color: #666; }
         .payment-amount { font-weight: bold; color: var(--success); }
 
-        /* Notifications */
         .notification-item {
             display: flex;
             gap: 15px;
@@ -391,7 +381,6 @@
         .notification-content p { color: #666; font-size: 0.9rem; }
         .notification-meta { font-size: 0.8rem; color: #999; margin-top: 8px; }
 
-        /* Offline Indicator */
         .offline-indicator {
             display: none;
             background: var(--warning);
@@ -405,7 +394,6 @@
 
         .offline-indicator.show { display: block; }
 
-        /* Toast Notification */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -425,7 +413,6 @@
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
 
-        /* Session Timeout Warning */
         .session-warning {
             position: fixed;
             top: 0;
@@ -442,7 +429,6 @@
 
         .session-warning.show { display: block; }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .menu-toggle { display: block; }
             .sidebar { transform: translateX(-100%); }
@@ -580,48 +566,9 @@
                 </div>
 
                 <div class="grading-scale">
-                    <h4><i class="fas fa-table"></i> UCC Grading System</h4>
-                    <div class="grade-table">
-                        <div class="grade-item">
-                            <div class="points">4.0</div>
-                            <div class="letter" style="color: #27ae60;">A</div>
-                            <div class="range">80-100%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">3.5</div>
-                            <div class="letter" style="color: #3498db;">B+</div>
-                            <div class="range">75-79%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">3.0</div>
-                            <div class="letter" style="color: #3498db;">B</div>
-                            <div class="range">70-74%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">2.5</div>
-                            <div class="letter" style="color: #f39c12;">C+</div>
-                            <div class="range">65-69%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">2.0</div>
-                            <div class="letter" style="color: #f39c12;">C</div>
-                            <div class="range">60-64%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">1.5</div>
-                            <div class="letter" style="color: #e67e22;">D</div>
-                            <div class="range">55-59%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">1.0</div>
-                            <div class="letter" style="color: #e74c3c;">E</div>
-                            <div class="range">50-54%</div>
-                        </div>
-                        <div class="grade-item">
-                            <div class="points">0.0</div>
-                            <div class="letter" style="color: #e74c3c;">F</div>
-                            <div class="range">0-49%</div>
-                        </div>
+                    <h4><i class="fas fa-table"></i> Grading System</h4>
+                    <div class="grade-table" id="gradingTable">
+                        <!-- Dynamic grading table will be inserted here based on program -->
                     </div>
                 </div>
             </div>
@@ -685,11 +632,11 @@
 
     <script>
         // Configuration
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyQcnzBSBLcTEkSGccMUHGhD6UTrvfF3IRMDqdgPitZ5g1LCSrwfnNXZIBe4cD6VF5/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYdAQb22iHs8S7bwUkYrPClQDLFvo6sRTcgwLSW-eQLEJC8hpRjR6pznpNi10ygME5/exec";
         const DB_NAME = 'CCSTStudentDB';
         const DB_VERSION = 1;
-        const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
-        const WARNING_BEFORE = 60 * 1000; // Show warning 1 minute before timeout
+        const SESSION_TIMEOUT = 15 * 60 * 1000;
+        const WARNING_BEFORE = 60 * 1000;
 
         // State
         let studentData = null;
@@ -700,6 +647,129 @@
         let lastActivity = Date.now();
         let sessionTimeoutId = null;
         let warningTimeoutId = null;
+
+        // ============================================
+        // GRADING SYSTEMS FOR DIFFERENT PROGRAMS
+        // ============================================
+        
+        const GRADING_SYSTEMS = {
+            // RM and RN - Standard UCC grading (A only, no A+)
+            RM: [
+                { min: 80, max: 100, grade: "A", points: 4.0 },
+                { min: 75, max: 79, grade: "B+", points: 3.5 },
+                { min: 70, max: 74, grade: "B", points: 3.0 },
+                { min: 65, max: 69, grade: "C+", points: 2.5 },
+                { min: 60, max: 64, grade: "C", points: 2.0 },
+                { min: 55, max: 59, grade: "D+", points: 1.5 },
+                { min: 50, max: 54, grade: "D", points: 1.5 },
+                { min: 0, max: 49, grade: "E", points: 1.0 }
+            ],
+            RN: [
+                { min: 80, max: 100, grade: "A", points: 4.0 },
+                { min: 75, max: 79, grade: "B+", points: 3.5 },
+                { min: 70, max: 74, grade: "B", points: 3.0 },
+                { min: 65, max: 69, grade: "C+", points: 2.5 },
+                { min: 60, max: 64, grade: "C", points: 2.0 },
+                { min: 55, max: 59, grade: "D+", points: 1.5 },
+                { min: 50, max: 54, grade: "D", points: 1.5 },
+                { min: 0, max: 49, grade: "E", points: 1.0 }
+            ],
+            // ML - Medical Laboratory (has A+)
+            ML: [
+                { min: 85, max: 100, grade: "A+", points: 4.0 },
+                { min: 80, max: 84, grade: "A", points: 4.0 },
+                { min: 75, max: 79, grade: "B+", points: 3.5 },
+                { min: 70, max: 74, grade: "B", points: 3.0 },
+                { min: 65, max: 69, grade: "C+", points: 2.5 },
+                { min: 60, max: 64, grade: "C", points: 2.0 },
+                { min: 55, max: 59, grade: "D+", points: 1.5 },
+                { min: 50, max: 54, grade: "D", points: 1.5 },
+                { min: 0, max: 49, grade: "E", points: 1.0 }
+            ]
+        };
+
+        /**
+         * Get student's program
+         */
+        function getStudentProgram() {
+            return studentData?.profile?.program || "RM";
+        }
+
+        /**
+         * Get grading system for student's program
+         */
+        function getGradingSystem() {
+            const program = getStudentProgram();
+            return GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RM;
+        }
+
+        /**
+         * Get grade points based on grade and program
+         */
+        function getGradePoints(grade, program) {
+            const prog = program || getStudentProgram();
+            const system = GRADING_SYSTEMS[prog] || GRADING_SYSTEMS.RM;
+            const normalizedGrade = (grade || '').toUpperCase().trim();
+            
+            for (const level of system) {
+                if (level.grade === normalizedGrade) {
+                    return level.points;
+                }
+            }
+            return 0;
+        }
+
+        /**
+         * Calculate weighted GPA from semester data with program context
+         */
+        function calculateGPA(semester, program) {
+            const prog = program || getStudentProgram();
+            if (!semester.details || semester.details.length === 0) return 0;
+
+            let totalWeightedPoints = 0;
+            let totalCredits = 0;
+
+            semester.details.forEach(c => {
+                const credits = c.credits || 3;
+                totalWeightedPoints += getGradePoints(c.grade, prog) * credits;
+                totalCredits += credits;
+            });
+
+            return totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : 0;
+        }
+
+        /**
+         * Get grade CSS class
+         */
+        function getGradeClass(grade) {
+            const g = (grade || '').toUpperCase().trim();
+            if (g === 'A+' || g === 'A') return 'grade-a';
+            if (g.startsWith('B')) return 'grade-b';
+            if (g.startsWith('C')) return 'grade-c';
+            if (g === 'D' || g === 'D+') return 'grade-d';
+            return 'grade-f';
+        }
+
+        /**
+         * Render grading table based on student's program
+         */
+        function renderGradingTable() {
+            const system = getGradingSystem();
+            const container = document.getElementById('gradingTable');
+            if (!container) return;
+            
+            let html = '';
+            system.forEach(level => {
+                html += `
+                    <div class="grade-item">
+                        <div class="points">${level.points}</div>
+                        <div class="letter" style="color: ${level.grade === 'A+' || level.grade === 'A' ? '#27ae60' : level.grade.startsWith('B') ? '#3498db' : level.grade.startsWith('C') ? '#f39c12' : '#e74c3c'};">${level.grade}</div>
+                        <div class="range">${level.min}-${level.max === 100 ? '100' : level.max}%</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
 
         // Initialize IndexedDB for offline support
         function initDB() {
@@ -715,22 +785,15 @@
                 request.onupgradeneeded = (event) => {
                     const database = event.target.result;
 
-                    // Student data store
                     if (!database.objectStoreNames.contains('studentData')) {
                         database.createObjectStore('studentData', { keyPath: 'id' });
                     }
-
-                    // Results store
                     if (!database.objectStoreNames.contains('results')) {
                         database.createObjectStore('results', { keyPath: 'semester' });
                     }
-
-                    // Payments store
                     if (!database.objectStoreNames.contains('payments')) {
                         database.createObjectStore('payments', { keyPath: 'id', autoIncrement: true });
                     }
-
-                    // Notifications store
                     if (!database.objectStoreNames.contains('notifications')) {
                         database.createObjectStore('notifications', { keyPath: 'id', autoIncrement: true });
                     }
@@ -738,7 +801,6 @@
             });
         }
 
-        // Save to IndexedDB
         async function saveToDB(storeName, data) {
             return new Promise((resolve, reject) => {
                 const transaction = db.transaction([storeName], 'readwrite');
@@ -749,7 +811,6 @@
             });
         }
 
-        // Get from IndexedDB
         async function getFromDB(storeName) {
             return new Promise((resolve, reject) => {
                 const transaction = db.transaction([storeName], 'readonly');
@@ -760,7 +821,6 @@
             });
         }
 
-        // Check online status
         function updateOnlineStatus() {
             const indicator = document.getElementById('onlineStatus');
             if (navigator.onLine) {
@@ -774,13 +834,11 @@
             }
         }
 
-        // Toggle Sidebar (Mobile)
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('open');
             document.querySelector('.sidebar-overlay').classList.toggle('show');
         }
 
-        // Session Timeout Management
         function resetSessionTimer() {
             lastActivity = Date.now();
             hideSessionWarning();
@@ -819,12 +877,10 @@
         }
 
         function startSessionTimer() {
-            // Show warning before timeout
             warningTimeoutId = setTimeout(() => {
                 showSessionWarning();
             }, SESSION_TIMEOUT - WARNING_BEFORE);
 
-            // Auto logout after timeout
             sessionTimeoutId = setTimeout(() => {
                 performLogout();
             }, SESSION_TIMEOUT);
@@ -833,13 +889,10 @@
         function performLogout() {
             localStorage.removeItem('userData');
             localStorage.removeItem('userResults');
-            // Don't clear readNotifications - keep them for next login
-            // localStorage.removeItem('readNotifications');
             sessionStorage.clear();
             window.location.replace("index.html");
-    }
+        }
 
-        // Set up activity listeners
         function setupActivityListeners() {
             const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
             events.forEach(event => {
@@ -847,7 +900,6 @@
             });
         }
 
-        // Show Section
         function showSection(section) {
             if (window.innerWidth <= 768) {
                 toggleSidebar();
@@ -868,7 +920,6 @@
             document.getElementById('pageTitle').innerText = titles[section] || 'Dashboard';
         }
 
-        // Load Profile
         function loadProfile() {
             if (!studentData || !studentData.profile) return;
 
@@ -891,15 +942,13 @@
                 document.getElementById('profilePic').src = p.photoUrl;
                 document.getElementById('sidebarPhoto').src = p.photoUrl;
             } else {
-                // Check localStorage for saved photo (fix for photo persistence issue)
-                const savedPhoto = localStorage.getItem('userPhoto');
+                const savedPhoto = localStorage.getItem(`userPhoto_${p.id}`);
                 if (savedPhoto) {
                     document.getElementById('profilePic').src = savedPhoto;
                     document.getElementById('sidebarPhoto').src = savedPhoto;
                 }
             }
 
-            // Clearance status
             const statusBox = document.getElementById('clearanceStatus');
             if (p.isCleared === true || p.isCleared === "TRUE") {
                 statusBox.innerText = "FINANCIALLY CLEARED";
@@ -908,9 +957,11 @@
                 statusBox.innerText = "NOT CLEARED";
                 statusBox.className = "status-badge not-cleared";
             }
+            
+            // Render grading table based on program
+            renderGradingTable();
         }
 
-        // Load Academic Results
         function loadAcademicResults() {
             const container = document.getElementById('resultsContainer');
             const semesterFilter = document.getElementById('semesterFilter');
@@ -925,28 +976,26 @@
 
             let totalWeightedPoints = 0;
             let totalCredits = 0;
+            const studentProgram = studentData?.profile?.program || "RM";
 
             userResults.forEach((sem, idx) => {
-                // Add to filter
                 const option = document.createElement('option');
                 option.value = sem.semester;
                 option.textContent = sem.semester;
                 semesterFilter.appendChild(option);
 
-                // Calculate weighted grade points per semester
                 let semWeightedPoints = 0;
                 let semCredits = 0;
 
                 sem.details.forEach(course => {
-                    const credits = course.credits || 3; // Default to 3 credits if not specified
-                    semWeightedPoints += getGradePoints(course.grade) * credits;
+                    const credits = course.credits || 3;
+                    semWeightedPoints += getGradePoints(course.grade, studentProgram) * credits;
                     semCredits += credits;
                 });
 
                 totalWeightedPoints += semWeightedPoints;
                 totalCredits += semCredits;
 
-                // Build course rows
                 let courseRows = '';
                 sem.details.forEach(course => {
                     const gradeClass = getGradeClass(course.grade);
@@ -954,7 +1003,7 @@
                     courseRows += `
                         <div class="course-item">
                             <div>${course.name || course.code} <span style="font-size:0.8rem; color:#666;">(${credits} cr)</span></div>
-                            <div style="text-align: center;">${getGradePoints(course.grade).toFixed(1)}</div>
+                            <div style="text-align: center;">${getGradePoints(course.grade, studentProgram).toFixed(1)}</div>
                             <div style="text-align: center;" class="${gradeClass}">${course.grade}</div>
                         </div>
                     `;
@@ -964,7 +1013,7 @@
                     <div class="semester-card" data-semester="${sem.semester}">
                         <div class="semester-header">
                             <h4 style="margin: 0;">${sem.semester}</h4>
-                            <span class="gpa-badge">GPA: ${sem.gpa || calculateGPA(sem)}</span>
+                            <span class="gpa-badge">GPA: ${sem.gpa || calculateGPA(sem, studentProgram)}</span>
                         </div>
                         <div class="course-grid">
                             <div class="course-header">Course</div>
@@ -976,54 +1025,12 @@
                 `;
             });
 
-            // Update summary with weighted CGPA
             const cgpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '--';
             document.getElementById('cgpaDisplay').innerText = cgpa;
             document.getElementById('totalCredits').innerText = totalCredits;
             document.getElementById('academicStatus').innerText = cgpa >= 2.0 ? 'Good' : 'Review';
         }
 
-        // Calculate weighted GPA from semester data
-        function calculateGPA(semester) {
-            if (!semester.details || semester.details.length === 0) return 0;
-
-            let totalWeightedPoints = 0;
-            let totalCredits = 0;
-
-            semester.details.forEach(c => {
-                const credits = c.credits || 3;
-                totalWeightedPoints += getGradePoints(c.grade) * credits;
-                totalCredits += credits;
-            });
-
-            return totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : 0;
-        }
-
-        // Get grade points based on UCC system
-        function getGradePoints(grade) {
-            const g = (grade || '').toUpperCase().trim();
-            const gradeMap = {
-                'A': 4.0, 'A+': 4.0,
-                'B+': 3.5, 'B': 3.0,
-                'C+': 2.5, 'C': 2.0,
-                'D': 1.5,
-                'E': 1.0,
-                'F': 0.0
-            };
-            return gradeMap[g] || 0;
-        }
-
-        // Get grade CSS class
-        function getGradeClass(grade) {
-            const g = (grade || '').toUpperCase().trim();
-            if (g.startsWith('A')) return 'grade-a';
-            if (g.startsWith('B')) return 'grade-b';
-            if (g.startsWith('C')) return 'grade-c';
-            if (g === 'D') return 'grade-d';
-            return 'grade-f';
-        }
-
-        // Filter Results
         function filterResults() {
             const filter = document.getElementById('semesterFilter').value;
             const cards = document.querySelectorAll('.semester-card');
@@ -1037,13 +1044,11 @@
             });
         }
 
-        // Load Finance
         function loadFinance() {
             if (!studentData || !studentData.profile) return;
 
             const p = studentData.profile;
 
-            // Finance data - using Ghana Cedis (GH₵)
             const totalFee = p.totalFee || 0;
             const amountPaid = p.amountPaid || 0;
             const balance = p.balance || 0;
@@ -1054,7 +1059,6 @@
             document.getElementById('balance').innerText = `GH₵${balance.toLocaleString()}`;
             document.getElementById('arrears').innerText = `GH₵${arrears.toLocaleString()}`;
 
-            // Payment history
             const historyContainer = document.getElementById('paymentHistory');
             if (userPayments && userPayments.length > 0) {
                 let html = '';
@@ -1071,7 +1075,6 @@
                 });
                 historyContainer.innerHTML = html;
             } else {
-                // Sample payments for demo
                 historyContainer.innerHTML = `
                     <div class="payment-history-item">
                         <div class="payment-details">
@@ -1090,7 +1093,6 @@
                 `;
             }
 
-            // Clearance status
             const statusEl = document.getElementById('clearanceStatusFinance');
             statusEl.style.display = 'block';
             if (p.isCleared === true || p.isCleared === "TRUE") {
@@ -1102,16 +1104,13 @@
             }
         }
 
-        // Load Notifications
         function loadNotifications() {
             const container = document.getElementById('notificationList');
             const badge = document.getElementById('notifBadge');
 
-            // Get read notification IDs from sessionStorage (persists until logout)
             let readNotifIds = JSON.parse(localStorage.getItem('readNotifications') || '[]');
 
             if (!notifications || notifications.length === 0) {
-                // Sample notifications - in production, fetch from backend
                 notifications = [
                     { id: 1, title: "Mid-Semester Examination Schedule", content: "Examinations begin on April 15, 2026. Please check your course schedule.", date: "Today", type: "exam" },
                     { id: 2, title: "Campus Tech Innovation Fair", content: "All students are encouraged to participate. Register at the student affairs office.", date: "2 days ago", type: "event" },
@@ -1125,7 +1124,6 @@
             let unreadCount = 0;
 
             notifications.forEach(notif => {
-                // Check if this notification was read in this session
                 const isRead = readNotifIds.includes(notif.id);
                 if (!isRead) unreadCount++;
 
@@ -1164,58 +1162,52 @@
             }
         }
 
-        // Mark notification as read (persists until logout)
         function markRead(id) {
-    let readNotifIds = JSON.parse(localStorage.getItem('readNotifications') || '[]');
-    if (!readNotifIds.includes(id)) {
-        readNotifIds.push(id);
-        localStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
-    }
-    loadNotifications();
-    saveToDB('notifications', { id: 'all', data: notifications });
-}
+            let readNotifIds = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+            if (!readNotifIds.includes(id)) {
+                readNotifIds.push(id);
+                localStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
+            }
+            loadNotifications();
+            saveToDB('notifications', { id: 'all', data: notifications });
+        }
 
-        // Mark all as read
         function markAllRead() {
             let readNotifIds = notifications.map(n => n.id);
-                localStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
-                loadNotifications();
-                saveToDB('notifications', { id: 'all', data: notifications });
-                showToast('All notifications marked as read');
-}
-        // Upload Photo (simulated - save to localStorage for offline)
+            localStorage.setItem('readNotifications', JSON.stringify(readNotifIds));
+            loadNotifications();
+            saveToDB('notifications', { id: 'all', data: notifications });
+            showToast('All notifications marked as read');
+        }
+
         function uploadPhoto(e) {
-    const file = e.target.files[0];
-    if (file && studentData && studentData.profile) {
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            const photoData = ev.target.result;
-            document.getElementById('profilePic').src = photoData;
-            document.getElementById('sidebarPhoto').src = photoData;
+            const file = e.target.files[0];
+            if (file && studentData && studentData.profile) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const photoData = ev.target.result;
+                    document.getElementById('profilePic').src = photoData;
+                    document.getElementById('sidebarPhoto').src = photoData;
 
-            // Save with student-specific key
-            const studentId = studentData.profile.id;
-            localStorage.setItem(`userPhoto_${studentId}`, photoData);
-            
-            // Also save in the profile object
-            if (studentData && studentData.profile) {
-                studentData.profile.photoUrl = photoData;
-                localStorage.setItem('userData', JSON.stringify(studentData));
-                saveToDB('studentData', studentData);
+                    const studentId = studentData.profile.id;
+                    localStorage.setItem(`userPhoto_${studentId}`, photoData);
+                    
+                    if (studentData && studentData.profile) {
+                        studentData.profile.photoUrl = photoData;
+                        localStorage.setItem('userData', JSON.stringify(studentData));
+                        saveToDB('studentData', studentData);
+                    }
+
+                    showToast('Profile picture updated!');
+                };
+                reader.readAsDataURL(file);
             }
+        }
 
-            showToast('Profile picture updated!');
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
-        // Edit Profile (placeholder)
         function editProfile() {
             showToast('Profile editing will be available in the next update');
         }
 
-        // Show Toast
         function showToast(msg) {
             const existing = document.querySelector('.toast');
             if (existing) existing.remove();
@@ -1227,19 +1219,16 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        // Logout
         function logout() {
             if (confirm("Are you sure you want to logout?")) {
                 clearTimeouts();
                 localStorage.removeItem('userData');
                 localStorage.removeItem('userResults');
-                sessionStorage.removeItem('readNotifications'); // Clear read notifications on logout
                 sessionStorage.clear();
                 window.location.replace("index.html");
             }
         }
 
-        // Fetch data from server
         async function fetchStudentData() {
             if (!navigator.onLine) {
                 loadFromCache();
@@ -1255,7 +1244,6 @@
 
                 const studentId = userData.profile.id;
 
-                // Fetch results
                 const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`);
                 const resultsData = await resultsRes.json();
                 if (resultsData.results) {
@@ -1264,7 +1252,6 @@
                     await saveToDB('results', { semester: 'all', data: userResults });
                 }
 
-                // Fetch payments
                 const paymentsRes = await fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`);
                 const paymentsData = await paymentsRes.json();
                 if (paymentsData.payments) {
@@ -1272,7 +1259,6 @@
                     await saveToDB('payments', { id: 'all', data: userPayments });
                 }
 
-                // Fetch notifications
                 const notifRes = await fetch(`${SCRIPT_URL}?action=get_notifications&id=${studentId}`);
                 const notifData = await notifRes.json();
                 if (notifData.notifications) {
@@ -1280,7 +1266,6 @@
                     await saveToDB('notifications', { id: 'all', data: notifications });
                 }
 
-                // Update UI
                 loadAcademicResults();
                 loadFinance();
                 loadNotifications();
@@ -1291,7 +1276,6 @@
             }
         }
 
-        // Load from IndexedDB cache
         async function loadFromCache() {
             try {
                 const cachedResults = await getFromDB('results');
@@ -1318,61 +1302,48 @@
         }
 
         // Initialize Dashboard
-        // Initialize Dashboard - FIXED VERSION
-window.onload = async function() {
-    // Check if logged in
-    const storedData = localStorage.getItem('userData');
-    if (!storedData) {
-        window.location.replace("index.html");
-        return;
-    }
+        window.onload = async function() {
+            const storedData = localStorage.getItem('userData');
+            if (!storedData) {
+                window.location.replace("index.html");
+                return;
+            }
 
-    studentData = JSON.parse(storedData);
-    const studentId = studentData.profile.id;
+            studentData = JSON.parse(storedData);
+            const studentId = studentData.profile.id;
 
-    // Load student-specific photo
-    const savedPhoto = localStorage.getItem(`userPhoto_${studentId}`);
-    if (savedPhoto && !studentData.profile.photoUrl) {
-        studentData.profile.photoUrl = savedPhoto;
-        document.getElementById('profilePic').src = savedPhoto;
-        document.getElementById('sidebarPhoto').src = savedPhoto;
-    }
+            const savedPhoto = localStorage.getItem(`userPhoto_${studentId}`);
+            if (savedPhoto && !studentData.profile.photoUrl) {
+                studentData.profile.photoUrl = savedPhoto;
+                document.getElementById('profilePic').src = savedPhoto;
+                document.getElementById('sidebarPhoto').src = savedPhoto;
+            }
 
-    // Initialize offline database
-    await initDB();
+            await initDB();
 
-    // Set up online/offline listeners
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-    updateOnlineStatus();
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            updateOnlineStatus();
 
-    // Set up session timeout
-    setupActivityListeners();
-    startSessionTimer();
+            setupActivityListeners();
+            startSessionTimer();
 
-    // Load profile
-    loadProfile();
+            loadProfile();
+            fetchStudentData();
+            showSection('profile');
+        };
 
-    // Fetch latest data
-    fetchStudentData();
-
-    // Show profile by default
-    showSection('profile');
-};
-
-// Service Worker Registration for PWA
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-            .then(registration => {
-                console.log('SW registered:', registration.scope);
-            })
-            .catch(error => {
-                console.log('SW registration failed:', error);
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW registered:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('SW registration failed:', error);
+                    });
             });
-    });
-}
-
+        }
     </script>
 </body>
 </html>
