@@ -518,7 +518,7 @@
 
         <div class="navbar">
             <h3 id="pageTitle">Search Student</h3>
-            <div style="font-weight:bold;"><i class="fas fa-user-tie"></i> Hub Administrator</div>
+            <div style="font-weight:bold;"><i class="fas fa-user-tie"></i> CCST Accountant</div>
         </div>
 
         <!-- SEARCH STUDENT SECTION -->
@@ -596,9 +596,6 @@
             <div class="card">
                 <div class="card-header">
                     <h3><i class="fas fa-file-upload"></i> Upload Results via CSV</h3>
-                    <button onclick="downloadResultsTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
-                        <i class="fas fa-download"></i> Download Template
-                    </button>
                 </div>
                 <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFileInput').click()">
                     <i class="fas fa-cloud-upload-alt"></i>
@@ -632,58 +629,18 @@
                     </div>
                 </div>
                 <div id="bulkFeesTab" style="display:none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h4><i class="fas fa-money-bill"></i> Update Fee Structure</h4>
-                        <button onclick="downloadFeesTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
-                            <i class="fas fa-download"></i> Download Template
-                        </button>
-                    </div>
                     <input id="feeAmount" placeholder="Total Fee Amount">
-                    <input id="feeSemester" placeholder="Semester 1 2025/2026">
+                    <input id="feeSemester" placeholder="Semester">
                     <button onclick="updateFees()" class="info-btn">UPDATE FEES</button>
                 </div>
                 <div id="bulkFinanceCSVTab" style="display:none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h4><i class="fas fa-file-csv"></i> Upload Financial Records via CSV</h4>
-                        <button onclick="downloadFinanceTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
-                            <i class="fas fa-download"></i> Download Template
-                        </button>
-                    </div>
                     <div class="upload-zone" onclick="document.getElementById('financeFileInput').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
-                        <h4>Drop CSV file here or click to browse</h4>
                         <input type="file" id="financeFileInput" accept=".csv" onchange="handleFinanceCSVSelect(event)">
                     </div>
                     <button id="processFinanceBtn" onclick="processFinanceCSV()" class="success-btn" style="display:none;">PROCESS FINANCIAL DATA</button>
                 </div>
             </div>
-        </div>
-
-        <!-- CSV FORMAT GUIDE -->
-        <div style="margin-top: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-            <h4><i class="fas fa-info-circle"></i> CSV Format Requirements</h4>
-            <p style="margin-bottom: 10px;"><strong>Required Columns:</strong></p>
-            <ul style="margin-left: 20px; color: #666;">
-                <li><code>id</code> - Student ID (e.g., CCST/RM/24/001)</li>
-                <li><code>NAME</code> - Student's full name</li>
-                <li><code>PROGRAM</code> - Program code (RM, RN, or ML) - <strong>Important for grading!</strong></li>
-                <li><code>LEVEL</code> - Academic level (100, 200, 300)</li>
-                <li><code>SEMESTER</code> - Semester (e.g., Semester 1 2025/2026)</li>
-            </ul>
-            <p style="margin: 15px 0 10px;"><strong>Course Columns (repeat for each course):</strong></p>
-            <ul style="margin-left: 20px; color: #666;">
-                <li><code>COURSE_CODE_X</code> - Course code (e.g., COSC 101)</li>
-                <li><code>COURSE_NAME_X</code> - Full course name</li>
-                <li><code>CREDITS_X</code> - Credit hours (usually 2 or 3)</li>
-                <li><code>CA_X</code> - Continuous Assessment score (0-40)</li>
-                <li><code>EXAM_X</code> - Exam score (0-60)</li>
-                <li><code>GRADE_X</code> - Letter grade (optional - will be calculated if left blank)</li>
-            </ul>
-            <p style="margin-top: 15px;"><strong>Grading Systems Applied:</strong></p>
-            <ul style="margin-left: 20px; color: #666;">
-                <li><strong>RM & RN Students:</strong> A(80-100), B+(75-79), B(70-74), C+(65-69), C(60-64), D+(55-59), D(50-54), E(0-49)</li>
-                <li><strong>ML Students:</strong> A+(85-100), A(80-84), B+(75-79), B(70-74), C+(65-69), C(60-64), D+(55-59), D(50-54), E(0-49)</li>
-            </ul>
         </div>
 
         <!-- MANAGE COURSES SECTION -->
@@ -803,7 +760,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvWyiD6MXnjP3UC8_FRv1w1ZnKWldvPaY58T3bEFDGovCp-GWrTvNP1Smz7HPFuuIb/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxyQcnzBSBLcTEkSGccMUHGhD6UTrvfF3IRMDqdgPitZ5g1LCSrwfnNXZIBe4cD6VF5/exec";
         let currentStudent = null;
         let currentTranscriptStudent = null;
         let csvData = null;
@@ -821,8 +778,8 @@
                 { min: 65, max: 69, grade: "C+", points: 2.5 },
                 { min: 60, max: 64, grade: "C", points: 2.0 },
                 { min: 55, max: 59, grade: "D+", points: 1.5 },
-                { min: 50, max: 54, grade: "D", points: 1.0 },
-                { min: 0, max: 49, grade: "E", points: 0 }
+                { min: 50, max: 54, grade: "D", points: 1.5 },
+                { min: 0, max: 49, grade: "E", points: 1.0 }
             ],
             RN: [
                 { min: 80, max: 100, grade: "A", points: 4.0 },
@@ -831,19 +788,19 @@
                 { min: 65, max: 69, grade: "C+", points: 2.5 },
                 { min: 60, max: 64, grade: "C", points: 2.0 },
                 { min: 55, max: 59, grade: "D+", points: 1.5 },
-                { min: 50, max: 54, grade: "D", points: 1.0 },
-                { min: 0, max: 49, grade: "E", points: 0 }
+                { min: 50, max: 54, grade: "D", points: 1.5 },
+                { min: 0, max: 49, grade: "E", points: 1.0 }
             ],
             ML: [
-                { min: 85, max: 100, grade: "A+", points: 5.0 },
-                { min: 80, max: 84, grade: "A", points: 4.5 },
-                { min: 75, max: 79, grade: "B+", points: 4.0 },
-                { min: 70, max: 74, grade: "B", points: 3.5 },
-                { min: 65, max: 69, grade: "C+", points: 3.0 },
-                { min: 60, max: 64, grade: "C", points: 2.5 },
-                { min: 55, max: 59, grade: "D+", points: 2.0 },
+                { min: 85, max: 100, grade: "A+", points: 4.0 },
+                { min: 80, max: 84, grade: "A", points: 4.0 },
+                { min: 75, max: 79, grade: "B+", points: 3.5 },
+                { min: 70, max: 74, grade: "B", points: 3.0 },
+                { min: 65, max: 69, grade: "C+", points: 2.5 },
+                { min: 60, max: 64, grade: "C", points: 2.0 },
+                { min: 55, max: 59, grade: "D+", points: 1.5 },
                 { min: 50, max: 54, grade: "D", points: 1.5 },
-                { min: 0, max: 49, grade: "E", points: 0 }
+                { min: 0, max: 49, grade: "E", points: 1.0 }
             ]
         };
 
@@ -1049,63 +1006,6 @@
             if(tab === 'financeCSV') document.getElementById('bulkFinanceCSVTab').style.display = 'block';
         }
 
-        // Download CSV Template for Results Upload
-        function downloadResultsTemplate() {
-            const template = `id,NAME,PROGRAM,LEVEL,SEMESTER,COURSE_CODE_1,COURSE_NAME_1,CREDITS_1,CA_1,EXAM_1,GRADE_1,COURSE_CODE_2,COURSE_NAME_2,CREDITS_2,CA_2,EXAM_2,GRADE_2,COURSE_CODE_3,COURSE_NAME_3,CREDITS_3,CA_3,EXAM_3,GRADE_3
-CCST/RM/24/001,Justina Arhin,RM,100,Semester 1 2025/2026,COSC 101,Introduction to Computing,3,35,55,A,MATH 101,Algebra and Trigonometry,3,30,48,B+,ENGL 101,Communication Skills,2,32,42,B
-CCST/RM/24/002,Jane Smith,RM,100,Semester 1 2025/2026,COSC 101,Introduction to Computing,3,38,52,A,MATH 101,Algebra and Trigonometry,3,28,45,B+,ENGL 101,Communication Skills,2,30,40,B
-CCST/RN/24/001,Comfort Botwe,RN,100,Semester 1 2025/2026,NURS 101,Fundamentals of Nursing,3,40,50,A,NURS 102,Anatomy and Physiology,3,35,48,B+,PHAR 101,Pharmacology,2,32,42,B
-CCST/ML/24/001,Godfred Boadison,ML,100,Semester 1 2025/2026,CLSC 101,Clinical Chemistry,3,38,55,A+,CLSC 102,Hematology,3,35,50,A,CLSC 103,Immunology,2,32,48,B+
-CCST/ML/24/002,Sarah Williams,ML,100,Semester 1 2025/2026,CLSC 101,Clinical Chemistry,3,40,52,A+,CLSC 102,Hematology,3,38,48,A,CLSC 103,Immunology,2,30,45,B+`;
-
-            const blob = new Blob([template], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'CCST_Results_upload_template.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Template downloaded! Follow the format for RM/RN/ML programs.", "success");
-        }
-
-        // Download Fees Update Template
-        function downloadFeesTemplate() {
-            const template = `Student ID,Student Name,Program,Current Level,Total Fee,Amount Paid,Balance,Arrears,Semester
-CCST/RM/24/001,Justina Arhin,RM,100,4500,2500,2000,0,Semester 1 2026/2027
-CCST/RM/24/002,Jane Smith,RM,100,4500,4500,0,0,Semester 1 2026/2027
-CCST/RN/24/001,Mary Johnson,RN,100,4500,3000,1500,0,Semester 1 2026/2027
-CCST/ML/24/001,Godfred Boadison,ML,100,5500,3500,2000,500,Semester 1 2026/2027
-CCST/ML/24/002,Sarah Williams,ML,100,5500,5500,0,0,Semester 1 2026/2027`;
-
-            const blob = new Blob([template], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'ccst_fees_update_template.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Fees template downloaded! Update the amounts and upload.", "success");
-        }
-
-        // Download Financial CSV Template
-        function downloadFinanceTemplate() {
-            const template = `id,name,program,level,total_fee,amount_paid,balance,arrears,semester
-CCST/RM/24/001,Justina Arhin,RM,100,4500,2500,2000,0,Semester 1 2026/2027
-CCST/RM/24/002,Jane Smith,RM,100,4500,4500,0,0,Semester 1 2026/2027
-CCST/RN/24/001,Mary Johnson,RN,100,4500,3000,1500,0,Semester 1 2026/2027
-CCST/ML/24/001,Godfred Boadison,ML,100,5500,3500,2000,500,Semester 1 2026/2027
-CCST/ML/24/002,Sarah Williams,ML,100,5500,5500,0,0,Semester 1 2026/2027`;
-
-            const blob = new Blob([template], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'CCST_financial_template.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Financial template downloaded! Follow the format.", "success");
-        }
-
         function updateFees() { showToast("Fees updated!", "success"); }
         function addNewCourse() { showToast("Course added!", "success"); }
         function sendNotification() { showToast("Notification sent!", "success"); }
@@ -1185,7 +1085,7 @@ CCST/ML/24/002,Sarah Williams,ML,100,5500,5500,0,0,Semester 1 2026/2027`;
             const demoResults = [
                 { semester: "Semester 1 - 2025/2026", gpa: "3.25", details: [
                     { code: "COSC 101", name: "Introduction to Computing", credits: 3, ca: 35, exam: 55, total: 90, grade: "A" },
-                    { code: "MATH 101", name: "First Aid", credits: 3, ca: 30, exam: 48, total: 78, grade: "B+" },
+                    { code: "MATH 101", name: "Algebra", credits: 3, ca: 30, exam: 48, total: 78, grade: "B+" },
                     { code: "ENGL 101", name: "Communication Skills", credits: 2, ca: 32, exam: 42, total: 74, grade: "B" }
                 ]},
                 { semester: "Semester 2 - 2025/2026", gpa: "3.45", details: [
@@ -1219,8 +1119,7 @@ CCST/ML/24/002,Sarah Williams,ML,100,5500,5500,0,0,Semester 1 2026/2027`;
             let html = `<div class="transcript-header"><h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1><h3>OFFICIAL ACADEMIC TRANSCRIPT</h3></div>
             <table class="student-info-table"><tr><td>Student Name:</td><td><strong>${student.name}</strong></td><td>Student ID:</td><td><strong>${student.id}</strong></td></tr>
             <tr><td>Program:</td><td><strong>${getFullProgramName(student.program)}</strong></td><td>Level:</td><td><strong>${student.level || '200'}</strong></td></tr>
-            <tr><td>Date of Issue:</td><td><strong>${new Date().toLocaleDateString()}</strong></td><td>Transcript ID:</td><td><strong>TR-${student.id}-${Date.now()}</strong></td></tr>
-            </table>`;
+            <tr><td>Date of Issue:</td><td><strong>${new Date().toLocaleDateString()}</strong></td><td>Transcript ID:</td><td><strong>TR-${student.id}-${Date.now()}</strong></td></tr></table>`;
             
             results.forEach((sem, idx) => {
                 html += `<h4 style="margin-top:25px;">${sem.semester} (GPA: ${semesterSummaries[idx]?.gpa})</h4>
@@ -1234,7 +1133,7 @@ CCST/ML/24/002,Sarah Williams,ML,100,5500,5500,0,0,Semester 1 2026/2027`;
             });
             
             html += `<div class="cgpa-section"><h3>CGPA</h3><div class="cgpa-value">${cgpa} / 4.00</div><p>Classification: <strong>${classification}</strong></p><p>Total Credits: ${totalCredits} | Total Points: ${totalWeightedPoints.toFixed(2)}</p></div>
-            <div class="transcript-footer"><p>Generated on: ${new Date().toLocaleString()}</p><p>Academic's Signature: ___________________</p></div>`;
+            <div class="transcript-footer"><p>Generated on: ${new Date().toLocaleString()}</p><p>Registrar's Signature: ___________________</p></div>`;
             
             container.innerHTML = html;
             document.getElementById('transcriptPreview').style.display = 'block';
