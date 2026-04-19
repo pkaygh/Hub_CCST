@@ -392,7 +392,7 @@
             height: 100%;
             pointer-events: none;
             z-index: 1;
-            opacity: 0.08;
+            opacity: 0.2;
         }
 
         .wavy-watermark {
@@ -857,7 +857,7 @@ function getFullProgramName(code) {
             document.getElementById('infoId').innerText = p.id;
             document.getElementById('infoProgram').innerText = getFullProgramName(p.program);
             document.getElementById('infoLevel').innerText = p.level;
-            document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Cleared to Register Semester Courses" : "Pending";
+            document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Cleared to Register Semester Courses" : "Pending! Not Cleared to Register Semester Course.";
             
             const savedPhoto = localStorage.getItem(`userPhoto_${p.id}`);
             if (savedPhoto) {
@@ -870,7 +870,7 @@ function getFullProgramName(code) {
                 statusBox.innerText = "FINANCIALLY CLEARED TO REGISTER SEMESTER COURSES";
                 statusBox.className = "status-badge cleared";
             } else {
-                statusBox.innerText = "NOT CLEARED";
+                statusBox.innerText = "NOT CLEARED SEE THE ACCOUNTANT!";
                 statusBox.className = "status-badge not-cleared";
             }
             renderGradingTable();
@@ -966,7 +966,6 @@ function getFullProgramName(code) {
     return watermarks;
 }
 
-
         function generateTranscriptHTML() {
     if (!studentData?.profile) return '<p>Student data not available</p>';
     const profile = studentData.profile;
@@ -1037,6 +1036,47 @@ function getFullProgramName(code) {
     
     return html;
 }
+
+
+function generateTranscriptBackPage() {
+    const program = getStudentProgram();
+    const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RM;
+    
+    let gradingHtml = '<div style="page-break-before: always; margin-top: 50px;"><div style="text-align: center; margin-bottom: 30px;"><h2 style="color: #1a472a;">GRADING SYSTEM EXPLANATION</h2></div>';
+    gradingHtml += '<table style="width: 80%; margin: 0 auto; border-collapse: collapse; text-align: center;">';
+    gradingHtml += '<tr style="background: #1a472a; color: white;"><th style="padding: 10px; border: 1px solid #6b8e23;">Grade</th><th style="padding: 10px; border: 1px solid #6b8e23;">Percentage Range</th><th style="padding: 10px; border: 1px solid #6b8e23;">Grade Points</th><th style="padding: 10px; border: 1px solid #6b8e23;">Interpretation</th></tr>';
+    
+    const interpretations = {
+        'A+': 'Distinction', 'A': 'Excellent', 'B+': 'Very Good', 'B': 'Good',
+        'C+': 'Above Satisfactory', 'C': 'Satisfactory', 'D+': 'Fair', 'D': 'Pass',
+        'E': 'Fail', 'F': 'Fail'
+    };
+    
+    gradingSystem.forEach(level => {
+        let gradeName = level.grade;
+        let range = `${level.min} - ${level.max === 100 ? '100' : level.max}%`;
+        let points = level.points;
+        let interpretation = interpretations[gradeName] || (points >= 2.0 ? 'Pass' : 'Fail');
+        gradingHtml += `<tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>${gradeName}</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${range}</td><td style="padding: 8px; border: 1px solid #ddd;">${points}</td><td style="padding: 8px; border: 1px solid #ddd;">${interpretation}</td></tr>`;
+    });
+    
+    gradingHtml += `</table>
+    <div style="margin-top: 40px; padding: 20px; background: #f5f5dc; border-radius: 10px;">
+        <h3 style="color: #1a472a;">ACADEMIC REGULATIONS</h3>
+        <ul style="line-height: 1.8;">
+            <li><strong>CGPA Classification:</strong> 3.6 - 4.0 (First Class), 3.0 - 3.59 (Second Class Upper), 2.5 - 2.99 (Second Class Lower), 2.0 - 2.49 (Pass), Below 2.0 (Fail)</li>
+            <li><strong>Minimum Pass Grade:</strong> D (50%) with grade point 1.0</li>
+            <li><strong>Progression Requirement:</strong> Students must obtain a CGPA of 1.5 or above to proceed to the next level</li>
+            <li><strong>Degree Award:</strong> A minimum CGPA of 2.0 is required for graduation</li>
+        </ul>
+    </div>
+    <div style="margin-top: 30px; text-align: center; font-size: 0.8rem; color: #666;">
+        <p>This transcript is issued by the Academic Affairs Office, Central College of Science and Technology (CCST)</p>
+        <p>For verification, contact: info@centralcollegegh.com/registrar@ccst.edu.gh | +233 (0) 20 445 9722</p>
+    </div></div>`;
+    
+    return gradingHtml;
+}
         
         function loadTranscript() {
             const container = document.getElementById('transcriptContent');
@@ -1062,7 +1102,7 @@ function getFullProgramName(code) {
             .transcript-table th,.transcript-table td{border:1px solid #ddd; padding:6px; text-align:center;}
             @media print{body{margin:0.3in;} .watermark-layer{opacity:0.12;}}
         </style>
-        </head><body>${generateTranscriptHTML()}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script></body></html>`);
+        </head><body>${generateTranscriptHTML()}${generateTranscriptBackPage()}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script></body></html>`);
     printWindow.document.close();
 }
         
@@ -1219,6 +1259,66 @@ function getFullProgramName(code) {
         </div>`;
     });
     container.innerHTML = html;
+    const badge = document.getElementById('notifBadge');
+    if (unreadCount > 0) { badge.style.display = 'block'; badge.innerText = unreadCount; }
+    else badge.style.display = 'none';
+}
+
+
+// Add this function after loadNotifications()
+function sendNotificationToStudent(studentId, title, content) {
+    // Store notifications in student-specific localStorage
+    const storageKey = `notifications_list_${studentId}`;
+    let existingNotifs = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    
+    const newNotif = {
+        id: Date.now(),
+        title: title,
+        content: content,
+        date: new Date().toLocaleString(),
+        read: false
+    };
+    
+    existingNotifs.unshift(newNotif);
+    localStorage.setItem(storageKey, JSON.stringify(existingNotifs));
+    
+    // Also update the global notification list for this student
+    if (studentData?.profile?.id === studentId) {
+        loadNotifications();
+        showToast(`New notification: ${title}`);
+    }
+}
+
+// Update loadNotifications to read from student-specific notifications
+function loadNotifications() {
+    const container = document.getElementById('notificationList');
+    const studentId = studentData?.profile?.id;
+    const storageKey = `notifications_list_${studentId}`;
+    const readStorageKey = studentId ? `readNotifications_${studentId}` : 'readNotifications';
+    const readNotifIds = JSON.parse(localStorage.getItem(readStorageKey) || '[]');
+    
+    // Get student-specific notifications, or fallback to default
+    let notifs = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    
+    if (notifs.length === 0) {
+        // Default notifications only if no custom ones exist
+        notifs = [
+            { id: 1, title: "Mid-Semester Exams", content: "Exams begin April 15, 2026", date: "Today" },
+            { id: 2, title: "Fee Payment", content: "Last day for payment is April 10", date: "2 days ago" }
+        ];
+    }
+    
+    let html = '', unreadCount = 0;
+    notifs.forEach(n => {
+        const isRead = readNotifIds.includes(n.id);
+        if (!isRead) unreadCount++;
+        html += `<div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${n.id})">
+            <div class="notification-icon"><i class="fas fa-bell"></i></div>
+            <div><h4>${n.title}</h4><p>${n.content}</p><small>${n.date}</small></div>
+        </div>`;
+    });
+    
+    container.innerHTML = html || '<p style="text-align: center;">No notifications</p>';
     const badge = document.getElementById('notifBadge');
     if (unreadCount > 0) { badge.style.display = 'block'; badge.innerText = unreadCount; }
     else badge.style.display = 'none';
