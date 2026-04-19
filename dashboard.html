@@ -795,7 +795,7 @@ function getFullProgramName(code) {
             document.getElementById('infoId').innerText = p.id;
             document.getElementById('infoProgram').innerText = getFullProgramName(p.program);
             document.getElementById('infoLevel').innerText = p.level;
-            document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Register Semester Course" : "Pending";
+            document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Cleared to Register Semester Courses" : "Pending";
             
             const savedPhoto = localStorage.getItem(`userPhoto_${p.id}`);
             if (savedPhoto) {
@@ -805,7 +805,7 @@ function getFullProgramName(code) {
             
             const statusBox = document.getElementById('clearanceStatus');
             if (p.isCleared === true || p.isCleared === "TRUE") {
-                statusBox.innerText = "FINANCIALLY CLEARED";
+                statusBox.innerText = "FINANCIALLY CLEARED TO REGISTER SEMESTER COURSES";
                 statusBox.className = "status-badge cleared";
             } else {
                 statusBox.innerText = "NOT CLEARED";
