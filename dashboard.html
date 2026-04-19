@@ -517,7 +517,7 @@
                         <p id="infoLevel" style="font-weight: bold; font-size: 1.1rem;"></p>
                     </div>
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                        <small style="color: #666;">Academic Status</small>
+                        <small style="color: #666;">Course Registration</small>
                         <p id="infoStatus" style="font-weight: bold; font-size: 1.1rem;"></p>
                     </div>
                 </div>
@@ -795,7 +795,7 @@ function getFullProgramName(code) {
             document.getElementById('infoId').innerText = p.id;
             document.getElementById('infoProgram').innerText = getFullProgramName(p.program);
             document.getElementById('infoLevel').innerText = p.level;
-            document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Cleared" : "Pending";
+            document.getElementById('infoStatus').innerText = (p.isCleared === true || p.isCleared === "TRUE") ? "Register Semester Course" : "Pending";
             
             const savedPhoto = localStorage.getItem(`userPhoto_${p.id}`);
             if (savedPhoto) {
@@ -1088,40 +1088,49 @@ function getFullProgramName(code) {
         }
         
         function loadNotifications() {
-            const container = document.getElementById('notificationList');
-            const readNotifIds = JSON.parse(localStorage.getItem('readNotifications') || '[]');
-            let sampleNotifs = [
-                { id: 1, title: "Mid-Semester Exams", content: "Exams begin April 15, 2026", date: "Today", type: "exam" },
-                { id: 2, title: "Fee Payment", content: "Last day for payment is April 10", date: "2 days ago", type: "finance" }
-            ];
-            let html = '', unreadCount = 0;
-            sampleNotifs.forEach(n => {
-                const isRead = readNotifIds.includes(n.id);
-                if (!isRead) unreadCount++;
-                html += `<div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${n.id})">
-                    <div class="notification-icon"><i class="fas fa-bell"></i></div>
-                    <div><h4>${n.title}</h4><p>${n.content}</p><small>${n.date}</small></div>
-                </div>`;
-            });
-            container.innerHTML = html;
-            const badge = document.getElementById('notifBadge');
-            if (unreadCount > 0) { badge.style.display = 'block'; badge.innerText = unreadCount; }
-            else badge.style.display = 'none';
-        }
+    const container = document.getElementById('notificationList');
+    // CHANGE: Use student-specific key instead of global
+    const studentId = studentData?.profile?.id;
+    const storageKey = studentId ? `readNotifications_${studentId}` : 'readNotifications';
+    const readNotifIds = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    
+    let sampleNotifs = [
+        { id: 1, title: "Mid-Semester Exams", content: "Exams begin April 15, 2026", date: "Today", type: "exam" },
+        { id: 2, title: "Fee Payment", content: "Last day for payment is April 10", date: "2 days ago", type: "finance" }
+    ];
+    let html = '', unreadCount = 0;
+    sampleNotifs.forEach(n => {
+        const isRead = readNotifIds.includes(n.id);
+        if (!isRead) unreadCount++;
+        html += `<div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${n.id})">
+            <div class="notification-icon"><i class="fas fa-bell"></i></div>
+            <div><h4>${n.title}</h4><p>${n.content}</p><small>${n.date}</small></div>
+        </div>`;
+    });
+    container.innerHTML = html;
+    const badge = document.getElementById('notifBadge');
+    if (unreadCount > 0) { badge.style.display = 'block'; badge.innerText = unreadCount; }
+    else badge.style.display = 'none';
+}
         
         function markRead(id) {
-            let read = JSON.parse(localStorage.getItem('readNotifications') || '[]');
-            if (!read.includes(id)) read.push(id);
-            localStorage.setItem('readNotifications', JSON.stringify(read));
-            loadNotifications();
-        }
+    const studentId = studentData?.profile?.id;
+    const storageKey = studentId ? `readNotifications_${studentId}` : 'readNotifications';
+    let read = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    if (!read.includes(id)) read.push(id);
+    localStorage.setItem(storageKey, JSON.stringify(read));
+    loadNotifications();
+    showToast('Notification marked as read');
+}
         
         function markAllRead() {
-            let read = [1, 2];
-            localStorage.setItem('readNotifications', JSON.stringify(read));
-            loadNotifications();
-            showToast('All marked as read');
-        }
+    const studentId = studentData?.profile?.id;
+    const storageKey = studentId ? `readNotifications_${studentId}` : 'readNotifications';
+    let read = [1, 2];
+    localStorage.setItem(storageKey, JSON.stringify(read));
+    loadNotifications();
+    showToast('All marked as read');
+}
         
         function uploadPhoto(e) {
             const file = e.target.files[0];
