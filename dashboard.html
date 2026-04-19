@@ -374,6 +374,68 @@
 
         .cgpa-value { font-size: 2rem; font-weight: bold; color: var(--primary); }
 
+        /* Transcript Watermark Styles */
+        .transcript-container {
+            position: relative;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            overflow: hidden;
+        }
+
+        .watermark-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.08;
+        }
+
+        .wavy-watermark {
+            position: absolute;
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a472a;
+            white-space: nowrap;
+            transform: rotate(-25deg);
+            font-family: Arial, sans-serif;
+            letter-spacing: 8px;
+        }
+
+        .transcript-content-wrapper {
+            position: relative;
+            z-index: 2;
+            background: transparent;
+        }
+
+        .transcript-footer-note {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-top: 2px solid #1a472a;
+            font-size: 0.75rem;
+            text-align: center;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .unofficial-stamp {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 20px;
+            border: 2px solid #8b0000;
+            color: #8b0000;
+            font-weight: bold;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            transform: rotate(-5deg);
+            background: rgba(139, 0, 0, 0.05);
+        }
+
         .request-status {
             padding: 15px;
             border-radius: 8px;
@@ -889,53 +951,92 @@ function getFullProgramName(code) {
         // TRANSCRIPT FUNCTIONS
         // ============================================
         
-        function generateTranscriptHTML() {
-            if (!studentData?.profile) return '<p>Student data not available</p>';
-            const profile = studentData.profile;
-            const program = profile.program || "RM";
-            if (!userResults || userResults.length === 0) return '<p style="text-align:center;">No academic records available.</p>';
-            
-            let totalWeightedPoints = 0, totalCredits = 0;
-            let semesterSummaries = [];
-            const sortedResults = [...userResults].sort((a,b) => a.semester.localeCompare(b.semester));
-            
-            sortedResults.forEach((sem, idx) => {
-                let semWeightedPoints = 0, semCredits = 0;
-                sem.details.forEach(c => {
-                    const credits = c.credits || 3;
-                    semWeightedPoints += getGradePoints(c.grade, program) * credits;
-                    semCredits += credits;
-                });
-                totalWeightedPoints += semWeightedPoints;
-                totalCredits += semCredits;
-                semesterSummaries.push({ name: sem.semester, gpa: sem.gpa || (semCredits > 0 ? (semWeightedPoints / semCredits).toFixed(2) : 0), credits: semCredits });
-            });
-            
-            const cgpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '0.00';
-            const classification = cgpa >= 3.6 ? 'First Class Honours' : cgpa >= 3.0 ? 'Second Class Honours (Upper)' : cgpa >= 2.5 ? 'Second Class Honours (Lower)' : cgpa >= 2.0 ? 'Pass' : 'Fail';
-            
-            let html = `<div class="transcript-header"><h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1><h3>OFFICIAL ACADEMIC TRANSCRIPT</h3></div>
-            <table class="student-info-table"><tr><td>Student Name:</td><td><strong>${profile.name}</strong></td><td>Student ID:</td><td><strong>${profile.id}</strong></td></tr>
-            <tr><td>Program:</td><td><strong>${getFullProgramName(program)}</strong></td><td>Level:</td><td><strong>${profile.level || '200'}</strong></td></tr>
-            <tr><td>Date of Issue:</td><td><strong>${new Date().toLocaleDateString()}</strong></td><td>Transcript ID:</td><td><strong>TR-${profile.id}-${Date.now()}</strong></td></tr></table>`;
-            
-            sortedResults.forEach((sem, idx) => {
-                html += `<h4 style="margin-top:25px;">${sem.semester} (GPA: ${semesterSummaries[idx]?.gpa})</h4>
-                <table class="transcript-table"><thead><tr><th>Course Code</th><th>Course Title</th><th>Credits</th><th>CA</th><th>Exam</th><th>Grade</th><th>Points</th></tr></thead><tbody>`;
-                sem.details.forEach(c => {
-                    const total = (c.ca || 0) + (c.exam || 0);
-                    html += `<tr><td>${c.code || 'N/A'}</td><td>${c.name || 'N/A'}</td><td>${c.credits || 3}</td><td>${c.ca || '-'}</td><td>${c.exam || '-'}</td><td>${c.grade}</td><td>${getGradePoints(c.grade, program).toFixed(1)}</td></tr>`;
-                });
-                html += `</tbody></table><div class="semester-summary">Credits: ${semesterSummaries[idx]?.credits || 0} | GPA: ${semesterSummaries[idx]?.gpa}</div>`;
-            });
-            
-            html += `<div class="cgpa-section"><h3>CUMULATIVE GPA</h3><div class="cgpa-value">${cgpa} / 4.00</div><p><strong>Classification:</strong> ${classification}</p><p>Total Credits: ${totalCredits} | Total Points: ${totalWeightedPoints.toFixed(2)}</p></div>
-            <div class="transcript-footer" style="margin-top:30px; padding-top:20px; text-align:center; font-size:0.8rem;">
-                <p>Generated on: ${new Date().toLocaleString()}</p>
-                <p>Registrar's Signature: ___________________</p>
-            </div>`;
-            return html;
+        function generateWavyWatermarks() {
+            let watermarks = '';
+            const positions = [];
+            // Create a grid of wavy watermarks
+            for (let row = 0; row < 20; row++) {
+            for (let col = 0; col < 8; col++) {
+            const top = row * 70 + (col % 3) * 15;
+            const left = col * 140 + (row % 2) * 60;
+            const waveClass = (row + col) % 2 === 0 ? 'wavy-watermark' : 'wavy-watermark';
+            watermarks += `<div class="${waveClass}" style="top: ${top}px; left: ${left}px;">CCST</div>`;
         }
+    }
+    return watermarks;
+}
+
+
+        function generateTranscriptHTML() {
+    if (!studentData?.profile) return '<p>Student data not available</p>';
+    const profile = studentData.profile;
+    const program = profile.program || "RM";
+    if (!userResults || userResults.length === 0) return '<p style="text-align:center;">No academic records available.</p>';
+    
+    let totalWeightedPoints = 0, totalCredits = 0;
+    let semesterSummaries = [];
+    const sortedResults = [...userResults].sort((a,b) => a.semester.localeCompare(b.semester));
+    
+    sortedResults.forEach((sem, idx) => {
+        let semWeightedPoints = 0, semCredits = 0;
+        sem.details.forEach(c => {
+            const credits = c.credits || 3;
+            semWeightedPoints += getGradePoints(c.grade, program) * credits;
+            semCredits += credits;
+        });
+        totalWeightedPoints += semWeightedPoints;
+        totalCredits += semCredits;
+        semesterSummaries.push({ name: sem.semester, gpa: sem.gpa || (semCredits > 0 ? (semWeightedPoints / semCredits).toFixed(2) : 0), credits: semCredits });
+    });
+    
+    const cgpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '0.00';
+    const classification = cgpa >= 3.6 ? 'First Class Honours' : cgpa >= 3.0 ? 'Second Class Honours (Upper)' : cgpa >= 2.5 ? 'Second Class Honours (Lower)' : cgpa >= 2.0 ? 'Pass' : 'Fail';
+    
+    let html = `<div class="watermark-layer">${generateWavyWatermarks()}</div>
+    <div class="transcript-content-wrapper">
+        <div class="transcript-header" style="text-align:center; margin-bottom:30px; padding-bottom:20px; border-bottom:2px solid #1a472a;">
+            <h1 style="color:#1a472a;">CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1>
+            <h3 style="color:#555;">OFFICIAL ACADEMIC TRANSCRIPT</h3>
+            <div class="unofficial-stamp">⚡ UNOFFICIAL COPY - STUDENT PORTAL ⚡</div>
+        </div>
+        
+        <table class="student-info-table" style="width:100%; border-collapse:collapse; margin-bottom:25px;">
+            <tr><td style="padding:8px; border:1px solid #ddd; background:#f0f0f0; width:30%;"><strong>Student Name</strong></td><td style="padding:8px; border:1px solid #ddd;">${profile.name}</td>
+            <td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Student ID</strong></td><td style="padding:8px; border:1px solid #ddd;">${profile.id}</td></tr>
+            <tr><td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Program</strong></td><td style="padding:8px; border:1px solid #ddd;">${getFullProgramName(program)}</td>
+            <td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Level</strong></td><td style="padding:8px; border:1px solid #ddd;">${profile.level || '200'}</td></tr>
+            <tr><td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Date of Issue</strong></td><td style="padding:8px; border:1px solid #ddd;">${new Date().toLocaleDateString()}</td>
+            <td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Transcript ID</strong></td><td style="padding:8px; border:1px solid #ddd;">TR-${profile.id}-${Date.now()}</td></tr>
+        </table>`;
+    
+    sortedResults.forEach((sem, idx) => {
+        html += `<h4 style="margin-top:25px; color:#1a472a;">${sem.semester} (GPA: ${semesterSummaries[idx]?.gpa})</h4>
+        <table class="transcript-table" style="width:100%; border-collapse:collapse; margin-top:10px;">
+            <thead><tr style="background:#1a472a; color:white;"><th style="padding:8px; border:1px solid #6b8e23;">Course Code</th><th style="padding:8px; border:1px solid #6b8e23;">Course Title</th><th style="padding:8px; border:1px solid #6b8e23;">Credits</th><th style="padding:8px; border:1px solid #6b8e23;">Grade</th><th style="padding:8px; border:1px solid #6b8e23;">Points</th></tr></thead><tbody>`;
+        sem.details.forEach(c => {
+            html += `<tr><td style="padding:6px; border:1px solid #ddd;">${c.code || 'N/A'}</td><td style="padding:6px; border:1px solid #ddd;">${c.name || 'N/A'}</td><td style="padding:6px; border:1px solid #ddd; text-align:center;">${c.credits || 3}</td><td style="padding:6px; border:1px solid #ddd; text-align:center; font-weight:bold;">${c.grade}</td><td style="padding:6px; border:1px solid #ddd; text-align:center;">${getGradePoints(c.grade, program).toFixed(1)}</td></tr>`;
+        });
+        html += `</tbody></table><div class="semester-summary" style="margin-top:10px; padding:8px; background:#f5f5f5; text-align:right; font-weight:bold;">Credits: ${semesterSummaries[idx]?.credits || 0} | GPA: ${semesterSummaries[idx]?.gpa}</div>`;
+    });
+    
+    html += `<div class="cgpa-section" style="margin-top:30px; padding:15px; background:linear-gradient(135deg, rgba(107,142,35,0.1), rgba(154,205,50,0.1)); border-radius:8px; text-align:center;">
+        <h3 style="color:#1a472a;">CUMULATIVE GPA</h3>
+        <div class="cgpa-value" style="font-size:2rem; font-weight:bold; color:#6b8e23;">${cgpa} / 4.00</div>
+        <p><strong>Classification:</strong> ${classification}</p>
+        <p>Total Credits: ${totalCredits} | Total Points: ${totalWeightedPoints.toFixed(2)}</p>
+    </div>
+    
+    <div class="transcript-footer-note">
+        <p><strong>IMPORTANT DISCLAIMER:</strong> This is an <strong>UNOFFICIAL transcript</strong> generated from the student portal for informational purposes only.</p>
+        <p>This document is not valid for official verification, transfer credit evaluation, or employment authentication without the official seal and signature of the Registrar.</p>
+        <p>For official transcripts, please request through the Academic Affairs Office. A fee of GH₵50 applies per official copy.</p>
+        <p style="margin-top:10px;"><strong>Registrar's Office</strong> | Central College of Science and Technology (CCST)</p>
+        <p>Digitally generated on: ${new Date().toLocaleString()} | This copy is valid only when viewed online</p>
+    </div>
+    </div>`;
+    
+    return html;
+}
         
         function loadTranscript() {
             const container = document.getElementById('transcriptContent');
@@ -943,17 +1044,27 @@ function getFullProgramName(code) {
         }
         
         function downloadTranscriptPDF() {
-            if (!userResults || userResults.length === 0) {
-                showToast("No results available to generate transcript");
-                return;
-            }
-            showToast("Generating PDF...");
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`<!DOCTYPE html><html><head><title>Transcript - ${studentData?.profile?.name}</title>
-                <style>body{font-family:'Times New Roman',serif;margin:0.5in;} .transcript-header{text-align:center;margin-bottom:30px;border-bottom:2px solid #1a472a;} .student-info-table{width:100%;border-collapse:collapse;margin-bottom:25px;} .student-info-table td{padding:8px;border:1px solid #ddd;} .transcript-table{width:100%;border-collapse:collapse;} .transcript-table th,.transcript-table td{padding:6px;border:1px solid #ddd;text-align:center;} .cgpa-section{margin-top:30px;padding:15px;background:#f9f9f9;text-align:center;} @media print{body{margin:0.5in;}}</style>
-                </head><body>${generateTranscriptHTML()}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},500);};<\/script></body></html>`);
-            printWindow.document.close();
-        }
+    if (!userResults || userResults.length === 0) {
+        showToast("No results available to generate transcript");
+        return;
+    }
+    showToast("Generating PDF with watermark...");
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>Transcript - ${studentData?.profile?.name}</title>
+        <style>
+            body{font-family:'Times New Roman',serif;margin:0.5in; position:relative;}
+            .watermark-layer{position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1; opacity:0.08;}
+            .wavy-watermark{position:absolute; font-size:28px; font-weight:bold; color:#1a472a; white-space:nowrap; transform:rotate(-25deg); font-family:Arial,sans-serif; letter-spacing:8px;}
+            .transcript-content-wrapper{position:relative; z-index:2;}
+            .transcript-footer-note{margin-top:30px; padding:15px; background:#f9f9f9; border-top:2px solid #1a472a; font-size:0.75rem; text-align:center;}
+            .unofficial-stamp{display:inline-block; margin-top:20px; padding:8px 20px; border:2px solid #8b0000; color:#8b0000; font-weight:bold; transform:rotate(-5deg);}
+            .student-info-table td{border:1px solid #ddd; padding:8px;}
+            .transcript-table th,.transcript-table td{border:1px solid #ddd; padding:6px; text-align:center;}
+            @media print{body{margin:0.3in;} .watermark-layer{opacity:0.12;}}
+        </style>
+        </head><body>${generateTranscriptHTML()}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script></body></html>`);
+    printWindow.document.close();
+}
         
         function printTranscript() {
             if (!userResults || userResults.length === 0) {
