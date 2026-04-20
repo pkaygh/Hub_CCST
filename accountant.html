@@ -1028,6 +1028,16 @@
         return;
     }
     
+    // Get target value based on type
+    let targetValue = 'all';
+    if (notifType === 'program') {
+        targetValue = prompt("Enter Program code (e.g., RM, RN, ML):");
+        if (!targetValue) return;
+    } else if (notifType === 'level') {
+        targetValue = prompt("Enter Level (e.g., 100, 200):");
+        if (!targetValue) return;
+    }
+    
     showToast("Sending notification...", "info");
     
     try {
@@ -1040,7 +1050,7 @@
                 message: message,
                 type: 'general',
                 targetType: notifType,
-                target: notifType === 'all' ? 'all' : '',
+                target: targetValue,
                 date: new Date().toLocaleString()
             })
         });
