@@ -770,7 +770,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZ1573PDz4PkSei8FaBKg0O6tTbCxgfjHGecFjfBlsnZ55PnY9sZ8NMqhA55-xj8HT/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3OEHF5MfwELfShv2fOKk3KLvdjc9z1ZSrfyqlhWmRNYZsCw4v5uGinOisiGyB4GLf/exec";
         let currentStudent = null;
         let currentTranscriptStudent = null;
         let csvData = null;
@@ -1019,54 +1019,42 @@
         function updateFees() { showToast("Fees updated!", "success"); }
         function addNewCourse() { showToast("Course added!", "success"); }
         async function sendNotification() {
+    const studentId = document.getElementById('notifStudentId').value;
     const title = document.getElementById('notifTitle').value;
     const message = document.getElementById('notifMessage').value;
-    const notifType = document.getElementById('notifType').value;
-    
-    if (!title || !message) {
-        showToast("Please enter both title and message", "warning");
+    const btn = document.querySelector('#notifications button');
+
+    if (!studentId || !title || !message) {
+        showToast("Please fill all fields", "warning");
         return;
     }
-    
-    // Get target value based on type
-    let targetValue = 'all';
-    if (notifType === 'program') {
-        targetValue = prompt("Enter Program code (e.g., RM, RN, ML):");
-        if (!targetValue) return;
-    } else if (notifType === 'level') {
-        targetValue = prompt("Enter Level (e.g., 100, 200):");
-        if (!targetValue) return;
-    }
-    
-    showToast("Sending notification...", "info");
-    
+
     try {
-        const response = await fetch(SCRIPT_URL, {
+        setButtonLoading(btn, true);
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'send_notification',
+                studentId: studentId,
                 title: title,
-                message: message,
-                type: 'general',
-                targetType: notifType,
-                target: targetValue,
-                date: new Date().toLocaleString()
+                message: message
             })
         });
         
-        const result = await response.json();
-        
-        if (result.success) {
-            showToast("Notification sent to Google Sheets successfully!", "success");
+        const data = await res.json();
+        if (data.success) {
+            showToast("Notification sent successfully!", "success");
+            // Clear fields
             document.getElementById('notifTitle').value = '';
             document.getElementById('notifMessage').value = '';
         } else {
-            showToast("Failed to send: " + (result.error || "Unknown error"), "danger");
+            throw new Error(data.message || "Failed to send");
         }
     } catch (error) {
-        console.error("Send error:", error);
-        showToast("Error connecting to server", "danger");
+        console.error(error);
+        showToast("Connection to server error", "danger");
+    } finally {
+        setButtonLoading(btn, false, 'SEND NOTIFICATION');
     }
 }
         function generateReport(type) { showToast(`Generating ${type} report...`, "info"); }
