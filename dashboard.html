@@ -1238,92 +1238,57 @@ function generateTranscriptBackPage() {
             }).join('');
         }
         
-        function loadNotifications() {
-    const container = document.getElementById('notificationList');
-    // CHANGE: Use student-specific key instead of global
-    const studentId = studentData?.profile?.id;
-    const storageKey = studentId ? `readNotifications_${studentId}` : 'readNotifications';
-    const readNotifIds = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    
-    let sampleNotifs = [
-        { id: 1, title: "Mid-Semester Exams", content: "Exams begin April 15, 2026", date: "Today", type: "exam" },
-        { id: 2, title: "Fee Payment", content: "Last day for payment is April 10", date: "2 days ago", type: "finance" }
-    ];
-    let html = '', unreadCount = 0;
-    sampleNotifs.forEach(n => {
-        const isRead = readNotifIds.includes(n.id);
-        if (!isRead) unreadCount++;
-        html += `<div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${n.id})">
-            <div class="notification-icon"><i class="fas fa-bell"></i></div>
-            <div><h4>${n.title}</h4><p>${n.content}</p><small>${n.date}</small></div>
-        </div>`;
-    });
-    container.innerHTML = html;
-    const badge = document.getElementById('notifBadge');
-    if (unreadCount > 0) { badge.style.display = 'block'; badge.innerText = unreadCount; }
-    else badge.style.display = 'none';
-}
+        
 
-
-// Add this function after loadNotifications()
-function sendNotificationToStudent(studentId, title, content) {
-    // Store notifications in student-specific localStorage
-    const storageKey = `notifications_list_${studentId}`;
-    let existingNotifs = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    
-    const newNotif = {
-        id: Date.now(),
-        title: title,
-        content: content,
-        date: new Date().toLocaleString(),
-        read: false
-    };
-    
-    existingNotifs.unshift(newNotif);
-    localStorage.setItem(storageKey, JSON.stringify(existingNotifs));
-    
-    // Also update the global notification list for this student
-    if (studentData?.profile?.id === studentId) {
-        loadNotifications();
-        showToast(`New notification: ${title}`);
-    }
-}
 
 // Update loadNotifications to read from student-specific notifications
-function loadNotifications() {
+        async function loadNotifications() {
     const container = document.getElementById('notificationList');
     const studentId = studentData?.profile?.id;
-    const storageKey = `notifications_list_${studentId}`;
+    const program = studentData?.profile?.program;
+    const level = studentData?.profile?.level;
     const readStorageKey = studentId ? `readNotifications_${studentId}` : 'readNotifications';
     const readNotifIds = JSON.parse(localStorage.getItem(readStorageKey) || '[]');
     
-    // Get student-specific notifications, or fallback to default
-    let notifs = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    
-    if (notifs.length === 0) {
-        // Default notifications only if no custom ones exist
-        notifs = [
-            { id: 1, title: "Mid-Semester Exams", content: "Exams begin April 15, 2026", date: "Today" },
-            { id: 2, title: "Fee Payment", content: "Last day for payment is April 10", date: "2 days ago" }
-        ];
-    }
-    
-    let html = '', unreadCount = 0;
-    notifs.forEach(n => {
-        const isRead = readNotifIds.includes(n.id);
-        if (!isRead) unreadCount++;
-        html += `<div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${n.id})">
-            <div class="notification-icon"><i class="fas fa-bell"></i></div>
-            <div><h4>${n.title}</h4><p>${n.content}</p><small>${n.date}</small></div>
-        </div>`;
-    });
-    
-    container.innerHTML = html || '<p style="text-align: center;">No notifications</p>';
-    const badge = document.getElementById('notifBadge');
-    if (unreadCount > 0) { badge.style.display = 'block'; badge.innerText = unreadCount; }
-    else badge.style.display = 'none';
-}
+    try {
+        // Fetch from Google Sheets using your existing SCRIPT_URL
+        const response = await fetch(`${SCRIPT_URL}?action=get_notifications&id=${studentId}&program=${program}&level=${level}`);
+        const data = await response.json();
         
+        let html = '', unreadCount = 0;
+        
+        if (!data.notifications || data.notifications.length === 0) {
+            container.innerHTML = '<p style="text-align: center; padding: 40px;">No notifications at this time.</p>';
+        } else {
+            data.notifications.forEach(notif => {
+                const isRead = readNotifIds.includes(notif.id);
+                if (!isRead) unreadCount++;
+                html += `<div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${notif.id})">
+                    <div class="notification-icon"><i class="fas fa-bullhorn"></i></div>
+                    <div>
+                        <h4>${notif.title}</h4>
+                        <p>${notif.content}</p>
+                        <small>${notif.date}</small>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+        
+        const badge = document.getElementById('notifBadge');
+        if (unreadCount > 0) {
+            badge.style.display = 'block';
+            badge.innerText = unreadCount;
+        } else {
+            badge.style.display = 'none';
+        }
+        
+    } catch(error) {
+        console.error('Error loading notifications:', error);
+        container.innerHTML = '<p style="text-align: center; padding: 40px;">Error loading notifications. Please refresh.</p>';
+    }
+}
+
         function markRead(id) {
     const studentId = studentData?.profile?.id;
     const storageKey = studentId ? `readNotifications_${studentId}` : 'readNotifications';

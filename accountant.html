@@ -1018,7 +1018,47 @@
 
         function updateFees() { showToast("Fees updated!", "success"); }
         function addNewCourse() { showToast("Course added!", "success"); }
-        function sendNotification() { showToast("Notification sent!", "success"); }
+        async function sendNotification() {
+    const title = document.getElementById('notifTitle').value;
+    const message = document.getElementById('notifMessage').value;
+    const notifType = document.getElementById('notifType').value;
+    
+    if (!title || !message) {
+        showToast("Please enter both title and message", "warning");
+        return;
+    }
+    
+    showToast("Sending notification...", "info");
+    
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'send_notification',
+                title: title,
+                message: message,
+                type: 'general',
+                targetType: notifType,
+                target: notifType === 'all' ? 'all' : '',
+                date: new Date().toLocaleString()
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast("Notification sent to Google Sheets successfully!", "success");
+            document.getElementById('notifTitle').value = '';
+            document.getElementById('notifMessage').value = '';
+        } else {
+            showToast("Failed to send: " + (result.error || "Unknown error"), "danger");
+        }
+    } catch (error) {
+        console.error("Send error:", error);
+        showToast("Error connecting to server", "danger");
+    }
+}
         function generateReport(type) { showToast(`Generating ${type} report...`, "info"); }
         function handleFinanceCSVSelect(e) { showToast("Financial CSV loaded", "success"); document.getElementById('processFinanceBtn').style.display = 'block'; }
         function processFinanceCSV() { showToast("Financial data processed", "success"); }
