@@ -733,7 +733,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3OEHF5MfwELfShv2fOKk3KLvdjc9z1ZSrfyqlhWmRNYZsCw4v5uGinOisiGyB4GLf/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxhQXk2z76nvoNa4XyRHk3RdYrww35jUo3APWW2r3izMOGSq6CEjBQYiK4pR1w0PpD-/exec";
         let studentData = null;
         let userResults = [];
         let userPayments = [];
@@ -950,21 +950,19 @@ function getFullProgramName(code) {
         // ============================================
         // TRANSCRIPT FUNCTIONS
         // ============================================
-        
+
         function generateWavyWatermarks() {
             let watermarks = '';
-            const positions = [];
             // Create a grid of wavy watermarks
-            for (let row = 0; row < 20; row++) {
-            for (let col = 0; col < 8; col++) {
-            const top = row * 70 + (col % 3) * 15;
-            const left = col * 140 + (row % 2) * 60;
-            const waveClass = (row + col) % 2 === 0 ? 'wavy-watermark' : 'wavy-watermark';
-            watermarks += `<div class="${waveClass}" style="top: ${top}px; left: ${left}px;">CCST</div>`;
+            for (let row = 0; row < 15; row++) {
+                for (let col = 0; col < 5; col++) {
+                    const top = row * 80 + (col % 2) * 25;
+                    const left = col * 160 + (row % 2) * 50;
+                    watermarks += `<div style="position:absolute; top:${top}px; left:${left}px; font-size:26px; font-weight:bold; color:#1a472a; white-space:nowrap; transform:rotate(-25deg); font-family:Arial, sans-serif; letter-spacing:6px; opacity:0.15;">CCST</div>`;
+                }
+            }
+            return watermarks;
         }
-    }
-    return watermarks;
-}
 
         function generateTranscriptHTML() {
     if (!studentData?.profile) return '<p>Student data not available</p>';
@@ -1311,15 +1309,90 @@ function generateTranscriptBackPage() {
         function uploadPhoto(e) {
             const file = e.target.files[0];
             if (file && studentData?.profile) {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    const photoData = ev.target.result;
-                    document.getElementById('profilePic').src = photoData;
-                    document.getElementById('sidebarPhoto').src = photoData;
-                    localStorage.setItem(`userPhoto_${studentData.profile.id}`, photoData);
-                    showToast('Photo updated!');
+                // Check file size - only compress if > 500KB
+                if (file.size > 500 * 1024) {
+                    compressAndUploadPhoto(file);
+                } else {
+                    // Small file, just save directly
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        const photoData = ev.target.result;
+                        document.getElementById('profilePic').src = photoData;
+                        document.getElementById('sidebarPhoto').src = photoData;
+                        localStorage.setItem(`userPhoto_${studentData.profile.id}`, photoData);
+                        showToast('Photo updated!');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        }
+
+        function compressAndUploadPhoto(file) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // Calculate new dimensions (max 200x200)
+                    let width = img.width;
+                    let height = img.height;
+                    const maxSize = 200;
+
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height *= maxSize / width;
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width *= maxSize / height;
+                            height = maxSize;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compress to JPEG at 0.7 quality
+                    const compressedData = canvas.toDataURL('image/jpeg', 0.7);
+
+                    document.getElementById('profilePic').src = compressedData;
+                    document.getElementById('sidebarPhoto').src = compressedData;
+
+                    // Save to localStorage first
+                    localStorage.setItem(`userPhoto_${studentData.profile.id}`, compressedData);
+
+                    // Also try to upload to Google Sheets (optional - won't break if fails)
+                    uploadPhotoToSheets(compressedData);
+                    showToast('Photo compressed and updated!');
                 };
-                reader.readAsDataURL(file);
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Upload photo to Google Sheets (stores compressed data in a hidden column)
+        async function uploadPhotoToSheets(base64Data) {
+            try {
+                const studentId = studentData?.profile?.id;
+                if (!studentId) return;
+
+                // Store the compressed data in a separate sheet to avoid slowing down Sheet1
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'store_photo_data',
+                        studentId: studentId,
+                        photoData: base64Data
+                    })
+                });
+                console.log('Photo upload response:', await response.json());
+            } catch (err) {
+                console.log('Photo upload to sheets failed, saved locally only');
             }
         }
         

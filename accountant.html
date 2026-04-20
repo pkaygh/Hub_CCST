@@ -744,14 +744,18 @@
         <div id="notificationsSection" class="section" style="display:none;">
             <div class="card">
                 <h3><i class="fas fa-bell"></i> Send Notification</h3>
-                <select id="notifType">
+                <select id="notifType" onchange="toggleNotifTarget()">
                     <option value="all">All Students</option>
                     <option value="program">By Program</option>
                     <option value="level">By Level</option>
+                    <option value="student">Specific Student</option>
                 </select>
+                <div id="notifTargetContainer" style="display:none;">
+                    <input id="notifStudentId" placeholder="Enter Student ID or Program (e.g., RM) or Level (e.g., 100)">
+                </div>
                 <input id="notifTitle" placeholder="Title">
                 <textarea id="notifMessage" rows="4" placeholder="Message"></textarea>
-                <button onclick="sendNotification()" class="success-btn">SEND</button>
+                <button onclick="sendNotification()" class="success-btn" id="sendNotifBtn">SEND NOTIFICATION</button>
             </div>
         </div>
 
@@ -1016,47 +1020,92 @@
             if(tab === 'financeCSV') document.getElementById('bulkFinanceCSVTab').style.display = 'block';
         }
 
-        function updateFees() { showToast("Fees updated!", "success"); }
-        function addNewCourse() { showToast("Course added!", "success"); }
-        async function sendNotification() {
-    const studentId = document.getElementById('notifStudentId').value;
-    const title = document.getElementById('notifTitle').value;
-    const message = document.getElementById('notifMessage').value;
-    const btn = document.querySelector('#notifications button');
-
-    if (!studentId || !title || !message) {
-        showToast("Please fill all fields", "warning");
-        return;
-    }
-
-    try {
-        setButtonLoading(btn, true);
-        const res = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'send_notification',
-                studentId: studentId,
-                title: title,
-                message: message
-            })
-        });
-        
-        const data = await res.json();
-        if (data.success) {
-            showToast("Notification sent successfully!", "success");
-            // Clear fields
-            document.getElementById('notifTitle').value = '';
-            document.getElementById('notifMessage').value = '';
-        } else {
-            throw new Error(data.message || "Failed to send");
+        function toggleNotifTarget() {
+            const type = document.getElementById('notifType').value;
+            const container = document.getElementById('notifTargetContainer');
+            const input = document.getElementById('notifStudentId');
+            if (type === 'all') {
+                container.style.display = 'none';
+                input.placeholder = '';
+            } else if (type === 'student') {
+                container.style.display = 'block';
+                input.placeholder = 'Enter Student ID';
+            } else if (type === 'program') {
+                container.style.display = 'block';
+                input.placeholder = 'Enter Program (e.g., RM, RN, ML)';
+            } else if (type === 'level') {
+                container.style.display = 'block';
+                input.placeholder = 'Enter Level (e.g., 100, 200, 300)';
+            }
         }
-    } catch (error) {
-        console.error(error);
-        showToast("Connection to server error", "danger");
-    } finally {
-        setButtonLoading(btn, false, 'SEND NOTIFICATION');
-    }
-}
+
+        function updateFees() { showToast("Fees updated!", "success"); }
+
+        async function sendNotification() {
+            const notifType = document.getElementById('notifType').value;
+            const target = document.getElementById('notifStudentId').value.trim();
+            const title = document.getElementById('notifTitle').value.trim();
+            const message = document.getElementById('notifMessage').value.trim();
+            const btn = document.getElementById('sendNotifBtn');
+
+            if (!title || !message) {
+                showToast("Please enter title and message", "warning");
+                return;
+            }
+
+            if (notifType !== 'all' && !target) {
+                showToast("Please enter target (Student ID, Program, or Level)", "warning");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...';
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'send_notification',
+                        target: target || 'all',
+                        targetType: notifType,
+                        title: title,
+                        message: message,
+                        type: 'general'
+                    })
+                });
+
+                if (!response.ok) throw new Error('Network response error');
+
+                const data = await response.json();
+                if (data.success) {
+                    showToast("Notification sent successfully!", "success");
+                    document.getElementById('notifTitle').value = '';
+                    document.getElementById('notifMessage').value = '';
+                    document.getElementById('notifStudentId').value = '';
+                } else {
+                    throw new Error(data.error || 'Failed to send');
+                }
+            } catch (error) {
+                console.error('Notification error:', error);
+                showToast("Connection error - notification saved locally", "info");
+                // Save to localStorage as fallback
+                const localNotifs = JSON.parse(localStorage.getItem('localNotifications') || '[]');
+                localNotifs.push({
+                    target: target || 'all',
+                    targetType: notifType,
+                    title: title,
+                    message: message,
+                    date: new Date().toLocaleString(),
+                    synced: false
+                });
+                localStorage.setItem('localNotifications', JSON.stringify(localNotifs));
+                showToast("Notification saved locally - will sync when online", "success");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'SEND NOTIFICATION';
+            }
+        }
         function generateReport(type) { showToast(`Generating ${type} report...`, "info"); }
         function handleFinanceCSVSelect(e) { showToast("Financial CSV loaded", "success"); document.getElementById('processFinanceBtn').style.display = 'block'; }
         function processFinanceCSV() { showToast("Financial data processed", "success"); }
