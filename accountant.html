@@ -460,6 +460,166 @@
         }
         .sidebar-overlay.show { display: block; }
         @media (max-width: 768px) { .menu-toggle { display: block; } }
+
+        /* Additional Clearance & Notification Styles */
+.student-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid rgba(107, 142, 35, 0.2);
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.student-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    border-bottom: 1px solid rgba(107, 142, 35, 0.1);
+    transition: background 0.2s;
+}
+
+.student-list-item:hover {
+    background: rgba(107, 142, 35, 0.05);
+}
+
+.student-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-name {
+    font-weight: bold;
+    color: var(--text-dark);
+}
+
+.student-details {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.clearance-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.clearance-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.status-cleared {
+    color: var(--success);
+    font-weight: bold;
+}
+
+.status-not {
+    color: var(--danger);
+    font-weight: bold;
+}
+
+.filter-section {
+    background: rgba(107, 142, 35, 0.05);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* Tab Styles */
+.tab-container {
+    margin-bottom: 20px;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    background: rgba(107, 142, 35, 0.1);
+    color: var(--primary-dark);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.tab-btn:hover {
+    background: rgba(107, 142, 35, 0.2);
+}
+
+.tab-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+/* Request Item Styles */
+.request-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    background: white;
+}
+
+.request-item:hover {
+    background: rgba(107, 142, 35, 0.05);
+}
+
+.request-info {
+    flex: 1;
+}
+
+.request-info strong {
+    display: block;
+    color: var(--primary-dark);
+}
+
+.request-info small {
+    color: #666;
+}
+
+.request-actions button {
+    margin-left: 10px;
+    padding: 8px 15px;
+    width: auto;
+}
+
+/* Notification History */
+.notification-history-item {
+    padding: 12px;
+    border-bottom: 1px solid rgba(107, 142, 35, 0.1);
+}
+
+.notification-history-item:last-child {
+    border-bottom: none;
+}
+
+.notification-title {
+    font-weight: bold;
+    color: var(--primary-dark);
+}
+
+.notification-date {
+    font-size: 0.75rem;
+    color: #999;
+}
+
+
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -665,20 +825,73 @@
             </div>
         </div>
 
-        <!-- FINANCIAL CLEARANCE SECTION -->
-        <div id="clearanceSection" class="section" style="display:none;">
-            <div class="card">
-                <h3><i class="fas fa-check-circle"></i> Financial Clearance</h3>
-                <div id="clearanceList" class="student-list-container">
-                    <p style="text-align:center; padding:40px;">Loading students...</p>
-                </div>
-                <div style="margin-top:20px;">
-                    <input id="clearanceId" placeholder="Student ID">
-                    <button onclick="clearStudentById()" class="success-btn">CLEAR</button>
-                    <button onclick="unclearStudentById()" class="danger-btn">UNCLEAR</button>
-                </div>
+        <!-- FINANCIAL CLEARANCE SECTION (Enhanced) -->
+<div id="clearanceSection" class="section" style="display:none;">
+    <div class="card">
+        <h3><i class="fas fa-check-circle"></i> Financial Clearance Management</h3>
+        <p style="color:#666; margin-bottom:15px;">Mark students as financially cleared for registration/exams</p>
+
+        <!-- Filter by Program/Level -->
+        <div class="filter-section">
+            <h4 style="margin-bottom: 10px;"><i class="fas fa-filter"></i> Filter Students</h4>
+            <div class="filter-row">
+                <select id="clearanceProgramFilter" onchange="loadStudentClearanceList()">
+                    <option value="">All Programs</option>
+                    <option value="RM">Registered Midwifery</option>
+                    <option value="RN">Registered Nursing</option>
+                    <option value="ML">Medical Laboratory Technology</option>
+                </select>
+                <select id="clearanceLevelFilter" onchange="loadStudentClearanceList()">
+                    <option value="">All Levels</option>
+                    <option value="100">Level 100</option>
+                    <option value="200">Level 200</option>
+                    <option value="300">Level 300</option>
+                </select>
+                <select id="clearanceStatusFilter" onchange="loadStudentClearanceList()">
+                    <option value="">All Status</option>
+                    <option value="cleared">Cleared</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button onclick="clearSelectedStudents()" class="success-btn" style="width: auto; flex: 1;">
+                    <i class="fas fa-check"></i> CLEAR SELECTED
+                </button>
+                <button onclick="unclearSelectedStudents()" class="danger-btn" style="width: auto; flex: 1;">
+                    <i class="fas fa-times"></i> UNCLEAR SELECTED
+                </button>
             </div>
         </div>
+
+        <!-- Select All -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="selectAllStudents" onchange="toggleSelectAll()">
+                <strong>Select All</strong>
+            </label>
+            <span id="selectedCount" style="color: #666;">0 selected</span>
+        </div>
+
+        <!-- Scrollable Student List -->
+        <div id="clearanceList" class="student-list-container">
+            <p style="text-align: center; color: #999; padding: 40px;">Loading students...</p>
+        </div>
+
+        <!-- Individual Clearance -->
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(107, 142, 35, 0.2);">
+            <h4 style="margin-bottom: 10px;"><i class="fas fa-user"></i> Individual Student Clearance</h4>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input id="clearanceId" placeholder="Student ID" style="flex: 1; min-width: 200px;">
+                <button onclick="clearStudentById()" class="success-btn" style="width: auto;">
+                    <i class="fas fa-check"></i> CLEAR
+                </button>
+                <button onclick="unclearStudentById()" class="danger-btn" style="width: auto;">
+                    <i class="fas fa-times"></i> UNCLEAR
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
         <!-- TRANSCRIPT GENERATION SECTION -->
         <div id="transcriptSection" class="section" style="display:none;">
@@ -740,35 +953,69 @@
             </div>
         </div>
 
-        <!-- NOTIFICATIONS SECTION -->
-        <div id="notificationsSection" class="section" style="display:none;">
-            <div class="card">
-                <h3><i class="fas fa-bell"></i> Send Notification</h3>
-                <select id="notifType" onchange="toggleNotifTarget()">
-                    <option value="all">All Students</option>
-                    <option value="program">By Program</option>
-                    <option value="level">By Level</option>
-                    <option value="student">Specific Student</option>
-                </select>
-                <div id="notifTargetContainer" style="display:none;">
-                    <input id="notifStudentId" placeholder="Enter Student ID or Program (e.g., RM) or Level (e.g., 100)">
-                </div>
-                <input id="notifTitle" placeholder="Title">
-                <textarea id="notifMessage" rows="4" placeholder="Message"></textarea>
-                <button onclick="sendNotification()" class="success-btn" id="sendNotifBtn">SEND NOTIFICATION</button>
-            </div>
+        <!-- NOTIFICATIONS SECTION (Enhanced) -->
+<div id="notificationsSection" class="section" style="display:none;">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-bell"></i> Send Notification to Students</h3>
         </div>
 
-        <!-- REPORTS SECTION -->
-        <div id="reportsSection" class="section" style="display:none;">
-            <div class="card">
-                <h3><i class="fas fa-chart-bar"></i> Reports</h3>
-                <button onclick="generateReport('clearance')" class="info-btn">Clearance Report</button>
-                <button onclick="generateReport('results')" class="info-btn">Results Report</button>
-                <button onclick="generateReport('financial')" class="info-btn">Financial Report</button>
-            </div>
+        <label style="font-weight: bold;">Notification Type:</label>
+        <select id="notifType" onchange="toggleTargetSelection()" style="margin-bottom: 15px;">
+            <option value="all">All Students</option>
+            <option value="program">By Program</option>
+            <option value="level">By Level</option>
+            <option value="individual">Individual Student</option>
+        </select>
+
+        <div id="targetSelection" style="display: none; margin-bottom: 15px;">
+            <input id="targetValue" placeholder="Enter Program (e.g., RM) or Level (e.g., 100)">
+        </div>
+
+        <label style="font-weight: bold;">Title:</label>
+        <input id="notifTitle" placeholder="Notification Title (e.g., Examination Schedule)">
+
+        <label style="font-weight: bold;">Message:</label>
+        <textarea id="notifMessage" rows="4" placeholder="Enter notification content..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; resize: vertical;"></textarea>
+
+        <div style="display: flex; gap: 10px;">
+            <button onclick="sendNotification()" class="success-btn" style="flex: 1;">
+                <i class="fas fa-paper-plane"></i> SEND NOTIFICATION
+            </button>
+            <button onclick="scheduleNotification()" class="info-btn" style="flex: 1;">
+                <i class="fas fa-clock"></i> SCHEDULE
+            </button>
         </div>
     </div>
+
+    <div class="card">
+        <h3><i class="fas fa-history"></i> Recent Notifications</h3>
+        <div id="notificationHistory">
+            <p style="text-align: center; color: #999;">No notifications sent yet.</p>
+        </div>
+    </div>
+</div>
+
+        <!-- REPORTS SECTION (Enhanced) -->
+<div id="reportsSection" class="section" style="display:none;">
+    <div class="card">
+        <h3><i class="fas fa-chart-bar"></i> Generate Reports</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <button onclick="generateReport('clearance')" class="info-btn" style="padding: 20px;">
+                <i class="fas fa-check-circle"></i> Clearance Report
+            </button>
+            <button onclick="generateReport('results')" class="info-btn" style="padding: 20px;">
+                <i class="fas fa-graduation-cap"></i> Academic Results Report
+            </button>
+            <button onclick="generateReport('financial')" class="info-btn" style="padding: 20px;">
+                <i class="fas fa-money-bill"></i> Financial Report
+            </button>
+            <button onclick="generateReport('summary')" class="info-btn" style="padding: 20px;">
+                <i class="fas fa-file-alt"></i> Summary Report
+            </button>
+        </div>
+    </div>
+</div>
 
     <div id="toast" class="toast" style="display: none;"></div>
 
@@ -1041,74 +1288,300 @@
 
         function updateFees() { showToast("Fees updated!", "success"); }
 
-        async function sendNotification() {
-            const notifType = document.getElementById('notifType').value;
-            const target = document.getElementById('notifStudentId').value.trim();
-            const title = document.getElementById('notifTitle').value.trim();
-            const message = document.getElementById('notifMessage').value.trim();
-            const btn = document.getElementById('sendNotifBtn');
+        // Toggle Target Selection for Notifications
+function toggleTargetSelection() {
+    const type = document.getElementById('notifType').value;
+    const selection = document.getElementById('targetSelection');
+    selection.style.display = (type === 'all') ? 'none' : 'block';
+}
 
-            if (!title || !message) {
-                showToast("Please enter title and message", "warning");
-                return;
-            }
+        // Enhanced Send Notification
+async function sendNotification() {
+    const title = document.getElementById('notifTitle').value;
+    const message = document.getElementById('notifMessage').value;
+    const type = document.getElementById('notifType').value;
+    const target = document.getElementById('targetValue').value;
 
-            if (notifType !== 'all' && !target) {
-                showToast("Please enter target (Student ID, Program, or Level)", "warning");
-                return;
-            }
+    if (!title || !message) {
+        showToast("Please enter title and message", "warning");
+        return;
+    }
 
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...';
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...';
 
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'send_notification',
-                        target: target || 'all',
-                        targetType: notifType,
-                        title: title,
-                        message: message,
-                        type: 'general'
-                    })
-                });
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'send_notification',
+                title: title,
+                message: message,
+                type: type,
+                target: target || 'all'
+            })
+        });
 
-                if (!response.ok) throw new Error('Network response error');
-
-                const data = await response.json();
-                if (data.success) {
-                    showToast("Notification sent successfully!", "success");
-                    document.getElementById('notifTitle').value = '';
-                    document.getElementById('notifMessage').value = '';
-                    document.getElementById('notifStudentId').value = '';
-                } else {
-                    throw new Error(data.error || 'Failed to send');
-                }
-            } catch (error) {
-                console.error('Notification error:', error);
-                showToast("Connection error - notification saved locally", "info");
-                // Save to localStorage as fallback
-                const localNotifs = JSON.parse(localStorage.getItem('localNotifications') || '[]');
-                localNotifs.push({
-                    target: target || 'all',
-                    targetType: notifType,
-                    title: title,
-                    message: message,
-                    date: new Date().toLocaleString(),
-                    synced: false
-                });
-                localStorage.setItem('localNotifications', JSON.stringify(localNotifs));
-                showToast("Notification saved locally - will sync when online", "success");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'SEND NOTIFICATION';
-            }
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast("Notification sent successfully!", "success");
+            document.getElementById('notifTitle').value = '';
+            document.getElementById('notifMessage').value = '';
+            document.getElementById('targetValue').value = '';
+            
+            // Add to notification history
+            addToNotificationHistory(title, message, type, target);
+        } else {
+            throw new Error(data.error || 'Failed to send');
         }
-        function generateReport(type) { showToast(`Generating ${type} report...`, "info"); }
-        function handleFinanceCSVSelect(e) { showToast("Financial CSV loaded", "success"); document.getElementById('processFinanceBtn').style.display = 'block'; }
-        function processFinanceCSV() { showToast("Financial data processed", "success"); }
+    } catch (error) {
+        console.error('Notification error:', error);
+        showToast("Failed to send notification", "danger");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
 
+// Schedule Notification (Placeholder)
+function scheduleNotification() {
+    showToast("Scheduled notifications coming soon!", "info");
+}
+
+// Add to Notification History
+function addToNotificationHistory(title, message, type, target) {
+    const container = document.getElementById('notificationHistory');
+    let history = JSON.parse(localStorage.getItem('notificationHistory') || '[]');
+    
+    history.unshift({
+        title: title,
+        message: message.substring(0, 100),
+        type: type,
+        target: target || 'all',
+        date: new Date().toLocaleString()
+    });
+    
+    // Keep only last 20
+    history = history.slice(0, 20);
+    localStorage.setItem('notificationHistory', JSON.stringify(history));
+    
+    displayNotificationHistory();
+}
+
+// Display Notification History
+function displayNotificationHistory() {
+    const container = document.getElementById('notificationHistory');
+    const history = JSON.parse(localStorage.getItem('notificationHistory') || '[]');
+    
+    if (history.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #999;">No notifications sent yet.</p>';
+        return;
+    }
+    
+    let html = '';
+    history.forEach(notif => {
+        let targetText = notif.target === 'all' ? 'All Students' : 
+                         notif.type === 'program' ? `Program: ${notif.target}` :
+                         notif.type === 'level' ? `Level: ${notif.target}` :
+                         `Student: ${notif.target}`;
+        
+        html += `
+            <div class="notification-history-item">
+                <div class="notification-title">${notif.title}</div>
+                <div style="font-size: 0.85rem; color: #666;">${notif.message}</div>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                    <small class="notification-date">${notif.date}</small>
+                    <small style="color: var(--primary);">${targetText}</small>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+// Demo Clearance List (Fallback)
+function loadDemoClearanceList(programFilter, levelFilter, statusFilter) {
+    const container = document.getElementById('clearanceList');
+    const demoStudents = [
+        { id: 'CCST/RM/24/001', name: 'Dorcas Anderson', program: 'RM', level: '100', isCleared: true },
+        { id: 'CCST/RN/24/002', name: 'Justina Arhin', program: 'RN', level: '100', isCleared: false },
+        { id: 'CCST/ML/24/001', name: 'Akosua Johnson', program: 'ML', level: '200', isCleared: true },
+        { id: 'CCST/ML/24/002', name: 'Evelyn Prah', program: 'ML', level: '100', isCleared: false },
+        { id: 'CCST/RM/23/001', name: 'Ernest Ahenkrah', program: 'RM', level: '200', isCleared: true },
+        { id: 'CCST/ML/23/002', name: 'Alice Essel', program: 'ML', level: '300', isCleared: false },
+    ];
+    
+    let filtered = demoStudents;
+    if (programFilter) filtered = filtered.filter(s => s.program === programFilter);
+    if (levelFilter) filtered = filtered.filter(s => s.level === levelFilter);
+    
+    let html = '';
+    filtered.forEach(student => {
+        const isCleared = student.isCleared;
+        const matchesStatus = !statusFilter ||
+            (statusFilter === 'cleared' && isCleared) ||
+            (statusFilter === 'pending' && !isCleared);
+        
+        if (matchesStatus) {
+            html += `
+                <div class="student-list-item">
+                    <div class="student-info">
+                        <span class="student-name">${student.name}</span>
+                        <span class="student-details">${getFullProgramName(student.program)} | Level ${student.level} | ID: ${student.id}</span>
+                    </div>
+                    <div class="clearance-checkbox">
+                        <span class="${isCleared ? 'status-cleared' : 'status-not'}">
+                            ${isCleared ? '<i class="fas fa-check-circle"></i> Cleared' : '<i class="fas fa-times-circle"></i> Pending'}
+                        </span>
+                        <input type="checkbox" data-id="${student.id}" onchange="updateSelectedCount()">
+                    </div>
+                </div>
+            `;
+        }
+    });
+    container.innerHTML = html || '<p style="text-align: center; color: #999; padding: 40px;">No students found.</p>';
+}
+
+// Update Selected Count
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('#clearanceList input[type="checkbox"]');
+    const selected = Array.from(checkboxes).filter(cb => cb.checked).length;
+    const countSpan = document.getElementById('selectedCount');
+    if (countSpan) countSpan.innerText = `${selected} selected`;
+}
+
+// Toggle Select All
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAllStudents');
+    if (!selectAll) return;
+    const checkboxes = document.querySelectorAll('#clearanceList input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    updateSelectedCount();
+}
+
+// Clear Selected Students
+async function clearSelectedStudents() {
+    const checkboxes = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]'))
+        .filter(cb => cb.checked);
+    
+    if (checkboxes.length === 0) {
+        showToast("Please select at least one student", "warning");
+        return;
+    }
+    
+    const ids = checkboxes.map(cb => cb.dataset.id);
+    
+    try {
+        for (const id of ids) {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'toggle_clearance',
+                    id: id,
+                    cleared: true
+                })
+            });
+        }
+        showToast(`${ids.length} students cleared successfully!`, "success");
+        loadStudentClearanceList();
+    } catch (e) {
+        showToast("Failed to clear students", "danger");
+    }
+}
+
+// Unclear Selected Students
+async function unclearSelectedStudents() {
+    const checkboxes = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]'))
+        .filter(cb => cb.checked);
+    
+    if (checkboxes.length === 0) {
+        showToast("Please select at least one student", "warning");
+        return;
+    }
+    
+    const ids = checkboxes.map(cb => cb.dataset.id);
+    
+    try {
+        for (const id of ids) {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'toggle_clearance',
+                    id: id,
+                    cleared: false
+                })
+            });
+        }
+        showToast(`${ids.length} students uncleared successfully!`, "success");
+        loadStudentClearanceList();
+    } catch (e) {
+        showToast("Failed to unclear students", "danger");
+    }
+}
+
+// Enhanced Generate Report
+function generateReport(type) {
+    showToast(`Generating ${type} report...`, "info");
+    
+    // Store report data in localStorage for potential download
+    const reportData = {
+        type: type,
+        date: new Date().toLocaleString(),
+        data: {}
+    };
+    
+    localStorage.setItem('lastReport', JSON.stringify(reportData));
+    
+    // Open a new window with report preview
+    const reportWindow = window.open('', '_blank');
+    reportWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>CCST ${type.toUpperCase()} Report</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; }
+                h1 { color: #1a472a; }
+                .report-date { color: #666; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+                th { background: #1a472a; color: white; }
+            </style>
+        </head>
+        <body>
+            <h1>CCST - ${type.toUpperCase()} Report</h1>
+            <p class="report-date">Generated on: ${new Date().toLocaleString()}</p>
+            <p>Report type: ${type}</p>
+            <p>This report is being generated. Please check back later for complete data.</p>
+            <button onclick="window.print()">Print Report</button>
+        </body>
+        </html>
+    `);
+    reportWindow.document.close();
+}
+
+// Add New Course (enhanced)
+function addNewCourse() {
+    const semester = document.getElementById('courseSemester').value;
+    const courseName = document.getElementById('newCourseName').value;
+    const courseCode = document.getElementById('newCourseCode').value;
+    const credits = document.getElementById('newCourseCredits').value;
+    
+    if (!semester || !courseName) {
+        showToast("Enter semester and course name", "warning");
+        return;
+    }
+    
+    showToast(`Course "${courseCode} - ${courseName}" added to ${semester} with ${credits} credits`, "success");
+    
+    // Clear inputs
+    document.getElementById('newCourseName').value = '';
+    document.getElementById('newCourseCode').value = '';
+    document.getElementById('newCourseCredits').value = '';
+}
      
         // Download CSV Template for Results Upload
         function downloadResultsTemplate() {
@@ -1383,15 +1856,16 @@ CCST/ML/24/002,Sarah Williams,ML,100,5500,5500,0,0,Semester 1 2026/2027`;
         }
 
         window.onload = () => {
-            showSection('search');
-            document.getElementById('totalStudents').innerText = '156';
-            document.getElementById('clearedStudents').innerText = '142';
-            document.getElementById('pendingStudents').innerText = '14';
-            document.getElementById('pendingResults').innerText = '23';
-            loadAllStudentsForTranscript();
-            loadTranscriptRequests();
-            loadProcessedRequests();
-        };
+    showSection('search');
+    document.getElementById('totalStudents').innerText = '156';
+    document.getElementById('clearedStudents').innerText = '142';
+    document.getElementById('pendingStudents').innerText = '14';
+    document.getElementById('pendingResults').innerText = '23';
+    loadAllStudentsForTranscript();
+    loadTranscriptRequests();
+    loadProcessedRequests();
+    displayNotificationHistory();
+};
     </script>
 </body>
 </html>
