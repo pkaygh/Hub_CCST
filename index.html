@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
-    <title>CCST Student Portal</title>
+    <title>CCST Student Portal | Central College of Science and Technology</title>
     <style>
         * {
             margin: 0;
@@ -15,52 +15,231 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #6b8e23;
+            --primary-light: #9acd32;
+            --primary-dark: #1a472a;
+            --success: #556b2f;
+            --danger: #8b0000;
+            --warning: #daa520;
+            --info: #9acd32;
+            --bg: #f5f5dc;
+            --text-dark: #2f4f2f;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a472a 0%, #6b8e23 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
         }
 
+        /* Animated Background from Welcome Page */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(135deg, #0a2a1a 0%, #1a472a 50%, #2d6a3d 100%);
+        }
+
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(107, 142, 35, 0.15);
+            border-radius: 50%;
+            animation: floatAround 20s infinite ease-in-out;
+        }
+
+        .shape:nth-child(1) { width: 300px; height: 300px; top: -100px; left: -100px; animation-duration: 25s; }
+        .shape:nth-child(2) { width: 200px; height: 200px; bottom: -50px; right: -50px; animation-duration: 20s; animation-delay: 2s; }
+        .shape:nth-child(3) { width: 150px; height: 150px; top: 50%; left: 10%; animation-duration: 18s; animation-delay: 1s; }
+        .shape:nth-child(4) { width: 400px; height: 400px; bottom: 20%; right: -100px; animation-duration: 30s; animation-delay: 3s; }
+        .shape:nth-child(5) { width: 100px; height: 100px; top: 20%; right: 15%; animation-duration: 15s; animation-delay: 0s; }
+        .shape:nth-child(6) { width: 250px; height: 250px; bottom: 10%; left: 20%; animation-duration: 22s; animation-delay: 4s; }
+        .shape:nth-child(7) { width: 80px; height: 80px; top: 60%; right: 30%; animation-duration: 12s; animation-delay: 1.5s; }
+        .shape:nth-child(8) { width: 180px; height: 180px; top: 10%; right: 40%; animation-duration: 28s; animation-delay: 2.5s; }
+
+        @keyframes floatAround {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(50px, -30px) rotate(45deg); }
+            50% { transform: translate(-30px, 50px) rotate(90deg); }
+            75% { transform: translate(40px, 40px) rotate(135deg); }
+            100% { transform: translate(0, 0) rotate(180deg); }
+        }
+
+        /* Floating Gradient Orbs */
+        .orb {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(154, 205, 50, 0.15), transparent 70%);
+            border-radius: 50%;
+            animation: pulse 8s infinite ease-in-out;
+        }
+
+        .orb-1 { top: -200px; left: -200px; animation-delay: 0s; }
+        .orb-2 { bottom: -200px; right: -200px; animation-delay: 4s; width: 600px; height: 600px; }
+        .orb-3 { top: 30%; right: 10%; width: 300px; height: 300px; animation-delay: 2s; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
+
+        /* Particle Canvas */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Login Container */
         .login-container {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 40px;
-            border-radius: 16px;
+            border-radius: 24px;
             box-shadow: 0 20px 60px rgba(26, 71, 42, 0.4);
             width: 100%;
-            max-width: 450px;
+            max-width: 480px;
+            position: relative;
+            z-index: 10;
+            animation: fadeInUp 0.8s ease;
         }
 
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Admission Banner */
+        .admission-banner {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .admission-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .banner-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .banner-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .banner-text h4 {
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .banner-text p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.8rem;
+        }
+
+        .banner-btn {
+            background: white;
+            color: var(--primary-dark);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+
+        .banner-btn:hover {
+            transform: scale(1.05);
+            background: var(--primary-light);
+            color: white;
+        }
+
+        /* Logo Section */
         .logo {
             text-align: center;
             margin-bottom: 25px;
         }
 
         .logo h1 {
-            color: #1a472a;
-            font-size: 2rem;
+            color: var(--primary-dark);
+            font-size: 1.8rem;
             margin-bottom: 5px;
         }
 
         .logo p {
             color: #666;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .logo-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #1a472a 0%, #6b8e23 100%);
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
+            margin: 0 auto 15px;
             color: white;
-            font-size: 2.5rem;
+            font-size: 2rem;
+            animation: pulseIcon 2s infinite;
+        }
+
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(107, 142, 35, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(107, 142, 35, 0); }
         }
 
         /* Role Selector */
@@ -84,19 +263,19 @@
         }
 
         .role-btn.active {
-            border-color: #1a472a;
-            background: #1a472a;
+            border-color: var(--primary-dark);
+            background: var(--primary-dark);
             color: white;
         }
 
         .role-btn:hover:not(.active) {
-            border-color: #1a472a;
-            color: #1a472a;
+            border-color: var(--primary-dark);
+            color: var(--primary-dark);
         }
 
         .role-btn i {
             display: block;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             margin-bottom: 5px;
         }
 
@@ -136,13 +315,13 @@
 
         input:focus {
             outline: none;
-            border-color: #1a472a;
+            border-color: var(--primary-dark);
         }
 
         button[type="submit"] {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #1a472a 0%, #6b8e23 100%);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
             color: white;
             border: none;
             border-radius: 10px;
@@ -159,7 +338,7 @@
         }
 
         .error-message {
-            color: #8b0000;
+            color: var(--danger);
             font-size: 0.85rem;
             margin-top: 10px;
             display: none;
@@ -173,7 +352,7 @@
             width: 20px;
             height: 20px;
             border: 2px solid #fff;
-            border-top: 2px solid #1a472a;
+            border-top: 2px solid var(--primary-dark);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto;
@@ -201,8 +380,8 @@
 
         .register-btn {
             background: transparent;
-            border: 2px solid #004080;
-            color: #004080;
+            border: 2px solid var(--primary-dark);
+            color: var(--primary-dark);
             padding: 12px 30px;
             border-radius: 10px;
             font-weight: bold;
@@ -212,39 +391,8 @@
         }
 
         .register-btn:hover {
-            background: #004080;
+            background: var(--primary-dark);
             color: white;
-        }
-
-        /* Offline Notice */
-        .offline-notice {
-            background: #f39c12;
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .offline-notice.show {
-            display: block;
-        }
-
-        /* Install Banner */
-        .install-banner {
-            background: #27ae60;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-            margin-top: 15px;
-            display: none;
-            cursor: pointer;
-        }
-
-        .install-banner.show {
-            display: block;
         }
 
         /* Modal Styles */
@@ -283,7 +431,7 @@
         }
 
         .modal-header h2 {
-            color: #004080;
+            color: var(--primary-dark);
         }
 
         .modal-close {
@@ -292,15 +440,6 @@
             font-size: 1.5rem;
             cursor: pointer;
             color: #666;
-        }
-
-        .modal-content input {
-            padding-left: 15px;
-        }
-
-        .modal-content input:focus + i,
-        .modal-content .input-wrapper i {
-            color: #004080;
         }
 
         .btn-group {
@@ -319,22 +458,46 @@
         }
 
         @media (max-width: 480px) {
-            .login-container {
-                padding: 25px 20px;
-            }
-
-            .logo h1 {
-                font-size: 1.6rem;
-            }
+            .login-container { padding: 25px 20px; }
+            .logo h1 { font-size: 1.4rem; }
+            .admission-banner { flex-direction: column; text-align: center; }
+            .banner-content { justify-content: center; }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
+    <!-- Animated Background from Welcome Page -->
+    <div class="animated-bg"></div>
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <canvas id="particleCanvas"></canvas>
+
     <div class="login-container">
-        <div class="offline-notice" id="offlineNotice">
-            <i class="fas fa-wifi-slash"></i> You are offline. Some features may not work.
+        <!-- ADMISSION BANNER - New Applicant Link at the TOP -->
+        <div class="admission-banner" onclick="window.location.href='admission.html'">
+            <div class="banner-content">
+                <div class="banner-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="banner-text">
+                    <h4>🎓 New Applicant? Start Your Journey Here!</h4>
+                    <p>Apply for 2025/2026 Academic Year. Fill admission form, upload documents, and pay online.</p>
+                </div>
+            </div>
+            <button class="banner-btn">Apply Now →</button>
         </div>
 
         <div class="logo">
@@ -353,7 +516,7 @@
             </div>
             <div class="role-btn" id="adminRole" onclick="selectRole('admin')">
                 <i class="fas fa-user-tie"></i>
-                Admin
+                Staff
             </div>
         </div>
 
@@ -388,10 +551,6 @@
                 <i class="fas fa-user-plus"></i> Register as New Student
             </button>
         </div>
-
-        <div class="install-banner" id="installBanner" onclick="installPWA()">
-            <i class="fas fa-download"></i> Install App for Offline Use
-        </div>
     </div>
 
     <!-- Registration Modal -->
@@ -405,60 +564,40 @@
             <form id="registerForm" onsubmit="handleRegister(event)">
                 <div class="form-group">
                     <label>Full Name</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="regName" placeholder="Enter your full name" required style="padding-left: 45px;">
-                    </div>
+                    <input type="text" id="regName" placeholder="Enter your full name" required>
                 </div>
 
                 <div class="form-group">
                     <label>Student ID</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-id-card"></i>
-                        <input type="text" id="regId" placeholder="e.g., CCST/RM/24/001" required style="padding-left: 45px;">
-                    </div>
+                    <input type="text" id="regId" placeholder="e.g., CCST/RM/24/001" required>
                 </div>
 
                 <div class="form-group">
                     <label>Program</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-book"></i>
-                        <input type="text" id="regProgram" placeholder="e.g., RM, MW, DN" required style="padding-left: 45px;">
-                    </div>
+                    <input type="text" id="regProgram" placeholder="e.g., RM, RN, ML" required>
                 </div>
 
                 <div class="form-group">
                     <label>Level</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-layer-group"></i>
-                        <input type="number" id="regLevel" placeholder="e.g., 100, 200, 300" required style="padding-left: 45px;">
-                    </div>
+                    <input type="number" id="regLevel" placeholder="e.g., 100, 200, 300" required>
                 </div>
 
                 <div class="form-group">
                     <label>Create Password</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="regPassword" placeholder="Create a password" required style="padding-left: 45px;">
-                    </div>
+                    <input type="password" id="regPassword" placeholder="Create a password" required>
                 </div>
 
                 <div class="form-group">
                     <label>Confirm Password</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="regConfirmPassword" placeholder="Confirm your password" required style="padding-left: 45px;">
-                    </div>
+                    <input type="password" id="regConfirmPassword" placeholder="Confirm your password" required>
                 </div>
 
                 <div class="btn-group">
-                    <button type="submit" id="registerBtn" class="success-btn" style="background: #27ae60;">
-                        <i class="fas fa-check"></i> <span id="registerText">Register</span>
+                    <button type="submit" id="registerBtn" style="background: #27ae60;">
+                        <span id="registerText">Register</span>
                         <span id="registerSpinner" class="spinner" style="border-top-color: white;"></span>
                     </button>
-                    <button type="button" class="btn-cancel" onclick="closeRegisterModal()">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
+                    <button type="button" class="btn-cancel" onclick="closeRegisterModal()">Cancel</button>
                 </div>
 
                 <div class="error-message" id="registerError" style="margin-top: 15px;"></div>
@@ -467,12 +606,73 @@
     </div>
 
     <script>
-        // Configuration - Replace YOUR_SCRIPT_ID_HERE with your actual Google Apps Script Deployment ID
+        // Configuration - Your Google Apps Script URL
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9jrpA-Pd_fwtxUh4QDNXb2Nq1gDt_Cuoy968KMmPS5B3fJ2xMiI7M973OzEDAaSAu/exec";
         let deferredPrompt;
         let currentRole = 'student';
 
-        // Select Role (Student/Admin)
+        // Particle Animation System
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationId = null;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function createParticles() {
+            const particleCount = 60;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 2 + 1,
+                    speedX: (Math.random() - 0.5) * 0.3,
+                    speedY: (Math.random() - 0.5) * 0.3,
+                    opacity: Math.random() * 0.4 + 0.1,
+                    color: `rgba(154, 205, 50, ${Math.random() * 0.3 + 0.1})`
+                });
+            }
+        }
+
+        function animateParticles() {
+            if (!canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                
+                p.x += p.speedX;
+                p.y += p.speedY;
+                
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+            }
+            
+            animationId = requestAnimationFrame(animateParticles);
+        }
+
+        function initParticles() {
+            resizeCanvas();
+            createParticles();
+            animateParticles();
+        }
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            particles = [];
+            createParticles();
+        });
+
+        // Select Role
         function selectRole(role) {
             currentRole = role;
 
@@ -484,8 +684,8 @@
             } else {
                 document.getElementById('adminRole').classList.add('active');
                 document.getElementById('studentRole').classList.remove('active');
-                document.getElementById('idLabel').innerText = 'Admin ID';
-                document.getElementById('loginId').placeholder = 'Enter admin ID';
+                document.getElementById('idLabel').innerText = 'Staff ID';
+                document.getElementById('loginId').placeholder = 'Enter staff ID';
             }
         }
 
@@ -493,9 +693,9 @@
         function updateOnlineStatus() {
             const notice = document.getElementById('offlineNotice');
             if (!navigator.onLine) {
-                notice.classList.add('show');
+                if (notice) notice.classList.add('show');
             } else {
-                notice.classList.remove('show');
+                if (notice) notice.classList.remove('show');
             }
         }
 
@@ -506,7 +706,8 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            document.getElementById('installBanner').classList.add('show');
+            const banner = document.getElementById('installBanner');
+            if (banner) banner.classList.add('show');
         });
 
         function installPWA() {
@@ -517,7 +718,8 @@
                         console.log('User accepted the A2HS prompt');
                     }
                     deferredPrompt = null;
-                    document.getElementById('installBanner').classList.remove('show');
+                    const banner = document.getElementById('installBanner');
+                    if (banner) banner.classList.remove('show');
                 });
             }
         }
@@ -537,7 +739,6 @@
                 return;
             }
 
-            // Show loading
             loginBtn.disabled = true;
             loginText.style.display = 'none';
             document.getElementById('loginSpinner').style.display = 'inline-block';
@@ -545,7 +746,6 @@
 
             try {
                 if (!navigator.onLine) {
-                    // Try offline login
                     const cachedData = localStorage.getItem('userData');
                     if (cachedData) {
                         const data = JSON.parse(cachedData);
@@ -559,7 +759,6 @@
                 }
 
                 if (currentRole === 'admin') {
-                    // Admin login
                     const response = await fetch(`${SCRIPT_URL}?action=staff_login&user=${loginId}&pass=${password}`);
                     const data = await response.json();
 
@@ -574,7 +773,6 @@
                         return;
                     }
                 } else {
-                    // Student login
                     const response = await fetch(`${SCRIPT_URL}?id=${loginId}&password=${password}`);
                     const data = await response.json();
 
@@ -583,11 +781,9 @@
                         return;
                     }
 
-                    // Save to localStorage
                     localStorage.setItem('userData', JSON.stringify(data));
                     localStorage.setItem('studentId', loginId);
 
-                    // Fetch results for dashboard
                     try {
                         const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${loginId}`);
                         const resultsData = await resultsRes.json();
@@ -598,7 +794,6 @@
                         console.log('Could not fetch results:', e);
                     }
 
-                    // Redirect to dashboard
                     window.location.href = 'dashboard.html';
                     return;
                 }
@@ -667,7 +862,6 @@
                 return;
             }
 
-            // Disable button and show loading
             registerBtn.disabled = true;
             registerText.style.display = 'none';
             registerSpinner.style.display = 'inline-block';
@@ -697,8 +891,6 @@
                 if (data.success) {
                     alert("Registration successful! Please login with your Student ID and password.");
                     closeRegisterModal();
-
-                    // Pre-fill login form
                     document.getElementById('loginId').value = id;
                     selectRole('student');
                 } else {
@@ -710,7 +902,6 @@
                 errorMsg.innerText = "Connection error. Please try again.";
                 errorMsg.style.display = 'block';
             } finally {
-                // Re-enable button
                 registerBtn.disabled = false;
                 registerText.style.display = 'inline';
                 registerSpinner.style.display = 'none';
@@ -720,8 +911,8 @@
         // Initialize
         window.onload = function() {
             updateOnlineStatus();
+            initParticles();
 
-            // Register service worker
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js')
                     .then(registration => {
@@ -733,6 +924,13 @@
             }
         };
 
+        // Cleanup animation on page unload
+        window.addEventListener('beforeunload', () => {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        });
+
         // Close modal on outside click
         document.getElementById('registerModal').addEventListener('click', function(e) {
             if (e.target === this) {
@@ -740,6 +938,5 @@
             }
         });
     </script>
-
 </body>
 </html>

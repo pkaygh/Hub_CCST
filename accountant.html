@@ -666,6 +666,11 @@
             <i class="fas fa-chart-bar"></i> Reports
         </a>
 
+        <a href="#" class="menu-item" onclick="showSection('admissions')">
+            <i class="fas fa-users"></i> Admissions Manager
+            <span id="admissionBadge" class="badge" style="display:none;">0</span>
+        </a>
+
         <hr style="margin: 20px 25px; border-color: rgba(255,255,255,0.1);">
 
         <a href="#" class="menu-item" onclick="logout()">
@@ -892,7 +897,7 @@
         </div>
     </div>
 </div>
-
+        
         <!-- TRANSCRIPT GENERATION SECTION -->
         <div id="transcriptSection" class="section" style="display:none;">
             <div class="card">
@@ -1017,11 +1022,102 @@
     </div>
 </div>
 
+        <!-- ADMISSIONS MANAGER SECTION -->
+<div id="admissionsSection" class="section" style="display:none;">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-users"></i> Student Applications</h3>
+            <div>
+                <button onclick="exportAdmissionsToCSV()" class="info-btn" style="width: auto; padding: 8px 15px; margin-right: 10px;">
+                    <i class="fas fa-file-excel"></i> Export CSV
+                </button>
+                <button onclick="refreshAdmissions()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h4 style="margin-bottom: 10px;"><i class="fas fa-filter"></i> Filter Applications</h4>
+            <div class="filter-row">
+                <select id="admissionStatusFilter" onchange="filterAdmissions()">
+                    <option value="all">All Status</option>
+                    <option value="pending_review">Pending Review</option>
+                    <option value="documents_verified">Documents Verified</option>
+                    <option value="interview_scheduled">Interview Scheduled</option>
+                    <option value="admitted">Admitted</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+                <select id="admissionProgramFilter" onchange="filterAdmissions()">
+                    <option value="all">All Programs</option>
+                    <option value="RM">Registered Midwifery (RM)</option>
+                    <option value="RN">Registered Nursing (RN)</option>
+                    <option value="ML">Medical Lab Technology (ML)</option>
+                </select>
+                <input type="text" id="admissionSearchInput" placeholder="Search by name, ID, or phone" onkeyup="filterAdmissions()">
+            </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="stats-grid" style="margin-bottom: 20px;">
+            <div class="stat-card" style="border-left: 4px solid var(--info);">
+                <i class="fas fa-file-alt" style="color: var(--info);"></i>
+                <h3 id="totalApplications">0</h3>
+                <p>Total Applications</p>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--warning);">
+                <i class="fas fa-clock" style="color: var(--warning);"></i>
+                <h3 id="pendingApplications">0</h3>
+                <p>Pending Review</p>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--success);">
+                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                <h3 id="admittedCount">0</h3>
+                <p>Admitted</p>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--danger);">
+                <i class="fas fa-times-circle" style="color: var(--danger);"></i>
+                <h3 id="rejectedCount">0</h3>
+                <p>Rejected</p>
+            </div>
+        </div>
+
+        <!-- Applications List -->
+        <div id="admissionsList" class="student-list-container" style="max-height: 500px;">
+            <p style="text-align: center; color: #999; padding: 40px;">Loading applications...</p>
+        </div>
+    </div>
+
+    <!-- Application Detail Modal -->
+    <div class="modal" id="applicationModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-alt"></i> Application Details</h3>
+                <button class="close-modal" onclick="closeApplicationModal()">&times;</button>
+            </div>
+            <div id="applicationDetailContent"></div>
+            <div class="btn-group" style="margin-top: 20px;">
+                <button onclick="approveApplication()" class="success-btn" style="flex: 1;">
+                    <i class="fas fa-check"></i> Approve & Admit
+                </button>
+                <button onclick="rejectApplication()" class="danger-btn" style="flex: 1;">
+                    <i class="fas fa-times"></i> Reject
+                </button>
+                <button onclick="scheduleInterview()" class="info-btn" style="flex: 1;">
+                    <i class="fas fa-calendar"></i> Schedule Interview
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9jrpA-Pd_fwtxUh4QDNXb2Nq1gDt_Cuoy968KMmPS5B3fJ2xMiI7M973OzEDAaSAu/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwxjWqWifn2OQ3YfRu1vn9OEnvkKMRXXjobTcXR1B1y3H7zNG1le4RxrLSBWs7AY_fH/exec";
         let currentStudent = null;
         let currentTranscriptStudent = null;
         let csvData = null;
@@ -1113,12 +1209,12 @@
             const titles = {
                 search: 'Search Student', csv_upload: 'CSV Upload', bulk_upload: 'Bulk Operations',
                 courses: 'Manage Courses', clearance: 'Financial Clearance', transcript: 'Generate Transcript',
-                transcript_requests: 'Transcript Requests', notifications: 'Send Notifications', reports: 'Reports'
+                transcript_requests: 'Transcript Requests',admissions: 'Admissions Manager', notifications: 'Send Notifications', reports: 'Reports'
             };
             document.getElementById('pageTitle').innerText = titles[section] || 'Dashboard';
             if (section === 'clearance') loadStudentClearanceList();
             if (section === 'transcript_requests') { loadTranscriptRequests(); loadProcessedRequests(); }
-        }
+            if (section === 'admissions') loadAdmissions();
 
         // Search Student
         async function searchStudent() {
@@ -1226,25 +1322,6 @@
                 }
             }
             showToast("CSV processed!", "success");
-        }
-
-        // Clearance Functions
-        async function loadStudentClearanceList() {
-            const container = document.getElementById('clearanceList');
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=get_all_students`);
-                const data = await res.json();
-                if (data.students) {
-                    allStudents = data.students;
-                    let html = '';
-                    allStudents.forEach(s => {
-                        html += `<div class="student-list-item"><div class="student-info"><span class="student-name">${s.name}</span><span class="student-details">${getFullProgramName(s.program)} | ${s.id}</span></div><div><input type="checkbox" data-id="${s.id}"></div></div>`;
-                    });
-                    container.innerHTML = html;
-                }
-            } catch (e) {
-                container.innerHTML = '<p style="text-align:center;">Demo students loaded</p>';
-            }
         }
 
         function clearStudent() { const id = document.getElementById('bulkStudentId').value.trim(); if(id) performClearance(id, true); }
@@ -1866,6 +1943,382 @@ CCST/ML/24/002,Sarah Williams,ML,100,5500,5500,0,0,Semester 1 2026/2027`;
     loadProcessedRequests();
     displayNotificationHistory();
 };
+
+// ============================================
+// ADMISSIONS MANAGER FUNCTIONS
+// ============================================
+
+let allApplications = [];
+let currentSelectedApplication = null;
+
+// Load admissions from Google Sheets or localStorage
+async function loadAdmissions() {
+    const container = document.getElementById('admissionsList');
+    container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;"><i class="fas fa-spinner fa-spin"></i> Loading applications...</p>';
+    
+    try {
+        // Try to fetch from Google Sheets first
+        const response = await fetch(`${SCRIPT_URL}?action=get_admissions`);
+        const data = await response.json();
+        
+        if (data.admissions && data.admissions.length > 0) {
+            allApplications = data.admissions;
+            localStorage.setItem('cachedAdmissions', JSON.stringify(allApplications));
+        } else {
+            const cached = localStorage.getItem('cachedAdmissions');
+            if (cached) {
+                allApplications = JSON.parse(cached);
+            } else {
+                allApplications = getDemoApplications();
+            }
+        }
+    } catch (error) {
+        console.log('Using cached/demo admissions data');
+        const cached = localStorage.getItem('cachedAdmissions');
+        if (cached) {
+            allApplications = JSON.parse(cached);
+        } else {
+            allApplications = getDemoApplications();
+        }
+    }
+    
+    updateAdmissionStats();
+    displayAdmissions();
+}
+
+// Demo applications for testing
+function getDemoApplications() {
+    return [
+        {
+            applicationId: "APP-2025-0001",
+            trackingCode: "ABC123XY",
+            fullName: "Dorcas Anderson",
+            email: "dorcas@example.com",
+            phone: "0241000001",
+            program: "RM",
+            entryMode: "WASSCE",
+            status: "pending_review",
+            submittedAt: new Date().toISOString(),
+            certificates: "[{\"type\":\"WASSCE\",\"institution\":\"Kumasi High\",\"year\":\"2023\"}]",
+            transactionId: "MOMO123456",
+            paymentMethod: "momo"
+        },
+        {
+            applicationId: "APP-2025-0002",
+            trackingCode: "DEF456UV",
+            fullName: "Justina Arhin",
+            email: "justina@example.com",
+            phone: "0241000002",
+            program: "RN",
+            entryMode: "WASSCE",
+            status: "documents_verified",
+            submittedAt: new Date().toISOString(),
+            certificates: "[{\"type\":\"WASSCE\",\"institution\":\"Accra Academy\",\"year\":\"2022\"}]",
+            transactionId: "MOMO789012",
+            paymentMethod: "bank"
+        },
+        {
+            applicationId: "APP-2025-0003",
+            trackingCode: "GHI789WZ",
+            fullName: "Godfred Boadison",
+            email: "godfred@example.com",
+            phone: "0241000003",
+            program: "ML",
+            entryMode: "WASSCE",
+            status: "admitted",
+            submittedAt: new Date().toISOString(),
+            certificates: "[{\"type\":\"WASSCE\",\"institution\":\"Opoku Ware\",\"year\":\"2023\"}]",
+            transactionId: "MOMO345678",
+            paymentMethod: "momo"
+        }
+    ];
+}
+
+// Update statistics
+function updateAdmissionStats() {
+    document.getElementById('totalApplications').innerText = allApplications.length;
+    document.getElementById('pendingApplications').innerText = allApplications.filter(a => a.status === 'pending_review').length;
+    document.getElementById('admittedCount').innerText = allApplications.filter(a => a.status === 'admitted').length;
+    document.getElementById('rejectedCount').innerText = allApplications.filter(a => a.status === 'rejected').length;
+    
+    const badge = document.getElementById('admissionBadge');
+    const pendingCount = allApplications.filter(a => a.status === 'pending_review').length;
+    if (pendingCount > 0) {
+        badge.style.display = 'block';
+        badge.innerText = pendingCount;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+// Display admissions list
+function displayAdmissions() {
+    const container = document.getElementById('admissionsList');
+    const statusFilter = document.getElementById('admissionStatusFilter').value;
+    const programFilter = document.getElementById('admissionProgramFilter').value;
+    const searchTerm = document.getElementById('admissionSearchInput').value.toLowerCase();
+    
+    let filtered = [...allApplications];
+    
+    if (statusFilter !== 'all') {
+        filtered = filtered.filter(app => app.status === statusFilter);
+    }
+    if (programFilter !== 'all') {
+        filtered = filtered.filter(app => app.program === programFilter);
+    }
+    if (searchTerm) {
+        filtered = filtered.filter(app => 
+            app.fullName.toLowerCase().includes(searchTerm) ||
+            app.applicationId.toLowerCase().includes(searchTerm) ||
+            app.phone.includes(searchTerm) ||
+            app.email.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No applications found.</p>';
+        return;
+    }
+    
+    const programNames = { 'RM': 'Midwifery', 'RN': 'Nursing', 'ML': 'Med Lab' };
+    const statusColors = {
+        'pending_review': '#f39c12',
+        'documents_verified': '#3498db',
+        'interview_scheduled': '#9b59b6',
+        'admitted': '#27ae60',
+        'rejected': '#e74c3c'
+    };
+    const statusLabels = {
+        'pending_review': 'Pending Review',
+        'documents_verified': 'Documents Verified',
+        'interview_scheduled': 'Interview Scheduled',
+        'admitted': 'Admitted',
+        'rejected': 'Rejected'
+    };
+    
+    let html = '';
+    filtered.forEach(app => {
+        const submittedDate = new Date(app.submittedAt).toLocaleDateString();
+        html += `
+            <div class="student-list-item" onclick="viewApplicationDetails('${app.applicationId}')" style="cursor: pointer;">
+                <div class="student-info">
+                    <span class="student-name">${app.fullName}</span>
+                    <span class="student-details">
+                        ${app.applicationId} | ${programNames[app.program] || app.program} | ${app.phone}
+                    </span>
+                    <small>Submitted: ${submittedDate}</small>
+                </div>
+                <div style="text-align: right;">
+                    <span style="background: ${statusColors[app.status]}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;">
+                        ${statusLabels[app.status]}
+                    </span>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Filter admissions
+function filterAdmissions() {
+    displayAdmissions();
+}
+
+// Refresh admissions
+function refreshAdmissions() {
+    loadAdmissions();
+    showToast("Applications refreshed!", "success");
+}
+
+// View application details
+async function viewApplicationDetails(applicationId) {
+    currentSelectedApplication = allApplications.find(app => app.applicationId === applicationId);
+    if (!currentSelectedApplication) return;
+    
+    const modal = document.getElementById('applicationModal');
+    const content = document.getElementById('applicationDetailContent');
+    
+    let certificates = [];
+    try {
+        certificates = JSON.parse(currentSelectedApplication.certificates || '[]');
+    } catch(e) {
+        certificates = [];
+    }
+    
+    let certHtml = '';
+    certificates.forEach(cert => {
+        certHtml += `<li><strong>${cert.type}</strong> - ${cert.institution || 'N/A'} (${cert.year || 'N/A'})</li>`;
+    });
+    
+    const programNames = { 'RM': 'Registered Midwifery', 'RN': 'Registered Nursing', 'ML': 'Medical Lab Technology' };
+    const statusLabels = {
+        'pending_review': 'Pending Review',
+        'documents_verified': 'Documents Verified',
+        'interview_scheduled': 'Interview Scheduled',
+        'admitted': 'Admitted',
+        'rejected': 'Rejected'
+    };
+    
+    content.innerHTML = `
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div><strong>Application ID:</strong><br>${currentSelectedApplication.applicationId}</div>
+                <div><strong>Tracking Code:</strong><br>${currentSelectedApplication.trackingCode || 'N/A'}</div>
+                <div><strong>Full Name:</strong><br>${currentSelectedApplication.fullName}</div>
+                <div><strong>Program:</strong><br>${programNames[currentSelectedApplication.program] || currentSelectedApplication.program}</div>
+                <div><strong>Email:</strong><br>${currentSelectedApplication.email}</div>
+                <div><strong>Phone:</strong><br>${currentSelectedApplication.phone}</div>
+                <div><strong>Entry Mode:</strong><br>${currentSelectedApplication.entryMode || 'N/A'}</div>
+                <div><strong>Submitted:</strong><br>${new Date(currentSelectedApplication.submittedAt).toLocaleString()}</div>
+                <div><strong>Payment Transaction:</strong><br>${currentSelectedApplication.transactionId || 'N/A'}</div>
+                <div><strong>Payment Method:</strong><br>${currentSelectedApplication.paymentMethod || 'N/A'}</div>
+                <div><strong>Current Status:</strong><br><span style="background: ${currentSelectedApplication.status === 'admitted' ? '#27ae60' : currentSelectedApplication.status === 'rejected' ? '#e74c3c' : '#f39c12'}; color: white; padding: 4px 12px; border-radius: 20px; display: inline-block;">${statusLabels[currentSelectedApplication.status]}</span></div>
+            </div>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <strong><i class="fas fa-certificate"></i> Academic Certificates:</strong>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                ${certHtml || '<li>No certificates uploaded</li>'}
+            </ul>
+        </div>
+    `;
+    
+    modal.classList.add('show');
+}
+
+// Close application modal
+function closeApplicationModal() {
+    document.getElementById('applicationModal').classList.remove('show');
+}
+
+// Approve application (Admit student)
+async function approveApplication() {
+    if (!currentSelectedApplication) return;
+    
+    if (confirm(`Admit ${currentSelectedApplication.fullName} to ${currentSelectedApplication.program}?`)) {
+        currentSelectedApplication.status = 'admitted';
+        await updateApplicationStatus(currentSelectedApplication.applicationId, 'admitted');
+        
+        sendAdmissionNotification(currentSelectedApplication.phone, currentSelectedApplication.email, currentSelectedApplication.fullName, 'admitted');
+        
+        showToast(`${currentSelectedApplication.fullName} has been admitted!`, "success");
+        closeApplicationModal();
+        loadAdmissions();
+    }
+}
+
+// Reject application
+async function rejectApplication() {
+    if (!currentSelectedApplication) return;
+    
+    if (confirm(`Reject ${currentSelectedApplication.fullName}'s application?`)) {
+        currentSelectedApplication.status = 'rejected';
+        await updateApplicationStatus(currentSelectedApplication.applicationId, 'rejected');
+        
+        sendAdmissionNotification(currentSelectedApplication.phone, currentSelectedApplication.email, currentSelectedApplication.fullName, 'rejected');
+        
+        showToast(`${currentSelectedApplication.fullName}'s application has been rejected.`, "warning");
+        closeApplicationModal();
+        loadAdmissions();
+    }
+}
+
+// Schedule interview
+function scheduleInterview() {
+    if (!currentSelectedApplication) return;
+    
+    const interviewDate = prompt("Enter interview date and time (e.g., April 25, 2026 at 10:00 AM)");
+    if (interviewDate) {
+        currentSelectedApplication.status = 'interview_scheduled';
+        updateApplicationStatus(currentSelectedApplication.applicationId, 'interview_scheduled');
+        
+        sendInterviewNotification(currentSelectedApplication.phone, currentSelectedApplication.email, currentSelectedApplication.fullName, interviewDate);
+        
+        showToast(`Interview scheduled for ${currentSelectedApplication.fullName}`, "success");
+        closeApplicationModal();
+        loadAdmissions();
+    }
+}
+
+// Update application status in storage
+async function updateApplicationStatus(applicationId, status) {
+    const index = allApplications.findIndex(a => a.applicationId === applicationId);
+    if (index !== -1) {
+        allApplications[index].status = status;
+        localStorage.setItem('cachedAdmissions', JSON.stringify(allApplications));
+    }
+    
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'update_admission_status',
+                applicationId: applicationId,
+                status: status
+            })
+        });
+    } catch (error) {
+        console.log('Status update will sync later');
+    }
+}
+
+// Send admission notification
+function sendAdmissionNotification(phone, email, name, status) {
+    const message = status === 'admitted' 
+        ? `Congratulations ${name}! You have been ADMITTED to CCST. Login with your application ID to proceed.`
+        : `Dear ${name}, we regret to inform you that your application was not successful. Thank you for applying to CCST.`;
+    
+    console.log(`SMS to ${phone}: ${message}`);
+    console.log(`Email to ${email}: ${message}`);
+    
+    const notifications = JSON.parse(localStorage.getItem('admissionNotifications') || '[]');
+    notifications.push({
+        to: phone,
+        email: email,
+        message: message,
+        date: new Date().toISOString()
+    });
+    localStorage.setItem('admissionNotifications', JSON.stringify(notifications));
+}
+
+// Send interview notification
+function sendInterviewNotification(phone, email, name, interviewDate) {
+    const message = `Dear ${name}, your interview at CCST has been scheduled for ${interviewDate}. Please bring your original documents.`;
+    
+    console.log(`SMS to ${phone}: ${message}`);
+    console.log(`Email to ${email}: ${message}`);
+    
+    const notifications = JSON.parse(localStorage.getItem('admissionNotifications') || '[]');
+    notifications.push({
+        to: phone,
+        email: email,
+        message: message,
+        date: new Date().toISOString()
+    });
+    localStorage.setItem('admissionNotifications', JSON.stringify(notifications));
+}
+
+// Export admissions to CSV
+function exportAdmissionsToCSV() {
+    let csv = "Application ID,Tracking Code,Full Name,Email,Phone,Program,Entry Mode,Status,Submitted Date\n";
+    
+    allApplications.forEach(app => {
+        csv += `"${app.applicationId}","${app.trackingCode || ''}","${app.fullName}","${app.email}","${app.phone}","${app.program}","${app.entryMode || ''}","${app.status}","${new Date(app.submittedAt).toLocaleString()}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `CCST_Admissions_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Admissions exported to CSV!", "success");
+}
+
+
     </script>
 </body>
 </html>

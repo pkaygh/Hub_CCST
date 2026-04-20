@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCST Admission Portal | Apply Online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6b8e23;
+            --primary-dark: #1a472a;
+            --primary-light: #9acd32;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --bg: #f0f4f0;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+            background: var(--bg);
+            background-image: radial-gradient(circle, rgba(107, 142, 35, 0.08) 1px, transparent 1px);
+            background-size: 12px 12px;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .header .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo h1 { font-size: 1.5rem; margin-bottom: 5px; }
+        .logo p { font-size: 0.8rem; opacity: 0.9; }
+
+        .track-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .track-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step .step-number {
+            width: 40px;
+            height: 40px;
+            background: #ddd;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-number { background: var(--primary); color: white; }
+        .step.completed .step-number { background: var(--success); color: white; }
+        .step .step-title { font-size: 0.85rem; font-weight: 600; }
+
+        .form-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-section h2 {
+            color: var(--primary-dark);
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary-light);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .form-group label .required { color: var(--danger); }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(107, 142, 35, 0.2);
+        }
+
+        /* Certificate Entry Styles */
+        .certificate-entry {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+            position: relative;
+        }
+
+        .certificate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .certificate-title {
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .remove-cert-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .add-cert-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Multiple Upload Area */
+        .multi-upload-area {
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(107, 142, 35, 0.05);
+        }
+
+        .multi-upload-area:hover {
+            border-color: var(--primary-dark);
+            background: rgba(107, 142, 35, 0.1);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(107, 142, 35, 0.05);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-dark);
+            background: rgba(107, 142, 35, 0.1);
+        }
+
+        .upload-area i, .multi-upload-area i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .file-list {
+            margin-top: 15px;
+        }
+
+        .file-item {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-name { font-size: 0.85rem; }
+        .file-remove { color: var(--danger); cursor: pointer; }
+
+        /* Payment Options */
+        .payment-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .payment-method {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .payment-method:hover, .payment-method.selected {
+            border-color: var(--primary);
+            background: rgba(107, 142, 35, 0.05);
+            box-shadow: 0 4px 15px rgba(107, 142, 35, 0.2);
+        }
+
+        .payment-method i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .payment-method h4 { margin-bottom: 5px; }
+        .payment-method p { font-size: 0.8rem; color: #666; }
+
+        .payment-details {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .momojson-number, .bank-details {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+            margin: 10px 0;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(107, 142, 35, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            padding: 30px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .status-timeline { margin: 20px 0; }
+        .status-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .status-icon.completed { background: var(--success); color: white; }
+        .status-icon.current { background: var(--warning); color: white; }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-dark);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .summary-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .progress-steps { flex-direction: column; gap: 15px; }
+            .step { display: flex; align-items: center; gap: 15px; }
+            .step .step-number { margin-bottom: 0; }
+            .form-grid { grid-template-columns: 1fr; }
+            .btn-group { flex-direction: column; }
+            .payment-options { grid-template-columns: 1fr; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="container">
+        <div class="logo">
+            <h1><i class="fas fa-graduation-cap"></i> CCST Admission Portal</h1>
+            <p>Central College of Science and Technology</p>
+        </div>
+        <button class="track-btn" onclick="openTrackingModal()"><i class="fas fa-search"></i> Track Application</button>
+    </div>
+</header>
+
+<div class="container">
+    <div class="progress-steps">
+        <div class="step active" id="step1"><div class="step-number">1</div><div class="step-title">Personal Info</div></div>
+        <div class="step" id="step2"><div class="step-number">2</div><div class="step-title">Academic Info</div></div>
+        <div class="step" id="step3"><div class="step-number">3</div><div class="step-title">Documents</div></div>
+        <div class="step" id="step4"><div class="step-number">4</div><div class="step-title">Payment</div></div>
+        <div class="step" id="step5"><div class="step-number">5</div><div class="step-title">Submit</div></div>
+    </div>
+
+    <form id="admissionForm" onsubmit="event.preventDefault(); submitApplication();">
+        <!-- Section 1: Personal Information -->
+        <div class="form-section active" id="section1">
+            <h2><i class="fas fa-user"></i> Personal Information</h2>
+            <div class="form-grid">
+                <div class="form-group"><label>Full Name <span class="required">*</span></label><input type="text" id="fullName" required></div>
+                <div class="form-group"><label>Date of Birth <span class="required">*</span></label><input type="date" id="dob" required></div>
+                <div class="form-group"><label>Gender <span class="required">*</span></label><select id="gender" required><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
+                <div class="form-group"><label>Email <span class="required">*</span></label><input type="email" id="email" required></div>
+                <div class="form-group"><label>Phone <span class="required">*</span></label><input type="tel" id="phone" required></div>
+                <div class="form-group"><label>Alternative Phone</label><input type="tel" id="altPhone"></div>
+                <div class="form-group"><label>Address</label><textarea id="address" rows="3"></textarea></div>
+            </div>
+            <div class="btn-group"><button type="button" class="btn btn-primary" onclick="nextSection(1)">Next <i class="fas fa-arrow-right"></i></button></div>
+        </div>
+
+        <!-- Section 2: Academic Information with Multiple Certificates -->
+        <div class="form-section" id="section2">
+            <h2><i class="fas fa-book"></i> Academic Information</h2>
+            <div class="form-group">
+                <label>Program Applied For <span class="required">*</span></label>
+                <select id="program" required>
+                    <option value="">Select Program</option>
+                    <option value="RM">Registered Midwifery (RM)</option>
+                    <option value="RN">Registered General Nursing (RN)</option>
+                    <option value="ML">Medical Laboratory Technology (ML)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Entry Mode <span class="required">*</span></label>
+                <select id="entryMode" required>
+                    <option value="SSSCE/WASSCE">SSSCE/WASSCE</option>
+                    <option value="GCE">GCE A-Level</option>
+                    <option value="Mature">Mature Entry</option>
+                    <option value="Diploma">Diploma Holders</option>
+                </select>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <label style="font-weight: bold;">Academic Qualifications / Certificates <span class="required">*</span></label>
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Add all your certificates (WASSCE, GCE, Diploma, Degree, etc.)</p>
+                <div id="certificatesContainer"></div>
+                <button type="button" class="add-cert-btn" onclick="addCertificateEntry()"><i class="fas fa-plus"></i> Add Another Certificate</button>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn btn-secondary" onclick="prevSection(2)"><i class="fas fa-arrow-left"></i> Back</button>
+                <button type="button" class="btn btn-primary" onclick="nextSection(2)">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Section 3: Document Upload with Multiple Uploads -->
+        <div class="form-section" id="section3">
+            <h2><i class="fas fa-file-alt"></i> Upload Documents</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>WASSCE/Results Documents <span class="required">*</span></label>
+                    <div class="multi-upload-area" onclick="document.getElementById('wasceFiles').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload multiple result documents</p>
+                        <small>PDF, JPG, PNG (Max 5MB each)</small>
+                        <input type="file" id="wasceFiles" accept=".pdf,.jpg,.jpeg,.png" multiple style="display:none" onchange="handleMultiFileUpload('wasceFiles', 'wasceList')">
+                    </div>
+                    <div id="wasceList" class="file-list"></div>
+                </div>
+                <div class="form-group">
+                    <label>Birth Certificate <span class="required">*</span></label>
+                    <div class="upload-area" onclick="document.getElementById('birthFile').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload Birth Certificate</p>
+                        <input type="file" id="birthFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleFileUpload('birthFile', 'birthList')">
+                    </div>
+                    <div id="birthList" class="file-list"></div>
+                </div>
+                <div class="form-group">
+                    <label>Ghana Card <span class="required">*</span></label>
+                    <div class="upload-area" onclick="document.getElementById('ghanaCardFile').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload Ghana Card</p>
+                        <input type="file" id="ghanaCardFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleFileUpload('ghanaCardFile', 'ghanaList')">
+                    </div>
+                    <div id="ghanaList" class="file-list"></div>
+                </div>
+                <div class="form-group">
+                    <label>Supporting Documents</label>
+                    <div class="multi-upload-area" onclick="document.getElementById('supportFiles').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload supporting documents</p>
+                        <input type="file" id="supportFiles" accept=".pdf,.jpg,.jpeg,.png" multiple style="display:none" onchange="handleMultiFileUpload('supportFiles', 'supportList')">
+                    </div>
+                    <div id="supportList" class="file-list"></div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-secondary" onclick="prevSection(3)"><i class="fas fa-arrow-left"></i> Back</button>
+                <button type="button" class="btn btn-primary" onclick="nextSection(3)">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Section 4: Payment with Multiple Options -->
+        <div class="form-section" id="section4">
+            <h2><i class="fas fa-credit-card"></i> Application Fee Payment</h2>
+            <div class="payment-info">
+                <p><strong>Application Fee:</strong> GH₵ 150.00</p>
+                <p>Select your preferred payment method below.</p>
+            </div>
+            
+            <div class="payment-options">
+                <div class="payment-method" onclick="selectPaymentMethod('momo')" id="momoMethod">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h4>MTN Mobile Money</h4>
+                    <p>Pay using MTN MoMo</p>
+                </div>
+                <div class="payment-method" onclick="selectPaymentMethod('bank')" id="bankMethod">
+                    <i class="fas fa-university"></i>
+                    <h4>Bank Transfer</h4>
+                    <p>Pay via Bank Account</p>
+                </div>
+            </div>
+
+            <div id="momoDetails" class="payment-details" style="display: none;">
+                <i class="fas fa-mobile-alt" style="font-size: 1.5rem; color: var(--primary);"></i>
+                <p>Pay to MTN MoMo Number:</p>
+                <div class="momojson-number">059 123 4567</div>
+                <p><small>Account Name: CCST Admission</small></p>
+                <p><small>Reference: Your Full Name</small></p>
+            </div>
+
+            <div id="bankDetails" class="payment-details" style="display: none;">
+                <i class="fas fa-university" style="font-size: 1.5rem; color: var(--primary);"></i>
+                <p>Bank Account Details:</p>
+                <div class="bank-details">
+                    <strong>Bank:</strong> GCB Bank<br>
+                    <strong>Account Name:</strong> Central College of Science and Technology<br>
+                    <strong>Account Number:</strong> 1441 1234 5678 9012<br>
+                    <strong>Branch:</strong> Kumasi Main<br>
+                    <strong>Sort Code:</strong> 123456
+                </div>
+                <p><small>Reference: Your Full Name + Application ID</small></p>
+            </div>
+
+            <div class="form-group">
+                <label>Transaction ID / Reference Number <span class="required">*</span></label>
+                <input type="text" id="transactionId" placeholder="Enter the transaction ID or payment reference" required>
+                <small>After payment, enter the confirmation number/transaction ID</small>
+            </div>
+            <div class="form-group">
+                <label>Payment Date</label>
+                <input type="date" id="paymentDate">
+            </div>
+            <input type="hidden" id="selectedPaymentMethod" value="momo">
+            
+            <div class="btn-group">
+                <button type="button" class="btn btn-secondary" onclick="prevSection(4)"><i class="fas fa-arrow-left"></i> Back</button>
+                <button type="button" class="btn btn-primary" onclick="nextSection(4)">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Section 5: Review & Submit -->
+        <div class="form-section" id="section5">
+            <h2><i class="fas fa-check-circle"></i> Review & Submit Application</h2>
+            <div id="reviewSummary"></div>
+            <div class="form-group">
+                <label><input type="checkbox" id="confirmCheckbox" required> I confirm that all information provided is accurate and complete.</label>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-secondary" onclick="prevSection(5)"><i class="fas fa-arrow-left"></i> Back</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane"></i> Submit Application</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Tracking Modal -->
+<div class="modal" id="trackingModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-search"></i> Track Application</h3>
+            <button class="close-modal" onclick="closeTrackingModal()">&times;</button>
+        </div>
+        <div class="form-group">
+            <label>Enter Application ID or Phone Number</label>
+            <input type="text" id="trackId" placeholder="e.g., APP-2025-001 or 024XXXXXXX">
+            <button class="btn btn-primary" style="margin-top: 10px;" onclick="trackApplication()">Track</button>
+        </div>
+        <div id="trackingResult"></div>
+    </div>
+</div>
+
+<div id="toast" class="toast" style="display: none;"></div>
+
+<script>
+    // Multi-file storage
+    let uploadedFiles = {
+        wasce: [],
+        birth: null,
+        ghanaCard: null,
+        support: []
+    };
+    let certificateCounter = 0;
+    let certificates = [];
+    let selectedPaymentMethod = 'momo';
+
+    function selectPaymentMethod(method) {
+        selectedPaymentMethod = method;
+        document.getElementById('selectedPaymentMethod').value = method;
+        
+        // Update UI
+        document.getElementById('momoMethod').classList.remove('selected');
+        document.getElementById('bankMethod').classList.remove('selected');
+        document.getElementById(`${method}Method`).classList.add('selected');
+        
+        // Show/hide details
+        document.getElementById('momoDetails').style.display = method === 'momo' ? 'block' : 'none';
+        document.getElementById('bankDetails').style.display = method === 'bank' ? 'block' : 'none';
+    }
+
+    // Certificate Functions
+    function addCertificateEntry(certData = null) {
+        certificateCounter++;
+        const certId = `cert_${certificateCounter}`;
+        const container = document.getElementById('certificatesContainer');
+        const div = document.createElement('div');
+        div.className = 'certificate-entry';
+        div.id = certId;
+        div.innerHTML = `
+            <div class="certificate-header">
+                <span class="certificate-title"><i class="fas fa-certificate"></i> Certificate ${certificateCounter}</span>
+                <button type="button" class="remove-cert-btn" onclick="removeCertificateEntry('${certId}')"><i class="fas fa-trash"></i> Remove</button>
+            </div>
+            <div class="form-grid">
+                <div class="form-group"><label>Certificate Type <span class="required">*</span></label>
+                    <select class="cert-type" data-id="${certId}" required>
+                        <option value="">Select Type</option>
+                        <option value="WASSCE">WASSCE</option>
+                        <option value="SSSCE">SSSCE</option>
+                        <option value="GCE A-Level">GCE A-Level</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="Bachelor's Degree">Bachelor's Degree</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Institution/School</label><input type="text" class="cert-institution" data-id="${certId}" placeholder="Name of school/institution"></div>
+                <div class="form-group"><label>Index Number</label><input type="text" class="cert-index" data-id="${certId}" placeholder="e.g., 1234567890"></div>
+                <div class="form-group"><label>Year of Completion</label><input type="number" class="cert-year" data-id="${certId}" placeholder="e.g., 2023"></div>
+                <div class="form-group"><label>Overall Aggregate/GPA</label><input type="text" class="cert-aggregate" data-id="${certId}" placeholder="e.g., Aggregate 24 or GPA 3.5"></div>
+            </div>
+        `;
+        container.appendChild(div);
+        
+        if (certData) {
+            const select = div.querySelector('.cert-type');
+            const institution = div.querySelector('.cert-institution');
+            const index = div.querySelector('.cert-index');
+            const year = div.querySelector('.cert-year');
+            const aggregate = div.querySelector('.cert-aggregate');
+            if (select) select.value = certData.type || '';
+            if (institution) institution.value = certData.institution || '';
+            if (index) index.value = certData.indexNumber || '';
+            if (year) year.value = certData.year || '';
+            if (aggregate) aggregate.value = certData.aggregate || '';
+        }
+    }
+
+    function removeCertificateEntry(certId) {
+        const element = document.getElementById(certId);
+        if (element) element.remove();
+    }
+
+    function collectCertificates() {
+        const certs = [];
+        const entries = document.querySelectorAll('.certificate-entry');
+        entries.forEach((entry, idx) => {
+            const cert = {
+                id: idx + 1,
+                type: entry.querySelector('.cert-type')?.value || '',
+                institution: entry.querySelector('.cert-institution')?.value || '',
+                indexNumber: entry.querySelector('.cert-index')?.value || '',
+                year: entry.querySelector('.cert-year')?.value || '',
+                aggregate: entry.querySelector('.cert-aggregate')?.value || ''
+            };
+            if (cert.type) certs.push(cert);
+        });
+        return certs;
+    }
+
+    // Multi-file upload handler
+    function handleMultiFileUpload(inputId, listId) {
+        const files = document.getElementById(inputId).files;
+        if (!files.length) return;
+        
+        const fileArray = [];
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file.size > 5 * 1024 * 1024) {
+                showToast(`File ${file.name} is too large! Max 5MB`, "danger");
+                continue;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fileData = { name: file.name, data: e.target.result, type: file.type };
+                if (inputId === 'wasceFiles') uploadedFiles.wasce.push(fileData);
+                else if (inputId === 'supportFiles') uploadedFiles.support.push(fileData);
+                displayMultiFileList(listId, file.name, fileArray.length);
+            };
+            reader.readAsDataURL(file);
+            fileArray.push(file);
+        }
+    }
+
+    function displayMultiFileList(listId, fileName, index) {
+        const container = document.getElementById(listId);
+        const existing = container.innerHTML;
+        container.innerHTML = existing + `<div class="file-item"><span class="file-name"><i class="fas fa-file"></i> ${fileName}</span><span class="file-remove" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></span></div>`;
+    }
+
+    function handleFileUpload(inputId, listId) {
+        const file = document.getElementById(inputId).files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) { showToast("File too large! Max 5MB", "danger"); return; }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const fileData = { name: file.name, data: e.target.result, type: file.type };
+            if (inputId === 'birthFile') uploadedFiles.birth = fileData;
+            else if (inputId === 'ghanaCardFile') uploadedFiles.ghanaCard = fileData;
+            displayFileList(listId, file.name);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function displayFileList(listId, fileName) {
+        const container = document.getElementById(listId);
+        container.innerHTML = `<div class="file-item"><span class="file-name"><i class="fas fa-file"></i> ${fileName}</span><span class="file-remove" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></span></div>`;
+    }
+
+    let applications = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+
+    function showToast(msg, type = "info") {
+        const toast = document.getElementById('toast');
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i> ${msg}`;
+        toast.style.background = type === 'success' ? '#27ae60' : type === 'danger' ? '#e74c3c' : '#3498db';
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 4000);
+    }
+
+    let currentSection = 1;
+    const totalSections = 5;
+
+    function updateProgress() {
+        for (let i = 1; i <= totalSections; i++) {
+            const step = document.getElementById(`step${i}`);
+            if (i < currentSection) { step.classList.add('completed'); step.classList.remove('active'); }
+            else if (i === currentSection) { step.classList.add('active'); step.classList.remove('completed'); }
+            else { step.classList.remove('active', 'completed'); }
+        }
+    }
+
+    function nextSection(current) {
+        if (!validateSection(current)) return;
+        document.getElementById(`section${current}`).classList.remove('active');
+        currentSection = current + 1;
+        document.getElementById(`section${currentSection}`).classList.add('active');
+        updateProgress();
+        if (currentSection === 5) generateReview();
+    }
+
+    function prevSection(current) {
+        document.getElementById(`section${current}`).classList.remove('active');
+        currentSection = current - 1;
+        document.getElementById(`section${currentSection}`).classList.add('active');
+        updateProgress();
+    }
+
+    function validateSection(section) {
+        if (section === 1) {
+            const name = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            if (!name || !email || !phone) { showToast("Please fill all required fields", "danger"); return false; }
+            if (!email.includes('@')) { showToast("Valid email required", "danger"); return false; }
+        }
+        if (section === 2) {
+            const program = document.getElementById('program').value;
+            if (!program) { showToast("Please select a program", "danger"); return false; }
+            const certificates = collectCertificates();
+            if (certificates.length === 0) { showToast("Please add at least one academic certificate", "danger"); return false; }
+        }
+        if (section === 3) {
+            if (uploadedFiles.wasce.length === 0 || !uploadedFiles.birth || !uploadedFiles.ghanaCard) {
+                showToast("Please upload all required documents (WASSCE Results, Birth Certificate, Ghana Card)", "danger");
+                return false;
+            }
+        }
+        if (section === 4) {
+            if (!document.getElementById('transactionId').value) { showToast("Please enter transaction ID", "danger"); return false; }
+        }
+        return true;
+    }
+
+    function generateReview() {
+        const name = document.getElementById('fullName').value;
+        const email = document.getElementById('email').value;
+        const phone = document.getElementById('phone').value;
+        const program = document.getElementById('program').value;
+        const programNames = { 'RM': 'Registered Midwifery', 'RN': 'Registered Nursing', 'ML': 'Medical Lab Technology' };
+        const certificates = collectCertificates();
+        let certHtml = '<ul style="margin-left: 20px;">';
+        certificates.forEach(cert => { certHtml += `<li>${cert.type} (${cert.year || 'N/A'}) - ${cert.institution || 'N/A'}</li>`; });
+        certHtml += '</ul>';
+        const paymentMethod = selectedPaymentMethod === 'momo' ? 'MTN Mobile Money' : 'Bank Transfer';
+        
+        const html = `<div class="summary-card">
+            <div class="summary-row"><strong>Name:</strong> <span>${name}</span></div>
+            <div class="summary-row"><strong>Email/Phone:</strong> <span>${email} / ${phone}</span></div>
+            <div class="summary-row"><strong>Program:</strong> <span>${programNames[program] || program}</span></div>
+            <div class="summary-row"><strong>Certificates (${certificates.length}):</strong></div><div>${certHtml}</div>
+            <div class="summary-row"><strong>Payment Method:</strong> <span>${paymentMethod}</span></div>
+            <div class="summary-row"><strong>Transaction ID:</strong> <span>${document.getElementById('transactionId').value}</span></div>
+            <div class="summary-row"><strong>Documents:</strong> <span>📄 ${uploadedFiles.wasce.length} result documents, ${uploadedFiles.birth ? '✅ Birth Cert' : '❌'}, ${uploadedFiles.ghanaCard ? '✅ Ghana Card' : '❌'}</span></div>
+        </div>`;
+        document.getElementById('reviewSummary').innerHTML = html;
+    }
+
+    function generateTrackingCode() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 8; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+    }
+
+    async function submitApplication() {
+        if (!document.getElementById('confirmCheckbox').checked) { showToast("Please confirm your information", "danger"); return; }
+        
+        const applicationId = `APP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+        const trackingCode = generateTrackingCode();
+        const applicantPhone = document.getElementById('phone').value;
+        const applicantEmail = document.getElementById('email').value;
+        
+        const application = {
+            id: applicationId,
+            trackingCode: trackingCode,
+            fullName: document.getElementById('fullName').value,
+            dob: document.getElementById('dob').value,
+            gender: document.getElementById('gender').value,
+            email: applicantEmail,
+            phone: applicantPhone,
+            altPhone: document.getElementById('altPhone').value,
+            address: document.getElementById('address').value,
+            program: document.getElementById('program').value,
+            entryMode: document.getElementById('entryMode').value,
+            certificates: collectCertificates(),
+            transactionId: document.getElementById('transactionId').value,
+            paymentDate: document.getElementById('paymentDate').value,
+            paymentMethod: selectedPaymentMethod,
+            files: {
+                wasce: uploadedFiles.wasce.map(f => f.name),
+                birth: uploadedFiles.birth?.name,
+                ghanaCard: uploadedFiles.ghanaCard?.name,
+                support: uploadedFiles.support.map(f => f.name)
+            },
+            status: 'pending_review',
+            submittedAt: new Date().toISOString()
+        };
+        
+        applications.push(application);
+        localStorage.setItem('admissionApplications', JSON.stringify(applications));
+        
+        // Send SMS/Email with tracking code
+        sendTrackingNotification(applicantPhone, applicantEmail, applicationId, trackingCode);
+        
+        showToast(`✅ Application submitted! Your Tracking Code: ${trackingCode}`, "success");
+        
+        setTimeout(() => {
+            resetForm();
+            currentSection = 1;
+            document.getElementById('section1').classList.add('active');
+            for (let i = 2; i <= totalSections; i++) {
+                document.getElementById(`section${i}`).classList.remove('active');
+            }
+            updateProgress();
+        }, 3000);
+    }
+
+    function sendTrackingNotification(phone, email, applicationId, trackingCode) {
+        // Simulate SMS (in production, use actual SMS gateway API)
+        console.log(`SMS sent to ${phone}: CCST Admission - Your application ${applicationId} has been received. Tracking Code: ${trackingCode}. Use this to track your application status.`);
+        
+        // Simulate Email (in production, use actual email service)
+        console.log(`Email sent to ${email}: Application Confirmation - ID: ${applicationId}, Tracking Code: ${trackingCode}`);
+        
+        // Store notification in localStorage
+        const notifications = JSON.parse(localStorage.getItem('admissionNotifications') || '[]');
+        notifications.push({
+            id: applicationId,
+            trackingCode: trackingCode,
+            phone: phone,
+            email: email,
+            message: `Your application ${applicationId} has been received. Tracking Code: ${trackingCode}`,
+            date: new Date().toISOString()
+        });
+        localStorage.setItem('admissionNotifications', JSON.stringify(notifications));
+        
+        // Show in toast
+        showToast(`📱 Tracking code sent to ${phone} and ${email}`, "success");
+    }
+
+    function openTrackingModal() {
+        document.getElementById('trackingModal').classList.add('show');
+        document.getElementById('trackingResult').innerHTML = '';
+    }
+
+    function closeTrackingModal() {
+        document.getElementById('trackingModal').classList.remove('show');
+    }
+
+    function trackApplication() {
+        const trackValue = document.getElementById('trackId').value.trim();
+        if (!trackValue) {
+            showToast("Please enter Application ID, Tracking Code, or Phone Number", "danger");
+            return;
+        }
+        
+        const application = applications.find(app => app.id === trackValue || app.trackingCode === trackValue || app.phone === trackValue);
+        const resultDiv = document.getElementById('trackingResult');
+        
+        if (!application) {
+            resultDiv.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 20px;">No application found with that ID, Tracking Code, or phone number.</p>`;
+            return;
+        }
+        
+        const statusMessages = {
+            'pending_review': 'Your application is pending review by the admissions committee.',
+            'documents_verified': 'Your documents have been verified. Awaiting further processing.',
+            'interview_scheduled': 'You have been scheduled for an interview. Check your email for details.',
+            'admitted': 'Congratulations! You have been admitted to CCST.',
+            'rejected': 'We regret to inform you that your application was not successful.'
+        };
+        
+        let timelineHtml = '<div class="status-timeline">';
+        const statusSteps = [
+            { key: 'submitted', label: 'Application Submitted', icon: 'fa-paper-plane' },
+            { key: 'documents_verified', label: 'Documents Verified', icon: 'fa-check-circle' },
+            { key: 'interview_scheduled', label: 'Interview Scheduled', icon: 'fa-calendar-alt' },
+            { key: 'admitted', label: 'Admission Decision', icon: 'fa-graduation-cap' }
+        ];
+        
+        statusSteps.forEach(step => {
+            let isCompleted = false;
+            let isCurrent = false;
+            
+            if (application.status === 'pending_review' && step.key === 'submitted') isCompleted = true;
+            else if (application.status === 'documents_verified' && (step.key === 'submitted' || step.key === 'documents_verified')) isCompleted = true;
+            else if (application.status === 'interview_scheduled' && (step.key === 'submitted' || step.key === 'documents_verified' || step.key === 'interview_scheduled')) isCompleted = true;
+            else if (application.status === 'admitted') isCompleted = true;
+            
+            if (application.status === step.key) isCurrent = true;
+            
+            timelineHtml += `
+                <div class="status-item">
+                    <div class="status-icon ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}">
+                        <i class="fas ${step.icon}"></i>
+                    </div>
+                    <div>
+                        <strong>${step.label}</strong>
+                        ${isCompleted ? '<div><small style="color: green;">Completed</small></div>' : ''}
+                        ${isCurrent ? '<div><small style="color: var(--warning);">In Progress</small></div>' : ''}
+                    </div>
+                </div>
+            `;
+        });
+        
+        timelineHtml += '</div>';
+        timelineHtml += `<p style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 8px;">
+            <strong>Application ID:</strong> ${application.id}<br>
+            <strong>Tracking Code:</strong> ${application.trackingCode}<br>
+            <strong>Status:</strong> ${statusMessages[application.status] || 'Application is being processed'}
+        </p>`;
+        
+        resultDiv.innerHTML = timelineHtml;
+    }
+
+    function resetForm() {
+        document.getElementById('admissionForm').reset();
+        uploadedFiles = { wasce: [], birth: null, ghanaCard: null, support: [] };
+        document.getElementById('certificatesContainer').innerHTML = '';
+        document.getElementById('wasceList').innerHTML = '';
+        document.getElementById('birthList').innerHTML = '';
+        document.getElementById('ghanaList').innerHTML = '';
+        document.getElementById('supportList').innerHTML = '';
+        certificateCounter = 0;
+        addCertificateEntry();
+        selectPaymentMethod('momo');
+    }
+
+    // Initialize with one certificate entry
+    addCertificateEntry();
+    selectPaymentMethod('momo');
+
+    document.getElementById('trackingModal').addEventListener('click', function(e) {
+        if (e.target === this) closeTrackingModal();
+    });
+</script>
+</body>
+</html>
