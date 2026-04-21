@@ -479,12 +479,14 @@
         <div class="form-section active" id="section1">
             <h2><i class="fas fa-user"></i> Personal Information</h2>
             <div class="form-grid">
-                <div class="form-group"><label>Full Name <span class="required">*</span></label><input type="text" id="fullName" required></div>
+                <div class="form-group"><label>Surname <span class="required">*</span></label><input type="text" id="fullName" required></div>
+                <div class="form-group"><label>First Name <span class="required">*</span></label><input type="text" id="fullName" required></div>
+                <div class="form-group"><label>Other Name <span class="required">*</span></label><input type="text" id="fullName" required></div>
                 <div class="form-group"><label>Date of Birth <span class="required">*</span></label><input type="date" id="dob" required></div>
                 <div class="form-group"><label>Gender <span class="required">*</span></label><select id="gender" required><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
                 <div class="form-group"><label>Email <span class="required">*</span></label><input type="email" id="email" required></div>
                 <div class="form-group"><label>Phone <span class="required">*</span></label><input type="tel" id="phone" required></div>
-                <div class="form-group"><label>Alternative Phone</label><input type="tel" id="altPhone"></div>
+                <div class="form-group"><label>WhatsApp Phone</label><input type="tel" id="altPhone"></div>
                 <div class="form-group"><label>Address</label><textarea id="address" rows="3"></textarea></div>
             </div>
             <div class="btn-group"><button type="button" class="btn btn-primary" onclick="nextSection(1)">Next <i class="fas fa-arrow-right"></i></button></div>
@@ -497,9 +499,11 @@
                 <label>Program Applied For <span class="required">*</span></label>
                 <select id="program" required>
                     <option value="">Select Program</option>
-                    <option value="RM">Registered Midwifery (RM)</option>
-                    <option value="RN">Registered General Nursing (RN)</option>
-                    <option value="ML">Medical Laboratory Technology (ML)</option>
+                    <option value="RM">Dip. Registered Midwifery (RM)</option>
+                    <option value="RN">Dip. Registered General Nursing (RN)</option>
+                    <option value="RN">BSc. Registered General Nursing (RN)</option>
+                    <option value="ML">HND Medical Laboratory Technology (ML)</option>
+                    <option value="ML">BSc. Medical Laboratory Technology (ML)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -577,15 +581,15 @@
         <div class="form-section" id="section4">
             <h2><i class="fas fa-credit-card"></i> Application Fee Payment</h2>
             <div class="payment-info">
-                <p><strong>Application Fee:</strong> GH₵ 150.00</p>
+                <p><strong>Application Fee:</strong> GH₵ 200.00</p>
                 <p>Select your preferred payment method below.</p>
             </div>
             
             <div class="payment-options">
                 <div class="payment-method" onclick="selectPaymentMethod('momo')" id="momoMethod">
                     <i class="fas fa-mobile-alt"></i>
-                    <h4>MTN Mobile Money</h4>
-                    <p>Pay using MTN MoMo</p>
+                    <h4>Mobile Money</h4>
+                    <p>Pay using Any MoMo Platform</p>
                 </div>
                 <div class="payment-method" onclick="selectPaymentMethod('bank')" id="bankMethod">
                     <i class="fas fa-university"></i>
@@ -597,7 +601,7 @@
             <div id="momoDetails" class="payment-details" style="display: none;">
                 <i class="fas fa-mobile-alt" style="font-size: 1.5rem; color: var(--primary);"></i>
                 <p>Pay to MTN MoMo Number:</p>
-                <div class="momojson-number">059 123 4567</div>
+                <div class="momojson-number">055 152 8184</div>
                 <p><small>Account Name: CCST Admission</small></p>
                 <p><small>Reference: Your Full Name</small></p>
             </div>
@@ -606,13 +610,13 @@
                 <i class="fas fa-university" style="font-size: 1.5rem; color: var(--primary);"></i>
                 <p>Bank Account Details:</p>
                 <div class="bank-details">
-                    <strong>Bank:</strong> GCB Bank<br>
+                    <strong>Bank:</strong> ADB Bank<br>
                     <strong>Account Name:</strong> Central College of Science and Technology<br>
-                    <strong>Account Number:</strong> 1441 1234 5678 9012<br>
-                    <strong>Branch:</strong> Kumasi Main<br>
+                    <strong>Account Number:</strong> 1151 0106 01704<br>
+                    <strong>Branch:</strong> Agona Swedru<br>
                     <strong>Sort Code:</strong> 123456
                 </div>
-                <p><small>Reference: Your Full Name + Application ID</small></p>
+                <p><small>Reference: Your Full Name </small></p>
             </div>
 
             <div class="form-group">
@@ -637,7 +641,7 @@
             <h2><i class="fas fa-check-circle"></i> Review & Submit Application</h2>
             <div id="reviewSummary"></div>
             <div class="form-group">
-                <label><input type="checkbox" id="confirmCheckbox" required> I confirm that all information provided is accurate and complete.</label>
+                <label><input type="checkbox" id="confirmCheckbox" required> I confirm that, all information provided is accurate and complete.</label>
             </div>
             <div class="btn-group">
                 <button type="button" class="btn btn-secondary" onclick="prevSection(5)"><i class="fas fa-arrow-left"></i> Back</button>
@@ -907,41 +911,101 @@
     }
 
     async function submitApplication() {
-        if (!document.getElementById('confirmCheckbox').checked) { showToast("Please confirm your information", "danger"); return; }
+    if (!document.getElementById('confirmCheckbox').checked) { 
+        showToast("Please confirm your information", "danger"); 
+        return; 
+    }
+    
+    const applicationId = `APP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+    const trackingCode = generateTrackingCode();
+    const applicantPhone = document.getElementById('phone').value;
+    const applicantEmail = document.getElementById('email').value;
+    
+    // Collect all form data
+    const applicationData = {
+        action: 'submit_admission',  // Add this action for Apps Script
+        applicationId: applicationId,
+        trackingCode: trackingCode,
+        fullName: document.getElementById('fullName').value,
+        dob: document.getElementById('dob').value,
+        gender: document.getElementById('gender').value,
+        email: applicantEmail,
+        phone: applicantPhone,
+        altPhone: document.getElementById('altPhone').value,
+        address: document.getElementById('address').value,
+        program: document.getElementById('program').value,
+        entryMode: document.getElementById('entryMode').value,
+        certificates: JSON.stringify(collectCertificates()),
+        transactionId: document.getElementById('transactionId').value,
+        paymentDate: document.getElementById('paymentDate').value,
+        paymentMethod: selectedPaymentMethod,
+        status: 'pending_review',
+        submittedAt: new Date().toISOString()
+    };
+    
+    // Save to localStorage as backup
+    const application = {
+        id: applicationId,
+        trackingCode: trackingCode,
+        fullName: applicationData.fullName,
+        dob: applicationData.dob,
+        gender: applicationData.gender,
+        email: applicantEmail,
+        phone: applicantPhone,
+        altPhone: applicationData.altPhone,
+        address: applicationData.address,
+        program: applicationData.program,
+        entryMode: applicationData.entryMode,
+        certificates: collectCertificates(),
+        transactionId: applicationData.transactionId,
+        paymentDate: applicationData.paymentDate,
+        paymentMethod: selectedPaymentMethod,
+        files: {
+            wasce: uploadedFiles.wasce.map(f => f.name),
+            birth: uploadedFiles.birth?.name,
+            ghanaCard: uploadedFiles.ghanaCard?.name,
+            support: uploadedFiles.support.map(f => f.name)
+        },
+        status: 'pending_review',
+        submittedAt: new Date().toISOString()
+    };
+    
+    let applications = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+    applications.push(application);
+    localStorage.setItem('admissionApplications', JSON.stringify(applications));
+    
+    // Send to Google Sheets
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(applicationData)
+        });
         
-        const applicationId = `APP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
-        const trackingCode = generateTrackingCode();
-        const applicantPhone = document.getElementById('phone').value;
-        const applicantEmail = document.getElementById('email').value;
-        
-        const application = {
-            id: applicationId,
-            trackingCode: trackingCode,
-            fullName: document.getElementById('fullName').value,
-            dob: document.getElementById('dob').value,
-            gender: document.getElementById('gender').value,
-            email: applicantEmail,
-            phone: applicantPhone,
-            altPhone: document.getElementById('altPhone').value,
-            address: document.getElementById('address').value,
-            program: document.getElementById('program').value,
-            entryMode: document.getElementById('entryMode').value,
-            certificates: collectCertificates(),
-            transactionId: document.getElementById('transactionId').value,
-            paymentDate: document.getElementById('paymentDate').value,
-            paymentMethod: selectedPaymentMethod,
-            files: {
-                wasce: uploadedFiles.wasce.map(f => f.name),
-                birth: uploadedFiles.birth?.name,
-                ghanaCard: uploadedFiles.ghanaCard?.name,
-                support: uploadedFiles.support.map(f => f.name)
-            },
-            status: 'pending_review',
-            submittedAt: new Date().toISOString()
-        };
-        
-        applications.push(application);
-        localStorage.setItem('admissionApplications', JSON.stringify(applications));
+        const result = await response.json();
+        if (result.success) {
+            showToast(`✅ Application submitted to Google Sheets! ID: ${applicationId}`, "success");
+        } else {
+            showToast(`⚠️ Application saved locally only. ID: ${applicationId}`, "warning");
+        }
+    } catch (error) {
+        console.error('Error saving to Google Sheets:', error);
+        showToast(`⚠️ Application saved locally only. ID: ${applicationId}`, "warning");
+    }
+    
+    // Send SMS/Email with tracking code
+    sendTrackingNotification(applicantPhone, applicantEmail, applicationId, trackingCode);
+    
+    setTimeout(() => {
+        resetForm();
+        currentSection = 1;
+        document.getElementById('section1').classList.add('active');
+        for (let i = 2; i <= totalSections; i++) {
+            document.getElementById(`section${i}`).classList.remove('active');
+        }
+        updateProgress();
+    }, 3000);
+}
         
         // Send SMS/Email with tracking code
         sendTrackingNotification(applicantPhone, applicantEmail, applicationId, trackingCode);
