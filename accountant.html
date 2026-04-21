@@ -637,38 +637,42 @@
             <p style="font-size:0.85rem; opacity:0.8;">Financial & Academic Control</p>
         </div>
 
-        <a href="#" class="menu-item active" onclick="showSection('search')">
+                <a href="#" class="menu-item active" id="searchMenuItem" onclick="showSection('search')">
             <i class="fas fa-search"></i> Search Student
         </a>
-        <a href="#" class="menu-item" onclick="showSection('csv_upload')">
+        <a href="#" class="menu-item" id="csvUploadMenuItem" onclick="showSection('csv_upload')">
             <i class="fas fa-file-upload"></i> CSV Upload
         </a>
-        <a href="#" class="menu-item" onclick="showSection('bulk_upload')">
+        <a href="#" class="menu-item" id="bulkUploadMenuItem" onclick="showSection('bulk_upload')">
             <i class="fas fa-upload"></i> Bulk Upload
         </a>
-        <a href="#" class="menu-item" onclick="showSection('courses')">
+        <a href="#" class="menu-item" id="coursesMenuItem" onclick="showSection('courses')">
             <i class="fas fa-book"></i> Manage Courses
         </a>
-        <a href="#" class="menu-item" onclick="showSection('clearance')">
+        <a href="#" class="menu-item" id="clearanceMenuItem" onclick="showSection('clearance')">
             <i class="fas fa-check-circle"></i> Financial Clearance
         </a>
-        <a href="#" class="menu-item" onclick="showSection('transcript')">
+        <a href="#" class="menu-item" id="transcriptMenuItem" onclick="showSection('transcript')">
             <i class="fas fa-file-pdf"></i> Generate Transcript
         </a>
-        <a href="#" class="menu-item" onclick="showSection('transcript_requests')">
+        <a href="#" class="menu-item" id="transcriptRequestsMenuItem" onclick="showSection('transcript_requests')">
             <i class="fas fa-envelope"></i> Transcript Requests
             <span id="requestBadge" class="badge" style="display:none;">0</span>
         </a>
-        <a href="#" class="menu-item" onclick="showSection('notifications')">
+        <a href="#" class="menu-item" id="notificationsMenuItem" onclick="showSection('notifications')">
             <i class="fas fa-bell"></i> Send Notifications
         </a>
-        <a href="#" class="menu-item" onclick="showSection('reports')">
+        <a href="#" class="menu-item" id="reportsMenuItem" onclick="showSection('reports')">
             <i class="fas fa-chart-bar"></i> Reports
         </a>
 
-        <a href="#" class="menu-item" onclick="showSection('admissions')">
+        <a href="#" class="menu-item" id="admissionsMenuItem" onclick="showSection('admissions')">
             <i class="fas fa-users"></i> Admissions Manager
             <span id="admissionBadge" class="badge" style="display:none;">0</span>
+        </a>
+        <a href="#" class="menu-item" id="executiveMenuItem" onclick="openExecutiveDashboard()">
+            <i class="fas fa-chart-line"></i> Executive Dashboard
+            <span class="badge" style="background: var(--warning);">Admin</span>
         </a>
 
         <hr style="margin: 20px 25px; border-color: rgba(255,255,255,0.1);">
@@ -1117,12 +1121,132 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwxjWqWifn2OQ3YfRu1vn9OEnvkKMRXXjobTcXR1B1y3H7zNG1le4RxrLSBWs7AY_fH/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHXL0nW_PcKZUc7LxSeAoL4qKyr7kHZFIEA_hNOQA7z7wy7ZYJySJVDrzUA2RyWBdN/exec";
         let currentStudent = null;
         let currentTranscriptStudent = null;
         let csvData = null;
         let parsedResults = [];
         let allStudents = [];
+        // ============================================
+        // STAFF PERMISSIONS SYSTEM
+        // ============================================
+        let currentStaff = null;
+        let staffPermissions = [];
+
+        // Check login and permissions on page load
+        function checkStaffAccess() {
+            const adminData = localStorage.getItem('adminData');
+            if (!adminData) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            
+            currentStaff = JSON.parse(adminData);
+            staffPermissions = currentStaff.permissions || [];
+            
+            if (staffPermissions.length === 0) {
+                staffPermissions = ['search'];
+            }
+            
+            updateMenuVisibility();
+            return true;
+        }
+
+        // Show/hide menu items based on permissions
+        function updateMenuVisibility() {
+            const menuItems = {
+                'search': 'searchMenuItem',
+                'csv_upload': 'csvUploadMenuItem',
+                'bulk_upload': 'bulkUploadMenuItem',
+                'courses': 'coursesMenuItem',
+                'clearance': 'clearanceMenuItem',
+                'transcript': 'transcriptMenuItem',
+                'transcript_requests': 'transcriptRequestsMenuItem',
+                'notifications': 'notificationsMenuItem',
+                'reports': 'reportsMenuItem',
+                'admissions': 'admissionsMenuItem'
+            };
+            
+            const hasAllAccess = staffPermissions.includes('all');
+            
+            for (const [permission, menuId] of Object.entries(menuItems)) {
+                const menuElement = document.getElementById(menuId);
+                if (menuElement) {
+                    if (hasAllAccess || staffPermissions.includes(permission)) {
+                        menuElement.style.display = 'flex';
+                    } else {
+                        menuElement.style.display = 'none';
+                    }
+                }
+            }
+            
+            const roleNames = {
+                'accountant': '💰 Finance Dashboard',
+                'registrar': '📚 Academic Registry',
+                'hod': '👨‍🏫 HOD Dashboard',
+                'super_admin': '👑 Admin Dashboard',
+                'exams_officer': '💻 Exams Officer Dashboard'
+            };
+            
+            const pageTitle = document.getElementById('pageTitle');
+            if (pageTitle && currentStaff.staffRole) {
+                pageTitle.innerText = roleNames[currentStaff.staffRole] || 'Staff Dashboard';
+            }
+            
+            const navbarDiv = document.querySelector('.navbar div:last-child');
+            if (navbarDiv && currentStaff.name) {
+                navbarDiv.innerHTML = `<i class="fas fa-user-tie"></i> ${currentStaff.name}`;
+            }
+        }
+
+        // Save original showSection function reference
+        const originalShowSection = window.showSection;
+        
+        // Override showSection with permission check
+        window.showSection = function(section) {
+            const permissionMap = {
+                'search': 'search',
+                'csv_upload': 'csv_upload',
+                'bulk_upload': 'bulk_upload',
+                'courses': 'courses',
+                'clearance': 'clearance',
+                'transcript': 'transcript',
+                'transcript_requests': 'transcript_requests',
+                'notifications': 'notifications',
+                'reports': 'reports',
+                'admissions': 'admissions'
+            };
+            
+            const requiredPermission = permissionMap[section];
+            const hasAllAccess = staffPermissions.includes('all');
+            
+            if (requiredPermission && !hasAllAccess && !staffPermissions.includes(requiredPermission)) {
+                showToast(`⛔ Access Denied: ${section} section requires additional permissions`, "danger");
+                return;
+            }
+            
+            if (typeof originalShowSection === 'function') {
+                originalShowSection(section);
+            } else {
+                // Fallback to original showSection logic
+                if (window.innerWidth <= 768) toggleSidebar();
+                document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+                const sectionElement = document.getElementById(section + 'Section');
+                if (sectionElement) sectionElement.style.display = 'block';
+                document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+                if (event && event.currentTarget) event.currentTarget.classList.add('active');
+                const titles = {
+                    search: 'Search Student', csv_upload: 'CSV Upload', bulk_upload: 'Bulk Operations',
+                    courses: 'Manage Courses', clearance: 'Financial Clearance', transcript: 'Generate Transcript',
+                    transcript_requests: 'Transcript Requests', admissions: 'Admissions Manager', notifications: 'Send Notifications', reports: 'Reports'
+                };
+                const pageTitle = document.getElementById('pageTitle');
+                if (pageTitle) pageTitle.innerText = titles[section] || 'Dashboard';
+                if (section === 'clearance' && typeof loadStudentClearanceList === 'function') loadStudentClearanceList();
+                if (section === 'transcript_requests' && typeof loadTranscriptRequests === 'function') { loadTranscriptRequests(); loadProcessedRequests(); }
+                if (section === 'admissions' && typeof loadAdmissions === 'function') loadAdmissions();
+            }
+        };
 
         // ============================================
         // GRADING SYSTEMS
@@ -1942,17 +2066,49 @@ CCST/ML/24/002,Sarah Williams,ML,100,5500,5500,0,0,Semester 1 2026/2027`;
             if (confirm("Logout?")) window.location.replace("index.html");
         }
 
-        window.onload = () => {
-    showSection('search');
-    document.getElementById('totalStudents').innerText = '156';
-    document.getElementById('clearedStudents').innerText = '142';
-    document.getElementById('pendingStudents').innerText = '14';
-    document.getElementById('pendingResults').innerText = '23';
-    loadAllStudentsForTranscript();
-    loadTranscriptRequests();
-    loadProcessedRequests();
-    displayNotificationHistory();
-};
+               window.onload = () => {
+                // Initialize staff permissions first
+                if (!checkStaffAccess()) {
+                return; // Will redirect to login
+                }
+    
+                // Show default section based on permissions
+                    if (staffPermissions.includes('all') || staffPermissions.includes('search')) {
+                     showSection('search');
+                        } else if (staffPermissions.includes('clearance')) {
+                        showSection('clearance');
+                        } else if (staffPermissions.includes('reports')) {
+                        showSection('reports');
+                        } else {
+                            showToasthowSection('search');
+                        }
+    
+                        document.getElementById('totalStudents').innerText = '156';
+                        document.getElementById('clearedStudents').innerText = '142';
+                        document.getElementById('pendingStudents').innerText = '14';
+                        document.getElementById('pendingResults').innerText = '23';
+                        loadAllStudentsForTranscript();
+                        loadTranscriptRequests();
+                        loadProcessedRequests();
+                         displayNotificationHistory();
+                        };
+
+        function openExecutiveDashboard() {
+            // Check if user has permission (only admin/president/executive)
+            const adminData = localStorage.getItem('adminData');
+            if (adminData) {
+            const staff = JSON.parse(adminData);
+                // Allow specific roles to access executive dashboard
+            const allowedRoles = ['super_admin', 'president', 'academic_director', 'admin'];
+                if (allowedRoles.includes(staff.staffRole) || staff.permissions?.includes('executive')) {
+                    window.open('executive dashboard.html', '_blank');
+                } else {
+                    showToast("Access Denied: Executive Dashboard requires special permissions", "danger");
+                }
+            } else {
+                showToast("Please login as executive staff to access this feature", "danger");
+            }
+        }
 
 // ============================================
 // ADMISSIONS MANAGER FUNCTIONS
@@ -2037,7 +2193,7 @@ function getDemoApplications() {
             entryMode: "WASSCE",
             status: "admitted",
             submittedAt: new Date().toISOString(),
-            certificates: "[{\"type\":\"WASSCE\",\"institution\":\"Opoku Ware\",\"year\":\"2023\"}]",
+            certificates: "[{\"type\":\"WASSCE\",\"institution\":\"Oyoko Methodist\",\"year\":\"2023\"}]",
             transactionId: "MOMO345678",
             paymentMethod: "momo"
         }

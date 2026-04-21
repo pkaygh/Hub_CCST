@@ -538,7 +538,7 @@
         </div>
 
         <!-- Role Selector -->
-        <div class="role-selector">
+                <div class="role-selector">
             <div class="role-btn active" id="studentRole" onclick="selectRole('student')">
                 <i class="fas fa-user-graduate"></i>
                 Student
@@ -546,6 +546,10 @@
             <div class="role-btn" id="adminRole" onclick="selectRole('admin')">
                 <i class="fas fa-user-tie"></i>
                 Staff
+            </div>
+            <div class="role-btn" id="executiveRole" onclick="selectRole('executive')">
+                <i class="fas fa-chart-line"></i>
+                Executive
             </div>
         </div>
 
@@ -636,7 +640,7 @@
 
     <script>
         // Configuration - Your Google Apps Script URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9jrpA-Pd_fwtxUh4QDNXb2Nq1gDt_Cuoy968KMmPS5B3fJ2xMiI7M973OzEDAaSAu/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHXL0nW_PcKZUc7LxSeAoL4qKyr7kHZFIEA_hNOQA7z7wy7ZYJySJVDrzUA2RyWBdN/exec";
         let deferredPrompt;
         let currentRole = 'student';
 
@@ -702,17 +706,25 @@
         });
 
         // Select Role
-        function selectRole(role) {
+                function selectRole(role) {
             currentRole = role;
 
             if (role === 'student') {
                 document.getElementById('studentRole').classList.add('active');
                 document.getElementById('adminRole').classList.remove('active');
+                document.getElementById('executiveRole')?.classList.remove('active');
                 document.getElementById('idLabel').innerText = 'Student ID';
                 document.getElementById('loginId').placeholder = 'Enter your student ID';
+            } else if (role === 'executive') {
+                document.getElementById('executiveRole').classList.add('active');
+                document.getElementById('studentRole').classList.remove('active');
+                document.getElementById('adminRole').classList.remove('active');
+                document.getElementById('idLabel').innerText = 'Executive ID';
+                document.getElementById('loginId').placeholder = 'Enter executive username';
             } else {
                 document.getElementById('adminRole').classList.add('active');
                 document.getElementById('studentRole').classList.remove('active');
+                document.getElementById('executiveRole')?.classList.remove('active');
                 document.getElementById('idLabel').innerText = 'Staff ID';
                 document.getElementById('loginId').placeholder = 'Enter staff ID';
             }
@@ -754,6 +766,7 @@
         }
 
         // Handle Login
+                // Handle Login
         async function handleLogin(event) {
             event.preventDefault();
 
@@ -787,6 +800,9 @@
                     return;
                 }
 
+                // ============================================
+                // STAFF LOGIN (Accountant/Admin)
+                // ============================================
                 if (currentRole === 'admin') {
                     const response = await fetch(`${SCRIPT_URL}?action=staff_login&user=${loginId}&pass=${password}`);
                     const data = await response.json();
@@ -797,11 +813,41 @@
                     }
 
                     if (data.authorized) {
-                        localStorage.setItem('adminData', JSON.stringify({ role: 'admin', id: loginId }));
+                        localStorage.setItem('adminData', JSON.stringify({ 
+                            role: 'admin', 
+                            id: loginId,
+                            staffRole: data.staffRole || 'accountant',
+                            name: data.name || 'Staff',
+                            permissions: data.permissions || ['search']
+                        }));
                         window.location.href = 'accountant.html';
                         return;
                     }
-                } else {
+                }
+                
+                // ============================================
+                // EXECUTIVE DASHBOARD LOGIN (NEW)
+                // ============================================
+                else if (currentRole === 'executive') {
+                    const response = await fetch(`${SCRIPT_URL}?action=executive_login&user=${loginId}&pass=${password}`);
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+                    
+                    if (data.authorized) {
+                        localStorage.setItem('executiveData', JSON.stringify(data));
+                        window.location.href = 'executive dashboard.html';
+                        return;
+                    }
+                }
+                
+                // ============================================
+                // STUDENT LOGIN
+                // ============================================
+                else {
                     const response = await fetch(`${SCRIPT_URL}?id=${loginId}&password=${password}`);
                     const data = await response.json();
 

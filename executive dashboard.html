@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCST Executive Dashboard | Analytics & Insights</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6b8e23;
+            --primary-light: #9acd32;
+            --primary-dark: #1a472a;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --purple: #9b59b6;
+            --bg: #f5f5dc;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --sidebar-bg: #1a472a;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            background-image: radial-gradient(circle, rgba(107, 142, 35, 0.08) 1px, transparent 1px);
+            background-size: 12px 12px;
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+
+        /* Login Overlay */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a472a 0%, #2e5a2e 100%);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s ease;
+        }
+
+        .login-overlay.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            width: 380px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .login-card .logo-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .login-card h2 {
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .login-card input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .login-card button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-card button:hover {
+            transform: translateY(-2px);
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+            border-left: 5px solid var(--primary);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .stat-card .label {
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        /* Charts Row */
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .chart-card h3 {
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        canvas {
+            max-height: 250px;
+            width: 100%;
+        }
+
+        /* Program Breakdown */
+        .program-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .program-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .program-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+
+        .program-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .program-badge {
+            background: var(--primary-light);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: white;
+        }
+
+        .program-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+
+        /* Recent Activity */
+        .activity-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .activity-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(107, 142, 35, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .activity-detail {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        /* Alert Banner */
+        .alert-banner {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Export Button */
+        .export-btn {
+            background: var(--info);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .refresh-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: flex-end;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-dark);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Login Overlay -->
+<div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+        <div class="logo-icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <h2>Executive Dashboard</h2>
+        <p style="color: #666; margin-bottom: 20px;">CCST Analytics Portal</p>
+        <input type="text" id="loginUsername" placeholder="Username" autocomplete="off">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button onclick="attemptLogin()">Login</button>
+        <div style="margin-top: 15px; font-size: 0.8rem; color: #999;">
+            <p>Demo Accounts:</p>
+            <p>Admin: admin / admin123</p>
+            <p>Finance: finance / finance123</p>
+        </div>
+    </div>
+</div>
+
+<!-- Main Dashboard -->
+<div class="dashboard" id="dashboard" style="display: none;">
+    
+    <!-- User Info Bar -->
+    <div class="user-info">
+        <div class="user-badge">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div>
+                <strong id="userName">Admin User</strong>
+                <span style="font-size: 0.75rem; color: #666; display: block;" id="userRole">Administrator</span>
+            </div>
+        </div>
+        <div>
+            <span id="lastUpdate" style="font-size: 0.75rem; color: #666; margin-right: 15px;"></span>
+            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </div>
+
+    <!-- Alert Banner (Dynamic) -->
+    <div class="alert-banner" id="alertBanner">
+        <span><i class="fas fa-exclamation-triangle"></i> <span id="alertMessage">⚠️ 14 students have arrears exceeding GH₵1,000. Please review.</span></span>
+        <i class="fas fa-times" style="cursor: pointer;" onclick="this.parentElement.style.display='none'"></i>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+        <button class="export-btn" onclick="exportReport()"><i class="fas fa-file-excel"></i> Export Report</button>
+        <button class="refresh-btn" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><i class="fas fa-users" style="color: var(--primary);"></i><div class="value" id="totalStudents">0</div><div class="label">Total Students</div></div>
+        <div class="stat-card"><i class="fas fa-graduation-cap" style="color: var(--info);"></i><div class="value" id="activeStudents">0</div><div class="label">Active Students</div></div>
+        <div class="stat-card"><i class="fas fa-user-slash" style="color: var(--danger);"></i><div class="value" id="dropoutCount">0</div><div class="label">Dropouts / Withdrawn</div></div>
+        <div class="stat-card"><i class="fas fa-money-bill-wave" style="color: var(--success);"></i><div class="value" id="totalFees">₵0</div><div class="label">Total Fees Collected</div></div>
+        <div class="stat-card"><i class="fas fa-hand-holding-usd" style="color: var(--warning);"></i><div class="value" id="totalBalance">₵0</div><div class="label">Outstanding Balance</div></div>
+        <div class="stat-card"><i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i><div class="value" id="totalArrears">₵0</div><div class="label">Total Arrears</div></div>
+        <div class="stat-card"><i class="fas fa-chart-line" style="color: var(--purple);"></i><div class="value" id="clearanceRate">0%</div><div class="label">Clearance Rate</div></div>
+        <div class="stat-card"><i class="fas fa-book" style="color: var(--primary-light);"></i><div class="value" id="avgGPA">0.00</div><div class="label">Average CGPA</div></div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+        <div class="chart-card">
+            <h3><i class="fas fa-chart-pie"></i> Students by Program</h3>
+            <canvas id="programChart" width="400" height="250"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3><i class="fas fa-chart-bar"></i> Financial Overview</h3>
+            <canvas id="financialChart" width="400" height="250"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3><i class="fas fa-chart-line"></i> Clearance Status</h3>
+            <canvas id="clearanceChart" width="400" height="250"></canvas>
+        </div>
+    </div>
+
+    <!-- Program Breakdown Cards -->
+    <div class="program-grid" id="programGrid"></div>
+
+    <!-- Recent Activity & Alerts -->
+    <div class="activity-card">
+        <h3 style="margin-bottom: 15px;"><i class="fas fa-clock"></i> Recent Activities</h3>
+        <div class="activity-list" id="activityList">
+            <div style="text-align: center; padding: 20px; color: #999;">Loading activities...</div>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast" style="display: none;"></div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHXL0nW_PcKZUc7LxSeAoL4qKyr7kHZFIEA_hNOQA7z7wy7ZYJySJVDrzUA2RyWBdN/exec";
+    
+    // Dashboard Data
+    let dashboardData = {
+        students: [],
+        programStats: {},
+        financials: { totalFees: 0, totalPaid: 0, totalBalance: 0, totalArrears: 0 },
+        clearanceStats: { cleared: 0, pending: 0 },
+        dropouts: 0,
+        activeCount: 0,
+        avgGPA: 0,
+        recentActivities: []
+    };
+
+    let charts = {};
+
+    // Demo Users
+    const users = {
+        president: { name: "Very Rev. Kweku Abaka-Ewusi", role: "President", password: "admin123", avatar: "KAE" },
+        academic: { name: "Dr. Ernest N. Appiah", role: "Academic Director", password: "AD123", avatar: "ENP" },
+        finance: { name: "Miss Milicent Ahenkrah", role: "Account Manager", password: "account123", avatar: "MA" }
+    };
+    let currentUser = null;
+
+    // Login Attempt
+    async function attemptLogin() {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        
+        if (users[username] && users[username].password === password) {
+            currentUser = users[username];
+            document.getElementById('loginOverlay').classList.add('hide');
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('userName').innerText = currentUser.name;
+            document.getElementById('userRole').innerText = currentUser.role;
+            document.getElementById('userAvatar').innerText = currentUser.avatar;
+            
+            showToast(`Welcome back, ${currentUser.name}!`, "success");
+            await loadDashboardData();
+        } else {
+            showToast("Invalid username or password", "danger");
+        }
+    }
+
+    function logout() {
+        currentUser = null;
+        document.getElementById('loginOverlay').classList.remove('hide');
+        document.getElementById('dashboard').style.display = 'none';
+        showToast("Logged out successfully", "info");
+    }
+
+    function showToast(msg, type = "info") {
+        const toast = document.getElementById('toast');
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i> ${msg}`;
+        toast.style.background = type === 'success' ? '#27ae60' : type === 'danger' ? '#e74c3c' : '#3498db';
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 3000);
+    }
+
+    async function loadDashboardData() {
+        try {
+            // Fetch students from Google Sheets
+            const response = await fetch(`${SCRIPT_URL}?action=get_all_students`);
+            const data = await response.json();
+            
+            if (data.students && data.students.length > 0) {
+                dashboardData.students = data.students;
+                processData();
+            } else {
+                // Load demo data if API fails
+                loadDemoData();
+            }
+            
+            updateLastUpdateTime();
+        } catch (error) {
+            console.log("API error, loading demo data:", error);
+            loadDemoData();
+        }
+    }
+
+    function loadDemoData() {
+        dashboardData.students = [
+            { id: "CCST/RM/24/001", name: "Dorcas Anderson", program: "RM", level: "100", isCleared: true, balance: 0, arrears: 0, totalFee: 4500, amountPaid: 4500, status: "active", gpa: 3.45 },
+            { id: "CCST/RM/24/002", name: "Justina Arhin", program: "RM", level: "100", isCleared: false, balance: 1500, arrears: 0, totalFee: 4500, amountPaid: 3000, status: "active", gpa: 3.12 },
+            { id: "CCST/RN/24/001", name: "Comfort Botwe", program: "RN", level: "100", isCleared: true, balance: 0, arrears: 0, totalFee: 4500, amountPaid: 4500, status: "active", gpa: 3.78 },
+            { id: "CCST/RN/24/002", name: "Mary Johnson", program: "RN", level: "100", isCleared: false, balance: 2000, arrears: 500, totalFee: 4500, amountPaid: 2500, status: "active", gpa: 2.89 },
+            { id: "CCST/ML/24/001", name: "Godfred Boadison", program: "ML", level: "100", isCleared: true, balance: 0, arrears: 0, totalFee: 5500, amountPaid: 5500, status: "active", gpa: 3.92 },
+            { id: "CCST/ML/24/002", name: "Sarah Williams", program: "ML", level: "100", isCleared: false, balance: 2500, arrears: 1000, totalFee: 5500, amountPaid: 3000, status: "active", gpa: 3.21 },
+            { id: "CCST/RM/23/001", name: "Ernest Ahenkrah", program: "RM", level: "200", isCleared: true, balance: 0, arrears: 0, totalFee: 4500, amountPaid: 4500, status: "active", gpa: 2.95 },
+            { id: "CCST/ML/23/002", name: "Alice Essel", program: "ML", level: "200", isCleared: false, balance: 3500, arrears: 1500, totalFee: 5500, amountPaid: 2000, status: "dropout", gpa: 1.85 },
+            { id: "CCST/RN/23/001", name: "Michael Osei", program: "RN", level: "200", isCleared: true, balance: 0, arrears: 0, totalFee: 4500, amountPaid: 4500, status: "active", gpa: 3.55 },
+            { id: "CCST/RM/22/001", name: "Patricia Mensah", program: "RM", level: "300", isCleared: true, balance: 0, arrears: 0, totalFee: 4500, amountPaid: 4500, status: "active", gpa: 3.67 },
+            { id: "CCST/ML/22/002", name: "Daniel Asare", program: "ML", level: "300", isCleared: false, balance: 2000, arrears: 500, totalFee: 5500, amountPaid: 3500, status: "active", gpa: 2.76 },
+            { id: "CCST/RN/22/003", name: "Elizabeth Quaye", program: "RN", level: "300", isCleared: true, balance: 0, arrears: 0, totalFee: 4500, amountPaid: 4500, status: "active", gpa: 3.88 },
+        ];
+        processData();
+    }
+
+    function processData() {
+        const students = dashboardData.students;
+        
+        // Reset stats
+        dashboardData.programStats = {};
+        dashboardData.financials = { totalFees: 0, totalPaid: 0, totalBalance: 0, totalArrears: 0 };
+        dashboardData.clearanceStats = { cleared: 0, pending: 0 };
+        dashboardData.dropouts = 0;
+        dashboardData.activeCount = 0;
+        let totalGPA = 0;
+        let gpaCount = 0;
+        
+        students.forEach(student => {
+            // Program counts
+            if (!dashboardData.programStats[student.program]) {
+                dashboardData.programStats[student.program] = { count: 0, cleared: 0, feesCollected: 0, totalFees: 0 };
+            }
+            dashboardData.programStats[student.program].count++;
+            
+            // Status
+            if (student.status === 'active') {
+                dashboardData.activeCount++;
+            } else if (student.status === 'dropout') {
+                dashboardData.dropouts++;
+            }
+            
+            // Clearance
+            if (student.isCleared === true || student.isCleared === "TRUE") {
+                dashboardData.clearanceStats.cleared++;
+                dashboardData.programStats[student.program].cleared++;
+            } else {
+                dashboardData.clearanceStats.pending++;
+            }
+            
+            // Financials
+            const totalFee = student.totalFee || 0;
+            const amountPaid = student.amountPaid || 0;
+            const balance = student.balance || (totalFee - amountPaid);
+            const arrears = student.arrears || 0;
+            
+            dashboardData.financials.totalFees += totalFee;
+            dashboardData.financials.totalPaid += amountPaid;
+            dashboardData.financials.totalBalance += balance;
+            dashboardData.financials.totalArrears += arrears;
+            
+            dashboardData.programStats[student.program].totalFees += totalFee;
+            dashboardData.programStats[student.program].feesCollected += amountPaid;
+            
+            // GPA
+            if (student.gpa) {
+                totalGPA += parseFloat(student.gpa);
+                gpaCount++;
+            }
+        });
+        
+        dashboardData.avgGPA = gpaCount > 0 ? (totalGPA / gpaCount).toFixed(2) : 0;
+        
+        // Generate recent activities
+        generateRecentActivities();
+        
+        // Update UI
+        updateStatsUI();
+        updateProgramCards();
+        updateCharts();
+        updateActivityList();
+        updateAlertBanner();
+    }
+
+    function updateStatsUI() {
+        document.getElementById('totalStudents').innerText = dashboardData.students.length;
+        document.getElementById('activeStudents').innerText = dashboardData.activeCount;
+        document.getElementById('dropoutCount').innerText = dashboardData.dropouts;
+        document.getElementById('totalFees').innerText = `₵${dashboardData.financials.totalFees.toLocaleString()}`;
+        document.getElementById('totalBalance').innerText = `₵${dashboardData.financials.totalBalance.toLocaleString()}`;
+        document.getElementById('totalArrears').innerText = `₵${dashboardData.financials.totalArrears.toLocaleString()}`;
+        
+        const clearanceRate = dashboardData.students.length > 0 ? 
+            Math.round((dashboardData.clearanceStats.cleared / dashboardData.students.length) * 100) : 0;
+        document.getElementById('clearanceRate').innerText = `${clearanceRate}%`;
+        document.getElementById('avgGPA').innerText = dashboardData.avgGPA;
+    }
+
+    function updateProgramCards() {
+        const container = document.getElementById('programGrid');
+        const programNames = { 'RM': 'Registered Midwifery', 'RN': 'Registered Nursing', 'ML': 'Medical Lab Technology' };
+        
+        let html = '';
+        for (const [code, stats] of Object.entries(dashboardData.programStats)) {
+            const clearedRate = stats.count > 0 ? Math.round((stats.cleared / stats.count) * 100) : 0;
+            const collectionRate = stats.totalFees > 0 ? Math.round((stats.feesCollected / stats.totalFees) * 100) : 0;
+            
+            html += `
+                <div class="program-card">
+                    <div class="program-header">
+                        <span class="program-name">${programNames[code] || code}</span>
+                        <span class="program-badge">${stats.count} Students</span>
+                    </div>
+                    <div class="program-stats">
+                        <span><i class="fas fa-check-circle"></i> Cleared: ${stats.cleared}</span>
+                        <span><i class="fas fa-hourglass-half"></i> Pending: ${stats.count - stats.cleared}</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${clearedRate}%"></div></div>
+                    <div class="program-stats" style="margin-top: 10px;">
+                        <span><i class="fas fa-coins"></i> Collected: ₵${stats.feesCollected.toLocaleString()}</span>
+                        <span><i class="fas fa-percent"></i> ${collectionRate}%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${collectionRate}%; background: linear-gradient(90deg, #27ae60, #2ecc71);"></div></div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+
+    function updateCharts() {
+        const programNames = { 'RM': 'Midwifery', 'RN': 'Nursing', 'ML': 'Med Lab' };
+        const programLabels = [];
+        const programCounts = [];
+        
+        for (const [code, stats] of Object.entries(dashboardData.programStats)) {
+            programLabels.push(programNames[code] || code);
+            programCounts.push(stats.count);
+        }
+        
+        // Program Chart
+        if (charts.programChart) charts.programChart.destroy();
+        charts.programChart = new Chart(document.getElementById('programChart'), {
+            type: 'pie',
+            data: { labels: programLabels, datasets: [{ data: programCounts, backgroundColor: ['#6b8e23', '#9acd32', '#1a472a', '#f39c12', '#3498db'] }] },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+        });
+        
+        // Financial Chart
+        if (charts.financialChart) charts.financialChart.destroy();
+        charts.financialChart = new Chart(document.getElementById('financialChart'), {
+            type: 'bar',
+            data: { 
+                labels: ['Total Fees', 'Collected', 'Balance', 'Arrears'],
+                datasets: [{ 
+                    label: 'Amount (₵)', 
+                    data: [
+                        dashboardData.financials.totalFees,
+                        dashboardData.financials.totalPaid,
+                        dashboardData.financials.totalBalance,
+                        dashboardData.financials.totalArrears
+                    ],
+                    backgroundColor: ['#1a472a', '#27ae60', '#f39c12', '#e74c3c']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: true }
+        });
+        
+        // Clearance Chart
+        if (charts.clearanceChart) charts.clearanceChart.destroy();
+        charts.clearanceChart = new Chart(document.getElementById('clearanceChart'), {
+            type: 'doughnut',
+            data: { 
+                labels: ['Cleared', 'Pending'],
+                datasets: [{ 
+                    data: [dashboardData.clearanceStats.cleared, dashboardData.clearanceStats.pending],
+                    backgroundColor: ['#27ae60', '#e74c3c']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    function generateRecentActivities() {
+        dashboardData.recentActivities = [
+            { title: "New student registration", detail: "Justina Arhin enrolled in RM program", time: "2 hours ago", icon: "user-plus" },
+            { title: "Fee payment received", detail: "GH₵2,500 from Dorcas Anderson", time: "5 hours ago", icon: "money-bill-wave" },
+            { title: "Financial clearance updated", detail: "5 students marked as cleared", time: "Yesterday", icon: "check-circle" },
+            { title: "Dropout recorded", detail: "Alice Essel (ML) has withdrawn", time: "Yesterday", icon: "user-slash" },
+            { title: "Results uploaded", detail: "Semester 1 results for Level 100", time: "2 days ago", icon: "upload" },
+            { title: "Arrears alert", detail: "3 students have exceeded GH₵1,000 in arrears", time: "3 days ago", icon: "exclamation-triangle" },
+        ];
+    }
+
+    function updateActivityList() {
+        const container = document.getElementById('activityList');
+        let html = '';
+        dashboardData.recentActivities.forEach(act => {
+            html += `
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fas fa-${act.icon}"></i></div>
+                    <div class="activity-detail">
+                        <div class="activity-title">${act.title}</div>
+                        <div style="font-size: 0.85rem; color: #666;">${act.detail}</div>
+                        <div class="activity-time">${act.time}</div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function updateAlertBanner() {
+        const highArrears = dashboardData.students.filter(s => (s.arrears || 0) > 1000).length;
+        const highBalance = dashboardData.students.filter(s => (s.balance || 0) > 2000).length;
+        
+        if (highArrears > 0) {
+            document.getElementById('alertMessage').innerHTML = `⚠️ ${highArrears} student(s) have arrears exceeding GH₵1,000. Please review.`;
+        } else if (highBalance > 0) {
+            document.getElementById('alertMessage').innerHTML = `⚠️ ${highBalance} student(s) have outstanding balance exceeding GH₵2,000.`;
+        } else {
+            document.getElementById('alertMessage').innerHTML = `✅ All financial metrics are within acceptable ranges. Good job!`;
+            document.getElementById('alertBanner').style.background = "linear-gradient(135deg, #27ae60, #2ecc71)";
+        }
+    }
+
+    function updateLastUpdateTime() {
+        document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> Last updated: ${new Date().toLocaleString()}`;
+    }
+
+    async function refreshData() {
+        showToast("Refreshing data...", "info");
+        await loadDashboardData();
+        showToast("Dashboard updated!", "success");
+    }
+
+    function exportReport() {
+        let report = "CCST EXECUTIVE SUMMARY REPORT\n";
+        report += "=".repeat(50) + "\n";
+        report += `Generated: ${new Date().toLocaleString()}\n`;
+        report += `Generated by: ${currentUser.name} (${currentUser.role})\n`;
+        report += "=".repeat(50) + "\n\n";
+        
+        report += "KEY METRICS:\n";
+        report += `- Total Students: ${dashboardData.students.length}\n`;
+        report += `- Active Students: ${dashboardData.activeCount}\n`;
+        report += `- Dropouts: ${dashboardData.dropouts}\n`;
+        report += `- Total Fees Collected: ₵${dashboardData.financials.totalPaid.toLocaleString()}\n`;
+        report += `- Outstanding Balance: ₵${dashboardData.financials.totalBalance.toLocaleString()}\n`;
+        report += `- Total Arrears: ₵${dashboardData.financials.totalArrears.toLocaleString()}\n`;
+        report += `- Clearance Rate: ${Math.round((dashboardData.clearanceStats.cleared / dashboardData.students.length) * 100)}%\n`;
+        report += `- Average CGPA: ${dashboardData.avgGPA}\n\n`;
+        
+        report += "PROGRAM BREAKDOWN:\n";
+        for (const [code, stats] of Object.entries(dashboardData.programStats)) {
+            report += `- ${code}: ${stats.count} students, ${stats.cleared} cleared (${Math.round((stats.cleared/stats.count)*100)}%)\n`;
+        }
+        
+        const blob = new Blob([report], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `CCST_Report_${new Date().toISOString().slice(0,19)}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("Report exported!", "success");
+    }
+
+    // Initialize
+    document.getElementById('loginUsername').addEventListener('keypress', (e) => { if(e.key === 'Enter') attemptLogin(); });
+    document.getElementById('loginPassword').addEventListener('keypress', (e) => { if(e.key === 'Enter') attemptLogin(); });
+</script>
+</body>
+</html>
