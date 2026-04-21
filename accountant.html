@@ -1201,38 +1201,48 @@
         }
 
         function showSection(section) {
-            if (window.innerWidth <= 768) toggleSidebar();
-            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
-            document.getElementById(section + 'Section').style.display = 'block';
-            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            const titles = {
-                search: 'Search Student', csv_upload: 'CSV Upload', bulk_upload: 'Bulk Operations',
-                courses: 'Manage Courses', clearance: 'Financial Clearance', transcript: 'Generate Transcript',
-                transcript_requests: 'Transcript Requests',admissions: 'Admissions Manager', notifications: 'Send Notifications', reports: 'Reports'
-            };
-            document.getElementById('pageTitle').innerText = titles[section] || 'Dashboard';
-            if (section === 'clearance') loadStudentClearanceList();
-            if (section === 'transcript_requests') { loadTranscriptRequests(); loadProcessedRequests(); }
-            if (section === 'admissions') loadAdmissions();
+    if (window.innerWidth <= 768) toggleSidebar();
+    document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+    document.getElementById(section + 'Section').style.display = 'block';
+    document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    const titles = {
+        search: 'Search Student', csv_upload: 'CSV Upload', bulk_upload: 'Bulk Operations',
+        courses: 'Manage Courses', clearance: 'Financial Clearance', transcript: 'Generate Transcript',
+        transcript_requests: 'Transcript Requests', admissions: 'Admissions Manager', notifications: 'Send Notifications', reports: 'Reports'
+    };
+    document.getElementById('pageTitle').innerText = titles[section] || 'Dashboard';
+    if (section === 'clearance') loadStudentClearanceList();
+    if (section === 'transcript_requests') { loadTranscriptRequests(); loadProcessedRequests(); }
+    if (section === 'admissions') loadAdmissions();
+}
 
-        // Search Student
-        async function searchStudent() {
-            const id = document.getElementById('searchId').value.trim();
-            if (!id) return showToast("Please enter Student ID", "warning");
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`);
-                const data = await res.json();
-                if (data.error) { showToast(data.error, "danger"); return; }
-                currentStudent = data;
-                document.getElementById('studentResult').style.display = 'block';
-                document.getElementById('resName').innerText = data.name;
-                document.getElementById('resInfo').innerText = `${getFullProgramName(data.program)} | Level ${data.level} | Balance: GH₵${(data.balance || 0).toLocaleString()}`;
-                if (data.program) document.getElementById('resProgram').value = data.program;
-                if (data.level) document.getElementById('resLevel').value = data.level;
-                updateClearanceButton(data.isCleared);
-            } catch (e) { showToast("Error connecting to server", "danger"); }
-        }
+// Search Student function - MUST be outside showSection
+async function searchStudent() {
+    const id = document.getElementById('searchId').value.trim();
+    if (!id) return showToast("Please enter Student ID", "warning");
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`);
+        const data = await res.json();
+        if (data.error) { showToast(data.error, "danger"); return; }
+        currentStudent = data;
+        document.getElementById('studentResult').style.display = 'block';
+        document.getElementById('resName').innerText = data.name;
+        document.getElementById('resInfo').innerText = `${getFullProgramName(data.program)} | Level ${data.level} | Balance: GH₵${(data.balance || 0).toLocaleString()}`;
+        if (data.program) document.getElementById('resProgram').value = data.program;
+        if (data.level) document.getElementById('resLevel').value = data.level;
+        updateClearanceButton(data.isCleared);
+    } catch (e) { showToast("Error connecting to server", "danger"); }
+}
+
+            function getFullProgramName(code) {
+                const programNames = {
+                    'RM': 'Registered Midwifery',
+                    'RN': 'Registered General Nursing', 
+                    'ML': 'Medical Laboratory Technology'
+                };
+                return programNames[code] || code;
+            }
 
         function updateClearanceButton(isCleared) {
             const btn = document.getElementById('toggleBtn');
