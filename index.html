@@ -139,19 +139,19 @@
         }
 
         /* Admission Banner */
-        .admission-banner {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-            border-radius: 16px;
-            padding: 18px 20px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            .admission-banner {
+                background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+                border-radius: 16px;
+                padding: 18px 20px;
+                margin-bottom: 25px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 15px;
+                cursor: pointer;
+                transition: all 0.3s;
+                border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .admission-banner:hover {
@@ -198,6 +198,35 @@
             cursor: pointer;
             transition: all 0.3s;
             font-size: 0.85rem;
+        }
+
+        /* PULSE EFFECT FOR APPLY NOW BUTTON */
+            @keyframes pulse {
+            0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+            }
+            70% {
+            transform: scale(1.08);
+            box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
+                }
+            100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+                }
+            }
+
+        .banner-btn {
+            background: white;
+            color: var(--primary-dark);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+            animation: pulse 1.0s ease-in-out infinite;
         }
 
         .banner-btn:hover {
@@ -490,11 +519,11 @@
         <div class="admission-banner" onclick="window.location.href='admission.html'">
             <div class="banner-content">
                 <div class="banner-icon">
-                    <i class="fas fa-graduation-cap"></i>
+                    <img src="CCST LOGO.png" alt="CCST Logo" style="width: 32px; height: 32px; object-fit: contain;">
                 </div>
                 <div class="banner-text">
-                    <h4>🎓 New Applicant? Start Your Journey Here!</h4>
-                    <p>Apply for 2025/2026 Academic Year. Fill admission form, upload documents, and pay online.</p>
+                    <h4>🎓 New Applicant? Start Here</h4>
+                    <p>Apply for 2025/2026 Academic Year.</p>
                 </div>
             </div>
             <button class="banner-btn">Apply Now →</button>
@@ -502,7 +531,7 @@
 
         <div class="logo">
             <div class="logo-icon">
-                <i class="fas fa-graduation-cap"></i>
+                <img src="CCST LOGO.png" alt="CCST Logo" style="width: 45px; height: 45px; object-fit: contain;">
             </div>
             <h1>CCST Portal</h1>
             <p>Student Information System</p>
