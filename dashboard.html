@@ -1829,6 +1829,7 @@
             return programNames[code] || code;
         }
 
+                
                 function loadProfile() {
             if (!studentData?.profile) return;
             const p = studentData.profile;
@@ -1888,24 +1889,6 @@
                 console.log("Could not fetch photo from server:", error);
             }
             return null;
-        }
-
-            const statusBox = document.getElementById('clearanceStatus');
-            if (p.isCleared === true || p.isCleared === "TRUE") {
-                statusBox.innerText = "✅ FINANCIALLY CLEARED";
-                statusBox.className = "status-badge cleared";
-            } else {
-                statusBox.innerText = "❌ NOT CLEARED - See Accountant";
-                statusBox.className = "status-badge not-cleared";
-            }
-            
-            updateWelcomeMessage();
-            updateCurrentDate();
-            updateQuickStats();
-            updateDetailedProfile();
-            loadRecentActivities();
-            updateAchievements();
-            renderGradingTable();
         }
 
         function loadAcademicResults() {
@@ -2482,27 +2465,6 @@
             } catch(e) { console.log('Error:', e); }
         }
 
-        // ============================================
-        // UPGRADED PROFILE FUNCTIONS
-        // ============================================
-        
-            function updateWelcomeMessage() {
-            // Get the student name from the already loaded profile
-            const profileName = document.getElementById('profileName')?.innerText;
-            const name = studentData?.profile?.name || profileName || 'Student';
-            
-            const hour = new Date().getHours();
-            const welcomeNameSpan = document.getElementById('welcomeName');
-            
-            if (!welcomeNameSpan) return;
-            
-            let greeting = '';
-            if (hour < 12) greeting = 'Good Morning';
-            else if (hour < 17) greeting = 'Good Afternoon';
-            else greeting = 'Good Evening';
-            
-            welcomeNameSpan.innerHTML = `${name} <span style="font-size:0.8rem;">(${greeting})</span>`;
-        }
         
         function updateCurrentDate() {
             const dateElement = document.getElementById('currentDate');
