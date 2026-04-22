@@ -482,6 +482,42 @@
             .main-content { margin-left: 0; padding: 15px; padding-top: 60px; }
             .profile-container { flex-direction: column; text-align: center; }
         }
+        
+        /* ✅ PASTE THIS CSS HERE */
+        .styled-submit-btn {
+        background: linear-gradient(135deg, #0056b3, #007bff);
+        color: #fff; border: none; padding: 12px 24px;
+        font-size: 15px; font-weight: 600; border-radius: 8px;
+        cursor: pointer; transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 86, 179, 0.3); letter-spacing: 0.5px;
+        }
+        .styled-submit-btn:hover {
+        background: linear-gradient(135deg, #004494, #0056b3);
+        transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 86, 179, 0.4);
+        }
+        .styled-submit-btn:active { transform: translateY(0); }
+
+        .modal-overlay {
+        display: none; position: fixed; top: 0; left: 0;
+        width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+        justify-content: center; align-items: center; z-index: 1000;
+    }
+        .modal-box {
+        background: #fff; padding: 24px; border-radius: 12px;
+        text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        max-width: 350px; width: 90%;
+    }
+        .modal-box p { margin: 0 0 20px; font-size: 15px; color: #333; }
+        .modal-actions { display: flex; gap: 12px; justify-content: center; }
+        .modal-btn {
+        padding: 10px 20px; border: none; border-radius: 6px;
+        font-weight: 500; cursor: pointer; transition: 0.2s;
+    }
+        .modal-btn.yes { background: #007bff; color: #fff; }
+        .modal-btn.yes:hover { background: #0056b3; }
+        .modal-btn.no { background: #e0e0e0; color: #333; }
+        .modal-btn.no:hover { background: #bdbdbd; }
+  
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -611,16 +647,36 @@
             </div>
         </div>
 
-        <!-- FINANCE SECTION -->
+                <!-- FINANCE SECTION -->
         <div id="financeSection" class="section" style="display:none;">
             <div class="card">
                 <div class="card-header"><h3><i class="fas fa-money-bill-wave"></i> Financial Summary</h3></div>
+                
+                <!-- Summary Cards -->
                 <div class="finance-summary">
-                    <div class="finance-card total"><h4>Total Fee</h4><h2 id="totalFee">GH₵0.00</h2></div>
-                    <div class="finance-card paid"><h4>Amount Paid</h4><h2 id="amountPaid">GH₵0.00</h2></div>
-                    <div class="finance-card balance"><h4>Balance</h4><h2 id="balance">GH₵0.00</h2></div>
-                    <div class="finance-card balance" style="background: linear-gradient(135deg, #8b0000 0%, #cd5c5c 100%);"><h4>Arrears</h4><h2 id="arrears">GH₵0.00</h2></div>
+                    <div class="finance-card total"><h4>Previous Balance</h4><h2 id="previousBalance">GH₵0.00</h2><small>Outstanding from previous semesters</small></div>
+                    <div class="finance-card paid"><h4>Current Semester Fees</h4><h2 id="currentSemesterFees">GH₵0.00</h2><small>Fees for current semester</small></div>
+                    <div class="finance-card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);"><h4>Amount Payable</h4><h2 id="amountPayable">GH₵0.00</h2><small>Previous + Current Semester</small></div>
                 </div>
+                
+                <div class="finance-summary">
+                    <div class="finance-card paid" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);"><h4>Amount Paid</h4><h2 id="amountPaid">GH₵0.00</h2><small>Total payments made</small></div>
+                    <div class="finance-card balance"><h4>Balance</h4><h2 id="balance">GH₵0.00</h2><small>Amount Payable - Amount Paid</small></div>
+                    <div class="finance-card balance" style="background: linear-gradient(135deg, #8b0000 0%, #e74c3c 100%);"><h4>Arrears</h4><h2 id="arrears">GH₵0.00</h2><small>Overdue payments</small></div>
+                </div>
+                
+                <!-- Calculation Breakdown -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                    <h4 style="color: var(--primary-dark); margin-bottom: 10px;"><i class="fas fa-calculator"></i> Fee Breakdown</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                        <div><strong>Previous Balance:</strong> <span id="calcPrevBalance">GH₵0.00</span></div>
+                        <div><strong>+ Current Semester Fees:</strong> <span id="calcCurrentFees">GH₵0.00</span></div>
+                        <div><strong>= Amount Payable:</strong> <span id="calcAmountPayable" style="color: #e67e22; font-weight: bold;">GH₵0.00</span></div>
+                        <div><strong>- Amount Paid:</strong> <span id="calcAmountPaid">GH₵0.00</span></div>
+                        <div><strong>= Balance:</strong> <span id="calcBalance" style="color: #e74c3c; font-weight: bold;">GH₵0.00</span></div>
+                    </div>
+                </div>
+                
                 <div id="clearanceStatusFinance" style="padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none;"></div>
                 <h4><i class="fas fa-history"></i> Payment History</h4>
                 <div id="paymentHistory"><p style="text-align: center; color: #999;">No payment records found.</p></div>
@@ -694,10 +750,17 @@
                         <textarea id="transcriptInstructions" rows="2" placeholder="Any special instructions..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;"></textarea>
                     </div>
                     
-                    <button onclick="submitTranscriptRequest()" class="success-btn" style="width: 100%;">
-                        <i class="fas fa-paper-plane"></i> SUBMIT REQUEST
-                    </button>
+                    <button type="button" id="submitRequestBtn" class="styled-submit-btn">SUBMIT REQUEST</button>
+
+                    <div id="confirmModal" class="modal-overlay">
+                        <div class="modal-box">
+                            <p>Ready to submit the transcript request?</p>
+                            <div class="modal-actions">
+                        <button id="confirmYes" class="modal-btn yes">Yes</button>
+                    <button id="confirmNo" class="modal-btn no">No</button>
                 </div>
+            </div>
+        </div>
                 
                 <div id="requestHistory" style="margin-top: 30px;">
                     <h4><i class="fas fa-history"></i> Request History</h4>
@@ -733,7 +796,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9jrpA-Pd_fwtxUh4QDNXb2Nq1gDt_Cuoy968KMmPS5B3fJ2xMiI7M973OzEDAaSAu/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwa7pLlJ-ZtRM19i-NqMzTI-E6D8cjIcgYzp6ZM4xZnM_nOs5jFQQfUUDOxtuE32EBi/exec";
         let studentData = null;
         let userResults = [];
         let userPayments = [];
@@ -923,27 +986,90 @@ function getFullProgramName(code) {
             });
         }
 
-        function loadFinance() {
+                function loadFinance() {
             if (!studentData?.profile) return;
             const p = studentData.profile;
-            document.getElementById('totalFee').innerText = `GH₵${(p.totalFee || 0).toLocaleString()}`;
-            document.getElementById('amountPaid').innerText = `GH₵${(p.amountPaid || 0).toLocaleString()}`;
-            document.getElementById('balance').innerText = `GH₵${(p.balance || 0).toLocaleString()}`;
-            document.getElementById('arrears').innerText = `GH₵${(p.arrears || 0).toLocaleString()}`;
             
-            const statusEl = document.getElementById('clearanceStatusFinance');
-            statusEl.style.display = 'block';
-            if (p.isCleared === true || p.isCleared === "TRUE") {
-                statusEl.innerHTML = '<i class="fas fa-check-circle"></i> FINANCIALLY CLEARED';
-                statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
+            // Get values from profile
+            // Previous balance (arrears + previous outstanding)
+            const previousBalance = parseFloat(p.previousBalance) || parseFloat(p.arrears) || 0;
+            // Current semester fees
+            const currentSemesterFees = parseFloat(p.currentSemesterFees) || parseFloat(p.totalFee) || 0;
+            // Amount Payable = Previous Balance + Current Semester Fees
+            const amountPayable = previousBalance + currentSemesterFees;
+            // Amount Paid so far
+            const amountPaid = parseFloat(p.amountPaid) || 0;
+            // Balance = Amount Payable - Amount Paid
+            const balance = amountPayable - amountPaid;
+            // Arrears (if balance is negative, that's overpayment, otherwise show as 0 for arrears logic)
+            const arrears = balance < 0 ? 0 : (previousBalance > 0 ? previousBalance : 0);
+            
+            // Update Summary Cards
+            document.getElementById('previousBalance').innerHTML = `GH₵${previousBalance.toLocaleString()}`;
+            document.getElementById('currentSemesterFees').innerHTML = `GH₵${currentSemesterFees.toLocaleString()}`;
+            document.getElementById('amountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
+            document.getElementById('amountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
+            document.getElementById('balance').innerHTML = `GH₵${balance.toLocaleString()}`;
+            document.getElementById('arrears').innerHTML = `GH₵${(p.arrears || 0).toLocaleString()}`;
+            
+            // Update Calculation Breakdown
+            document.getElementById('calcPrevBalance').innerHTML = `GH₵${previousBalance.toLocaleString()}`;
+            document.getElementById('calcCurrentFees').innerHTML = `GH₵${currentSemesterFees.toLocaleString()}`;
+            document.getElementById('calcAmountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
+            document.getElementById('calcAmountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
+            document.getElementById('calcBalance').innerHTML = `GH₵${balance.toLocaleString()}`;
+            
+            // Set color for balance (red if negative/outstanding, green if zero/positive)
+            const balanceElement = document.getElementById('calcBalance');
+            if (balance > 0) {
+                balanceElement.style.color = '#e74c3c';
+                balanceElement.innerHTML = `GH₵${balance.toLocaleString()} (Outstanding)`;
+            } else if (balance < 0) {
+                balanceElement.style.color = '#27ae60';
+                balanceElement.innerHTML = `GH₵${Math.abs(balance).toLocaleString()} (Credit)`;
             } else {
-                statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> NOT CLEARED - Please contact the Accountant';
-                statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
+                balanceElement.style.color = '#27ae60';
+                balanceElement.innerHTML = `GH₵0.00 (Fully Paid)`;
             }
             
+            // Clearance Status
+            const statusEl = document.getElementById('clearanceStatusFinance');
+            statusEl.style.display = 'block';
+            const isCleared = (p.isCleared === true || p.isCleared === "TRUE" || balance <= 0);
+            
+            if (isCleared) {
+                statusEl.innerHTML = '<i class="fas fa-check-circle"></i> ✅ FINANCIALLY CLEARED - You can register for courses';
+                statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
+                statusEl.style.color = '#2e7d32';
+            } else {
+                statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> ⚠️ NOT CLEARED - Outstanding balance of GH₵' + balance.toLocaleString() + '. Please contact the Accountant.';
+                statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
+                statusEl.style.color = '#c62828';
+            }
+            
+            // Payment History
             const historyContainer = document.getElementById('paymentHistory');
             if (userPayments?.length > 0) {
-                historyContainer.innerHTML = userPayments.map(p => `<div class="payment-history-item"><div><strong>${p.description}</strong><br><small>${p.date}</small></div><div class="payment-amount">GH₵${(p.amount || 0).toLocaleString()}</div></div>`).join('');
+                let totalPaid = 0;
+                historyContainer.innerHTML = userPayments.map(pmt => {
+                    totalPaid += parseFloat(pmt.amount || 0);
+                    return `<div class="payment-history-item">
+                        <div>
+                            <strong>${pmt.description || 'Payment'}</strong>
+                            <br><small>${pmt.date || 'Date not specified'}</small>
+                            <br><small>Reference: ${pmt.receiptNo || 'N/A'} | Method: ${pmt.method || 'N/A'}</small>
+                        </div>
+                        <div class="payment-amount" style="font-weight: bold; color: #27ae60;">GH₵${(pmt.amount || 0).toLocaleString()}</div>
+                    </div>`;
+                }).join('');
+                
+                // Add total paid summary
+                historyContainer.innerHTML += `<div class="payment-history-item" style="background: #e8f5e9; border-left-color: #27ae60;">
+                    <div><strong>📊 TOTAL PAYMENTS</strong></div>
+                    <div class="payment-amount" style="font-weight: bold; font-size: 1.1rem;">GH₵${totalPaid.toLocaleString()}</div>
+                </div>`;
+            } else {
+                historyContainer.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No payment records found.</p>';
             }
         }
 
@@ -1435,6 +1561,40 @@ function generateTranscriptBackPage() {
             fetchStudentData();
             showSection('profile');
         };
-    </script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const submitBtn = document.getElementById('submitRequestBtn');
+      const modal = document.getElementById('confirmModal');
+      const yesBtn = document.getElementById('confirmYes');
+      const noBtn = document.getElementById('confirmNo');
+      const transcriptForm = document.getElementById('transcriptForm');
+
+      submitBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        modal.style.display = 'flex';
+      });
+
+      yesBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+        if (transcriptForm) transcriptForm.submit();
+      });
+
+      noBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+
+      // Close modal if user clicks outside the box
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+      });
+
+      // Close on Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.style.display === 'flex') {
+          modal.style.display = 'none';
+        }
+      });
+    });
+  </script>
 </body>
 </html>
