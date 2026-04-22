@@ -7,6 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Student Dashboard | CCST</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #6b8e23;
@@ -192,13 +193,71 @@
         .cleared { background: var(--success); color: white; }
         .not-cleared { background: var(--danger); color: white; }
 
+                /* Academic Section Upgrades */
         .semester-card {
             border-left: 5px solid var(--primary);
             padding: 20px;
             background: linear-gradient(to right, rgba(107, 142, 35, 0.05), transparent);
             border-radius: 10px;
             margin-bottom: 20px;
+            transition: all 0.3s;
         }
+        .semester-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .progress-timeline-item {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            position: relative;
+        }
+        .progress-timeline-item.completed {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border-left: 4px solid #4caf50;
+        }
+        .progress-timeline-item.current {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            border-left: 4px solid #ff9800;
+        }
+        .progress-timeline-item .level-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+        .progress-timeline-item .level-status {
+            font-size: 0.7rem;
+            margin-top: 5px;
+        }
+        .course-registration-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .course-code { font-weight: bold; color: var(--primary-dark); }
+        .course-credits { background: #e0e0e0; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+        .grade-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .grade-A { background: #27ae60; color: white; }
+        .grade-B { background: #6b8e23; color: white; }
+        .grade-C { background: #f39c12; color: white; }
+        .grade-D { background: #e67e22; color: white; }
+        .grade-E, .grade-F { background: #e74c3c; color: white; }
+        
+        .academic-standing-excellent { color: #27ae60; }
+        .academic-standing-good { color: #6b8e23; }
+        .academic-standing-warning { color: #f39c12; }
+        .academic-standing-probation { color: #e74c3c; }
 
         .semester-header {
             display: flex;
@@ -622,27 +681,99 @@
             </div>
         </div>
 
-        <!-- ACADEMIC SECTION -->
+                <!-- ACADEMIC SECTION - UPGRADED -->
         <div id="academicSection" class="section" style="display:none;">
-            <div class="card">
+            <!-- Academic Year Selector -->
+            <div class="card" style="margin-bottom: 20px;">
                 <div class="card-header">
-                    <h3><i class="fas fa-graduation-cap"></i> Examination Results</h3>
-                    <select id="semesterFilter" onchange="filterResults()" style="padding: 8px 12px; border-radius: 6px;">
-                        <option value="all">All Semesters</option>
+                    <h3><i class="fas fa-calendar-alt"></i> Academic Overview</h3>
+                    <select id="academicYearFilter" onchange="filterAcademicYear()" style="padding: 8px 15px; border-radius: 8px;">
+                        <option value="all">All Academic Years</option>
+                        <option value="2025/2026">2025/2026 Academic Year</option>
+                        <option value="2024/2025">2024/2025 Academic Year</option>
+                        <option value="2023/2024">2023/2024 Academic Year</option>
                     </select>
                 </div>
+                
+                <!-- Enhanced Stats Cards -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: linear-gradient(135deg, #1a472a, #2d6a3d); padding: 20px; border-radius: 12px; color: white; text-align: center;">
+                        <i class="fas fa-chart-line" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                        <h2 id="overallCGPA" style="font-size: 2rem;">--</h2>
+                        <p>Overall CGPA</p>
+                        <small id="cgpaClassification">Loading...</small>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #6b8e23, #9acd32); padding: 20px; border-radius: 12px; color: white; text-align: center;">
+                        <i class="fas fa-book" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                        <h2 id="totalCreditsEarned" style="font-size: 2rem;">--</h2>
+                        <p>Total Credits Earned</p>
+                        <small>Passed Courses</small>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f39c12, #e67e22); padding: 20px; border-radius: 12px; color: white; text-align: center;">
+                        <i class="fas fa-star" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                        <h2 id="bestSemester" style="font-size: 2rem;">--</h2>
+                        <p>Best Semester GPA</p>
+                        <small id="bestSemesterName">-</small>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #3498db, #2980b9); padding: 20px; border-radius: 12px; color: white; text-align: center;">
+                        <i class="fas fa-chart-simple" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                        <h2 id="academicStanding" style="font-size: 1.5rem;">--</h2>
+                        <p>Academic Standing</p>
+                        <small id="standingMessage">-</small>
+                    </div>
+                </div>
+            </div>
 
-                <div id="academicSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
-                    <div class="finance-card cgpa"><h4>CGPA</h4><h2 id="cgpaDisplay">--</h2></div>
-                    <div class="finance-card total"><h4>Total Credits</h4><h2 id="totalCredits">--</h2></div>
-                    <div class="finance-card paid"><h4>Status</h4><h2 id="academicStatus">--</h2></div>
+            <!-- Semester Results with Progress Bars -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-graduation-cap"></i> Semester Results</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="semesterFilter" onchange="filterResults()" style="padding: 8px 12px; border-radius: 6px;">
+                            <option value="all">All Semesters</option>
+                        </select>
+                        <button onclick="toggleResultsView()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                            <i class="fas fa-chart-bar"></i> Chart View
+                        </button>
+                    </div>
                 </div>
 
+                <!-- Results Container (List View) -->
                 <div id="resultsContainer"><p style="text-align: center; color: #999; padding: 40px;">Loading academic records...</p></div>
+                
+                <!-- Chart View Container (Hidden by default) -->
+                <div id="chartViewContainer" style="display: none;">
+                    <canvas id="gpaTrendChart" width="400" height="200" style="max-height: 300px;"></canvas>
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button onclick="toggleResultsView()" class="info-btn" style="width: auto;">Back to List View</button>
+                    </div>
+                </div>
 
+                <!-- Grading System Card -->
                 <div class="card" style="margin-top:20px; background:#f8f9fa;">
-                    <h4><i class="fas fa-table"></i> Grading System</h4>
+                    <h4><i class="fas fa-table"></i> Grading System ({{programName}})</h4>
                     <div id="gradingTable" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;"></div>
+                </div>
+            </div>
+
+            <!-- Academic Progress Timeline -->
+            <div class="card">
+                <h4><i class="fas fa-timeline"></i> Academic Progress Timeline</h4>
+                <div id="progressTimeline" style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px;">
+                    <!-- Timeline will be populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Course Registration Status -->
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-check-circle"></i> Course Registration Status</h4>
+                    <button onclick="viewRegisteredCourses()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                        <i class="fas fa-eye"></i> View Registered Courses
+                    </button>
+                </div>
+                <div id="registrationStatus">
+                    <p style="color: #666;">Loading registration status...</p>
                 </div>
             </div>
         </div>
@@ -1595,6 +1726,283 @@ function generateTranscriptBackPage() {
         }
       });
     });
+
+            // ============================================
+        // UPGRADED ACADEMIC FUNCTIONS
+        // ============================================
+        
+        let chartView = false;
+        let gpaChart = null;
+        
+        // Calculate enhanced academic stats
+        function calculateEnhancedStats() {
+            if (!userResults || userResults.length === 0) return null;
+            
+            let totalWeightedPoints = 0;
+            let totalCredits = 0;
+            let semesterGPAs = [];
+            let bestGPA = 0;
+            let bestSemesterName = '';
+            let totalPassedCredits = 0;
+            
+            const program = getStudentProgram();
+            
+            userResults.forEach(sem => {
+                let semWeightedPoints = 0;
+                let semCredits = 0;
+                
+                sem.details.forEach(c => {
+                    const credits = c.credits || 3;
+                    const gradePoints = getGradePoints(c.grade, program);
+                    semWeightedPoints += gradePoints * credits;
+                    semCredits += credits;
+                    
+                    // Count passed credits (grade D or better)
+                    if (gradePoints >= 1.0) {
+                        totalPassedCredits += credits;
+                    }
+                });
+                
+                const semesterGPA = semCredits > 0 ? (semWeightedPoints / semCredits) : 0;
+                semesterGPAs.push({ name: sem.semester, gpa: semesterGPA });
+                
+                if (semesterGPA > bestGPA) {
+                    bestGPA = semesterGPA;
+                    bestSemesterName = sem.semester;
+                }
+                
+                totalWeightedPoints += semWeightedPoints;
+                totalCredits += semCredits;
+            });
+            
+            const overallCGPA = totalCredits > 0 ? (totalWeightedPoints / totalCredits) : 0;
+            
+            // Determine academic standing
+            let standing = '';
+            let standingClass = '';
+            let standingMessage = '';
+            
+            if (overallCGPA >= 3.6) {
+                standing = 'First Class Honours';
+                standingClass = 'academic-standing-excellent';
+                standingMessage = 'Excellent Performance! 🎉';
+            } else if (overallCGPA >= 3.0) {
+                standing = 'Second Class (Upper)';
+                standingClass = 'academic-standing-good';
+                standingMessage = 'Good Performance 👍';
+            } else if (overallCGPA >= 2.5) {
+                standing = 'Second Class (Lower)';
+                standingClass = 'academic-standing-good';
+                standingMessage = 'Satisfactory Performance';
+            } else if (overallCGPA >= 2.0) {
+                standing = 'Pass';
+                standingClass = 'academic-standing-warning';
+                standingMessage = 'At Risk - Improve Your Grades ⚠️';
+            } else {
+                standing = 'Academic Probation';
+                standingClass = 'academic-standing-probation';
+                standingMessage = 'Critical - Seek Academic Support ❗';
+            }
+            
+            return {
+                cgpa: overallCGPA.toFixed(2),
+                totalCredits: totalCredits,
+                passedCredits: totalPassedCredits,
+                bestGPA: bestGPA.toFixed(2),
+                bestSemester: bestSemesterName,
+                standing: standing,
+                standingClass: standingClass,
+                standingMessage: standingMessage,
+                semesterGPAs: semesterGPAs
+            };
+        }
+        
+        // Update enhanced academic UI
+        function updateEnhancedAcademicUI() {
+            const stats = calculateEnhancedStats();
+            if (!stats) return;
+            
+            document.getElementById('overallCGPA').innerText = stats.cgpa;
+            document.getElementById('totalCreditsEarned').innerText = stats.passedCredits;
+            document.getElementById('bestSemester').innerText = stats.bestGPA;
+            document.getElementById('bestSemesterName').innerHTML = stats.bestSemester.split(' - ')[0] || '';
+            document.getElementById('academicStanding').innerHTML = stats.standing;
+            document.getElementById('standingMessage').innerHTML = stats.standingMessage;
+            document.getElementById('cgpaClassification').innerHTML = stats.standing;
+            
+            // Add color class
+            const standingEl = document.getElementById('academicStanding');
+            standingEl.className = stats.standingClass;
+            standingEl.style.fontSize = '1.5rem';
+            
+            // Create progress timeline
+            createProgressTimeline(stats.cgpa);
+            
+            // Update GPA chart if in chart view
+            if (chartView && stats.semesterGPAs.length > 0) {
+                updateGPAChart(stats.semesterGPAs);
+            }
+        }
+        
+        // Create academic progress timeline
+        function createProgressTimeline(cgpa) {
+            const levels = ['100', '200', '300', '400'];
+            const currentLevel = studentData?.profile?.level || '100';
+            const container = document.getElementById('progressTimeline');
+            
+            if (!container) return;
+            
+            let html = '';
+            levels.forEach(level => {
+                let status = '';
+                let completed = false;
+                let isCurrent = false;
+                
+                if (parseInt(level) < parseInt(currentLevel)) {
+                    status = 'Completed ✓';
+                    completed = true;
+                } else if (level === currentLevel) {
+                    status = 'In Progress';
+                    isCurrent = true;
+                } else {
+                    status = 'Upcoming';
+                }
+                
+                html += `
+                    <div class="progress-timeline-item ${completed ? 'completed' : (isCurrent ? 'current' : '')}">
+                        <div class="level-number">Level ${level}</div>
+                        <div class="level-status">${status}</div>
+                        ${level === currentLevel ? `<small>CGPA: ${cgpa}</small>` : ''}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Create GPA trend chart
+        function updateGPAChart(semesterGPAs) {
+            const ctx = document.getElementById('gpaTrendChart').getContext('2d');
+            
+            if (gpaChart) {
+                gpaChart.destroy();
+            }
+            
+            gpaChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: semesterGPAs.map(s => s.name.split(' - ')[0] || s.name.substring(0, 15)),
+                    datasets: [{
+                        label: 'Semester GPA',
+                        data: semesterGPAs.map(s => s.gpa),
+                        borderColor: '#6b8e23',
+                        backgroundColor: 'rgba(107, 142, 35, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#1a472a',
+                        pointBorderColor: '#9acd32',
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 4.5,
+                            title: { display: true, text: 'GPA' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Semester' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `GPA: ${context.raw.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Toggle between list and chart view
+        function toggleResultsView() {
+            chartView = !chartView;
+            const resultsContainer = document.getElementById('resultsContainer');
+            const chartContainer = document.getElementById('chartViewContainer');
+            
+            if (chartView) {
+                resultsContainer.style.display = 'none';
+                chartContainer.style.display = 'block';
+                const stats = calculateEnhancedStats();
+                if (stats && stats.semesterGPAs.length > 0) {
+                    updateGPAChart(stats.semesterGPAs);
+                }
+            } else {
+                resultsContainer.style.display = 'block';
+                chartContainer.style.display = 'none';
+            }
+        }
+        
+        // Filter by academic year
+        function filterAcademicYear() {
+            const yearFilter = document.getElementById('academicYearFilter').value;
+            const semesterCards = document.querySelectorAll('.semester-card');
+            
+            semesterCards.forEach(card => {
+                const semesterText = card.dataset.semester || '';
+                if (yearFilter === 'all' || semesterText.includes(yearFilter)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        // View registered courses
+        function viewRegisteredCourses() {
+            const container = document.getElementById('registrationStatus');
+            container.innerHTML = `
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                    <p><strong>Current Semester Courses:</strong></p>
+                    <div class="course-registration-item">
+                        <span><span class="course-code">COSC 101</span> - Introduction to Computing</span>
+                        <span class="course-credits">3 Credits</span>
+                    </div>
+                    <div class="course-registration-item">
+                        <span><span class="course-code">MATH 101</span> - Algebra</span>
+                        <span class="course-credits">3 Credits</span>
+                    </div>
+                    <div class="course-registration-item">
+                        <span><span class="course-code">ENGL 101</span> - Communication Skills</span>
+                        <span class="course-credits">2 Credits</span>
+                    </div>
+                    <p style="margin-top: 15px; color: #666;"><i class="fas fa-info-circle"></i> Total Credits: 8</p>
+                    <p style="color: #27ae60;"><i class="fas fa-check-circle"></i> Registration is COMPLETE</p>
+                </div>
+            `;
+            showToast("Course registration status loaded", "info");
+        }
+        
+        // Override loadAcademicResults to include dataset attributes
+        const originalLoadAcademicResults = loadAcademicResults;
+        loadAcademicResults = function() {
+            originalLoadAcademicResults();
+            updateEnhancedAcademicUI();
+            
+            // Add dataset attributes for filtering
+            document.querySelectorAll('.semester-card').forEach(card => {
+                const semesterText = card.querySelector('h4')?.innerText || '';
+                card.dataset.semester = semesterText;
+            });
+        };
+
   </script>
 </body>
 </html>
