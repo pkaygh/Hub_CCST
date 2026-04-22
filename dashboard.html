@@ -1805,6 +1805,7 @@
         }
 
         function showSection(section) {
+            console.log("showSection called with:", section);
             if (window.innerWidth <= 768) toggleSidebar();
             document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
             document.getElementById(section + 'Section').style.display = 'block';
@@ -1828,7 +1829,7 @@
             return programNames[code] || code;
         }
 
-        function loadProfile() {
+                function loadProfile() {
             if (!studentData?.profile) return;
             const p = studentData.profile;
             
@@ -1839,37 +1840,55 @@
             document.getElementById('sidebarDetails').innerText = `Level ${p.level} | ${getFullProgramName(p.program)}`;
             document.getElementById('studentNameHeader').innerText = p.name;
             
-            async function setProfilePhoto() {
-    let savedPhoto = localStorage.getItem(`userPhoto_${p.id}`);
-    if (savedPhoto) {
-        document.getElementById('profilePic').src = savedPhoto;
-        document.getElementById('sidebarPhoto').src = savedPhoto;
-    } else {
-        // Try to fetch from Google Sheets
-        const remotePhoto = await fetchProfilePhoto(p.id);
-        if (remotePhoto) {
-            document.getElementById('profilePic').src = remotePhoto;
-            document.getElementById('sidebarPhoto').src = remotePhoto;
+            // Load photo
+            setProfilePhoto(p.id);
+            
+            const statusBox = document.getElementById('clearanceStatus');
+            if (p.isCleared === true || p.isCleared === "TRUE") {
+                statusBox.innerText = "✅ FINANCIALLY CLEARED";
+                statusBox.className = "status-badge cleared";
+            } else {
+                statusBox.innerText = "❌ NOT CLEARED - See Accountant";
+                statusBox.className = "status-badge not-cleared";
+            }
+            
+            updateWelcomeMessage();
+            updateCurrentDate();
+            updateQuickStats();
+            updateDetailedProfile();
+            loadRecentActivities();
+            updateAchievements();
+            renderGradingTable();
         }
-    }
-}
-setProfilePhoto();
-                
-                // Fetch photo from Google Sheets by student ID
-async function fetchProfilePhoto(studentId) {
-    try {
-        const response = await fetch(`${SCRIPT_URL}?action=get_student_photo&id=${studentId}`);
-        const data = await response.json();
-        if (data.photoData && data.photoData !== "") {
-            // Save to localStorage for future offline use
-            localStorage.setItem(`userPhoto_${studentId}`, data.photoData);
-            return data.photoData;
+        
+        // Photo functions - moved outside loadProfile
+        async function setProfilePhoto(studentId) {
+            let savedPhoto = localStorage.getItem(`userPhoto_${studentId}`);
+            if (savedPhoto) {
+                document.getElementById('profilePic').src = savedPhoto;
+                document.getElementById('sidebarPhoto').src = savedPhoto;
+            } else {
+                const remotePhoto = await fetchProfilePhoto(studentId);
+                if (remotePhoto) {
+                    document.getElementById('profilePic').src = remotePhoto;
+                    document.getElementById('sidebarPhoto').src = remotePhoto;
+                }
+            }
         }
-    } catch (error) {
-        console.log("Could not fetch photo from server:", error);
-    }
-    return null;
-}
+        
+        async function fetchProfilePhoto(studentId) {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=get_student_photo&id=${studentId}`);
+                const data = await response.json();
+                if (data.photoData && data.photoData !== "") {
+                    localStorage.setItem(`userPhoto_${studentId}`, data.photoData);
+                    return data.photoData;
+                }
+            } catch (error) {
+                console.log("Could not fetch photo from server:", error);
+            }
+            return null;
+        }
 
             const statusBox = document.getElementById('clearanceStatus');
             if (p.isCleared === true || p.isCleared === "TRUE") {
