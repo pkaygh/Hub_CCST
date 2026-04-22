@@ -417,9 +417,11 @@
         <input type="password" id="loginPassword" placeholder="Password">
         <button onclick="attemptLogin()">Login</button>
         <div style="margin-top: 15px; font-size: 0.8rem; color: #999;">
-            <p>Demo Accounts:</p>
+            <p>Executive Accounts:</p>
             <p>Admin: admin / admin123</p>
-            <p>Finance: finance / finance123</p>
+            <p>President: president / pres2026</p>
+            <p>Academic Director: academic / acad2026</p>
+            <p>Finance Manager: finance / finance2026</p>
         </div>
     </div>
 </div>
@@ -514,10 +516,11 @@
     let charts = {};
 
     // Demo Users
-    const users = {
-    president: { name: "Very Rev. Kweku Abaka-Ewusi", role: "President", password: "pres2026", avatar: "KAE" },
-    academic: { name: "Dr. Ernest N. Appiah", role: "Academic Director", password: "acad2026", avatar: "ENP" },
-    finance: { name: "Miss Milicent Ahenkrah", role: "Account Manager", password: "finance2026", avatar: "MA" }
+        const users = {
+        admin: { name: "System Administrator", role: "Super Admin", password: "admin123", avatar: "SA" },
+        president: { name: "Very Rev. Kweku Abaka-Ewusi", role: "President", password: "pres2026", avatar: "KAE" },
+        academic: { name: "Dr. Ernest N. Appiah", role: "Academic Director", password: "acad2026", avatar: "ENP" },
+        finance: { name: "Miss Milicent Ahenkrah", role: "Account Manager", password: "finance2026", avatar: "MA" }
     };
 
 
