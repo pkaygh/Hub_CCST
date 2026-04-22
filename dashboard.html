@@ -917,6 +917,286 @@
         .modal-btn.yes:hover { background: #0056b3; }
         .modal-btn.no { background: #e0e0e0; color: #333; }
         .modal-btn.no:hover { background: #bdbdbd; }
+
+                /* ============================================
+           MOBILE APP ENHANCEMENTS
+        ============================================ */
+        
+        /* Better touch targets */
+        button, .menu-item, .banner-btn, .register-btn, .edit-profile-btn,
+        .quick-stat-card, .detail-card, .semester-card, .notification-item,
+        .payment-history-item, .course-registration-item {
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        button:active, .menu-item:active, .quick-stat-card:active {
+            transform: scale(0.98);
+            transition: transform 0.05s ease;
+        }
+        
+        /* Prevent text scaling on orientation change */
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        /* Make cards more compact on mobile */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 12px;
+                padding-top: 60px;
+            }
+            
+            .card {
+                padding: 18px;
+                margin-bottom: 16px;
+                border-radius: 16px;
+            }
+            
+            .navbar {
+                padding: 12px 16px;
+                border-radius: 16px;
+                margin-bottom: 16px;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                backdrop-filter: blur(10px);
+                background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            }
+            
+            .navbar h3 {
+                font-size: 1.2rem;
+            }
+            
+            /* Quick stats row becomes vertical or 2x2 */
+            .quick-stats-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .quick-stat-card {
+                padding: 12px;
+                gap: 10px;
+            }
+            
+            .quick-stat-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .quick-stat-info h4 {
+                font-size: 0.7rem;
+            }
+            
+            .quick-stat-info p {
+                font-size: 0.9rem;
+            }
+            
+            /* Profile avatar section */
+            .profile-avatar-section {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                margin-top: -30px;
+            }
+            
+            .profile-name-section h2 {
+                font-size: 1.4rem;
+            }
+            
+            .profile-badges {
+                justify-content: center;
+            }
+            
+            .edit-profile-btn {
+                margin-top: 8px;
+            }
+            
+            /* Detail cards grid single column */
+            .profile-details-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            /* Finance summary cards */
+            .finance-summary {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .finance-card {
+                padding: 15px;
+            }
+            
+            .finance-card h4 {
+                font-size: 0.9rem;
+            }
+            
+            .finance-card h2 {
+                font-size: 1.4rem;
+            }
+            
+            /* Semester cards */
+            .semester-card {
+                padding: 15px;
+            }
+            
+            .semester-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .course-grid {
+                grid-template-columns: 2fr 0.8fr 0.8fr;
+                font-size: 0.75rem;
+                overflow-x: auto;
+            }
+            
+            .course-header, .course-item {
+                font-size: 0.7rem;
+            }
+            
+            /* Progress timeline wrap */
+            #progressTimeline {
+                flex-direction: column;
+            }
+            
+            .progress-timeline-item {
+                width: 100%;
+            }
+            
+            /* Modal adjustments */
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            /* Toast positioning */
+            .toast {
+                bottom: 80px;
+                left: 5%;
+                width: 90%;
+                transform: translateX(0);
+                text-align: center;
+                border-radius: 40px;
+            }
+            
+            /* Make buttons full width on mobile for better tap */
+            .btn-group {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .btn-group button {
+                width: 100%;
+            }
+            
+            /* Welcome banner */
+            .welcome-banner {
+                padding: 16px;
+            }
+            
+            .welcome-text h2 {
+                font-size: 1.2rem;
+            }
+            
+            .welcome-date {
+                font-size: 0.75rem;
+                padding: 6px 12px;
+            }
+            
+            /* Achievement items wrap */
+            .achievement-grid {
+                gap: 10px;
+            }
+            
+            .achievement-item {
+                font-size: 0.7rem;
+                padding: 6px 12px;
+            }
+            
+            /* Sidebar toggle button */
+            .menu-toggle {
+                top: 12px;
+                left: 12px;
+                padding: 8px 10px;
+                font-size: 1rem;
+                border-radius: 12px;
+                background: rgba(26, 71, 42, 0.9);
+                backdrop-filter: blur(4px);
+            }
+            
+            /* Sidebar width on mobile */
+            .sidebar {
+                width: 260px;
+            }
+            
+            /* Adjust offline indicator */
+            .offline-indicator {
+                font-size: 0.75rem;
+                padding: 6px;
+            }
+        }
+        
+        /* For very small screens (<= 480px) */
+        @media (max-width: 480px) {
+            .quick-stats-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .finance-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-avatar img {
+                width: 90px;
+                height: 90px;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+            
+            .detail-label {
+                font-size: 0.75rem;
+            }
+            
+            .detail-value {
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* iOS-style scroll behavior */
+        .main-content {
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Disable pull-to-refresh on body if needed (optional) */
+        body {
+            overscroll-behavior-y: none;
+        }
+        
+        /* Improve form inputs on mobile */
+        input, select, textarea {
+            font-size: 16px; /* Prevents zoom on focus in iOS */
+        }
+        
+        /* Bottom safe area for modern iPhones */
+        .main-content {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+        
+        .sidebar {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
   
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -1437,7 +1717,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwa7pLlJ-ZtRM19i-NqMzTI-E6D8cjIcgYzp6ZM4xZnM_nOs5jFQQfUUDOxtuE32EBi/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzaL4IaiIYz22CWyhH-ZSODP6bnil3w5wNO9wiHWHuSv7iy3ioHMHcabdQ4uNLKfngZ/exec";
         let studentData = null;
         let userResults = [];
         let userPayments = [];
@@ -1559,12 +1839,38 @@
             document.getElementById('sidebarDetails').innerText = `Level ${p.level} | ${getFullProgramName(p.program)}`;
             document.getElementById('studentNameHeader').innerText = p.name;
             
-            const savedPhoto = localStorage.getItem(`userPhoto_${p.id}`);
-            if (savedPhoto) {
-                document.getElementById('profilePic').src = savedPhoto;
-                document.getElementById('sidebarPhoto').src = savedPhoto;
-            }
-            
+            async function setProfilePhoto() {
+    let savedPhoto = localStorage.getItem(`userPhoto_${p.id}`);
+    if (savedPhoto) {
+        document.getElementById('profilePic').src = savedPhoto;
+        document.getElementById('sidebarPhoto').src = savedPhoto;
+    } else {
+        // Try to fetch from Google Sheets
+        const remotePhoto = await fetchProfilePhoto(p.id);
+        if (remotePhoto) {
+            document.getElementById('profilePic').src = remotePhoto;
+            document.getElementById('sidebarPhoto').src = remotePhoto;
+        }
+    }
+}
+setProfilePhoto();
+                
+                // Fetch photo from Google Sheets by student ID
+async function fetchProfilePhoto(studentId) {
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_student_photo&id=${studentId}`);
+        const data = await response.json();
+        if (data.photoData && data.photoData !== "") {
+            // Save to localStorage for future offline use
+            localStorage.setItem(`userPhoto_${studentId}`, data.photoData);
+            return data.photoData;
+        }
+    } catch (error) {
+        console.log("Could not fetch photo from server:", error);
+    }
+    return null;
+}
+
             const statusBox = document.getElementById('clearanceStatus');
             if (p.isCleared === true || p.isCleared === "TRUE") {
                 statusBox.innerText = "✅ FINANCIALLY CLEARED";
@@ -2161,15 +2467,22 @@
         // UPGRADED PROFILE FUNCTIONS
         // ============================================
         
-        function updateWelcomeMessage() {
+            function updateWelcomeMessage() {
+            // Get the student name from the already loaded profile
+            const profileName = document.getElementById('profileName')?.innerText;
+            const name = studentData?.profile?.name || profileName || 'Student';
+            
             const hour = new Date().getHours();
-            const welcomeName = document.getElementById('welcomeName');
-            const name = studentData?.profile?.name || 'Student';
+            const welcomeNameSpan = document.getElementById('welcomeName');
+            
+            if (!welcomeNameSpan) return;
+            
             let greeting = '';
             if (hour < 12) greeting = 'Good Morning';
             else if (hour < 17) greeting = 'Good Afternoon';
             else greeting = 'Good Evening';
-            welcomeName.innerHTML = `${name}! <span style="font-size:0.9rem;">(${greeting})</span>`;
+            
+            welcomeNameSpan.innerHTML = `${name} <span style="font-size:0.8rem;">(${greeting})</span>`;
         }
         
         function updateCurrentDate() {
@@ -2505,6 +2818,68 @@
                 card.dataset.semester = semesterText;
             });
         };
-    </script>
+                // ============================================
+        // MOBILE APP ENHANCEMENTS
+        // ============================================
+        
+        // Prevent zoom on double-tap (optional)
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Haptic feedback simulation
+        function hapticLight() {
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate(10);
+            }
+        }
+        
+        // Add haptic feedback to interactive elements
+        const interactiveElements = document.querySelectorAll('button, .menu-item, .quick-stat-card');
+        interactiveElements.forEach(el => {
+            el.addEventListener('click', hapticLight);
+        });
+        
+        // Fix iOS active state
+        document.body.addEventListener('touchstart', function(){}, {passive: true});
+        
+        // Close sidebar when clicking overlay (already works, but ensure)
+        const sidebarOverlay = document.querySelector('.sidebar-overlay');
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.remove('open');
+                sidebarOverlay.classList.remove('show');
+            });
+        }
+        
+        // PWA install banner
+        let installDeferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            installDeferredPrompt = e;
+            const installBanner = document.createElement('div');
+            installBanner.id = 'installBanner';
+            installBanner.innerHTML = `
+                <div style="position: fixed; bottom: 20px; left: 20px; right: 20px; background: #1a472a; color: white; padding: 12px 16px; border-radius: 30px; display: flex; justify-content: space-between; align-items: center; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                    <span><i class="fas fa-download"></i> Install CCST App</span>
+                    <button id="installAppBtn" style="background: white; color: #1a472a; border: none; padding: 6px 16px; border-radius: 30px; font-weight: bold;">Install</button>
+                    <button id="closeInstallBanner" style="background: transparent; color: white; border: none; font-size: 1.2rem;">&times;</button>
+                </div>
+            `;
+            document.body.appendChild(installBanner);
+            
+            document.getElementById('installAppBtn').addEventListener('click', () => {
+                installDeferredPrompt.prompt();
+                installDeferredPrompt.userChoice.then(() => {
+                    installDeferredPrompt = null;
+                    installBanner.remove();
+                });
+            });
+            document.getElementById('closeInstallBanner').addEventListener('click', () => {
+                installBanner.remove();
+            });
+       </script>
 </body>
 </html>
