@@ -923,126 +923,261 @@
     }
 
     async function submitApplication() {
-        if (!document.getElementById('confirmCheckbox').checked) { 
-            showToast("Please confirm your information", "danger"); 
-            return; 
-        }
-        
-        const applicationId = `APP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
-        const trackingCode = generateTrackingCode();
-        const applicantPhone = document.getElementById('phone').value;
-        const applicantEmail = document.getElementById('email').value;
-        const surname = document.getElementById('surname')?.value || '';
-        const firstName = document.getElementById('firstName')?.value || '';
-        const otherName = document.getElementById('otherName')?.value || '';
-        const fullName = `${surname} ${firstName} ${otherName}`.trim();
-        
-        // Prepare certificates as JSON string
-        const certificatesData = collectCertificates();
-        
-        const applicationData = {
-            action: 'submit_admission',
-            applicationId: applicationId,
-            trackingCode: trackingCode,
-            fullName: fullName,
-            surname: surname,
-            firstName: firstName,
-            otherName: otherName,
-            dob: document.getElementById('dob')?.value || '',
-            gender: document.getElementById('gender')?.value || '',
-            email: applicantEmail,
-            phone: applicantPhone,
-            altPhone: document.getElementById('altPhone')?.value || '',
-            address: document.getElementById('address')?.value || '',
-            program: document.getElementById('program')?.value || '',
-            entryMode: document.getElementById('entryMode')?.value || '',
-            certificates: JSON.stringify(certificatesData),
-            transactionId: document.getElementById('transactionId')?.value || '',
-            paymentDate: document.getElementById('paymentDate')?.value || '',
-            paymentMethod: selectedPaymentMethod,
-            status: 'pending_review',
-            submittedAt: new Date().toISOString()
-        };
-        
-        // Save to localStorage with consistent structure
-        const application = {
-            id: applicationId,
-            trackingCode: trackingCode,
-            fullName: fullName,
-            surname: surname,
-            firstName: firstName,
-            otherName: otherName,
-            dob: applicationData.dob,
-            gender: applicationData.gender,
-            email: applicantEmail,
-            phone: applicantPhone,
-            altPhone: applicationData.altPhone,
-            address: applicationData.address,
-            program: applicationData.program,
-            entryMode: applicationData.entryMode,
-            certificates: certificatesData,
-            transactionId: applicationData.transactionId,
-            paymentDate: applicationData.paymentDate,
-            paymentMethod: selectedPaymentMethod,
-            status: 'pending_review',
-            submittedAt: new Date().toISOString()
-        };
-        
-        // Save to localStorage
-        let existingApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
-        existingApps.push(application);
-        localStorage.setItem('admissionApplications', JSON.stringify(existingApps));
-        allApplications = existingApps;
-        
-        // Also save to a separate tracking storage for easy lookup
-        let trackingData = JSON.parse(localStorage.getItem('admissionTracking') || '[]');
-        trackingData.push({
-            id: applicationId,
-            trackingCode: trackingCode,
-            phone: applicantPhone,
-            email: applicantEmail,
-            fullName: fullName,
-            status: 'pending_review'
-        });
-        localStorage.setItem('admissionTracking', JSON.stringify(trackingData));
-        
-        // Send to Google Sheets
-        try {
-            const response = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(applicationData)
-            });
-            
-            const result = await response.json();
-            if (result.success) {
-                showToast(`✅ Application submitted to Google Sheets! ID: ${applicationId}`, "success");
-                console.log("Google Sheets save successful:", result);
-            } else {
-                showToast(`⚠️ Application saved locally only. ID: ${applicationId}`, "warning");
-                console.log("Google Sheets save failed:", result);
-            }
-        } catch (error) {
-            console.error('Error saving to Google Sheets:', error);
-            showToast(`⚠️ Application saved locally only. ID: ${applicationId}`, "warning");
-        }
-        
-        // Send tracking notification
-        sendTrackingNotification(applicantPhone, applicantEmail, applicationId, trackingCode, fullName);
-        showToast(`✅ Application submitted! Your Tracking Code: ${trackingCode}`, "success");
-        
-        // Reset form after 3 seconds
-        setTimeout(() => {
-            resetForm();
-            currentSection = 1;
-            document.getElementById('section1').classList.add('active');
-            for (let i = 2; i <= totalSections; i++) {
-                const sectionEl = document.getElementById(`section${i}`);
-                if (sectionEl) sectionEl.classList.remove('active');
-            }
-            updateProgress();
-        }, 3000);
+    if (!document.getElementById('confirmCheckbox').checked) { 
+        showToast("Please confirm your information", "danger"); 
+        return; 
     }
+    
+    // Show loading state on submit button
+    const submitBtn = document.querySelector('#section5 .btn-success');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    
+    const applicationId = `APP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+    const trackingCode = generateTrackingCode();
+    const applicantPhone = document.getElementById('phone').value;
+    const applicantEmail = document.getElementById('email').value;
+    const surname = document.getElementById('surname')?.value || '';
+    const firstName = document.getElementById('firstName')?.value || '';
+    const otherName = document.getElementById('otherName')?.value || '';
+    const fullName = `${surname} ${firstName} ${otherName}`.trim();
+    
+    // Prepare certificates as JSON string
+    const certificatesData = collectCertificates();
+    
+    const applicationData = {
+        action: 'submit_admission',
+        applicationId: applicationId,
+        trackingCode: trackingCode,
+        fullName: fullName,
+        surname: surname,
+        firstName: firstName,
+        otherName: otherName,
+        dob: document.getElementById('dob')?.value || '',
+        gender: document.getElementById('gender')?.value || '',
+        email: applicantEmail,
+        phone: applicantPhone,
+        altPhone: document.getElementById('altPhone')?.value || '',
+        address: document.getElementById('address')?.value || '',
+        program: document.getElementById('program')?.value || '',
+        entryMode: document.getElementById('entryMode')?.value || '',
+        certificates: JSON.stringify(certificatesData),
+        transactionId: document.getElementById('transactionId')?.value || '',
+        paymentDate: document.getElementById('paymentDate')?.value || '',
+        paymentMethod: selectedPaymentMethod,
+        status: 'pending_review',
+        submittedAt: new Date().toISOString()
+    };
+    
+    // Save to localStorage as backup
+    const application = {
+        id: applicationId,
+        trackingCode: trackingCode,
+        fullName: fullName,
+        surname: surname,
+        firstName: firstName,
+        otherName: otherName,
+        dob: applicationData.dob,
+        gender: applicationData.gender,
+        email: applicantEmail,
+        phone: applicantPhone,
+        altPhone: applicationData.altPhone,
+        address: applicationData.address,
+        program: applicationData.program,
+        entryMode: applicationData.entryMode,
+        certificates: certificatesData,
+        transactionId: applicationData.transactionId,
+        paymentDate: applicationData.paymentDate,
+        paymentMethod: selectedPaymentMethod,
+        status: 'pending_review',
+        submittedAt: new Date().toISOString()
+    };
+    
+    // Save to localStorage
+    let existingApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+    existingApps.push(application);
+    localStorage.setItem('admissionApplications', JSON.stringify(existingApps));
+    allApplications = existingApps;
+    
+    // Also save to tracking storage
+    let trackingData = JSON.parse(localStorage.getItem('admissionTracking') || '[]');
+    trackingData.push({
+        id: applicationId,
+        trackingCode: trackingCode,
+        phone: applicantPhone,
+        email: applicantEmail,
+        fullName: fullName,
+        status: 'pending_review'
+    });
+    localStorage.setItem('admissionTracking', JSON.stringify(trackingData));
+    
+    let googleSheetsSuccess = false;
+    
+    // Send to Google Sheets
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(applicationData)
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            googleSheetsSuccess = true;
+            console.log("Google Sheets save successful:", result);
+        } else {
+            console.log("Google Sheets save failed:", result);
+        }
+    } catch (error) {
+        console.error('Error saving to Google Sheets:', error);
+    }
+    
+    // Send tracking notification
+    sendTrackingNotification(applicantPhone, applicantEmail, applicationId, trackingCode, fullName);
+    
+    // Reset the form button
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnText;
+    
+    // DISPLAY TRACKING DETAILS AS LAST PAGE (Section 6)
+    displayTrackingConfirmation(applicationId, trackingCode, fullName, applicantPhone, applicantEmail, applicationData.program, googleSheetsSuccess);
+}
+
+// NEW FUNCTION: Display tracking confirmation as the last page
+function displayTrackingConfirmation(applicationId, trackingCode, fullName, phone, email, program, googleSheetsSuccess) {
+    // Create a new section for tracking confirmation if it doesn't exist
+    let trackingSection = document.getElementById('trackingConfirmationSection');
+    
+    if (!trackingSection) {
+        // Create the tracking confirmation section
+        trackingSection = document.createElement('div');
+        trackingSection.id = 'trackingConfirmationSection';
+        trackingSection.className = 'form-section';
+        trackingSection.innerHTML = `
+            <h2><i class="fas fa-check-circle"></i> Application Submitted Successfully!</h2>
+            <div style="text-align: center; padding: 20px 0;">
+                <i class="fas fa-envelope-open-text" style="font-size: 4rem; color: var(--success); margin-bottom: 20px;"></i>
+                <h3 style="color: var(--primary-dark); margin-bottom: 20px;">Thank you for applying to CCST!</h3>
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; text-align: left; max-width: 500px; margin: 0 auto;">
+                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;"><strong>Application ID:</strong> <span style="font-family: monospace;">${applicationId}</span></div>
+                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;"><strong>Tracking Code:</strong> <span style="font-family: monospace; font-size: 1.2rem; font-weight: bold; color: var(--primary);">${trackingCode}</span></div>
+                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;"><strong>Full Name:</strong> ${fullName}</div>
+                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;"><strong>Program:</strong> ${program}</div>
+                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;"><strong>Status:</strong> <span style="color: var(--warning);">⏳ Pending Review</span></div>
+                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;"><strong>Submitted:</strong> ${new Date().toLocaleString()}</div>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 10px;">
+                    <i class="fas fa-info-circle" style="color: var(--success);"></i>
+                    <p style="margin-top: 10px;"><strong>Important:</strong> Save your Tracking Code! You'll need it to check your application status.</p>
+                    <p style="font-size: 0.85rem;">A confirmation has been sent to ${phone} and ${email}</p>
+                </div>
+                <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="copyTrackingCode('${trackingCode}')" class="btn btn-primary" style="width: auto;">
+                        <i class="fas fa-copy"></i> Copy Tracking Code
+                    </button>
+                    <button onclick="window.location.href='admission.html'" class="btn btn-secondary" style="width: auto; background: #6c757d;">
+                        <i class="fas fa-plus"></i> New Application
+                    </button>
+                    <button onclick="openTrackingModalWithCode('${trackingCode}')" class="btn btn-success" style="width: auto;">
+                        <i class="fas fa-search"></i> Track Status
+                    </button>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="window.location.href='index.html'" style="width: auto; margin: 0 auto;">
+                    <i class="fas fa-home"></i> Return to Home
+                </button>
+            </div>
+        `;
+        document.querySelector('.container').appendChild(trackingSection);
+    } else {
+        // Update existing section with new data
+        trackingSection.innerHTML = `
+            <h2><i class="fas fa-check-circle"></i> Application Submitted Successfully!</h2>
+            <div style="text-align: center; padding: 20px 0;">
+                <i class="fas fa-envelope-open-text" style="font-size: 4rem; color: var(--success); margin-bottom: 20px;"></i>
+                <h3 style="color: var(--primary-dark); margin-bottom: 20px;">Thank you for applying to CCST!</h3>
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; text-align: left; max-width: 500px; margin: 0 auto;">
+                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;"><strong>Application ID:</strong> <span style="font-family: monospace;">${applicationId}</span></div>
+                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;"><strong>Tracking Code:</strong> <span style="font-family: monospace; font-size: 1.2rem; font-weight: bold; color: var(--primary);">${trackingCode}</span></div>
+                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;"><strong>Full Name:</strong> ${fullName}</div>
+                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;"><strong>Program:</strong> ${program}</div>
+                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;"><strong>Status:</strong> <span style="color: var(--warning);">⏳ Pending Review</span></div>
+                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;"><strong>Submitted:</strong> ${new Date().toLocaleString()}</div>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 10px;">
+                    <i class="fas fa-info-circle" style="color: var(--success);"></i>
+                    <p style="margin-top: 10px;"><strong>Important:</strong> Save your Tracking Code! You'll need it to check your application status.</p>
+                    <p style="font-size: 0.85rem;">A confirmation has been sent to ${phone} and ${email}</p>
+                </div>
+                <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="copyTrackingCode('${trackingCode}')" class="btn btn-primary" style="width: auto;">
+                        <i class="fas fa-copy"></i> Copy Tracking Code
+                    </button>
+                    <button onclick="window.location.href='admission.html'" class="btn btn-secondary" style="width: auto; background: #6c757d;">
+                        <i class="fas fa-plus"></i> New Application
+                    </button>
+                    <button onclick="openTrackingModalWithCode('${trackingCode}')" class="btn btn-success" style="width: auto;">
+                        <i class="fas fa-search"></i> Track Status
+                    </button>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="window.location.href='index.html'" style="width: auto; margin: 0 auto;">
+                    <i class="fas fa-home"></i> Return to Home
+                </button>
+            </div>
+        `;
+    }
+    
+    // Hide all other sections
+    for (let i = 1; i <= totalSections; i++) {
+        const section = document.getElementById(`section${i}`);
+        if (section) section.classList.remove('active');
+    }
+    
+    // Show tracking confirmation section
+    trackingSection.classList.add('active');
+    
+    // Update progress steps to show completion
+    for (let i = 1; i <= totalSections; i++) {
+        const step = document.getElementById(`step${i}`);
+        if (step) {
+            step.classList.add('completed');
+            step.classList.remove('active');
+        }
+    }
+    
+    // Add a "Complete" step
+    let completeStep = document.getElementById('step6');
+    if (!completeStep) {
+        const progressContainer = document.querySelector('.progress-steps');
+        completeStep = document.createElement('div');
+        completeStep.className = 'step completed';
+        completeStep.id = 'step6';
+        completeStep.innerHTML = '<div class="step-number">✓</div><div class="step-title">Complete</div>';
+        progressContainer.appendChild(completeStep);
+    } else {
+        completeStep.classList.add('completed');
+    }
+}
+
+// Helper function to copy tracking code
+function copyTrackingCode(code) {
+    navigator.clipboard.writeText(code).then(() => {
+        showToast("Tracking code copied to clipboard!", "success");
+    }).catch(() => {
+        showToast("Could not copy. Please manually save the code.", "danger");
+    });
+}
+
+// Helper function to open tracking modal with code pre-filled
+function openTrackingModalWithCode(code) {
+    openTrackingModal();
+    document.getElementById('trackId').value = code;
+    trackApplication();
+}
 
     function sendTrackingNotification(phone, email, applicationId, trackingCode, fullName) {
         console.log(`SMS/Email sent to ${phone}/${email}: Application ${applicationId} received. Tracking: ${trackingCode}`);
@@ -1133,130 +1268,6 @@
     
     displayTrackingResult(application);
 }
-
-// Add this NEW function right after trackApplication
-function displayTrackingResult(application) {
-    const resultDiv = document.getElementById('trackingResult');
-    
-    const statusMessages = {
-        'pending_review': '⏳ Your application is pending review by the admissions committee.',
-        'documents_verified': '📄 Your documents have been verified. Awaiting further processing.',
-        'interview_scheduled': '📅 You have been scheduled for an interview. Check your email for details.',
-        'admitted': '🎉 Congratulations! You have been admitted to CCST.',
-        'rejected': '📢 We regret to inform you that your application was not successful.'
-    };
-    
-    // Get the correct application ID (handles both formats)
-    const appId = application.applicationId || application.id;
-    const trackingCode = application.trackingCode;
-    const fullName = application.fullName;
-    const program = application.program;
-    const appStatus = application.status || 'pending_review';
-    const submittedDate = application.submittedAt ? new Date(application.submittedAt).toLocaleString() : 'N/A';
-    
-    let timelineHtml = '<div class="status-timeline">';
-    const statusSteps = [
-        { key: 'submitted', label: 'Application Submitted', icon: 'fa-paper-plane' },
-        { key: 'documents_verified', label: 'Documents Verified', icon: 'fa-check-circle' },
-        { key: 'interview_scheduled', label: 'Interview Scheduled', icon: 'fa-calendar-alt' },
-        { key: 'admitted', label: 'Admission Decision', icon: 'fa-graduation-cap' }
-    ];
-    
-    statusSteps.forEach(step => {
-        let isCompleted = false;
-        let isCurrent = false;
-        
-        if (appStatus === 'pending_review' && step.key === 'submitted') isCompleted = true;
-        else if (appStatus === 'documents_verified' && (step.key === 'submitted' || step.key === 'documents_verified')) isCompleted = true;
-        else if (appStatus === 'interview_scheduled' && (step.key === 'submitted' || step.key === 'documents_verified' || step.key === 'interview_scheduled')) isCompleted = true;
-        else if (appStatus === 'admitted') isCompleted = true;
-        
-        if (appStatus === step.key) isCurrent = true;
-        
-        timelineHtml += `
-            <div class="status-item">
-                <div class="status-icon ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}">
-                    <i class="fas ${step.icon}"></i>
-                </div>
-                <div>
-                    <strong>${step.label}</strong>
-                    ${isCompleted ? '<div><small style="color: green;">✓ Completed</small></div>' : ''}
-                    ${isCurrent ? '<div><small style="color: var(--warning);">⏳ In Progress</small></div>' : ''}
-                </div>
-            </div>
-        `;
-    });
-    
-    timelineHtml += '</div>';
-    timelineHtml += `<div style="margin-top: 15px; padding: 15px; background: #f0f0f0; border-radius: 8px;">
-        <p><strong>📋 Application Details:</strong></p>
-        <p><strong>Application ID:</strong> ${appId}</p>
-        <p><strong>Tracking Code:</strong> ${trackingCode}</p>
-        <p><strong>Full Name:</strong> ${fullName || 'N/A'}</p>
-        <p><strong>Program:</strong> ${program || 'N/A'}</p>
-        <p><strong>Status:</strong> ${statusMessages[appStatus] || 'Application is being processed'}</p>
-        <p><strong>Submitted:</strong> ${submittedDate}</p>
-    </div>`;
-    
-    resultDiv.innerHTML = timelineHtml;
-}
-        
-        const statusMessages = {
-            'pending_review': '⏳ Your application is pending review by the admissions committee.',
-            'documents_verified': '📄 Your documents have been verified. Awaiting further processing.',
-            'interview_scheduled': '📅 You have been scheduled for an interview. Check your email for details.',
-            'admitted': '🎉 Congratulations! You have been admitted to CCST.',
-            'rejected': '📢 We regret to inform you that your application was not successful.'
-        };
-        
-        let timelineHtml = '<div class="status-timeline">';
-        const statusSteps = [
-            { key: 'submitted', label: 'Application Submitted', icon: 'fa-paper-plane' },
-            { key: 'documents_verified', label: 'Documents Verified', icon: 'fa-check-circle' },
-            { key: 'interview_scheduled', label: 'Interview Scheduled', icon: 'fa-calendar-alt' },
-            { key: 'admitted', label: 'Admission Decision', icon: 'fa-graduation-cap' }
-        ];
-        
-        const appStatus = application.status || 'pending_review';
-        
-        statusSteps.forEach(step => {
-            let isCompleted = false;
-            let isCurrent = false;
-            
-            if (appStatus === 'pending_review' && step.key === 'submitted') isCompleted = true;
-            else if (appStatus === 'documents_verified' && (step.key === 'submitted' || step.key === 'documents_verified')) isCompleted = true;
-            else if (appStatus === 'interview_scheduled' && (step.key === 'submitted' || step.key === 'documents_verified' || step.key === 'interview_scheduled')) isCompleted = true;
-            else if (appStatus === 'admitted') isCompleted = true;
-            
-            if (appStatus === step.key) isCurrent = true;
-            
-            timelineHtml += `
-                <div class="status-item">
-                    <div class="status-icon ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}">
-                        <i class="fas ${step.icon}"></i>
-                    </div>
-                    <div>
-                        <strong>${step.label}</strong>
-                        ${isCompleted ? '<div><small style="color: green;">✓ Completed</small></div>' : ''}
-                        ${isCurrent ? '<div><small style="color: var(--warning);">⏳ In Progress</small></div>' : ''}
-                    </div>
-                </div>
-            `;
-        });
-        
-        timelineHtml += '</div>';
-        timelineHtml += `<div style="margin-top: 15px; padding: 15px; background: #f0f0f0; border-radius: 8px;">
-            <p><strong>📋 Application Details:</strong></p>
-            <p><strong>Application ID:</strong> ${application.id}</p>
-            <p><strong>Tracking Code:</strong> ${application.trackingCode}</p>
-            <p><strong>Full Name:</strong> ${application.fullName || application.name || 'N/A'}</p>
-            <p><strong>Program:</strong> ${application.program || 'N/A'}</p>
-            <p><strong>Status:</strong> ${statusMessages[appStatus] || 'Application is being processed'}</p>
-            <p><strong>Submitted:</strong> ${new Date(application.submittedAt).toLocaleString() || 'N/A'}</p>
-        </div>`;
-        
-        resultDiv.innerHTML = timelineHtml;
-    }
 
     function resetForm() {
         document.getElementById('admissionForm').reset();
