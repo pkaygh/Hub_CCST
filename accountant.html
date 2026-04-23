@@ -637,47 +637,45 @@
             <p style="font-size:0.85rem; opacity:0.8;">Financial & Academic Control</p>
         </div>
 
-                <a href="#" class="menu-item active" id="searchMenuItem" onclick="showSection('search')">
-            <i class="fas fa-search"></i> Search Student
-        </a>
-        <a href="#" class="menu-item" id="csvUploadMenuItem" onclick="showSection('csv_upload')">
-            <i class="fas fa-file-upload"></i> CSV Upload
-        </a>
-        <a href="#" class="menu-item" id="bulkUploadMenuItem" onclick="showSection('bulk_upload')">
-            <i class="fas fa-upload"></i> Bulk Upload
-        </a>
-        <a href="#" class="menu-item" id="coursesMenuItem" onclick="showSection('courses')">
-            <i class="fas fa-book"></i> Manage Courses
-        </a>
-        <a href="#" class="menu-item" id="clearanceMenuItem" onclick="showSection('clearance')">
-            <i class="fas fa-check-circle"></i> Financial Clearance
-        </a>
-        <a href="#" class="menu-item" id="transcriptMenuItem" onclick="showSection('transcript')">
-            <i class="fas fa-file-pdf"></i> Generate Transcript
-        </a>
-        <a href="#" class="menu-item" id="transcriptRequestsMenuItem" onclick="showSection('transcript_requests')">
-            <i class="fas fa-envelope"></i> Transcript Requests
-            <span id="requestBadge" class="badge" style="display:none;">0</span>
-        </a>
-        <a href="#" class="menu-item" id="notificationsMenuItem" onclick="showSection('notifications')">
-            <i class="fas fa-bell"></i> Send Notifications
-        </a>
-        <a href="#" class="menu-item" id="reportsMenuItem" onclick="showSection('reports')">
-            <i class="fas fa-chart-bar"></i> Reports
-        </a>
-
-        <a href="#" class="menu-item" id="admissionsMenuItem" onclick="showSection('admissions')">
-            <i class="fas fa-users"></i> Admissions Manager
-            <span id="admissionBadge" class="badge" style="display:none;">0</span>
-        </a>
-        <a href="#" class="menu-item" id="executiveMenuItem" onclick="openExecutiveDashboard()">
-            <i class="fas fa-chart-line"></i> Executive Dashboard
-            <span class="badge" style="background: var(--warning);">Admin</span>
-        </a>
-
+              <a href="#" class="menu-item active" id="searchMenuItem" onclick="showSection('search'); return false;">
+    <i class="fas fa-search"></i> Search Student
+</a>
+<a href="#" class="menu-item" id="csvUploadMenuItem" onclick="showSection('csv_upload'); return false;">
+    <i class="fas fa-file-upload"></i> CSV Upload
+</a>
+<a href="#" class="menu-item" id="bulkUploadMenuItem" onclick="showSection('bulk_upload'); return false;">
+    <i class="fas fa-upload"></i> Bulk Upload
+</a>
+<a href="#" class="menu-item" id="coursesMenuItem" onclick="showSection('courses'); return false;">
+    <i class="fas fa-book"></i> Manage Courses
+</a>
+<a href="#" class="menu-item" id="clearanceMenuItem" onclick="showSection('clearance'); return false;">
+    <i class="fas fa-check-circle"></i> Financial Clearance
+</a>
+<a href="#" class="menu-item" id="transcriptMenuItem" onclick="showSection('transcript'); return false;">
+    <i class="fas fa-file-pdf"></i> Generate Transcript
+</a>
+<a href="#" class="menu-item" id="transcriptRequestsMenuItem" onclick="showSection('transcript_requests'); return false;">
+    <i class="fas fa-envelope"></i> Transcript Requests
+    <span id="requestBadge" class="badge" style="display:none;">0</span>
+</a>
+<a href="#" class="menu-item" id="notificationsMenuItem" onclick="showSection('notifications'); return false;">
+    <i class="fas fa-bell"></i> Send Notifications
+</a>
+<a href="#" class="menu-item" id="reportsMenuItem" onclick="showSection('reports'); return false;">
+    <i class="fas fa-chart-bar"></i> Reports
+</a>
+<a href="#" class="menu-item" id="admissionsMenuItem" onclick="showSection('admissions'); return false;">
+    <i class="fas fa-users"></i> Admissions Manager
+    <span id="admissionBadge" class="badge" style="display:none;">0</span>
+</a>
+<a href="#" class="menu-item" id="executiveMenuItem" onclick="openExecutiveDashboard(); return false;">
+    <i class="fas fa-chart-line"></i> Executive Dashboard
+    <span class="badge" style="background: var(--warning);">Admin</span>
+</a>
         <hr style="margin: 20px 25px; border-color: rgba(255,255,255,0.1);">
 
-        <a href="#" class="menu-item" onclick="logout()">
+        <a href="#" class="menu-item" onclick="logout(); return false;">
             <i class="fas fa-sign-out-alt"></i> Logout
         </a>
     </div>
