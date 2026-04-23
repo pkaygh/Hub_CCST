@@ -671,7 +671,7 @@
 
 <script>
     // Configuration
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxut-aBOybL9nsvGAHarZNGqj0ad_iehs8QHx8DjoR_FDt3b7KvjLPUo1K6cA41vVXy/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxX9hacVxLLPW4NTUHukmNX9dYmhHsh09LEd_qPw3kwMaYJ5odxfvyztmCGBSfkW9MA/exec";
     
     // Multi-file storage
     let uploadedFiles = {
@@ -1071,38 +1071,135 @@
         document.getElementById('trackingModal').classList.remove('show');
     }
 
-    function trackApplication() {
-        const trackValue = document.getElementById('trackId').value.trim();
-        if (!trackValue) {
-            showToast("Please enter Application ID, Tracking Code, or Phone Number", "danger");
-            return;
-        }
+    async function trackApplication() {
+    const trackValue = document.getElementById('trackId').value.trim();
+    if (!trackValue) {
+        showToast("Please enter Application ID, Tracking Code, or Phone Number", "danger");
+        return;
+    }
+    
+    const resultDiv = document.getElementById('trackingResult');
+    resultDiv.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Searching...</p>';
+    
+    let application = null;
+    
+    // FIRST: Try to fetch from Google Sheets
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_admissions`);
+        const data = await response.json();
         
-        // First try to find in tracking storage
-        let trackingData = JSON.parse(localStorage.getItem('admissionTracking') || '[]');
-        let application = trackingData.find(app => 
+        if (data.admissions && data.admissions.length > 0) {
+            // Search in Google Sheets data
+            application = data.admissions.find(app => 
+                app.applicationId === trackValue || 
+                app.trackingCode === trackValue || 
+                app.phone === trackValue ||
+                app.email === trackValue
+            );
+            
+            if (application) {
+                console.log("Found in Google Sheets:", application);
+                displayTrackingResult(application);
+                return;
+            }
+        }
+    } catch (error) {
+        console.log("Could not fetch from Google Sheets:", error);
+    }
+    
+    // SECOND: If not found in Google Sheets, check localStorage
+    let trackingData = JSON.parse(localStorage.getItem('admissionTracking') || '[]');
+    application = trackingData.find(app => 
+        app.id === trackValue || 
+        app.trackingCode === trackValue || 
+        app.phone === trackValue
+    );
+    
+    // If still not found, try main applications storage
+    if (!application) {
+        const allApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+        application = allApps.find(app => 
             app.id === trackValue || 
             app.trackingCode === trackValue || 
             app.phone === trackValue
         );
+    }
+    
+    if (!application) {
+        resultDiv.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 20px;">❌ No application found with that ID, Tracking Code, or phone number.</p>
+        <p style="text-align: center; font-size: 0.85rem;">Please check your information and try again.</p>`;
+        return;
+    }
+    
+    displayTrackingResult(application);
+}
+
+// Add this NEW function right after trackApplication
+function displayTrackingResult(application) {
+    const resultDiv = document.getElementById('trackingResult');
+    
+    const statusMessages = {
+        'pending_review': '⏳ Your application is pending review by the admissions committee.',
+        'documents_verified': '📄 Your documents have been verified. Awaiting further processing.',
+        'interview_scheduled': '📅 You have been scheduled for an interview. Check your email for details.',
+        'admitted': '🎉 Congratulations! You have been admitted to CCST.',
+        'rejected': '📢 We regret to inform you that your application was not successful.'
+    };
+    
+    // Get the correct application ID (handles both formats)
+    const appId = application.applicationId || application.id;
+    const trackingCode = application.trackingCode;
+    const fullName = application.fullName;
+    const program = application.program;
+    const appStatus = application.status || 'pending_review';
+    const submittedDate = application.submittedAt ? new Date(application.submittedAt).toLocaleString() : 'N/A';
+    
+    let timelineHtml = '<div class="status-timeline">';
+    const statusSteps = [
+        { key: 'submitted', label: 'Application Submitted', icon: 'fa-paper-plane' },
+        { key: 'documents_verified', label: 'Documents Verified', icon: 'fa-check-circle' },
+        { key: 'interview_scheduled', label: 'Interview Scheduled', icon: 'fa-calendar-alt' },
+        { key: 'admitted', label: 'Admission Decision', icon: 'fa-graduation-cap' }
+    ];
+    
+    statusSteps.forEach(step => {
+        let isCompleted = false;
+        let isCurrent = false;
         
-        // If not found, try main applications storage
-        if (!application) {
-            const allApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
-            application = allApps.find(app => 
-                app.id === trackValue || 
-                app.trackingCode === trackValue || 
-                app.phone === trackValue
-            );
-        }
+        if (appStatus === 'pending_review' && step.key === 'submitted') isCompleted = true;
+        else if (appStatus === 'documents_verified' && (step.key === 'submitted' || step.key === 'documents_verified')) isCompleted = true;
+        else if (appStatus === 'interview_scheduled' && (step.key === 'submitted' || step.key === 'documents_verified' || step.key === 'interview_scheduled')) isCompleted = true;
+        else if (appStatus === 'admitted') isCompleted = true;
         
-        const resultDiv = document.getElementById('trackingResult');
+        if (appStatus === step.key) isCurrent = true;
         
-        if (!application) {
-            resultDiv.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 20px;">❌ No application found with that ID, Tracking Code, or phone number.</p>
-            <p style="text-align: center; font-size: 0.85rem;">Please check your information and try again.</p>`;
-            return;
-        }
+        timelineHtml += `
+            <div class="status-item">
+                <div class="status-icon ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}">
+                    <i class="fas ${step.icon}"></i>
+                </div>
+                <div>
+                    <strong>${step.label}</strong>
+                    ${isCompleted ? '<div><small style="color: green;">✓ Completed</small></div>' : ''}
+                    ${isCurrent ? '<div><small style="color: var(--warning);">⏳ In Progress</small></div>' : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    timelineHtml += '</div>';
+    timelineHtml += `<div style="margin-top: 15px; padding: 15px; background: #f0f0f0; border-radius: 8px;">
+        <p><strong>📋 Application Details:</strong></p>
+        <p><strong>Application ID:</strong> ${appId}</p>
+        <p><strong>Tracking Code:</strong> ${trackingCode}</p>
+        <p><strong>Full Name:</strong> ${fullName || 'N/A'}</p>
+        <p><strong>Program:</strong> ${program || 'N/A'}</p>
+        <p><strong>Status:</strong> ${statusMessages[appStatus] || 'Application is being processed'}</p>
+        <p><strong>Submitted:</strong> ${submittedDate}</p>
+    </div>`;
+    
+    resultDiv.innerHTML = timelineHtml;
+}
         
         const statusMessages = {
             'pending_review': '⏳ Your application is pending review by the admissions committee.',
