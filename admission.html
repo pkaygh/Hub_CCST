@@ -672,6 +672,33 @@
 <script>
     // Configuration
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxX9hacVxLLPW4NTUHukmNX9dYmhHsh09LEd_qPw3kwMaYJ5odxfvyztmCGBSfkW9MA/exec";
+
+    // ADD THE TEST FUNCTION RIGHT HERE (after SCRIPT_URL)
+    async function testGoogleSheetsConnection() {
+        try {
+            // Test with a simple action
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'get_admissions' })
+            });
+            
+            console.log("Response status:", response.status);
+            console.log("Response ok:", response.ok);
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Connection successful:", data);
+                showToast("Connected to Google Sheets!", "success");
+            } else {
+                console.log("Connection failed:", response.status);
+                showToast("Connection failed. Check console for details.", "danger");
+            }
+        } catch (error) {
+            console.error("Connection error:", error);
+            showToast("Connection error: " + error.message, "danger");
+        }
+    }
     
     // Multi-file storage
     let uploadedFiles = {
@@ -1085,10 +1112,12 @@ function displayTrackingConfirmation(applicationId, trackingCode, fullName, phon
                         <span style="color: #2c3e50;">${new Date().toLocaleString()}</span>
                     </div>
                 </div>
-                <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 10px; border-left: 4px solid #27ae60;">
-                    <i class="fas fa-info-circle" style="color: #27ae60;"></i>
-                    <p style="margin-top: 10px; color: #2c3e50;"><strong>Important:</strong> Save your Tracking Code! You'll need it to check your application status.</p>
-                    <p style="font-size: 0.85rem; color: #666;">A confirmation has been sent to ${phone} and ${email}</p>
+                <div style="margin-top: 20px; padding: 15px; background: #f4f4f4; border-radius: 10px; border-left: 4px solid #27ae60; color: #333;">
+    <i class="fas fa-info-circle" style="color: #27ae60; font-size: 1.2rem;"></i>
+    <p style="margin-top: 10px; color: #000; font-weight: bold; margin-bottom: 5px;"><strong>Important:</strong> Save your Tracking Code! You'll need it to check your application status.</p>
+    <p style="font-size: 0.9rem; color: #555; margin-top: 0;">A confirmation has been sent to ${phone} and ${email}</p> 
+</div>
+
                 </div>
                 <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                     <button onclick="copyTrackingCode('${trackingCode}')" class="btn btn-primary" style="width: auto; background: linear-gradient(135deg, #1a472a, #6b8e23); color: white;">
@@ -1112,34 +1141,37 @@ function displayTrackingConfirmation(applicationId, trackingCode, fullName, phon
     } else {
         // Update existing section with new data
         trackingSection.innerHTML = `
-            <h2 style="color: #1a472a;"><i class="fas fa-check-circle" style="color: #27ae60;"></i> Application Submitted Successfully!</h2>
+           <h2 style="color: #000000;"><i class="fas fa-check-circle" style="color: #000000;"></i> Application Submitted Successfully!</h2>
             <div style="text-align: center; padding: 20px 0;">
-                <i class="fas fa-envelope-open-text" style="font-size: 4rem; color: #27ae60; margin-bottom: 20px;"></i>
-                <h3 style="color: #1a472a; margin-bottom: 20px;">Thank you for applying to CCST!</h3>
+                <i class="fas fa-envelope-open-text" style="font-size: 4rem; color: #000000; margin-bottom: 20px;"></i>
+                <h3 style="color: #000000; margin-bottom: 20px;">Thank you for applying to CCST!</h3>
                 <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; text-align: left; max-width: 500px; margin: 0 auto; border: 1px solid #6b8e23;">
                     <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Application ID:</strong> 
-                        <span style="font-family: monospace; color: #2c3e50;">${applicationId}</span>
+                        <strong style="color: #000000;">Application ID:</strong> 
+                        <span style="font-family: monospace; color: #000000;">${applicationId}</span>
                     </div>
                     <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Tracking Code:</strong> 
-                        <span style="font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #6b8e23;">${trackingCode}</span>
+                        <strong style="color: #000000;">Tracking Code:</strong> 
+                        <span style="font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #000000;">${trackingCode}</span>
                     </div>
                     <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Full Name:</strong> 
-                        <span style="color: #2c3e50;">${fullName}</span>
+                        <strong style="color: #000000;">Full Name:</strong> 
+                        <span style="color: #000000;">${fullName}</span>
                     </div>
                     <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Program:</strong> 
-                        <span style="color: #2c3e50;">${program}</span>
+                        <strong style="color: #000000;">Program:</strong> 
+                        <span style="color: #000000;">${program}</span>
                     </div>
                     <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Status:</strong> 
-                        <span style="color: #f39c12;">⏳ Pending Review</span>
+                        <strong style="color: #000000;">Status:</strong> 
+                        <span style="color: #000000;">⏳ Pending Review</span>
                     </div>
                     <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;">
-                        <strong style="color: #1a472a;">Submitted:</strong> 
-                        <span style="color: #2c3e50;">${new Date().toLocaleString()}</span>
+                        <strong style="color: #000000;">Submitted:</strong> 
+                        <span style="color: #000000;">${new Date().toLocaleString()}</span>
+                    </div>
+                </div>
+            </div>
                     </div>
                 </div>
                 <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 10px; border-left: 4px solid #27ae60;">
@@ -1318,10 +1350,15 @@ function openTrackingModalWithCode(code) {
         selectPaymentMethod('momo');
     }
 
-    // Initialize
+     // Initialize
     addCertificateEntry();
     selectPaymentMethod('momo');
-
+    
+    // ADD THIS EVENT LISTENER AT THE VERY BOTTOM OF YOUR SCRIPT
+    window.addEventListener('load', function() {
+        console.log("Testing connection to:", SCRIPT_URL);
+        testGoogleSheetsConnection();
+    });
     document.getElementById('trackingModal').addEventListener('click', function(e) {
         if (e.target === this) closeTrackingModal();
     });
