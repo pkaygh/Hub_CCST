@@ -2101,8 +2101,11 @@ CCST/ML/24/002,5500,TRUE
         }
 
         function logout() {
-            if (confirm("Logout?")) window.location.replace("index.html");
-        }
+    if (confirm("Logout?")) {
+        window.location.replace("index.html");
+    }
+    return false;
+}
 
                window.onload = () => {
                 // Initialize staff permissions first
@@ -2118,7 +2121,7 @@ CCST/ML/24/002,5500,TRUE
                         } else if (staffPermissions.includes('reports')) {
                         showSection('reports');
                         } else {
-                            showToasthowSection('search');
+                            showSection('search');
                         }
     
                         document.getElementById('totalStudents').innerText = '156';
