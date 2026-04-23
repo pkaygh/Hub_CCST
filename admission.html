@@ -680,22 +680,22 @@
     let certificateCounter = 0;
     let certificates = [];
     let selectedPaymentMethod = 'momo';
+    let currentSection = 1;
+    const totalSections = 5;
+    let applications = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
 
     function selectPaymentMethod(method) {
         selectedPaymentMethod = method;
         document.getElementById('selectedPaymentMethod').value = method;
         
-        // Update UI
         document.getElementById('momoMethod').classList.remove('selected');
         document.getElementById('bankMethod').classList.remove('selected');
         document.getElementById(`${method}Method`).classList.add('selected');
         
-        // Show/hide details
         document.getElementById('momoDetails').style.display = method === 'momo' ? 'block' : 'none';
         document.getElementById('bankDetails').style.display = method === 'bank' ? 'block' : 'none';
     }
 
-    // Certificate Functions
     function addCertificateEntry(certData = null) {
         certificateCounter++;
         const certId = `cert_${certificateCounter}`;
@@ -764,12 +764,10 @@
         return certs;
     }
 
-    // Multi-file upload handler
     function handleMultiFileUpload(inputId, listId) {
         const files = document.getElementById(inputId).files;
         if (!files.length) return;
         
-        const fileArray = [];
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             if (file.size > 5 * 1024 * 1024) {
@@ -781,17 +779,18 @@
                 const fileData = { name: file.name, data: e.target.result, type: file.type };
                 if (inputId === 'wasceFiles') uploadedFiles.wasce.push(fileData);
                 else if (inputId === 'supportFiles') uploadedFiles.support.push(fileData);
-                displayMultiFileList(listId, file.name, fileArray.length);
             };
             reader.readAsDataURL(file);
-            fileArray.push(file);
+            displayMultiFileList(listId, file.name);
         }
     }
 
-    function displayMultiFileList(listId, fileName, index) {
+    function displayMultiFileList(listId, fileName) {
         const container = document.getElementById(listId);
-        const existing = container.innerHTML;
-        container.innerHTML = existing + `<div class="file-item"><span class="file-name"><i class="fas fa-file"></i> ${fileName}</span><span class="file-remove" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></span></div>`;
+        const div = document.createElement('div');
+        div.className = 'file-item';
+        div.innerHTML = `<span class="file-name"><i class="fas fa-file"></i> ${fileName}</span><span class="file-remove" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></span>`;
+        container.appendChild(div);
     }
 
     function handleFileUpload(inputId, listId) {
@@ -803,17 +802,15 @@
             const fileData = { name: file.name, data: e.target.result, type: file.type };
             if (inputId === 'birthFile') uploadedFiles.birth = fileData;
             else if (inputId === 'ghanaCardFile') uploadedFiles.ghanaCard = fileData;
-            displayFileList(listId, file.name);
         };
         reader.readAsDataURL(file);
+        displayFileList(listId, file.name);
     }
 
     function displayFileList(listId, fileName) {
         const container = document.getElementById(listId);
         container.innerHTML = `<div class="file-item"><span class="file-name"><i class="fas fa-file"></i> ${fileName}</span><span class="file-remove" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></span></div>`;
     }
-
-    let applications = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
 
     function showToast(msg, type = "info") {
         const toast = document.getElementById('toast');
@@ -823,206 +820,193 @@
         setTimeout(() => toast.style.display = 'none', 4000);
     }
 
-    let currentSection = 1;
-    const totalSections = 5;
-
     function updateProgress() {
         for (let i = 1; i <= totalSections; i++) {
             const step = document.getElementById(`step${i}`);
-            if (i < currentSection) { step.classList.add('completed'); step.classList.remove('active'); }
-            else if (i === currentSection) { step.classList.add('active'); step.classList.remove('completed'); }
-            else { step.classList.remove('active', 'completed'); }
+            if (step) {
+                if (i < currentSection) { step.classList.add('completed'); step.classList.remove('active'); }
+                else if (i === currentSection) { step.classList.add('active'); step.classList.remove('completed'); }
+                else { step.classList.remove('active', 'completed'); }
+            }
         }
     }
 
     function nextSection(current) {
-    console.log("Next section called, current:", current);
-    if (!validateSection(current)) return;
-    document.getElementById(`section${current}`).classList.remove('active');
-    currentSection = current + 1;
-    document.getElementById(`section${currentSection}`).classList.add('active');
-    updateProgress();
-    if (currentSection === 5) generateReview();
-}
+        console.log("Next section called, current:", current);
+        if (!validateSection(current)) return;
+        document.getElementById(`section${current}`).classList.remove('active');
+        currentSection = current + 1;
+        const nextSectionEl = document.getElementById(`section${currentSection}`);
+        if (nextSectionEl) nextSectionEl.classList.add('active');
+        updateProgress();
+        if (currentSection === 5) generateReview();
+    }
 
-function prevSection(current) {
-    document.getElementById(`section${current}`).classList.remove('active');
-    currentSection = current - 1;
-    document.getElementById(`section${currentSection}`).classList.add('active');
-    updateProgress();
-}
+    function prevSection(current) {
+        document.getElementById(`section${current}`).classList.remove('active');
+        currentSection = current - 1;
+        const prevSectionEl = document.getElementById(`section${currentSection}`);
+        if (prevSectionEl) prevSectionEl.classList.add('active');
+        updateProgress();
+    }
 
     function validateSection(section) {
-    if (section === 1) {
-        const surname = document.getElementById('surname')?.value;
-        const firstName = document.getElementById('firstName')?.value;
-        const email = document.getElementById('email')?.value;
-        const phone = document.getElementById('phone')?.value;
-        const dob = document.getElementById('dob')?.value;
-        const gender = document.getElementById('gender')?.value;
-        
-        if (!surname) { showToast("Please enter your surname", "danger"); return false; }
-        if (!firstName) { showToast("Please enter your first name", "danger"); return false; }
-        if (!email) { showToast("Please enter your email address", "danger"); return false; }
-        if (!email.includes('@')) { showToast("Valid email required", "danger"); return false; }
-        if (!phone) { showToast("Please enter your phone number", "danger"); return false; }
-        if (!dob) { showToast("Please select your date of birth", "danger"); return false; }
-        if (!gender) { showToast("Please select your gender", "danger"); return false; }
+        if (section === 1) {
+            const surname = document.getElementById('surname')?.value;
+            const firstName = document.getElementById('firstName')?.value;
+            const email = document.getElementById('email')?.value;
+            const phone = document.getElementById('phone')?.value;
+            const dob = document.getElementById('dob')?.value;
+            const gender = document.getElementById('gender')?.value;
+            
+            if (!surname) { showToast("Please enter your surname", "danger"); return false; }
+            if (!firstName) { showToast("Please enter your first name", "danger"); return false; }
+            if (!email) { showToast("Please enter your email address", "danger"); return false; }
+            if (!email.includes('@')) { showToast("Valid email required", "danger"); return false; }
+            if (!phone) { showToast("Please enter your phone number", "danger"); return false; }
+            if (!dob) { showToast("Please select your date of birth", "danger"); return false; }
+            if (!gender) { showToast("Please select your gender", "danger"); return false; }
+        }
+        if (section === 2) {
+            const program = document.getElementById('program')?.value;
+            if (!program) { showToast("Please select a program", "danger"); return false; }
+            const certificates = collectCertificates();
+            if (certificates.length === 0) { showToast("Please add at least one academic certificate", "danger"); return false; }
+        }
+        if (section === 3) {
+            if (uploadedFiles.wasce.length === 0) { showToast("Please upload your WASSCE/Results documents", "danger"); return false; }
+            if (!uploadedFiles.birth) { showToast("Please upload your Birth Certificate", "danger"); return false; }
+            if (!uploadedFiles.ghanaCard) { showToast("Please upload your Ghana Card", "danger"); return false; }
+        }
+        if (section === 4) {
+            const transactionId = document.getElementById('transactionId')?.value;
+            if (!transactionId) { showToast("Please enter your transaction ID", "danger"); return false; }
+        }
+        return true;
     }
-    if (section === 2) {
-        const program = document.getElementById('program')?.value;
-        if (!program) { showToast("Please select a program", "danger"); return false; }
-        const certificates = collectCertificates();
-        if (certificates.length === 0) { showToast("Please add at least one academic certificate", "danger"); return false; }
-    }
-    if (section === 3) {
-        if (uploadedFiles.wasce.length === 0) { showToast("Please upload your WASSCE/Results documents", "danger"); return false; }
-        if (!uploadedFiles.birth) { showToast("Please upload your Birth Certificate", "danger"); return false; }
-        if (!uploadedFiles.ghanaCard) { showToast("Please upload your Ghana Card", "danger"); return false; }
-    }
-    if (section === 4) {
-        const transactionId = document.getElementById('transactionId')?.value;
-        if (!transactionId) { showToast("Please enter your transaction ID", "danger"); return false; }
-    }
-    return true;
-}
 
     function generateReview() {
-    const surname = document.getElementById('surname')?.value || '';
-    const firstName = document.getElementById('firstName')?.value || '';
-    const otherName = document.getElementById('otherName')?.value || '';
-    const fullName = `${surname} ${firstName} ${otherName}`.trim();
-    const email = document.getElementById('email')?.value || '';
-    const phone = document.getElementById('phone')?.value || '';
-    const program = document.getElementById('program')?.value || '';
-    const programNames = { 'RM': 'Registered Midwifery', 'RN': 'Registered Nursing', 'ML': 'Medical Lab Technology' };
-    const certificates = collectCertificates();
-    let certHtml = '<ul style="margin-left: 20px;">';
-    certificates.forEach(cert => { certHtml += `<li>${cert.type} (${cert.year || 'N/A'}) - ${cert.institution || 'N/A'}</li>`; });
-    certHtml += '</ul>';
-    const paymentMethod = selectedPaymentMethod === 'momo' ? 'MTN Mobile Money' : 'Bank Transfer';
-    
-    const html = `<div class="summary-card">
-        <div class="summary-row"><strong>Full Name:</strong> <span>${fullName}</span></div>
-        <div class="summary-row"><strong>Email/Phone:</strong> <span>${email} / ${phone}</span></div>
-        <div class="summary-row"><strong>Program:</strong> <span>${programNames[program] || program}</span></div>
-        <div class="summary-row"><strong>Certificates (${certificates.length}):</strong></div><div>${certHtml}</div>
-        <div class="summary-row"><strong>Payment Method:</strong> <span>${paymentMethod}</span></div>
-        <div class="summary-row"><strong>Transaction ID:</strong> <span>${document.getElementById('transactionId')?.value || ''}</span></div>
-        <div class="summary-row"><strong>Documents:</strong> <span>📄 ${uploadedFiles.wasce.length} result documents, ${uploadedFiles.birth ? '✅ Birth Cert' : '❌'}, ${uploadedFiles.ghanaCard ? '✅ Ghana Card' : '❌'}</span></div>
-    </div>`;
-    document.getElementById('reviewSummary').innerHTML = html;
-}
+        const surname = document.getElementById('surname')?.value || '';
+        const firstName = document.getElementById('firstName')?.value || '';
+        const otherName = document.getElementById('otherName')?.value || '';
+        const fullName = `${surname} ${firstName} ${otherName}`.trim();
+        const email = document.getElementById('email')?.value || '';
+        const phone = document.getElementById('phone')?.value || '';
+        const program = document.getElementById('program')?.value || '';
+        const programNames = { 'RM': 'Registered Midwifery', 'RN': 'Registered Nursing', 'ML': 'Medical Lab Technology' };
+        const certificates = collectCertificates();
+        let certHtml = '<ul style="margin-left: 20px;">';
+        certificates.forEach(cert => { certHtml += `<li>${cert.type} (${cert.year || 'N/A'}) - ${cert.institution || 'N/A'}</li>`; });
+        certHtml += '</ul>';
+        const paymentMethod = selectedPaymentMethod === 'momo' ? 'MTN Mobile Money' : 'Bank Transfer';
+        
+        const html = `<div class="summary-card">
+            <div class="summary-row"><strong>Full Name:</strong> <span>${fullName}</span></div>
+            <div class="summary-row"><strong>Email/Phone:</strong> <span>${email} / ${phone}</span></div>
+            <div class="summary-row"><strong>Program:</strong> <span>${programNames[program] || program}</span></div>
+            <div class="summary-row"><strong>Certificates (${certificates.length}):</strong></div><div>${certHtml}</div>
+            <div class="summary-row"><strong>Payment Method:</strong> <span>${paymentMethod}</span></div>
+            <div class="summary-row"><strong>Transaction ID:</strong> <span>${document.getElementById('transactionId')?.value || ''}</span></div>
+            <div class="summary-row"><strong>Documents:</strong> <span>📄 ${uploadedFiles.wasce.length} result documents, ${uploadedFiles.birth ? '✅ Birth Cert' : '❌'}, ${uploadedFiles.ghanaCard ? '✅ Ghana Card' : '❌'}</span></div>
+        </div>`;
+        document.getElementById('reviewSummary').innerHTML = html;
+    }
+
+    function generateTrackingCode() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 8; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+    }
 
     async function submitApplication() {
-    if (!document.getElementById('confirmCheckbox').checked) { 
-        showToast("Please confirm your information", "danger"); 
-        return; 
-    }
-    
-    const applicationId = `APP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
-    const trackingCode = generateTrackingCode();
-    const applicantPhone = document.getElementById('phone').value;
-    const applicantEmail = document.getElementById('email').value;
-    const surname = document.getElementById('surname')?.value || '';
-    const firstName = document.getElementById('firstName')?.value || '';
-    const otherName = document.getElementById('otherName')?.value || '';
-    const fullName = `${surname} ${firstName} ${otherName}`.trim();
-    
-    // Collect all form data
-    const applicationData = {
-        action: 'submit_admission',
-        applicationId: applicationId,
-        trackingCode: trackingCode,
-        fullName: fullName,
-        dob: document.getElementById('dob')?.value || '',
-        gender: document.getElementById('gender')?.value || '',
-        email: applicantEmail,
-        phone: applicantPhone,
-        altPhone: document.getElementById('altPhone')?.value || '',
-        address: document.getElementById('address')?.value || '',
-        program: document.getElementById('program')?.value || '',
-        entryMode: document.getElementById('entryMode')?.value || '',
-        certificates: JSON.stringify(collectCertificates()),
-        transactionId: document.getElementById('transactionId')?.value || '',
-        paymentDate: document.getElementById('paymentDate')?.value || '',
-        paymentMethod: selectedPaymentMethod,
-        status: 'pending_review',
-        submittedAt: new Date().toISOString()
-    };
-    
-    // Save to localStorage as backup
-    const application = {
-        id: applicationId,
-        trackingCode: trackingCode,
-        fullName: fullName,
-        dob: applicationData.dob,
-        gender: applicationData.gender,
-        email: applicantEmail,
-        phone: applicantPhone,
-        altPhone: applicationData.altPhone,
-        address: applicationData.address,
-        program: applicationData.program,
-        entryMode: applicationData.entryMode,
-        certificates: collectCertificates(),
-        transactionId: applicationData.transactionId,
-        paymentDate: applicationData.paymentDate,
-        paymentMethod: selectedPaymentMethod,
-        files: {
-            wasce: uploadedFiles.wasce.map(f => f.name),
-            birth: uploadedFiles.birth?.name,
-            ghanaCard: uploadedFiles.ghanaCard?.name,
-            support: uploadedFiles.support.map(f => f.name)
-        },
-        status: 'pending_review',
-        submittedAt: new Date().toISOString()
-    };
-    
-    let applications = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
-    applications.push(application);
-    localStorage.setItem('admissionApplications', JSON.stringify(applications));
-    
-    // Send to Google Sheets
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxut-aBOybL9nsvGAHarZNGqj0ad_iehs8QHx8DjoR_FDt3b7KvjLPUo1K6cA41vVXy/exec";
-    
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(applicationData)
-        });
+        if (!document.getElementById('confirmCheckbox').checked) { 
+            showToast("Please confirm your information", "danger"); 
+            return; 
+        }
         
-        const result = await response.json();
-        if (result.success) {
-            showToast(`✅ Application submitted to Google Sheets! ID: ${applicationId}`, "success");
-        } else {
+        const applicationId = `APP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+        const trackingCode = generateTrackingCode();
+        const applicantPhone = document.getElementById('phone').value;
+        const applicantEmail = document.getElementById('email').value;
+        const surname = document.getElementById('surname')?.value || '';
+        const firstName = document.getElementById('firstName')?.value || '';
+        const otherName = document.getElementById('otherName')?.value || '';
+        const fullName = `${surname} ${firstName} ${otherName}`.trim();
+        
+        const applicationData = {
+            action: 'submit_admission',
+            applicationId: applicationId,
+            trackingCode: trackingCode,
+            fullName: fullName,
+            dob: document.getElementById('dob')?.value || '',
+            gender: document.getElementById('gender')?.value || '',
+            email: applicantEmail,
+            phone: applicantPhone,
+            altPhone: document.getElementById('altPhone')?.value || '',
+            address: document.getElementById('address')?.value || '',
+            program: document.getElementById('program')?.value || '',
+            entryMode: document.getElementById('entryMode')?.value || '',
+            certificates: JSON.stringify(collectCertificates()),
+            transactionId: document.getElementById('transactionId')?.value || '',
+            paymentDate: document.getElementById('paymentDate')?.value || '',
+            paymentMethod: selectedPaymentMethod,
+            status: 'pending_review',
+            submittedAt: new Date().toISOString()
+        };
+        
+        const application = {
+            id: applicationId,
+            trackingCode: trackingCode,
+            fullName: fullName,
+            dob: applicationData.dob,
+            gender: applicationData.gender,
+            email: applicantEmail,
+            phone: applicantPhone,
+            altPhone: applicationData.altPhone,
+            address: applicationData.address,
+            program: applicationData.program,
+            entryMode: applicationData.entryMode,
+            certificates: collectCertificates(),
+            transactionId: applicationData.transactionId,
+            paymentDate: applicationData.paymentDate,
+            paymentMethod: selectedPaymentMethod,
+            files: {
+                wasce: uploadedFiles.wasce.map(f => f.name),
+                birth: uploadedFiles.birth?.name,
+                ghanaCard: uploadedFiles.ghanaCard?.name,
+                support: uploadedFiles.support.map(f => f.name)
+            },
+            status: 'pending_review',
+            submittedAt: new Date().toISOString()
+        };
+        
+        let applications = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+        applications.push(application);
+        localStorage.setItem('admissionApplications', JSON.stringify(applications));
+        
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxut-aBOybL9nsvGAHarZNGqj0ad_iehs8QHx8DjoR_FDt3b7KvjLPUo1K6cA41vVXy/exec";
+        
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(applicationData)
+            });
+            const result = await response.json();
+            if (result.success) {
+                showToast(`✅ Application submitted to Google Sheets! ID: ${applicationId}`, "success");
+            } else {
+                showToast(`⚠️ Application saved locally only. ID: ${applicationId}`, "warning");
+            }
+        } catch (error) {
+            console.error('Error saving to Google Sheets:', error);
             showToast(`⚠️ Application saved locally only. ID: ${applicationId}`, "warning");
         }
-    } catch (error) {
-        console.error('Error saving to Google Sheets:', error);
-        showToast(`⚠️ Application saved locally only. ID: ${applicationId}`, "warning");
-    }
-    
-    // Send tracking notification
-    sendTrackingNotification(applicantPhone, applicantEmail, applicationId, trackingCode);
-    
-    showToast(`✅ Application submitted! Your Tracking Code: ${trackingCode}`, "success");
-    
-    setTimeout(() => {
-        resetForm();
-        currentSection = 1;
-        document.getElementById('section1').classList.add('active');
-        for (let i = 2; i <= totalSections; i++) {
-            const sectionEl = document.getElementById(`section${i}`);
-            if (sectionEl) sectionEl.classList.remove('active');
-        }
-        updateProgress();
-    }, 3000);
-}
         
-        // Send SMS/Email with tracking code
         sendTrackingNotification(applicantPhone, applicantEmail, applicationId, trackingCode);
-        
         showToast(`✅ Application submitted! Your Tracking Code: ${trackingCode}`, "success");
         
         setTimeout(() => {
@@ -1030,20 +1014,17 @@ function prevSection(current) {
             currentSection = 1;
             document.getElementById('section1').classList.add('active');
             for (let i = 2; i <= totalSections; i++) {
-                document.getElementById(`section${i}`).classList.remove('active');
+                const sectionEl = document.getElementById(`section${i}`);
+                if (sectionEl) sectionEl.classList.remove('active');
             }
             updateProgress();
         }, 3000);
     }
 
     function sendTrackingNotification(phone, email, applicationId, trackingCode) {
-        // Simulate SMS (in production, use actual SMS gateway API)
         console.log(`SMS sent to ${phone}: CCST Admission - Your application ${applicationId} has been received. Tracking Code: ${trackingCode}. Use this to track your application status.`);
-        
-        // Simulate Email (in production, use actual email service)
         console.log(`Email sent to ${email}: Application Confirmation - ID: ${applicationId}, Tracking Code: ${trackingCode}`);
         
-        // Store notification in localStorage
         const notifications = JSON.parse(localStorage.getItem('admissionNotifications') || '[]');
         notifications.push({
             id: applicationId,
@@ -1054,8 +1035,6 @@ function prevSection(current) {
             date: new Date().toISOString()
         });
         localStorage.setItem('admissionNotifications', JSON.stringify(notifications));
-        
-        // Show in toast
         showToast(`📱 Tracking code sent to ${phone} and ${email}`, "success");
     }
 
@@ -1147,7 +1126,7 @@ function prevSection(current) {
         selectPaymentMethod('momo');
     }
 
-    // Initialize with one certificate entry
+    // Initialize
     addCertificateEntry();
     selectPaymentMethod('momo');
 
