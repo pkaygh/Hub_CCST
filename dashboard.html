@@ -1217,31 +1217,30 @@
             <p id="sidebarDetails">Level 100</p>
         </div>
 
-        <a href="#" class="menu-item active" onclick="showSection('profile')">
-            <i class="fas fa-user"></i> Profile
+        <a href="#" class="menu-item active" onclick="showSection('profile'); return false;">
+    <i class="fas fa-user"></i> Profile
+</a>
+<a href="#" class="menu-item" onclick="showSection('academic'); return false;">
+    <i class="fas fa-graduation-cap"></i> Academic
+</a>
+<a href="#" class="menu-item" onclick="showSection('finance'); return false;">
+    <i class="fas fa-money-bill-wave"></i> Finance
+</a>
+<a href="#" class="menu-item" onclick="showSection('transcript'); return false;">
+    <i class="fas fa-file-pdf"></i> My Transcript
+</a>
+<a href="#" class="menu-item" onclick="showSection('request_transcript'); return false;">
+    <i class="fas fa-envelope"></i> Request Transcript
+    <span id="requestStatusBadge" class="badge" style="display:none;">Pending</span>
+</a>
+<a href="#" class="menu-item" onclick="showSection('notifications'); return false;">
+    <i class="fas fa-bell"></i> Notifications
+    <span id="notifBadge" class="badge" style="display:none;">0</span>
         </a>
-        <a href="#" class="menu-item" onclick="showSection('academic')">
-            <i class="fas fa-graduation-cap"></i> Academic
-        </a>
-        <a href="#" class="menu-item" onclick="showSection('finance')">
-            <i class="fas fa-money-bill-wave"></i> Finance
-        </a>
-        <a href="#" class="menu-item" onclick="showSection('transcript')">
-            <i class="fas fa-file-pdf"></i> My Transcript
-        </a>
-        <a href="#" class="menu-item" onclick="showSection('request_transcript')">
-            <i class="fas fa-envelope"></i> Request Transcript
-            <span id="requestStatusBadge" class="badge" style="display:none;">Pending</span>
-        </a>
-        <a href="#" class="menu-item" onclick="showSection('notifications')">
-            <i class="fas fa-bell"></i> Notifications
-            <span id="notifBadge" class="badge" style="display:none;">0</span>
-        </a>
-
-        <hr style="margin: 20px 25px; border-color: rgba(255,255,255,0.1);">
 
         <a href="#" class="menu-item" onclick="logout()">
             <i class="fas fa-sign-out-alt"></i> Logout
+            <hr style="margin: 20px 25px; border-color: rgba(255,255,255,0.1);">
         </a>
     </div>
 
@@ -1717,7 +1716,7 @@
     <div id="toast" class="toast" style="display: none;"></div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzaL4IaiIYz22CWyhH-ZSODP6bnil3w5wNO9wiHWHuSv7iy3ioHMHcabdQ4uNLKfngZ/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxut-aBOybL9nsvGAHarZNGqj0ad_iehs8QHx8DjoR_FDt3b7KvjLPUo1K6cA41vVXy/exec";
         let studentData = null;
         let userResults = [];
         let userPayments = [];
@@ -1805,20 +1804,49 @@
         }
 
         function showSection(section) {
-            console.log("showSection called with:", section);
-            if (window.innerWidth <= 768) toggleSidebar();
-            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
-            document.getElementById(section + 'Section').style.display = 'block';
-            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            const titles = {
-                profile: 'My Profile', academic: 'Academic Results', finance: 'Financial Summary',
-                transcript: 'My Transcript', request_transcript: 'Request Transcript', notifications: 'Notifications'
-            };
-            document.getElementById('pageTitle').innerText = titles[section] || 'Dashboard';
-            if (section === 'transcript') loadTranscript();
-            if (section === 'request_transcript') checkExistingRequest();
+    console.log("showSection called with:", section);
+    if (window.innerWidth <= 768) toggleSidebar();
+    
+    // Hide all sections
+    document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+    
+    // Show selected section
+    const sectionToShow = document.getElementById(section + 'Section');
+    if (sectionToShow) {
+        sectionToShow.style.display = 'block';
+    } else {
+        console.error("Section not found:", section + 'Section');
+    }
+    
+    // Update active menu item
+    document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+    
+    // Find and activate the clicked menu item
+    const menuItems = document.querySelectorAll('.menu-item');
+    for (let item of menuItems) {
+        const onclickAttr = item.getAttribute('onclick');
+        if (onclickAttr && onclickAttr.includes(`'${section}'`)) {
+            item.classList.add('active');
+            break;
         }
+    }
+    
+    // Update page title
+    const titles = {
+        profile: 'My Profile', 
+        academic: 'Academic Results', 
+        finance: 'Financial Summary',
+        transcript: 'My Transcript', 
+        request_transcript: 'Request Transcript', 
+        notifications: 'Notifications'
+    };
+    const pageTitle = document.getElementById('pageTitle');
+    if (pageTitle) pageTitle.innerText = titles[section] || 'Dashboard';
+    
+    // Load section-specific data
+    if (section === 'transcript') loadTranscript();
+    if (section === 'request_transcript') checkExistingRequest();
+}
 
         function getFullProgramName(code) {
             const programNames = {
@@ -1932,11 +1960,16 @@
         }
 
         function filterResults() {
-            const filter = document.getElementById('semesterFilter').value;
-            document.querySelectorAll('.semester-card').forEach(card => {
-                card.style.display = (filter === 'all' || card.dataset.semester === filter) ? 'block' : 'none';
-            });
+    const filter = document.getElementById('semesterFilter').value;
+    const semesterCards = document.querySelectorAll('.semester-card');
+    semesterCards.forEach(card => {
+        if (filter === 'all' || card.dataset.semester === filter) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
         }
+    });
+}
 
         function loadFinance() {
             if (!studentData?.profile) return;
@@ -2465,6 +2498,21 @@
             } catch(e) { console.log('Error:', e); }
         }
 
+        function updateWelcomeMessage() {
+            const welcomeName = document.getElementById('welcomeName');
+            const welcomeQuote = document.getElementById('welcomeQuote');
+    if (studentData?.profile?.name) {
+        welcomeName.innerText = studentData.profile.name.split(' ')[0];
+        }
+    const quotes = [
+        "Knowledge, Service, Security",
+        "Excellence in Healthcare Education",
+        "Your Future Starts Here",
+        "Learn, Lead, Serve"
+    ];
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    if (welcomeQuote) welcomeQuote.innerText = randomQuote;
+}
         
         function updateCurrentDate() {
             const dateElement = document.getElementById('currentDate');
@@ -2487,33 +2535,44 @@
         }
         
         function updateDetailedProfile() {
-            const p = studentData?.profile;
-            if (!p) return;
-            document.getElementById('infoId').innerHTML = p.id;
-            document.getElementById('infoProgram').innerHTML = getFullProgramName(p.program);
-            document.getElementById('infoLevel').innerHTML = `Level ${p.level}`;
-            document.getElementById('profileIdShort').innerHTML = p.id.split('/').pop() || p.id;
-            document.getElementById('profileBadge').innerHTML = getFullProgramName(p.program);
-            document.getElementById('levelBadge').innerHTML = `Level ${p.level}`;
-            
-            const previousBalance = parseFloat(p.previousBalance) || 0;
-            const currentFees = parseFloat(p.currentSemesterFees) || parseFloat(p.totalFee) || 0;
-            const amountPayable = previousBalance + currentFees;
-            const amountPaid = parseFloat(p.amountPaid) || 0;
-            const balance = amountPayable - amountPaid;
-            
-            document.getElementById('infoAmountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
-            document.getElementById('infoAmountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
-            document.getElementById('infoBalance').innerHTML = balance > 0 ? `GH₵${balance.toLocaleString()}` : 'GH₵0.00';
-            const clearanceStatus = (balance <= 0) ? '<span style="color:#27ae60;">✓ Cleared</span>' : '<span style="color:#e74c3c;">✗ Not Cleared</span>';
-            document.getElementById('infoClearance').innerHTML = clearanceStatus;
-            
-            const stats = calculateEnhancedStats();
-            if (stats) {
-                document.getElementById('infoCGPA').innerHTML = stats.cgpa;
-                document.getElementById('infoClassification').innerHTML = stats.standing;
-            }
-        }
+    const p = studentData?.profile;
+    if (!p) return;
+    
+    // Personal Information
+    document.getElementById('infoId').innerHTML = p.id || '--';
+    document.getElementById('infoEmail').innerHTML = p.email || 'student@ccst.edu.gh';
+    document.getElementById('infoPhone').innerHTML = p.phone || '--';
+    document.getElementById('infoDob').innerHTML = p.dob || '--';
+    document.getElementById('infoGender').innerHTML = p.gender || '--';
+    document.getElementById('profileIdShort').innerHTML = p.id ? p.id.split('/').pop() : p.id;
+    document.getElementById('profileBadge').innerHTML = getFullProgramName(p.program);
+    document.getElementById('levelBadge').innerHTML = `Level ${p.level}`;
+    
+    // Academic Information
+    document.getElementById('infoProgram').innerHTML = getFullProgramName(p.program);
+    document.getElementById('infoLevel').innerHTML = `Level ${p.level}`;
+    document.getElementById('infoAcademicYear').innerHTML = p.academicYear || '2025/2026';
+    
+    // Financial Information - Auto calculated
+    const previousBalance = parseFloat(p.previousBalance) || 0;
+    const currentFees = parseFloat(p.currentSemesterFees) || parseFloat(p.totalFee) || 0;
+    const amountPayable = previousBalance + currentFees;
+    const amountPaid = parseFloat(p.amountPaid) || 0;
+    const balance = amountPayable - amountPaid;
+    
+    document.getElementById('infoAmountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
+    document.getElementById('infoAmountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
+    document.getElementById('infoBalance').innerHTML = balance > 0 ? `GH₵${balance.toLocaleString()}` : 'GH₵0.00';
+    const clearanceStatus = (balance <= 0) ? '<span style="color:#27ae60;">✓ Cleared</span>' : '<span style="color:#e74c3c;">✗ Not Cleared</span>';
+    document.getElementById('infoClearance').innerHTML = clearanceStatus;
+    
+    // CGPA - Auto calculated from grades
+    const stats = calculateEnhancedStats();
+    if (stats) {
+        document.getElementById('infoCGPA').innerHTML = stats.cgpa;
+        document.getElementById('infoClassification').innerHTML = stats.standing;
+    }
+}
         
         function loadRecentActivities() {
             const container = document.getElementById('recentActivitiesList');
