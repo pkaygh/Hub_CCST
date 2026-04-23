@@ -2332,50 +2332,101 @@
         
         // Update loadNotifications
         async function loadNotifications() {
-            const container = document.getElementById('notificationList');
-            const studentId = studentData?.profile?.id;
-            const program = studentData?.profile?.program;
-            const level = studentData?.profile?.level;
-            const readStorageKey = studentId ? `readNotifications_${studentId}` : 'readNotifications';
-            const readNotifIds = JSON.parse(localStorage.getItem(readStorageKey) || '[]');
+    const container = document.getElementById('notificationList');
+    const studentId = studentData?.profile?.id;
+    const program = studentData?.profile?.program;
+    const level = studentData?.profile?.level;
+    const readStorageKey = studentId ? `readNotifications_${studentId}` : 'readNotifications';
+    const readNotifIds = JSON.parse(localStorage.getItem(readStorageKey) || '[]');
+    
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_notifications&id=${studentId}&program=${program}&level=${level}`);
+        const data = await response.json();
+        
+        let html = '', unreadCount = 0;
+        
+        // Check if we have notifications from server
+        if (data.notifications && data.notifications.length > 0) {
+            data.notifications.forEach(notif => {
+                const isRead = readNotifIds.includes(notif.id);
+                if (!isRead) unreadCount++;
+                html += `<div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${notif.id})">
+                    <div class="notification-icon"><i class="fas fa-bullhorn"></i></div>
+                    <div>
+                        <h4>${notif.title}</h4>
+                        <p>${notif.content}</p>
+                        <small>${notif.date}</small>
+                    </div>
+                </div>`;
+            });
+        } else {
+            // Use demo notifications if no server data
+            const demoNotifications = [
+                {
+                    id: 1,
+                    title: "📢 Welcome to CCST Portal",
+                    content: "Welcome to the Central College of Science and Technology student portal. Please update your profile information.",
+                    date: new Date().toLocaleDateString(),
+                    type: "general"
+                },
+                {
+                    id: 2,
+                    title: "💰 Fee Payment Deadline",
+                    content: "Please note the deadline for second semester fee payment. Please ensure timely payment to avoid penalties.",
+                    date: new Date().toLocaleDateString(),
+                    type: "finance"
+                },
+                {
+                    id: 3,
+                    title: "📚 Registration Opening",
+                    content: "Course registration for the 2025/2026 academic year opens on April 4, 2026.",
+                    date: new Date().toLocaleDateString(),
+                    type: "academic"
+                },
+                {
+                    id: 4,
+                    title: "🎓 Results Update",
+                    content: "This student portal is yours. Trace your academic progress and act accordinly.",
+                    date: new Date().toLocaleDateString(),
+                    type: "reminder"
+                }
+            ];
             
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=get_notifications&id=${studentId}&program=${program}&level=${level}`);
-                const data = await response.json();
-                
-                let html = '', unreadCount = 0;
-                
-                if (!data.notifications || data.notifications.length === 0) {
-                    container.innerHTML = '<p style="text-align: center; padding: 40px;">No notifications at this time.</p>';
-                } else {
-                    data.notifications.forEach(notif => {
-                        const isRead = readNotifIds.includes(notif.id);
-                        if (!isRead) unreadCount++;
-                        html += `<div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${notif.id})">
-                            <div class="notification-icon"><i class="fas fa-bullhorn"></i></div>
-                            <div>
-                                <h4>${notif.title}</h4>
-                                <p>${notif.content}</p>
-                                <small>${notif.date}</small>
-                            </div>
-                        </div>`;
-                    });
-                    container.innerHTML = html;
-                }
-                
-                const badge = document.getElementById('notifBadge');
-                if (unreadCount > 0) {
-                    badge.style.display = 'block';
-                    badge.innerText = unreadCount;
-                } else {
-                    badge.style.display = 'none';
-                }
-                
-            } catch(error) {
-                console.error('Error loading notifications:', error);
-                container.innerHTML = '<p style="text-align: center; padding: 40px;">Error loading notifications. Please refresh.</p>';
+            demoNotifications.forEach(notif => {
+                const isRead = readNotifIds.includes(notif.id);
+                if (!isRead) unreadCount++;
+                html += `<div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${notif.id})">
+                    <div class="notification-icon"><i class="fas ${notif.type === 'finance' ? 'fa-money-bill-wave' : notif.type === 'academic' ? 'fa-graduation-cap' : 'fa-bullhorn'}"></i></div>
+                    <div>
+                        <h4>${notif.title}</h4>
+                        <p>${notif.content}</p>
+                        <small>${notif.date}</small>
+                    </div>
+                </div>`;
+            });
+        }
+        
+        container.innerHTML = html || '<p style="text-align: center; padding: 40px;">No notifications at this time.</p>';
+        
+        const badge = document.getElementById('notifBadge');
+        const quickNotif = document.getElementById('quickNotifCount');
+        if (badge) {
+            if (unreadCount > 0) {
+                badge.style.display = 'block';
+                badge.innerText = unreadCount;
+            } else {
+                badge.style.display = 'none';
             }
         }
+        if (quickNotif) {
+            quickNotif.innerHTML = unreadCount > 0 ? `${unreadCount} Unread` : 'All Read';
+        }
+        
+    } catch(error) {
+        console.error('Error loading notifications:', error);
+        container.innerHTML = '<p style="text-align: center; padding: 40px;">Error loading notifications. Please refresh.</p>';
+    }
+}
 
         function markRead(id) {
             const studentId = studentData?.profile?.id;
