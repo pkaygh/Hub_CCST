@@ -805,13 +805,18 @@
                     <input id="feeSemester" placeholder="Semester">
                     <button onclick="updateFees()" class="info-btn">UPDATE FEES</button>
                 </div>
-                                <div id="bulkFinanceCSVTab" style="display:none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h4><i class="fas fa-file-csv"></i> Upload Financial Records via CSV</h4>
-                        <button onclick="downloadFinanceTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
-                            <i class="fas fa-download"></i> Download Template
-                        </button>
-                    </div>
+                <div id="bulkFinanceCSVTab" style="display:none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+        <h4><i class="fas fa-file-csv"></i> Upload Financial Records via CSV</h4>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="downloadFinanceTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                <i class="fas fa-download"></i> Full Template
+            </button>
+            <button onclick="downloadSimpleFinanceTemplate()" class="info-btn" style="width: auto; padding: 8px 15px; background: #6b8e23;">
+                <i class="fas fa-download"></i> Simple Template
+            </button>
+        </div>
+    </div>
                     <div class="upload-zone" onclick="document.getElementById('financeFileInput').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
                         <h4>Drop CSV file here or click to browse</h4>
@@ -1813,24 +1818,57 @@ CCST/ML/24/002,Sarah Williams,ML,100,Semester 1 2025/2026,CLSC 101,Clinical Chem
             showToast("Results template downloaded! Follow the format for RM/RN/ML programs.", "success");
         }
 
-        // Download Financial CSV Template
-        function downloadFinanceTemplate() {
-            const template = `id,name,program,level,total_fee,amount_paid,balance,arrears,semester
-CCST/RM/24/001,Justina Arhin,RM,100,4500,2500,2000,0,Semester 1 2026/2027
-CCST/RM/24/002,Jane Smith,RM,100,4500,4500,0,0,Semester 1 2026/2027
-CCST/RN/24/001,Mary Johnson,RN,100,4500,3000,1500,0,Semester 1 2026/2027
-CCST/ML/24/001,Godfred Boadison,ML,100,5500,3500,2000,500,Semester 1 2026/2027
-CCST/ML/24/002,Sarah Williams,ML,100,5500,5500,0,0,Semester 1 2026/2027`;
+        // Download Financial CSV Template 
+function downloadFinanceTemplate() {
+        const template = `ID,Name,Program,Level,PreviousBalance,CurrentFees,AmountPaid,IsCleared,Arrears,Semester
+CCST/RM/24/001,Justina Arhin,RM,100,0,4500,2500,FALSE,0,Semester 1 2026/2027
+CCST/RM/24/002,Jane Smith,RM,100,0,4500,4500,TRUE,0,Semester 1 2026/2027
+CCST/RN/24/001,Mary Johnson,RN,100,500,4500,3000,FALSE,0,Semester 1 2026/2027
+CCST/ML/24/001,Godfred Boadison,ML,100,500,5500,3500,FALSE,500,Semester 1 2026/2027
+CCST/ML/24/002,Comfort Botwe,ML,100,0,5500,5500,TRUE,0,Semester 1 2026/2027
+,,,,
 
-            const blob = new Blob([template], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'CCST_financial_template.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Financial template downloaded! Follow the format.", "success");
-        }
+# INSTRUCTIONS:
+# PreviousBalance = Outstanding balance from previous semesters
+# CurrentFees = Fees for this current semester
+# AmountPaid = Total payments made so far
+# IsCleared = TRUE or FALSE (uppercase only)
+# Arrears = Overdue payments
+# Balance is CALCULATED automatically: (PreviousBalance + CurrentFees) - AmountPaid`;
+
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'CCST_financial_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Financial template downloaded! Use 'ID,Name,Program,Level,PreviousBalance,CurrentFees,AmountPaid,IsCleared,Arrears,Semester' format.", "success");
+}
+
+// Download Simple Financial CSV Template (Minimal)
+function downloadSimpleFinanceTemplate() {
+    const template = `ID,AmountPaid,IsCleared
+CCST/RM/24/001,2500,FALSE
+CCST/RM/24/002,4500,TRUE
+CCST/RN/24/001,3000,FALSE
+CCST/ML/24/001,3500,FALSE
+CCST/ML/24/002,5500,TRUE
+
+# SIMPLE TEMPLATE - Only update Amount Paid and Clearance Status
+# ID: Student ID
+# AmountPaid: Total amount paid so far
+# IsCleared: TRUE or FALSE`;
+
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'CCST_financial_simple_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Simple template downloaded! Use ID, AmountPaid, IsCleared format.", "success");
+}
 
         function updateFees() { showToast("Fees updated!", "success"); }
 
