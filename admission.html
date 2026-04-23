@@ -501,9 +501,9 @@
                     <option value="">Select Program</option>
                     <option value="RM">Dip. Registered Midwifery (RM)</option>
                     <option value="RN">Dip. Registered General Nursing (RN)</option>
-                    <option value="RN">BSc. Registered General Nursing (RN)</option>
-                    <option value="ML">HND Medical Laboratory Technology (ML)</option>
-                    <option value="ML">BSc. Medical Laboratory Technology (ML)</option>
+                    <option value="RN-BSc">BSc. Registered General Nursing (RN)</option>
+                    <option value="ML-HND">HND Medical Laboratory Technology (ML)</option>
+                    <option value="ML-BSc">BSc. Medical Laboratory Technology (ML)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -670,6 +670,9 @@
 <div id="toast" class="toast" style="display: none;"></div>
 
 <script>
+    // Configuration
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxut-aBOybL9nsvGAHarZNGqj0ad_iehs8QHx8DjoR_FDt3b7KvjLPUo1K6cA41vVXy/exec";
+    
     // Multi-file storage
     let uploadedFiles = {
         wasce: [],
@@ -678,11 +681,10 @@
         support: []
     };
     let certificateCounter = 0;
-    let certificates = [];
     let selectedPaymentMethod = 'momo';
     let currentSection = 1;
     const totalSections = 5;
-    let applications = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+    let allApplications = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
 
     function selectPaymentMethod(method) {
         selectedPaymentMethod = method;
@@ -752,7 +754,6 @@
         const entries = document.querySelectorAll('.certificate-entry');
         entries.forEach((entry, idx) => {
             const cert = {
-                id: idx + 1,
                 type: entry.querySelector('.cert-type')?.value || '',
                 institution: entry.querySelector('.cert-institution')?.value || '',
                 indexNumber: entry.querySelector('.cert-index')?.value || '',
@@ -936,11 +937,17 @@
         const otherName = document.getElementById('otherName')?.value || '';
         const fullName = `${surname} ${firstName} ${otherName}`.trim();
         
+        // Prepare certificates as JSON string
+        const certificatesData = collectCertificates();
+        
         const applicationData = {
             action: 'submit_admission',
             applicationId: applicationId,
             trackingCode: trackingCode,
             fullName: fullName,
+            surname: surname,
+            firstName: firstName,
+            otherName: otherName,
             dob: document.getElementById('dob')?.value || '',
             gender: document.getElementById('gender')?.value || '',
             email: applicantEmail,
@@ -949,7 +956,7 @@
             address: document.getElementById('address')?.value || '',
             program: document.getElementById('program')?.value || '',
             entryMode: document.getElementById('entryMode')?.value || '',
-            certificates: JSON.stringify(collectCertificates()),
+            certificates: JSON.stringify(certificatesData),
             transactionId: document.getElementById('transactionId')?.value || '',
             paymentDate: document.getElementById('paymentDate')?.value || '',
             paymentMethod: selectedPaymentMethod,
@@ -957,10 +964,14 @@
             submittedAt: new Date().toISOString()
         };
         
+        // Save to localStorage with consistent structure
         const application = {
             id: applicationId,
             trackingCode: trackingCode,
             fullName: fullName,
+            surname: surname,
+            firstName: firstName,
+            otherName: otherName,
             dob: applicationData.dob,
             gender: applicationData.gender,
             email: applicantEmail,
@@ -969,46 +980,58 @@
             address: applicationData.address,
             program: applicationData.program,
             entryMode: applicationData.entryMode,
-            certificates: collectCertificates(),
+            certificates: certificatesData,
             transactionId: applicationData.transactionId,
             paymentDate: applicationData.paymentDate,
             paymentMethod: selectedPaymentMethod,
-            files: {
-                wasce: uploadedFiles.wasce.map(f => f.name),
-                birth: uploadedFiles.birth?.name,
-                ghanaCard: uploadedFiles.ghanaCard?.name,
-                support: uploadedFiles.support.map(f => f.name)
-            },
             status: 'pending_review',
             submittedAt: new Date().toISOString()
         };
         
-        let applications = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
-        applications.push(application);
-        localStorage.setItem('admissionApplications', JSON.stringify(applications));
+        // Save to localStorage
+        let existingApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+        existingApps.push(application);
+        localStorage.setItem('admissionApplications', JSON.stringify(existingApps));
+        allApplications = existingApps;
         
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxut-aBOybL9nsvGAHarZNGqj0ad_iehs8QHx8DjoR_FDt3b7KvjLPUo1K6cA41vVXy/exec";
+        // Also save to a separate tracking storage for easy lookup
+        let trackingData = JSON.parse(localStorage.getItem('admissionTracking') || '[]');
+        trackingData.push({
+            id: applicationId,
+            trackingCode: trackingCode,
+            phone: applicantPhone,
+            email: applicantEmail,
+            fullName: fullName,
+            status: 'pending_review'
+        });
+        localStorage.setItem('admissionTracking', JSON.stringify(trackingData));
         
+        // Send to Google Sheets
         try {
             const response = await fetch(SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(applicationData)
             });
+            
             const result = await response.json();
             if (result.success) {
                 showToast(`✅ Application submitted to Google Sheets! ID: ${applicationId}`, "success");
+                console.log("Google Sheets save successful:", result);
             } else {
                 showToast(`⚠️ Application saved locally only. ID: ${applicationId}`, "warning");
+                console.log("Google Sheets save failed:", result);
             }
         } catch (error) {
             console.error('Error saving to Google Sheets:', error);
             showToast(`⚠️ Application saved locally only. ID: ${applicationId}`, "warning");
         }
         
-        sendTrackingNotification(applicantPhone, applicantEmail, applicationId, trackingCode);
+        // Send tracking notification
+        sendTrackingNotification(applicantPhone, applicantEmail, applicationId, trackingCode, fullName);
         showToast(`✅ Application submitted! Your Tracking Code: ${trackingCode}`, "success");
         
+        // Reset form after 3 seconds
         setTimeout(() => {
             resetForm();
             currentSection = 1;
@@ -1021,26 +1044,27 @@
         }, 3000);
     }
 
-    function sendTrackingNotification(phone, email, applicationId, trackingCode) {
-        console.log(`SMS sent to ${phone}: CCST Admission - Your application ${applicationId} has been received. Tracking Code: ${trackingCode}. Use this to track your application status.`);
-        console.log(`Email sent to ${email}: Application Confirmation - ID: ${applicationId}, Tracking Code: ${trackingCode}`);
+    function sendTrackingNotification(phone, email, applicationId, trackingCode, fullName) {
+        console.log(`SMS/Email sent to ${phone}/${email}: Application ${applicationId} received. Tracking: ${trackingCode}`);
         
+        // Store notification
         const notifications = JSON.parse(localStorage.getItem('admissionNotifications') || '[]');
         notifications.push({
             id: applicationId,
             trackingCode: trackingCode,
             phone: phone,
             email: email,
+            name: fullName,
             message: `Your application ${applicationId} has been received. Tracking Code: ${trackingCode}`,
             date: new Date().toISOString()
         });
         localStorage.setItem('admissionNotifications', JSON.stringify(notifications));
-        showToast(`📱 Tracking code sent to ${phone} and ${email}`, "success");
     }
 
     function openTrackingModal() {
         document.getElementById('trackingModal').classList.add('show');
         document.getElementById('trackingResult').innerHTML = '';
+        document.getElementById('trackId').value = '';
     }
 
     function closeTrackingModal() {
@@ -1054,20 +1078,38 @@
             return;
         }
         
-        const application = applications.find(app => app.id === trackValue || app.trackingCode === trackValue || app.phone === trackValue);
+        // First try to find in tracking storage
+        let trackingData = JSON.parse(localStorage.getItem('admissionTracking') || '[]');
+        let application = trackingData.find(app => 
+            app.id === trackValue || 
+            app.trackingCode === trackValue || 
+            app.phone === trackValue
+        );
+        
+        // If not found, try main applications storage
+        if (!application) {
+            const allApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+            application = allApps.find(app => 
+                app.id === trackValue || 
+                app.trackingCode === trackValue || 
+                app.phone === trackValue
+            );
+        }
+        
         const resultDiv = document.getElementById('trackingResult');
         
         if (!application) {
-            resultDiv.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 20px;">No application found with that ID, Tracking Code, or phone number.</p>`;
+            resultDiv.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 20px;">❌ No application found with that ID, Tracking Code, or phone number.</p>
+            <p style="text-align: center; font-size: 0.85rem;">Please check your information and try again.</p>`;
             return;
         }
         
         const statusMessages = {
-            'pending_review': 'Your application is pending review by the admissions committee.',
-            'documents_verified': 'Your documents have been verified. Awaiting further processing.',
-            'interview_scheduled': 'You have been scheduled for an interview. Check your email for details.',
-            'admitted': 'Congratulations! You have been admitted to CCST.',
-            'rejected': 'We regret to inform you that your application was not successful.'
+            'pending_review': '⏳ Your application is pending review by the admissions committee.',
+            'documents_verified': '📄 Your documents have been verified. Awaiting further processing.',
+            'interview_scheduled': '📅 You have been scheduled for an interview. Check your email for details.',
+            'admitted': '🎉 Congratulations! You have been admitted to CCST.',
+            'rejected': '📢 We regret to inform you that your application was not successful.'
         };
         
         let timelineHtml = '<div class="status-timeline">';
@@ -1078,16 +1120,18 @@
             { key: 'admitted', label: 'Admission Decision', icon: 'fa-graduation-cap' }
         ];
         
+        const appStatus = application.status || 'pending_review';
+        
         statusSteps.forEach(step => {
             let isCompleted = false;
             let isCurrent = false;
             
-            if (application.status === 'pending_review' && step.key === 'submitted') isCompleted = true;
-            else if (application.status === 'documents_verified' && (step.key === 'submitted' || step.key === 'documents_verified')) isCompleted = true;
-            else if (application.status === 'interview_scheduled' && (step.key === 'submitted' || step.key === 'documents_verified' || step.key === 'interview_scheduled')) isCompleted = true;
-            else if (application.status === 'admitted') isCompleted = true;
+            if (appStatus === 'pending_review' && step.key === 'submitted') isCompleted = true;
+            else if (appStatus === 'documents_verified' && (step.key === 'submitted' || step.key === 'documents_verified')) isCompleted = true;
+            else if (appStatus === 'interview_scheduled' && (step.key === 'submitted' || step.key === 'documents_verified' || step.key === 'interview_scheduled')) isCompleted = true;
+            else if (appStatus === 'admitted') isCompleted = true;
             
-            if (application.status === step.key) isCurrent = true;
+            if (appStatus === step.key) isCurrent = true;
             
             timelineHtml += `
                 <div class="status-item">
@@ -1096,19 +1140,23 @@
                     </div>
                     <div>
                         <strong>${step.label}</strong>
-                        ${isCompleted ? '<div><small style="color: green;">Completed</small></div>' : ''}
-                        ${isCurrent ? '<div><small style="color: var(--warning);">In Progress</small></div>' : ''}
+                        ${isCompleted ? '<div><small style="color: green;">✓ Completed</small></div>' : ''}
+                        ${isCurrent ? '<div><small style="color: var(--warning);">⏳ In Progress</small></div>' : ''}
                     </div>
                 </div>
             `;
         });
         
         timelineHtml += '</div>';
-        timelineHtml += `<p style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 8px;">
-            <strong>Application ID:</strong> ${application.id}<br>
-            <strong>Tracking Code:</strong> ${application.trackingCode}<br>
-            <strong>Status:</strong> ${statusMessages[application.status] || 'Application is being processed'}
-        </p>`;
+        timelineHtml += `<div style="margin-top: 15px; padding: 15px; background: #f0f0f0; border-radius: 8px;">
+            <p><strong>📋 Application Details:</strong></p>
+            <p><strong>Application ID:</strong> ${application.id}</p>
+            <p><strong>Tracking Code:</strong> ${application.trackingCode}</p>
+            <p><strong>Full Name:</strong> ${application.fullName || application.name || 'N/A'}</p>
+            <p><strong>Program:</strong> ${application.program || 'N/A'}</p>
+            <p><strong>Status:</strong> ${statusMessages[appStatus] || 'Application is being processed'}</p>
+            <p><strong>Submitted:</strong> ${new Date(application.submittedAt).toLocaleString() || 'N/A'}</p>
+        </div>`;
         
         resultDiv.innerHTML = timelineHtml;
     }
