@@ -333,7 +333,7 @@
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: other0 5px 15px rgba(107, 142, 35, 0.3);
+            box-shadow: 0 5px 15px rgba(107, 142, 35, 0.3);
         }
 
         .btn-secondary {
@@ -492,7 +492,7 @@
     <div class="btn-group"><button type="button" class="btn btn-primary" onclick="nextSection(1)">Next <i class="fas fa-arrow-right"></i></button></div>
 </div>
 
-        <!-- Section 2: Academic Information with Multiple Certificates -->
+        <!-- Section 2: Academic Information -->
         <div class="form-section" id="section2">
             <h2><i class="fas fa-book"></i> Academic Information</h2>
             <div class="form-group">
@@ -529,7 +529,7 @@
             </div>
         </div>
 
-        <!-- Section 3: Document Upload with Multiple Uploads -->
+        <!-- Section 3: Document Upload -->
         <div class="form-section" id="section3">
             <h2><i class="fas fa-file-alt"></i> Upload Documents</h2>
             <div class="form-grid">
@@ -577,7 +577,7 @@
             </div>
         </div>
 
-        <!-- Section 4: Payment with Multiple Options -->
+        <!-- Section 4: Payment -->
         <div class="form-section" id="section4">
             <h2><i class="fas fa-credit-card"></i> Application Fee Payment</h2>
             <div class="payment-info">
@@ -670,174 +670,46 @@
 <div id="toast" class="toast" style="display: none;"></div>
 
 <script>
-    // Configuration
+    // ================= CONFIGURATION =================
+    // REPLACE THIS WITH YOUR DEPLOYED WEB APP URL
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuh24k1nqNJ-6YcxTAq_VxFY5FJpVZId3yjsU5_buqXgpy8L8k5GABN2NHRPWDz42k/exec";
 
-    // ADD THE TEST FUNCTION RIGHT HERE (after SCRIPT_URL)
+    // ================= TEST CONNECTION (no-cors friendly) =================
     async function testGoogleSheetsConnection() {
         try {
-            // Test with a simple action
-            const response = await fetch(SCRIPT_URL, {
+            console.log("Testing connection to:", SCRIPT_URL);
+            // Use no-cors to avoid CORS errors; we cannot read response but request is sent
+            await fetch(SCRIPT_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'get_admissions' })
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'action=get_admissions'
             });
-            
-            console.log("Response status:", response.status);
-            console.log("Response ok:", response.ok);
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Connection successful:", data);
-                showToast("Connected to Google Sheets!", "success");
-            } else {
-                console.log("Connection failed:", response.status);
-                showToast("Connection failed. Check console for details.", "danger");
-            }
+            console.log("Request sent (no-cors). Check Google Apps Script logs or sheet.");
+            showToast("Connection test sent. Check console for details.", "info");
         } catch (error) {
             console.error("Connection error:", error);
             showToast("Connection error: " + error.message, "danger");
         }
     }
-    
-    // Multi-file storage
-    let uploadedFiles = {
-        wasce: [],
-        birth: null,
-        ghanaCard: null,
-        support: []
-    };
+
+    // ================= GLOBAL VARIABLES =================
+    let uploadedFiles = { wasce: [], birth: null, ghanaCard: null, support: [] };
     let certificateCounter = 0;
     let selectedPaymentMethod = 'momo';
     let currentSection = 1;
     const totalSections = 5;
     let allApplications = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
 
+    // ================= UI HELPERS =================
     function selectPaymentMethod(method) {
         selectedPaymentMethod = method;
         document.getElementById('selectedPaymentMethod').value = method;
-        
         document.getElementById('momoMethod').classList.remove('selected');
         document.getElementById('bankMethod').classList.remove('selected');
         document.getElementById(`${method}Method`).classList.add('selected');
-        
         document.getElementById('momoDetails').style.display = method === 'momo' ? 'block' : 'none';
         document.getElementById('bankDetails').style.display = method === 'bank' ? 'block' : 'none';
-    }
-
-    function addCertificateEntry(certData = null) {
-        certificateCounter++;
-        const certId = `cert_${certificateCounter}`;
-        const container = document.getElementById('certificatesContainer');
-        const div = document.createElement('div');
-        div.className = 'certificate-entry';
-        div.id = certId;
-        div.innerHTML = `
-            <div class="certificate-header">
-                <span class="certificate-title"><i class="fas fa-certificate"></i> Certificate ${certificateCounter}</span>
-                <button type="button" class="remove-cert-btn" onclick="removeCertificateEntry('${certId}')"><i class="fas fa-trash"></i> Remove</button>
-            </div>
-            <div class="form-grid">
-                <div class="form-group"><label>Certificate Type <span class="required">*</span></label>
-                    <select class="cert-type" data-id="${certId}" required>
-                        <option value="">Select Type</option>
-                        <option value="WASSCE">WASSCE</option>
-                        <option value="SSSCE">SSSCE</option>
-                        <option value="GCE A-Level">GCE A-Level</option>
-                        <option value="Diploma">Diploma</option>
-                        <option value="Bachelor's Degree">Bachelor's Degree</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="form-group"><label>Institution/School</label><input type="text" class="cert-institution" data-id="${certId}" placeholder="Name of school/institution"></div>
-                <div class="form-group"><label>Index Number</label><input type="text" class="cert-index" data-id="${certId}" placeholder="e.g., 1234567890"></div>
-                <div class="form-group"><label>Year of Completion</label><input type="number" class="cert-year" data-id="${certId}" placeholder="e.g., 2023"></div>
-                <div class="form-group"><label>Overall Aggregate/GPA</label><input type="text" class="cert-aggregate" data-id="${certId}" placeholder="e.g., Aggregate 24 or GPA 3.5"></div>
-            </div>
-        `;
-        container.appendChild(div);
-        
-        if (certData) {
-            const select = div.querySelector('.cert-type');
-            const institution = div.querySelector('.cert-institution');
-            const index = div.querySelector('.cert-index');
-            const year = div.querySelector('.cert-year');
-            const aggregate = div.querySelector('.cert-aggregate');
-            if (select) select.value = certData.type || '';
-            if (institution) institution.value = certData.institution || '';
-            if (index) index.value = certData.indexNumber || '';
-            if (year) year.value = certData.year || '';
-            if (aggregate) aggregate.value = certData.aggregate || '';
-        }
-    }
-
-    function removeCertificateEntry(certId) {
-        const element = document.getElementById(certId);
-        if (element) element.remove();
-    }
-
-    function collectCertificates() {
-        const certs = [];
-        const entries = document.querySelectorAll('.certificate-entry');
-        entries.forEach((entry, idx) => {
-            const cert = {
-                type: entry.querySelector('.cert-type')?.value || '',
-                institution: entry.querySelector('.cert-institution')?.value || '',
-                indexNumber: entry.querySelector('.cert-index')?.value || '',
-                year: entry.querySelector('.cert-year')?.value || '',
-                aggregate: entry.querySelector('.cert-aggregate')?.value || ''
-            };
-            if (cert.type) certs.push(cert);
-        });
-        return certs;
-    }
-
-    function handleMultiFileUpload(inputId, listId) {
-        const files = document.getElementById(inputId).files;
-        if (!files.length) return;
-        
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            if (file.size > 5 * 1024 * 1024) {
-                showToast(`File ${file.name} is too large! Max 5MB`, "danger");
-                continue;
-            }
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const fileData = { name: file.name, data: e.target.result, type: file.type };
-                if (inputId === 'wasceFiles') uploadedFiles.wasce.push(fileData);
-                else if (inputId === 'supportFiles') uploadedFiles.support.push(fileData);
-            };
-            reader.readAsDataURL(file);
-            displayMultiFileList(listId, file.name);
-        }
-    }
-
-    function displayMultiFileList(listId, fileName) {
-        const container = document.getElementById(listId);
-        const div = document.createElement('div');
-        div.className = 'file-item';
-        div.innerHTML = `<span class="file-name"><i class="fas fa-file"></i> ${fileName}</span><span class="file-remove" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></span>`;
-        container.appendChild(div);
-    }
-
-    function handleFileUpload(inputId, listId) {
-        const file = document.getElementById(inputId).files[0];
-        if (!file) return;
-        if (file.size > 5 * 1024 * 1024) { showToast("File too large! Max 5MB", "danger"); return; }
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const fileData = { name: file.name, data: e.target.result, type: file.type };
-            if (inputId === 'birthFile') uploadedFiles.birth = fileData;
-            else if (inputId === 'ghanaCardFile') uploadedFiles.ghanaCard = fileData;
-        };
-        reader.readAsDataURL(file);
-        displayFileList(listId, file.name);
-    }
-
-    function displayFileList(listId, fileName) {
-        const container = document.getElementById(listId);
-        container.innerHTML = `<div class="file-item"><span class="file-name"><i class="fas fa-file"></i> ${fileName}</span><span class="file-remove" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></span></div>`;
     }
 
     function showToast(msg, type = "info") {
@@ -860,7 +732,6 @@
     }
 
     function nextSection(current) {
-        console.log("Next section called, current:", current);
         if (!validateSection(current)) return;
         document.getElementById(`section${current}`).classList.remove('active');
         currentSection = current + 1;
@@ -886,7 +757,6 @@
             const phone = document.getElementById('phone')?.value;
             const dob = document.getElementById('dob')?.value;
             const gender = document.getElementById('gender')?.value;
-            
             if (!surname) { showToast("Please enter your surname", "danger"); return false; }
             if (!firstName) { showToast("Please enter your first name", "danger"); return false; }
             if (!email) { showToast("Please enter your email address", "danger"); return false; }
@@ -940,6 +810,122 @@
         document.getElementById('reviewSummary').innerHTML = html;
     }
 
+    // ================= CERTIFICATES =================
+    function addCertificateEntry(certData = null) {
+        certificateCounter++;
+        const certId = `cert_${certificateCounter}`;
+        const container = document.getElementById('certificatesContainer');
+        const div = document.createElement('div');
+        div.className = 'certificate-entry';
+        div.id = certId;
+        div.innerHTML = `
+            <div class="certificate-header">
+                <span class="certificate-title"><i class="fas fa-certificate"></i> Certificate ${certificateCounter}</span>
+                <button type="button" class="remove-cert-btn" onclick="removeCertificateEntry('${certId}')"><i class="fas fa-trash"></i> Remove</button>
+            </div>
+            <div class="form-grid">
+                <div class="form-group"><label>Certificate Type <span class="required">*</span></label>
+                    <select class="cert-type" data-id="${certId}" required>
+                        <option value="">Select Type</option>
+                        <option value="WASSCE">WASSCE</option>
+                        <option value="SSSCE">SSSCE</option>
+                        <option value="GCE A-Level">GCE A-Level</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="Bachelor's Degree">Bachelor's Degree</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Institution/School</label><input type="text" class="cert-institution" data-id="${certId}" placeholder="Name of school/institution"></div>
+                <div class="form-group"><label>Index Number</label><input type="text" class="cert-index" data-id="${certId}" placeholder="e.g., 1234567890"></div>
+                <div class="form-group"><label>Year of Completion</label><input type="number" class="cert-year" data-id="${certId}" placeholder="e.g., 2023"></div>
+                <div class="form-group"><label>Overall Aggregate/GPA</label><input type="text" class="cert-aggregate" data-id="${certId}" placeholder="e.g., Aggregate 24 or GPA 3.5"></div>
+            </div>
+        `;
+        container.appendChild(div);
+        if (certData) {
+            const select = div.querySelector('.cert-type');
+            const institution = div.querySelector('.cert-institution');
+            const index = div.querySelector('.cert-index');
+            const year = div.querySelector('.cert-year');
+            const aggregate = div.querySelector('.cert-aggregate');
+            if (select) select.value = certData.type || '';
+            if (institution) institution.value = certData.institution || '';
+            if (index) index.value = certData.indexNumber || '';
+            if (year) year.value = certData.year || '';
+            if (aggregate) aggregate.value = certData.aggregate || '';
+        }
+    }
+
+    function removeCertificateEntry(certId) {
+        const element = document.getElementById(certId);
+        if (element) element.remove();
+    }
+
+    function collectCertificates() {
+        const certs = [];
+        const entries = document.querySelectorAll('.certificate-entry');
+        entries.forEach(entry => {
+            const cert = {
+                type: entry.querySelector('.cert-type')?.value || '',
+                institution: entry.querySelector('.cert-institution')?.value || '',
+                indexNumber: entry.querySelector('.cert-index')?.value || '',
+                year: entry.querySelector('.cert-year')?.value || '',
+                aggregate: entry.querySelector('.cert-aggregate')?.value || ''
+            };
+            if (cert.type) certs.push(cert);
+        });
+        return certs;
+    }
+
+    // ================= FILE UPLOADS =================
+    function handleMultiFileUpload(inputId, listId) {
+        const files = document.getElementById(inputId).files;
+        if (!files.length) return;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file.size > 5 * 1024 * 1024) {
+                showToast(`File ${file.name} is too large! Max 5MB`, "danger");
+                continue;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fileData = { name: file.name, data: e.target.result, type: file.type };
+                if (inputId === 'wasceFiles') uploadedFiles.wasce.push(fileData);
+                else if (inputId === 'supportFiles') uploadedFiles.support.push(fileData);
+            };
+            reader.readAsDataURL(file);
+            displayMultiFileList(listId, file.name);
+        }
+    }
+
+    function displayMultiFileList(listId, fileName) {
+        const container = document.getElementById(listId);
+        const div = document.createElement('div');
+        div.className = 'file-item';
+        div.innerHTML = `<span class="file-name"><i class="fas fa-file"></i> ${fileName}</span><span class="file-remove" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></span>`;
+        container.appendChild(div);
+    }
+
+    function handleFileUpload(inputId, listId) {
+        const file = document.getElementById(inputId).files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) { showToast("File too large! Max 5MB", "danger"); return; }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const fileData = { name: file.name, data: e.target.result, type: file.type };
+            if (inputId === 'birthFile') uploadedFiles.birth = fileData;
+            else if (inputId === 'ghanaCardFile') uploadedFiles.ghanaCard = fileData;
+        };
+        reader.readAsDataURL(file);
+        displayFileList(listId, file.name);
+    }
+
+    function displayFileList(listId, fileName) {
+        const container = document.getElementById(listId);
+        container.innerHTML = `<div class="file-item"><span class="file-name"><i class="fas fa-file"></i> ${fileName}</span><span class="file-remove" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></span></div>`;
+    }
+
+    // ================= TRACKING HELPERS =================
     function generateTrackingCode() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let code = '';
@@ -949,138 +935,174 @@
         return code;
     }
 
-    async function submitApplication() {
-    if (!document.getElementById('confirmCheckbox').checked) { 
-        showToast("Please confirm your information", "danger"); 
-        return; 
-    }
-    
-    // Show loading state on submit button
-    const submitBtn = document.querySelector('#section5 .btn-success');
-    const originalBtnText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-    
-    const applicationId = `APP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
-    const trackingCode = generateTrackingCode();
-    const applicantPhone = document.getElementById('phone').value;
-    const applicantEmail = document.getElementById('email').value;
-    const surname = document.getElementById('surname')?.value || '';
-    const firstName = document.getElementById('firstName')?.value || '';
-    const otherName = document.getElementById('otherName')?.value || '';
-    const fullName = `${surname} ${firstName} ${otherName}`.trim();
-    
-    // Prepare certificates as JSON string
-    const certificatesData = collectCertificates();
-    
-    const applicationData = {
-        action: 'submit_admission',
-        applicationId: applicationId,
-        trackingCode: trackingCode,
-        fullName: fullName,
-        surname: surname,
-        firstName: firstName,
-        otherName: otherName,
-        dob: document.getElementById('dob')?.value || '',
-        gender: document.getElementById('gender')?.value || '',
-        email: applicantEmail,
-        phone: applicantPhone,
-        altPhone: document.getElementById('altPhone')?.value || '',
-        address: document.getElementById('address')?.value || '',
-        program: document.getElementById('program')?.value || '',
-        entryMode: document.getElementById('entryMode')?.value || '',
-        certificates: JSON.stringify(certificatesData),
-        transactionId: document.getElementById('transactionId')?.value || '',
-        paymentDate: document.getElementById('paymentDate')?.value || '',
-        paymentMethod: selectedPaymentMethod,
-        status: 'pending_review',
-        submittedAt: new Date().toISOString()
-    };
-    
-    // Save to localStorage as backup
-    const application = {
-        id: applicationId,
-        trackingCode: trackingCode,
-        fullName: fullName,
-        surname: surname,
-        firstName: firstName,
-        otherName: otherName,
-        dob: applicationData.dob,
-        gender: applicationData.gender,
-        email: applicantEmail,
-        phone: applicantPhone,
-        altPhone: applicationData.altPhone,
-        address: applicationData.address,
-        program: applicationData.program,
-        entryMode: applicationData.entryMode,
-        certificates: certificatesData,
-        transactionId: applicationData.transactionId,
-        paymentDate: applicationData.paymentDate,
-        paymentMethod: selectedPaymentMethod,
-        status: 'pending_review',
-        submittedAt: new Date().toISOString()
-    };
-    
-    // Save to localStorage
-    let existingApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
-    existingApps.push(application);
-    localStorage.setItem('admissionApplications', JSON.stringify(existingApps));
-    allApplications = existingApps;
-    
-    // Also save to tracking storage
-    let trackingData = JSON.parse(localStorage.getItem('admissionTracking') || '[]');
-    trackingData.push({
-        id: applicationId,
-        trackingCode: trackingCode,
-        phone: applicantPhone,
-        email: applicantEmail,
-        fullName: fullName,
-        status: 'pending_review'
-    });
-    localStorage.setItem('admissionTracking', JSON.stringify(trackingData));
-    
-    let googleSheetsSuccess = false;
-    
-    // Send to Google Sheets
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(applicationData)
+    function copyTrackingCode(code) {
+        navigator.clipboard.writeText(code).then(() => {
+            showToast("Tracking code copied to clipboard!", "success");
+        }).catch(() => {
+            showToast("Could not copy. Please manually save the code.", "danger");
         });
-        
-        const result = await response.json();
-        if (result.success) {
-            googleSheetsSuccess = true;
-            console.log("Google Sheets save successful:", result);
-        } else {
-            console.log("Google Sheets save failed:", result);
-        }
-    } catch (error) {
-        console.error('Error saving to Google Sheets:', error);
     }
-    
-    // Send tracking notification
-    sendTrackingNotification(applicantPhone, applicantEmail, applicationId, trackingCode, fullName);
-    
-    // Reset the form button
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalBtnText;
-    
-    // DISPLAY TRACKING DETAILS AS LAST PAGE (Section 6)
-    displayTrackingConfirmation(applicationId, trackingCode, fullName, applicantPhone, applicantEmail, applicationData.program, googleSheetsSuccess);
-}
 
-// NEW FUNCTION: Display tracking confirmation as the last page
-function displayTrackingConfirmation(applicationId, trackingCode, fullName, phone, email, program, googleSheetsSuccess) {
-    // Create a new section for tracking confirmation if it doesn't exist
-    let trackingSection = document.getElementById('trackingConfirmationSection');
-    
-    if (!trackingSection) {
-        // Create the tracking confirmation section
-        trackingSection = document.createElement('div');
-        trackingSection.id = 'trackingConfirmationSection';
-        trackingSection.className = 'form-section';
+    function openTrackingModalWithCode(code) {
+        openTrackingModal();
+        document.getElementById('trackId').value = code;
+        trackApplication();
+    }
+
+    function openTrackingModal() {
+        document.getElementById('trackingModal').classList.add('show');
+        document.getElementById('trackingResult').innerHTML = '';
+        document.getElementById('trackId').value = '';
+    }
+
+    function closeTrackingModal() {
+        document.getElementById('trackingModal').classList.remove('show');
+    }
+
+    function displayTrackingResult(app) {
+        const resultDiv = document.getElementById('trackingResult');
+        resultDiv.innerHTML = `
+            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px;">
+                <p><strong>Application ID:</strong> ${app.id || app.applicationId}</p>
+                <p><strong>Tracking Code:</strong> <span style="font-size:1.2rem; font-weight:bold;">${app.trackingCode}</span></p>
+                <p><strong>Full Name:</strong> ${app.fullName || app.name}</p>
+                <p><strong>Program:</strong> ${app.program}</p>
+                <p><strong>Status:</strong> <span style="color: ${app.status === 'approved' ? '#27ae60' : app.status === 'rejected' ? '#e74c3c' : '#f39c12'}">${app.status || 'pending_review'}</span></p>
+                <p><strong>Submitted:</strong> ${new Date(app.submittedAt).toLocaleString()}</p>
+            </div>
+        `;
+    }
+
+    // ================= SUBMIT APPLICATION (NO-CORS + GET FALLBACK) =================
+    async function submitApplication() {
+        if (!document.getElementById('confirmCheckbox').checked) {
+            showToast("Please confirm your information", "danger");
+            return;
+        }
+
+        const submitBtn = document.querySelector('#section5 .btn-success');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+        const applicationId = `APP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+        const trackingCode = generateTrackingCode();
+        const applicantPhone = document.getElementById('phone').value;
+        const applicantEmail = document.getElementById('email').value;
+        const surname = document.getElementById('surname')?.value || '';
+        const firstName = document.getElementById('firstName')?.value || '';
+        const otherName = document.getElementById('otherName')?.value || '';
+        const fullName = `${surname} ${firstName} ${otherName}`.trim();
+        const certificatesData = collectCertificates();
+
+        const application = {
+            id: applicationId,
+            trackingCode: trackingCode,
+            fullName: fullName,
+            surname: surname,
+            firstName: firstName,
+            otherName: otherName,
+            dob: document.getElementById('dob')?.value || '',
+            gender: document.getElementById('gender')?.value || '',
+            email: applicantEmail,
+            phone: applicantPhone,
+            altPhone: document.getElementById('altPhone')?.value || '',
+            address: document.getElementById('address')?.value || '',
+            program: document.getElementById('program')?.value || '',
+            entryMode: document.getElementById('entryMode')?.value || '',
+            certificates: certificatesData,
+            transactionId: document.getElementById('transactionId')?.value || '',
+            paymentDate: document.getElementById('paymentDate')?.value || '',
+            paymentMethod: selectedPaymentMethod,
+            status: 'pending_review',
+            submittedAt: new Date().toISOString()
+        };
+
+        // Save to localStorage (always works)
+        let existingApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+        existingApps.push(application);
+        localStorage.setItem('admissionApplications', JSON.stringify(existingApps));
+        
+        let trackingData = JSON.parse(localStorage.getItem('admissionTracking') || '[]');
+        trackingData.push({
+            id: applicationId,
+            trackingCode: trackingCode,
+            phone: applicantPhone,
+            email: applicantEmail,
+            fullName: fullName,
+            status: 'pending_review'
+        });
+        localStorage.setItem('admissionTracking', JSON.stringify(trackingData));
+
+        let googleSheetsSuccess = false;
+
+        // ---- Method 1: POST with x-www-form-urlencoded (no-cors) ----
+        try {
+            const formData = new URLSearchParams();
+            formData.append('action', 'submit_admission');
+            formData.append('applicationId', applicationId);
+            formData.append('trackingCode', trackingCode);
+            formData.append('fullName', fullName);
+            formData.append('surname', surname);
+            formData.append('firstName', firstName);
+            formData.append('otherName', otherName);
+            formData.append('dob', application.dob);
+            formData.append('gender', application.gender);
+            formData.append('email', applicantEmail);
+            formData.append('phone', applicantPhone);
+            formData.append('altPhone', application.altPhone);
+            formData.append('address', application.address);
+            formData.append('program', application.program);
+            formData.append('entryMode', application.entryMode);
+            formData.append('certificates', JSON.stringify(certificatesData));
+            formData.append('transactionId', application.transactionId);
+            formData.append('paymentDate', application.paymentDate);
+            formData.append('paymentMethod', selectedPaymentMethod);
+            formData.append('status', 'pending_review');
+            formData.append('submittedAt', application.submittedAt);
+
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            });
+            googleSheetsSuccess = true;
+            console.log("POST (no-cors) request sent to Google Sheets");
+        } catch (error) {
+            console.error("POST no-cors failed:", error);
+        }
+
+        // ---- Method 2: GET fallback ----
+        if (!googleSheetsSuccess) {
+            try {
+                const getUrl = `${SCRIPT_URL}?action=submit_admission&applicationId=${encodeURIComponent(applicationId)}&trackingCode=${encodeURIComponent(trackingCode)}&fullName=${encodeURIComponent(fullName)}&email=${encodeURIComponent(applicantEmail)}&phone=${encodeURIComponent(applicantPhone)}&program=${encodeURIComponent(application.program)}&transactionId=${encodeURIComponent(application.transactionId)}&submittedAt=${encodeURIComponent(application.submittedAt)}`;
+                await fetch(getUrl, { mode: 'no-cors' });
+                googleSheetsSuccess = true;
+                console.log("GET fallback sent");
+            } catch (error) {
+                console.error("GET fallback also failed:", error);
+            }
+        }
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+        
+        showToast(`Application submitted! Tracking Code: ${trackingCode}`, "success");
+        displayTrackingConfirmation(applicationId, trackingCode, fullName, applicantPhone, applicantEmail, application.program, googleSheetsSuccess);
+    }
+
+    // ================= DISPLAY TRACKING CONFIRMATION =================
+    function displayTrackingConfirmation(applicationId, trackingCode, fullName, phone, email, program, googleSheetsSuccess) {
+        let trackingSection = document.getElementById('trackingConfirmationSection');
+        
+        if (!trackingSection) {
+            trackingSection = document.createElement('div');
+            trackingSection.id = 'trackingConfirmationSection';
+            trackingSection.className = 'form-section';
+            document.querySelector('.container').appendChild(trackingSection);
+        }
+        
         trackingSection.innerHTML = `
             <h2 style="color: #1a472a;"><i class="fas fa-check-circle" style="color: #27ae60;"></i> Application Submitted Successfully!</h2>
             <div style="text-align: center; padding: 20px 0;">
@@ -1096,269 +1118,134 @@ function displayTrackingConfirmation(applicationId, trackingCode, fullName, phon
                         <span style="font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #6b8e23;">${trackingCode}</span>
                     </div>
                     <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Full Name:</strong> 
-                        <span style="color: #2c3e50;">${fullName}</span>
+                        <strong style="color: #1a472a;">Full Name:</strong> <span style="color: #2c3e50;">${fullName}</span>
                     </div>
                     <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Program:</strong> 
-                        <span style="color: #2c3e50;">${program}</span>
+                        <strong style="color: #1a472a;">Program:</strong> <span style="color: #2c3e50;">${program}</span>
                     </div>
                     <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Status:</strong> 
-                        <span style="color: #f39c12;">⏳ Pending Review</span>
+                        <strong style="color: #1a472a;">Status:</strong> <span style="color: #f39c12;">⏳ Pending Review</span>
                     </div>
                     <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;">
-                        <strong style="color: #1a472a;">Submitted:</strong> 
-                        <span style="color: #2c3e50;">${new Date().toLocaleString()}</span>
+                        <strong style="color: #1a472a;">Submitted:</strong> <span style="color: #2c3e50;">${new Date().toLocaleString()}</span>
                     </div>
                 </div>
                 <div style="margin-top: 20px; padding: 15px; background: #f4f4f4; border-radius: 10px; border-left: 4px solid #27ae60; color: #333;">
-    <i class="fas fa-info-circle" style="color: #27ae60; font-size: 1.2rem;"></i>
-    <p style="margin-top: 10px; color: #000; font-weight: bold; margin-bottom: 5px;"><strong>Important:</strong> Save your Tracking Code! You'll need it to check your application status.</p>
-    <p style="font-size: 0.9rem; color: #555; margin-top: 0;">A confirmation has been sent to ${phone} and ${email}</p> 
-</div>
+                    <i class="fas fa-info-circle" style="color: #27ae60; font-size: 1.2rem;"></i>
+                    <p style="margin-top: 10px; color: #000; font-weight: bold; margin-bottom: 5px;"><strong>Important:</strong> Save your Tracking Code! You'll need it to check your application status.</p>
+                    <p style="font-size: 0.9rem; color: #555; margin-top: 0;">A confirmation has been saved locally.</p>
+                </div>
+                <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="copyTrackingCode('${trackingCode}')" class="btn btn-primary" style="width: auto; background: linear-gradient(135deg, #1a472a, #6b8e23); color: white;">
+                        <i class="fas fa-copy"></i> Copy Tracking Code
+                    </button>
+                    <button onclick="window.location.reload()" class="btn btn-secondary" style="width: auto; background: #6c757d; color: white;">
+                        <i class="fas fa-plus"></i> New Application
+                    </button>
+                    <button onclick="openTrackingModalWithCode('${trackingCode}')" class="btn btn-success" style="width: auto; background: #27ae60; color: white;">
+                        <i class="fas fa-search"></i> Track Status
+                    </button>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button onclick="window.location.href='index.html'" class="btn btn-primary" style="background: linear-gradient(135deg, #1a472a, #6b8e23); color: white;">
+                        <i class="fas fa-home"></i> Return to Home
+                    </button>
+                </div>
+            </div>
+        `;
 
-                </div>
-                <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    <button onclick="copyTrackingCode('${trackingCode}')" class="btn btn-primary" style="width: auto; background: linear-gradient(135deg, #1a472a, #6b8e23); color: white;">
-                        <i class="fas fa-copy"></i> Copy Tracking Code
-                    </button>
-                    <button onclick="window.location.href='admission.html'" class="btn btn-secondary" style="width: auto; background: #6c757d; color: white;">
-                        <i class="fas fa-plus"></i> New Application
-                    </button>
-                    <button onclick="openTrackingModalWithCode('${trackingCode}')" class="btn btn-success" style="width: auto; background: #27ae60; color: white;">
-                        <i class="fas fa-search"></i> Track Status
-                    </button>
-                </div>
-            </div>
-            <div class="btn-group">
-                <button type="button" class="btn btn-primary" onclick="window.location.href='index.html'" style="width: auto; margin: 0 auto; background: linear-gradient(135deg, #1a472a, #6b8e23); color: white;">
-                    <i class="fas fa-home"></i> Return to Home
-                </button>
-            </div>
-        `;
-        document.querySelector('.container').appendChild(trackingSection);
-    } else {
-        // Update existing section with new data
-        trackingSection.innerHTML = `
-           <h2 style="color: #000000;"><i class="fas fa-check-circle" style="color: #000000;"></i> Application Submitted Successfully!</h2>
-            <div style="text-align: center; padding: 20px 0;">
-                <i class="fas fa-envelope-open-text" style="font-size: 4rem; color: #000000; margin-bottom: 20px;"></i>
-                <h3 style="color: #000000; margin-bottom: 20px;">Thank you for applying to CCST!</h3>
-                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; text-align: left; max-width: 500px; margin: 0 auto; border: 1px solid #6b8e23;">
-                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000;">Application ID:</strong> 
-                        <span style="font-family: monospace; color: #000000;">${applicationId}</span>
-                    </div>
-                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000;">Tracking Code:</strong> 
-                        <span style="font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #000000;">${trackingCode}</span>
-                    </div>
-                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000;">Full Name:</strong> 
-                        <span style="color: #000000;">${fullName}</span>
-                    </div>
-                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000;">Program:</strong> 
-                        <span style="color: #000000;">${program}</span>
-                    </div>
-                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #000000;">Status:</strong> 
-                        <span style="color: #000000;">⏳ Pending Review</span>
-                    </div>
-                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;">
-                        <strong style="color: #000000;">Submitted:</strong> 
-                        <span style="color: #000000;">${new Date().toLocaleString()}</span>
-                    </div>
-                </div>
-            </div>
-                    </div>
-                </div>
-                <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 10px; border-left: 4px solid #27ae60;">
-                    <i class="fas fa-info-circle" style="color: #27ae60;"></i>
-                    <p style="margin-top: 10px; color: #2c3e50;"><strong>Important:</strong> Save your Tracking Code! You'll need it to check your application status.</p>
-                    <p style="font-size: 0.85rem; color: #666;">A confirmation has been sent to ${phone} and ${email}</p>
-                </div>
-                <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    <button onclick="copyTrackingCode('${trackingCode}')" class="btn btn-primary" style="width: auto; background: linear-gradient(135deg, #1a472a, #6b8e23); color: white;">
-                        <i class="fas fa-copy"></i> Copy Tracking Code
-                    </button>
-                    <button onclick="window.location.href='admission.html'" class="btn btn-secondary" style="width: auto; background: #6c757d; color: white;">
-                        <i class="fas fa-plus"></i> New Application
-                    </button>
-                    <button onclick="openTrackingModalWithCode('${trackingCode}')" class="btn btn-success" style="width: auto; background: #27ae60; color: white;">
-                        <i class="fas fa-search"></i> Track Status
-                    </button>
-                </div>
-            </div>
-            <div class="btn-group">
-                <button type="button" class="btn btn-primary" onclick="window.location.href='index.html'" style="width: auto; margin: 0 auto; background: linear-gradient(135deg, #1a472a, #6b8e23); color: white;">
-                    <i class="fas fa-home"></i> Return to Home
-                </button>
-            </div>
-        `;
-    }
-    
-    // Hide all other sections
-    for (let i = 1; i <= totalSections; i++) {
-        const section = document.getElementById(`section${i}`);
-        if (section) section.classList.remove('active');
-    }
-    
-    // Show tracking confirmation section
-    trackingSection.classList.add('active');
-    
-    // Update progress steps to show completion
-    for (let i = 1; i <= totalSections; i++) {
-        const step = document.getElementById(`step${i}`);
-        if (step) {
-            step.classList.add('completed');
-            step.classList.remove('active');
+        // Hide all regular sections
+        for (let i = 1; i <= totalSections; i++) {
+            const sec = document.getElementById(`section${i}`);
+            if (sec) sec.classList.remove('active');
         }
-    }
-    
-    // Add a "Complete" step
-    let completeStep = document.getElementById('step6');
-    if (!completeStep) {
-        const progressContainer = document.querySelector('.progress-steps');
-        completeStep = document.createElement('div');
-        completeStep.className = 'step completed';
-        completeStep.id = 'step6';
-        completeStep.innerHTML = '<div class="step-number">✓</div><div class="step-title">Complete</div>';
-        progressContainer.appendChild(completeStep);
-    } else {
-        completeStep.classList.add('completed');
-    }
-}
+        trackingSection.classList.add('active');
 
-// Helper function to copy tracking code
-function copyTrackingCode(code) {
-    navigator.clipboard.writeText(code).then(() => {
-        showToast("Tracking code copied to clipboard!", "success");
-    }).catch(() => {
-        showToast("Could not copy. Please manually save the code.", "danger");
-    });
-}
-
-// Helper function to open tracking modal with code pre-filled
-function openTrackingModalWithCode(code) {
-    openTrackingModal();
-    document.getElementById('trackId').value = code;
-    trackApplication();
-}
-
-    function sendTrackingNotification(phone, email, applicationId, trackingCode, fullName) {
-        console.log(`SMS/Email sent to ${phone}/${email}: Application ${applicationId} received. Tracking: ${trackingCode}`);
-        
-        // Store notification
-        const notifications = JSON.parse(localStorage.getItem('admissionNotifications') || '[]');
-        notifications.push({
-            id: applicationId,
-            trackingCode: trackingCode,
-            phone: phone,
-            email: email,
-            name: fullName,
-            message: `Your application ${applicationId} has been received. Tracking Code: ${trackingCode}`,
-            date: new Date().toISOString()
-        });
-        localStorage.setItem('admissionNotifications', JSON.stringify(notifications));
-    }
-
-    function openTrackingModal() {
-        document.getElementById('trackingModal').classList.add('show');
-        document.getElementById('trackingResult').innerHTML = '';
-        document.getElementById('trackId').value = '';
-    }
-
-    function closeTrackingModal() {
-        document.getElementById('trackingModal').classList.remove('show');
-    }
-
-    async function trackApplication() {
-    const trackValue = document.getElementById('trackId').value.trim();
-    if (!trackValue) {
-        showToast("Please enter Application ID, Tracking Code, or Phone Number", "danger");
-        return;
-    }
-    
-    const resultDiv = document.getElementById('trackingResult');
-    resultDiv.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Searching...</p>';
-    
-    let application = null;
-    
-    // FIRST: Try to fetch from Google Sheets
-    try {
-        const response = await fetch(`${SCRIPT_URL}?action=get_admissions`);
-        const data = await response.json();
-        
-        if (data.admissions && data.admissions.length > 0) {
-            // Search in Google Sheets data
-            application = data.admissions.find(app => 
-                app.applicationId === trackValue || 
-                app.trackingCode === trackValue || 
-                app.phone === trackValue ||
-                app.email === trackValue
-            );
-            
-            if (application) {
-                console.log("Found in Google Sheets:", application);
-                displayTrackingResult(application);
-                return;
+        // Mark all steps as completed and add final step
+        for (let i = 1; i <= totalSections; i++) {
+            const step = document.getElementById(`step${i}`);
+            if (step) {
+                step.classList.add('completed');
+                step.classList.remove('active');
             }
         }
-    } catch (error) {
-        console.log("Could not fetch from Google Sheets:", error);
-    }
-    
-    // SECOND: If not found in Google Sheets, check localStorage
-    let trackingData = JSON.parse(localStorage.getItem('admissionTracking') || '[]');
-    application = trackingData.find(app => 
-        app.id === trackValue || 
-        app.trackingCode === trackValue || 
-        app.phone === trackValue
-    );
-    
-    // If still not found, try main applications storage
-    if (!application) {
-        const allApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
-        application = allApps.find(app => 
-            app.id === trackValue || 
-            app.trackingCode === trackValue || 
-            app.phone === trackValue
-        );
-    }
-    
-    if (!application) {
-        resultDiv.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 20px;">❌ No application found with that ID, Tracking Code, or phone number.</p>
-        <p style="text-align: center; font-size: 0.85rem;">Please check your information and try again.</p>`;
-        return;
-    }
-    
-    displayTrackingResult(application);
-}
-
-    function resetForm() {
-        document.getElementById('admissionForm').reset();
-        uploadedFiles = { wasce: [], birth: null, ghanaCard: null, support: [] };
-        document.getElementById('certificatesContainer').innerHTML = '';
-        document.getElementById('wasceList').innerHTML = '';
-        document.getElementById('birthList').innerHTML = '';
-        document.getElementById('ghanaList').innerHTML = '';
-        document.getElementById('supportList').innerHTML = '';
-        certificateCounter = 0;
-        addCertificateEntry();
-        selectPaymentMethod('momo');
+        let completeStep = document.getElementById('step6');
+        if (!completeStep) {
+            completeStep = document.createElement('div');
+            completeStep.className = 'step completed';
+            completeStep.id = 'step6';
+            completeStep.innerHTML = '<div class="step-number">✓</div><div class="step-title">Complete</div>';
+            document.querySelector('.progress-steps').appendChild(completeStep);
+        } else {
+            completeStep.classList.add('completed');
+        }
     }
 
-     // Initialize
+    // ================= TRACK APPLICATION (localStorage first, then Sheets) =================
+    async function trackApplication() {
+        const trackValue = document.getElementById('trackId').value.trim();
+        if (!trackValue) {
+            showToast("Please enter Application ID, Tracking Code, or Phone Number", "danger");
+            return;
+        }
+        const resultDiv = document.getElementById('trackingResult');
+        resultDiv.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Searching...</p>';
+        
+        let application = null;
+        
+        // Try Google Sheets (GET)
+        try {
+            const response = await fetch(`${SCRIPT_URL}?action=get_admissions&q=${encodeURIComponent(trackValue)}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.admissions && data.admissions.length > 0) {
+                    application = data.admissions.find(app => 
+                        app.applicationId === trackValue || 
+                        app.trackingCode === trackValue || 
+                        app.phone === trackValue ||
+                        app.email === trackValue
+                    );
+                }
+            }
+        } catch (error) {
+            console.log("Could not fetch from Google Sheets:", error);
+        }
+        
+        // Fallback to localStorage
+        if (!application) {
+            const trackingData = JSON.parse(localStorage.getItem('admissionTracking') || '[]');
+            application = trackingData.find(app => 
+                app.id === trackValue || 
+                app.trackingCode === trackValue || 
+                app.phone === trackValue
+            );
+            if (!application) {
+                const allApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+                application = allApps.find(app => 
+                    app.id === trackValue || 
+                    app.trackingCode === trackValue || 
+                    app.phone === trackValue
+                );
+            }
+        }
+        
+        if (!application) {
+            resultDiv.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 20px;">❌ No application found with that ID, Tracking Code, or phone number.</p>
+            <p style="text-align: center; font-size: 0.85rem;">Please check your information and try again.</p>`;
+            return;
+        }
+        displayTrackingResult(application);
+    }
+
+    // ================= INITIALIZATION =================
     addCertificateEntry();
     selectPaymentMethod('momo');
-    
-    // ADD THIS EVENT LISTENER AT THE VERY BOTTOM OF YOUR SCRIPT
+
     window.addEventListener('load', function() {
-        console.log("Testing connection to:", SCRIPT_URL);
+        console.log("Page loaded. Testing connection to Google Sheets...");
         testGoogleSheetsConnection();
     });
+
     document.getElementById('trackingModal').addEventListener('click', function(e) {
         if (e.target === this) closeTrackingModal();
     });
