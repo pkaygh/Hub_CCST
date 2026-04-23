@@ -883,7 +883,6 @@
             .main-content { margin-left: 0; padding: 15px; padding-top: 60px; }
         }
         
-        /* ✅ PASTE THIS CSS HERE */
         .styled-submit-btn {
         background: linear-gradient(135deg, #0056b3, #007bff);
         color: #fff; border: none; padding: 12px 24px;
@@ -1209,40 +1208,41 @@
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <!-- SIDE MENU -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <img id="sidebarPhoto" src="https://via.placeholder.com/80" class="profile-pic-sidebar" onclick="document.getElementById('photoUpload').click()">
-            <input type="file" id="photoUpload" accept="image/*" style="display:none;" onchange="uploadPhoto(event)">
-            <h3 id="sidebarName">Student</h3>
-            <p id="sidebarDetails">Level 100</p>
-        </div>
-
-        <a href="#" class="menu-item active" onclick="showSection('profile'); return false;">
-    <i class="fas fa-user"></i> Profile
-</a>
-<a href="#" class="menu-item" onclick="showSection('academic'); return false;">
-    <i class="fas fa-graduation-cap"></i> Academic
-</a>
-<a href="#" class="menu-item" onclick="showSection('finance'); return false;">
-    <i class="fas fa-money-bill-wave"></i> Finance
-</a>
-<a href="#" class="menu-item" onclick="showSection('transcript'); return false;">
-    <i class="fas fa-file-pdf"></i> My Transcript
-</a>
-<a href="#" class="menu-item" onclick="showSection('request_transcript'); return false;">
-    <i class="fas fa-envelope"></i> Request Transcript
-    <span id="requestStatusBadge" class="badge" style="display:none;">Pending</span>
-</a>
-<a href="#" class="menu-item" onclick="showSection('notifications'); return false;">
-    <i class="fas fa-bell"></i> Notifications
-    <span id="notifBadge" class="badge" style="display:none;">0</span>
-        </a>
-
-        <a href="#" class="menu-item" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i> Logout
-            <hr style="margin: 20px 25px; border-color: rgba(255,255,255,0.1);">
-        </a>
+<div class="sidebar">
+    <div class="sidebar-header">
+        <img id="sidebarPhoto" src="https://via.placeholder.com/80" class="profile-pic-sidebar" onclick="document.getElementById('photoUpload').click()">
+        <input type="file" id="photoUpload" accept="image/*" style="display:none;" onchange="uploadPhoto(event)">
+        <h3 id="sidebarName">Student</h3>
+        <p id="sidebarDetails">Level 100</p>
     </div>
+
+    <a href="#" class="menu-item active" onclick="showSection('profile'); return false;">
+        <i class="fas fa-user"></i> Profile
+    </a>
+    <a href="#" class="menu-item" onclick="showSection('academic'); return false;">
+        <i class="fas fa-graduation-cap"></i> Academic
+    </a>
+    <a href="#" class="menu-item" onclick="showSection('finance'); return false;">
+        <i class="fas fa-money-bill-wave"></i> Finance
+    </a>
+    <a href="#" class="menu-item" onclick="showSection('transcript'); return false;">
+        <i class="fas fa-file-pdf"></i> My Transcript
+    </a>
+    <a href="#" class="menu-item" onclick="showSection('request_transcript'); return false;">
+        <i class="fas fa-envelope"></i> Request Transcript
+        <span id="requestStatusBadge" class="badge" style="display:none;">Pending</span>
+    </a>
+    <a href="#" class="menu-item" onclick="showSection('notifications'); return false;">
+        <i class="fas fa-bell"></i> Notifications
+        <span id="notifBadge" class="badge" style="display:none;">0</span>
+    </a>
+
+    <hr style="margin: 20px 25px; border-color: rgba(255,255,255,0.1);">
+
+    <a href="#" class="menu-item" onclick="logout(); return false;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </a>
+</div>
 
     <!-- MAIN CONTENT -->
     <div class="main-content">
@@ -2473,30 +2473,44 @@
         function editProfile() { showToast('Edit feature coming soon'); }
         
         async function fetchStudentData() {
-            try {
-                const storedData = localStorage.getItem('userData');
-                if (!storedData) { window.location.replace("index.html"); return; }
-                studentData = JSON.parse(storedData);
-                const studentId = studentData.profile.id;
-                
-                const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`);
-                const resultsData = await resultsRes.json();
-                if (resultsData.results) userResults = resultsData.results;
-                else {
-                    userResults = [{
-                        semester: "Semester 1 - 2025/2026", gpa: "3.25",
-                        details: [{ code: "COSC 101", name: "Introduction to Computing", credits: 3, ca: 35, exam: 55, grade: "A" },
-                                  { code: "MATH 101", name: "Algebra", credits: 3, ca: 30, exam: 48, grade: "B+" }]
-                    }];
-                }
-                
-                loadProfile();
-                loadAcademicResults();
-                loadFinance();
-                loadNotifications();
-                loadTranscript();
-            } catch(e) { console.log('Error:', e); }
+    try {
+        const storedData = localStorage.getItem('userData');
+        console.log("Stored data found:", storedData ? "Yes" : "No");
+        
+        if (!storedData) { 
+            window.location.replace("index.html"); 
+            return; 
         }
+        
+        studentData = JSON.parse(storedData);
+        console.log("Student profile loaded:", studentData.profile.name);
+        
+        const studentId = studentData.profile.id;
+        console.log("Fetching results for ID:", studentId);
+        
+        const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`);
+        const resultsData = await resultsRes.json();
+        console.log("Results data:", resultsData);
+        
+        if (resultsData.results) userResults = resultsData.results;
+        else {
+            console.log("No results from server, using sample data");
+            userResults = [{
+                semester: "Semester 1 - 2025/2026", gpa: "3.25",
+                details: [{ code: "COSC 101", name: "Introduction to Computing", credits: 3, ca: 35, exam: 55, grade: "A" },
+                          { code: "MATH 101", name: "Algebra", credits: 3, ca: 30, exam: 48, grade: "B+" }]
+            }];
+        }
+        
+        loadProfile();
+        loadAcademicResults();
+        loadFinance();
+        loadNotifications();
+        loadTranscript();
+    } catch(e) { 
+        console.log('Error in fetchStudentData:', e); 
+    }
+}
 
         function updateWelcomeMessage() {
             const welcomeName = document.getElementById('welcomeName');
@@ -2536,22 +2550,44 @@
         
         function updateDetailedProfile() {
     const p = studentData?.profile;
-    if (!p) return;
+    if (!p) {
+        console.log("No profile data available");
+        return;
+    }
     
-    // Personal Information
-    document.getElementById('infoId').innerHTML = p.id || '--';
-    document.getElementById('infoEmail').innerHTML = p.email || 'student@ccst.edu.gh';
-    document.getElementById('infoPhone').innerHTML = p.phone || '--';
-    document.getElementById('infoDob').innerHTML = p.dob || '--';
-    document.getElementById('infoGender').innerHTML = p.gender || '--';
-    document.getElementById('profileIdShort').innerHTML = p.id ? p.id.split('/').pop() : p.id;
-    document.getElementById('profileBadge').innerHTML = getFullProgramName(p.program);
-    document.getElementById('levelBadge').innerHTML = `Level ${p.level}`;
+    console.log("Updating detailed profile for:", p.name);
+    
+    // Personal Information - with existence checks
+    const infoId = document.getElementById('infoId');
+    if (infoId) infoId.innerHTML = p.id || '--';
+    
+    const infoEmail = document.getElementById('infoEmail');
+    if (infoEmail) infoEmail.innerHTML = p.email || 'student@ccst.edu.gh';
+    
+    const infoPhone = document.getElementById('infoPhone');
+    if (infoPhone) infoPhone.innerHTML = p.phone || '--';
+    
+    const infoDob = document.getElementById('infoDob');
+    if (infoDob) infoDob.innerHTML = p.dob || '--';
+    
+    const infoGender = document.getElementById('infoGender');
+    if (infoGender) infoGender.innerHTML = p.gender || '--';
+    
+    const profileIdShort = document.getElementById('profileIdShort');
+    if (profileIdShort) profileIdShort.innerHTML = p.id ? p.id.split('/').pop() : p.id;
+    
+    const profileBadge = document.getElementById('profileBadge');
+    if (profileBadge) profileBadge.innerHTML = getFullProgramName(p.program);
+    
+    const levelBadge = document.getElementById('levelBadge');
+    if (levelBadge) levelBadge.innerHTML = `Level ${p.level}`;
     
     // Academic Information
-    document.getElementById('infoProgram').innerHTML = getFullProgramName(p.program);
-    document.getElementById('infoLevel').innerHTML = `Level ${p.level}`;
-    document.getElementById('infoAcademicYear').innerHTML = p.academicYear || '2025/2026';
+    const infoProgram = document.getElementById('infoProgram');
+    if (infoProgram) infoProgram.innerHTML = getFullProgramName(p.program);
+    
+    const infoLevel = document.getElementById('infoLevel');
+    if (infoLevel) infoLevel.innerHTML = `Level ${p.level}`;
     
     // Financial Information - Auto calculated
     const previousBalance = parseFloat(p.previousBalance) || 0;
@@ -2560,17 +2596,29 @@
     const amountPaid = parseFloat(p.amountPaid) || 0;
     const balance = amountPayable - amountPaid;
     
-    document.getElementById('infoAmountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
-    document.getElementById('infoAmountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
-    document.getElementById('infoBalance').innerHTML = balance > 0 ? `GH₵${balance.toLocaleString()}` : 'GH₵0.00';
-    const clearanceStatus = (balance <= 0) ? '<span style="color:#27ae60;">✓ Cleared</span>' : '<span style="color:#e74c3c;">✗ Not Cleared</span>';
-    document.getElementById('infoClearance').innerHTML = clearanceStatus;
+    const infoAmountPayable = document.getElementById('infoAmountPayable');
+    if (infoAmountPayable) infoAmountPayable.innerHTML = `GH₵${amountPayable.toLocaleString()}`;
+    
+    const infoAmountPaid = document.getElementById('infoAmountPaid');
+    if (infoAmountPaid) infoAmountPaid.innerHTML = `GH₵${amountPaid.toLocaleString()}`;
+    
+    const infoBalance = document.getElementById('infoBalance');
+    if (infoBalance) infoBalance.innerHTML = balance > 0 ? `GH₵${balance.toLocaleString()}` : 'GH₵0.00';
+    
+    const infoClearance = document.getElementById('infoClearance');
+    if (infoClearance) {
+        const clearanceStatus = (balance <= 0) ? '<span style="color:#27ae60;">✓ Cleared</span>' : '<span style="color:#e74c3c;">✗ Not Cleared</span>';
+        infoClearance.innerHTML = clearanceStatus;
+    }
     
     // CGPA - Auto calculated from grades
     const stats = calculateEnhancedStats();
     if (stats) {
-        document.getElementById('infoCGPA').innerHTML = stats.cgpa;
-        document.getElementById('infoClassification').innerHTML = stats.standing;
+        const infoCGPA = document.getElementById('infoCGPA');
+        if (infoCGPA) infoCGPA.innerHTML = stats.cgpa;
+        
+        const infoClassification = document.getElementById('infoClassification');
+        if (infoClassification) infoClassification.innerHTML = stats.standing;
     }
 }
         
@@ -2615,11 +2663,12 @@
         }
         
         function logout() {
-            if (confirm("Logout?")) {
-                localStorage.removeItem('userData');
-                window.location.replace("index.html");
-            }
-        }
+    if (confirm("Logout?")) {
+        localStorage.removeItem('userData');
+        window.location.replace("index.html");
+    }
+    return false;
+}
         
         window.onload = () => {
             fetchStudentData();
@@ -2920,6 +2969,7 @@
             document.getElementById('closeInstallBanner').addEventListener('click', () => {
                 installBanner.remove();
             });
+        });
        </script>
 </body>
 </html>
