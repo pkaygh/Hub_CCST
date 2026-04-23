@@ -817,15 +817,14 @@
             </button>
         </div>
     </div>
-                    <div class="upload-zone" onclick="document.getElementById('financeFileInput').click()">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <h4>Drop CSV file here or click to browse</h4>
-                        <input type="file" id="financeFileInput" accept=".csv" onchange="handleFinanceCSVSelect(event)">
-                    </div>
-                    <button id="processFinanceBtn" onclick="processFinanceCSV()" class="success-btn" style="display:none;">PROCESS FINANCIAL DATA</button>
-                </div>
-            </div>
-        </div>
+    <div class="upload-zone" onclick="document.getElementById('financeFileInput').click()">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <h4>Drop CSV file here or click to browse</h4>
+        <input type="file" id="financeFileInput" accept=".csv" onchange="handleFinanceCSVSelect(event)">
+    </div>
+    <div id="financeFilePreview" class="file-preview" style="display: none;"></div>
+    <button id="processFinanceBtn" onclick="processFinanceCSV()" class="success-btn" style="display:none;">PROCESS FINANCIAL DATA</button>
+</div>
 
         <!-- MANAGE COURSES SECTION -->
         <div id="coursesSection" class="section" style="display:none;">
@@ -1330,20 +1329,63 @@
         }
 
         function showSection(section) {
+    console.log("Showing section:", section);
+    
     if (window.innerWidth <= 768) toggleSidebar();
+    
+    // Hide all sections
     document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
-    document.getElementById(section + 'Section').style.display = 'block';
+    
+    // Show selected section
+    const sectionToShow = document.getElementById(section + 'Section');
+    if (sectionToShow) {
+        sectionToShow.style.display = 'block';
+    } else {
+        console.error("Section not found:", section + 'Section');
+        return;
+    }
+    
+    // Update active menu item
     document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    
+    // Find and activate the clicked menu item
+    const menuItems = document.querySelectorAll('.menu-item');
+    for (let item of menuItems) {
+        const onclickAttr = item.getAttribute('onclick');
+        if (onclickAttr && onclickAttr.includes(`'${section}'`)) {
+            item.classList.add('active');
+            break;
+        }
+    }
+    
+    // Update page title
     const titles = {
-        search: 'Search Student', csv_upload: 'CSV Upload', bulk_upload: 'Bulk Operations',
-        courses: 'Manage Courses', clearance: 'Financial Clearance', transcript: 'Generate Transcript',
-        transcript_requests: 'Transcript Requests', admissions: 'Admissions Manager', notifications: 'Send Notifications', reports: 'Reports'
+        search: 'Search Student', 
+        csv_upload: 'CSV Upload', 
+        bulk_upload: 'Bulk Operations',
+        courses: 'Manage Courses', 
+        clearance: 'Financial Clearance', 
+        transcript: 'Generate Transcript',
+        transcript_requests: 'Transcript Requests', 
+        admissions: 'Admissions Manager', 
+        notifications: 'Send Notifications', 
+        reports: 'Reports'
     };
-    document.getElementById('pageTitle').innerText = titles[section] || 'Dashboard';
-    if (section === 'clearance') loadStudentClearanceList();
-    if (section === 'transcript_requests') { loadTranscriptRequests(); loadProcessedRequests(); }
-    if (section === 'admissions') loadAdmissions();
+    
+    const pageTitle = document.getElementById('pageTitle');
+    if (pageTitle) pageTitle.innerText = titles[section] || 'Dashboard';
+    
+    // Load section-specific data
+    if (section === 'clearance' && typeof loadStudentClearanceList === 'function') {
+        loadStudentClearanceList();
+    }
+    if (section === 'transcript_requests' && typeof loadTranscriptRequests === 'function') { 
+        loadTranscriptRequests(); 
+        loadProcessedRequests(); 
+    }
+    if (section === 'admissions' && typeof loadAdmissions === 'function') {
+        loadAdmissions();
+    }
 }
 
 // Search Student function - MUST be outside showSection
@@ -1868,6 +1910,139 @@ CCST/ML/24/002,5500,TRUE
     a.click();
     URL.revokeObjectURL(url);
     showToast("Simple template downloaded! Use ID, AmountPaid, IsCleared format.", "success");
+}
+// ============================================
+// FINANCIAL CSV UPLOAD FUNCTIONS
+// ============================================
+
+// Handle Financial CSV File Selection
+function handleFinanceCSVSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const filePreview = document.getElementById('filePreview');
+    const processBtn = document.getElementById('processFinanceBtn');
+    
+    Papa.parse(file, { 
+        header: true, 
+        skipEmptyLines: true, 
+        complete: function(results) {
+            window.financeCSVData = results;
+            window.parsedFinanceData = results.data;
+            
+            // Create or show preview
+            let previewDiv = document.getElementById('financeFilePreview');
+            if (!previewDiv) {
+                previewDiv = document.createElement('div');
+                previewDiv.id = 'financeFilePreview';
+                previewDiv.className = 'file-preview';
+                document.getElementById('bulkFinanceCSVTab').appendChild(previewDiv);
+            }
+            
+            previewDiv.style.display = 'block';
+            previewDiv.innerHTML = `
+                <h4><i class="fas fa-file-csv"></i> File Ready for Upload</h4>
+                <p><strong>${file.name}</strong></p>
+                <p>Found ${results.data.length} records to process</p>
+                <div class="progress-bar"><div class="progress-fill" id="financeUploadProgress" style="width: 0%;"></div></div>
+            `;
+            
+            if (processBtn) processBtn.style.display = 'block';
+            showToast(`Loaded ${results.data.length} records from CSV`, "success");
+        }
+    });
+}
+
+// Process Financial CSV Upload
+async function processFinanceCSV() {
+    if (!window.parsedFinanceData || window.parsedFinanceData.length === 0) {
+        showToast("No data to upload", "danger");
+        return;
+    }
+    
+    const processBtn = document.getElementById('processFinanceBtn');
+    const progressFill = document.getElementById('financeUploadProgress');
+    
+    processBtn.disabled = true;
+    processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
+    
+    let successCount = 0;
+    let errorCount = 0;
+    let errors = [];
+    
+    for (let i = 0; i < window.parsedFinanceData.length; i++) {
+        const row = window.parsedFinanceData[i];
+        const studentId = row.ID || row.id;
+        
+        if (!studentId) {
+            errorCount++;
+            errors.push({ id: 'Unknown', error: 'Missing student ID' });
+            continue;
+        }
+        
+        try {
+            const updatePayload = {
+                action: 'bulk_financial_update',
+                updates: [{
+                    id: studentId,
+                    name: row.Name || row.name || '',
+                    program: row.Program || row.program || '',
+                    level: row.Level || row.level || '',
+                    previousBalance: parseFloat(row.PreviousBalance || row.previousBalance || 0),
+                    currentFees: parseFloat(row.CurrentFees || row.currentFees || row.total_fee || 0),
+                    amountPaid: parseFloat(row.AmountPaid || row.amount_paid || 0),
+                    isCleared: (row.IsCleared === 'TRUE' || row.IsCleared === true || row.isCleared === 'TRUE'),
+                    arrears: parseFloat(row.Arrears || row.arrears || 0),
+                    semester: row.Semester || row.semester || ''
+                }]
+            };
+            
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatePayload)
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                successCount++;
+            } else {
+                errorCount++;
+                errors.push({ id: studentId, error: result.error || 'Update failed' });
+            }
+        } catch (err) {
+            errorCount++;
+            errors.push({ id: studentId, error: err.message });
+        }
+        
+        if (progressFill) {
+            const progress = ((i + 1) / window.parsedFinanceData.length) * 100;
+            progressFill.style.width = `${progress}%`;
+        }
+    }
+    
+    showToast(`Upload complete! ✅ ${successCount} successful, ❌ ${errorCount} failed`, successCount > 0 ? "success" : "danger");
+    
+    processBtn.disabled = false;
+    processBtn.innerHTML = 'PROCESS FINANCIAL DATA';
+    document.getElementById('financeFileInput').value = '';
+    window.parsedFinanceData = null;
+    
+    if (typeof loadStudentClearanceList === 'function') {
+        loadStudentClearanceList();
+    }
+}
+
+// Load Student Clearance List
+function loadStudentClearanceList() {
+    const container = document.getElementById('clearanceList');
+    if (!container) return;
+    
+    const programFilter = document.getElementById('clearanceProgramFilter')?.value || '';
+    const levelFilter = document.getElementById('clearanceLevelFilter')?.value || '';
+    const statusFilter = document.getElementById('clearanceStatusFilter')?.value || '';
+    
+    loadDemoClearanceList(programFilter, levelFilter, statusFilter);
 }
 
         function updateFees() { showToast("Fees updated!", "success"); }
