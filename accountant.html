@@ -2683,11 +2683,11 @@ function sendInterviewNotification(phone, email, name, interviewDate) {
 // Export admissions to CSV
 function exportAdmissionsToCSV() {
     let csv = "Application ID,Tracking Code,Full Name,Email,Phone,Program,Entry Mode,Status,Submitted Date\n";
-    
+
     allApplications.forEach(app => {
         csv += `"${app.applicationId}","${app.trackingCode || ''}","${app.fullName}","${app.email}","${app.phone}","${app.program}","${app.entryMode || ''}","${app.status}","${new Date(app.submittedAt).toLocaleString()}"\n`;
     });
-    
+
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -2697,6 +2697,18 @@ function exportAdmissionsToCSV() {
     URL.revokeObjectURL(url);
     showToast("Admissions exported to CSV!", "success");
 }
+
+// Logout function
+function logout() {
+    localStorage.removeItem('adminData');
+    localStorage.removeItem('currentStaff');
+    window.location.href = 'index.html';
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    checkStaffAccess();
+});
 
 
     </script>

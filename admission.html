@@ -502,7 +502,7 @@
         <div class="step" id="step5"><div class="step-number">5</div><div class="step-title">Submit</div></div>
     </div>
 
-    <form id="admissionForm" onsubmit="event.preventDefault(); submitApplication();">
+    <<form id="admissionForm" onsubmit="submitApplication(); return false;">
         <!-- Section 1: Personal Information -->
         <div class="form-section active" id="section1">
     <h2><i class="fas fa-user"></i> Personal Information</h2>
@@ -732,6 +732,7 @@
     let currentSection = 1;
     const totalSections = 5;
     let allApplications = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+    let isSubmitting = false;
 
     // ================= UI HELPERS =================
     function selectPaymentMethod(method) {
@@ -842,6 +843,7 @@
         document.getElementById('reviewSummary').innerHTML = html;
     }
 
+    
     // ================= CERTIFICATES =================
     function addCertificateEntry(certData = null) {
         certificateCounter++;
@@ -1007,10 +1009,17 @@
 
     // ================= SUBMIT APPLICATION (ENHANCED WITH FETCH CORS SUPPORT) =================
     async function submitApplication() {
+
+        if (isSubmitting) {
+        showToast("Please wait, submission in progress...", "warning");
+        return;
+    }
+
         if (!document.getElementById('confirmCheckbox').checked) {
             showToast("Please confirm your information", "danger");
             return;
         }
+        isSubmitting = true;
 
         const submitBtn = document.querySelector('#section5 .btn-success');
         const originalBtnText = submitBtn.innerHTML;
@@ -1190,7 +1199,9 @@
         }
 
         displayTrackingConfirmation(applicationId, trackingCode, fullName, applicantPhone, applicantEmail, application.program, googleSheetsSuccess);
+        isSubmitting = false;
     }
+
 
     // ================= DISPLAY TRACKING CONFIRMATION =================
     function displayTrackingConfirmation(applicationId, trackingCode, fullName, phone, email, program, googleSheetsSuccess) {
@@ -1239,7 +1250,7 @@
                     <button onclick="copyTrackingCode('${trackingCode}')" class="btn btn-primary" style="width: auto; background: linear-gradient(135deg, #1a472a, #6b8e23); color: white;">
                         <i class="fas fa-copy"></i> Copy Tracking Code
                     </button>
-                    <button onclick="window.location.reload()" class="btn btn-secondary" style="width: auto; background: #6c757d; color: white;">
+                    <button onclick="restAndStartNewApplication()" class="btn btn-secondary" style="width: auto; background: #6c757d; color: white;">
                         <i class="fas fa-plus"></i> New Application
                     </button>
                     <button onclick="openTrackingModalWithCode('${trackingCode}')" class="btn btn-success" style="width: auto; background: #27ae60; color: white;">
@@ -1279,6 +1290,75 @@
         } else {
             completeStep.classList.add('completed');
         }
+    }
+        // ================= RESET FUNCTION FOR NEW APPLICATION =================
+    function resetAndStartNewApplication() {
+        // Reset the form
+        document.getElementById('admissionForm').reset();
+        
+        // Reset uploaded files
+        uploadedFiles = { wasce: [], birth: null, ghanaCard: null, support: [] };
+        
+        // Reset certificate counter and container
+        certificateCounter = 0;
+        document.getElementById('certificatesContainer').innerHTML = '';
+        addCertificateEntry();
+        
+        // Reset payment method to default
+        selectedPaymentMethod = 'momo';
+        document.getElementById('selectedPaymentMethod').value = 'momo';
+        document.getElementById('momoMethod').classList.add('selected');
+        document.getElementById('bankMethod').classList.remove('selected');
+        document.getElementById('momoDetails').style.display = 'block';
+        document.getElementById('bankDetails').style.display = 'none';
+        
+        // Clear file lists
+        const wasceList = document.getElementById('wasceList');
+        const birthList = document.getElementById('birthList');
+        const ghanaList = document.getElementById('ghanaList');
+        const supportList = document.getElementById('supportList');
+        if (wasceList) wasceList.innerHTML = '';
+        if (birthList) birthList.innerHTML = '';
+        if (ghanaList) ghanaList.innerHTML = '';
+        if (supportList) supportList.innerHTML = '';
+        
+        // Reset file input elements
+        document.getElementById('wasceFiles').value = '';
+        document.getElementById('birthFile').value = '';
+        document.getElementById('ghanaCardFile').value = '';
+        document.getElementById('supportFiles').value = '';
+        
+        // Reset to first section
+        for (let i = 1; i <= totalSections; i++) {
+            const sec = document.getElementById(`section${i}`);
+            if (sec) sec.classList.remove('active');
+        }
+        document.getElementById('section1').classList.add('active');
+        currentSection = 1;
+        
+        // Reset progress steps
+        for (let i = 1; i <= totalSections; i++) {
+            const step = document.getElementById(`step${i}`);
+            if (step) {
+                step.classList.remove('completed', 'active');
+                if (i === 1) step.classList.add('active');
+            }
+        }
+        
+        // Remove complete step if exists
+        const completeStep = document.getElementById('step6');
+        if (completeStep) completeStep.remove();
+        
+        // Remove the success section
+        const trackingSection = document.getElementById('trackingConfirmationSection');
+        if (trackingSection) {
+            trackingSection.classList.remove('active');
+        }
+        
+        // Reset submission flag
+        isSubmitting = false;
+        
+        showToast("Start a new application", "info");
     }
 
     // ================= TRACK APPLICATION (localStorage first, then Sheets) =================

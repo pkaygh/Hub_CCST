@@ -3206,6 +3206,42 @@
                 installBanner.remove();
             });
         });
+
+        // Check login status on page load
+        function checkStudentLogin() {
+            const storedData = localStorage.getItem('userData');
+            const storedId = localStorage.getItem('studentId');
+
+            if (!storedData || !storedId) {
+                // Not logged in, redirect to login page
+                window.location.href = 'index.html';
+                return false;
+            }
+
+            try {
+                studentData = JSON.parse(storedData);
+                loadProfile();
+                loadAcademicResults();
+                return true;
+            } catch (e) {
+                console.error('Error parsing student data:', e);
+                window.location.href = 'index.html';
+                return false;
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('userData');
+            localStorage.removeItem('studentId');
+            localStorage.removeItem('userResults');
+            window.location.href = 'index.html';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkStudentLogin();
+        });
        </script>
 </body>
 </html>
