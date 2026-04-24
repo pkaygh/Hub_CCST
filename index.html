@@ -748,7 +748,7 @@
 
     <script>
         // Configuration - Your Google Apps Script URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXp-jX91gMRrrEei4nKWhL-cXqDol-ZSQFjUd0RSD9eLh14-fviKFC2zH9U6xkLAyB/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqdYD-TMczt4izAbBhc4XfzuNvT-gghCc6kiSIp2Xt9FN34ghUinCIwUl27LOK80Q_/exec";
         let deferredPrompt;
         let currentRole = 'student';
 
@@ -874,41 +874,68 @@
         }
 
         // Handle Login
-        // Handle Login
-        async function handleLogin(event) {
-            event.preventDefault();
+       async function handleLogin(event) {
+    event.preventDefault();
 
-            const loginId = document.getElementById('loginId').value.trim();
-            const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
-            const loginText = document.getElementById('loginText');
-            const errorMsg = document.getElementById('errorMessage');
+    const loginId = document.getElementById('loginId').value.trim();
+    const password = document.getElementById('password').value;
+    const loginBtn = document.getElementById('loginBtn');
+    const loginText = document.getElementById('loginText');
+    const errorMsg = document.getElementById('errorMessage');
 
-            if (!loginId || !password) {
-                showError("Please enter both ID and password");
+    if (!loginId || !password) {
+        showError("Please enter both ID and password");
+        return;
+    }
+
+    // UI Feedback
+    loginBtn.disabled = true;
+    loginText.style.display = 'none';
+    document.getElementById('loginSpinner').style.display = 'inline-block';
+    errorMsg.style.display = 'none';
+
+    // 1. Offline Check
+    if (!navigator.onLine) {
+        const cachedData = localStorage.getItem('userData');
+        if (cachedData) {
+            const data = JSON.parse(cachedData);
+            if (data.profile && data.profile.id === loginId && data.profile.password === password) {
+                window.location.href = 'dashboard.html';
                 return;
             }
+        }
+        showError("You are offline. Please connect to login.");
+        resetLoginBtn();
+        return;
+    }
 
-            loginBtn.disabled = true;
-            loginText.style.display = 'none';
-            document.getElementById('loginSpinner').style.display = 'inline-block';
-            errorMsg.style.display = 'none';
+    // 2. THE FIX: Calling the Google Apps Script Backend
+    google.script.run
+        .withSuccessHandler(function(response) {
+            if (response && response.success) {
+                localStorage.setItem('userData', JSON.stringify(response.data));
+                localStorage.setItem('userRole', currentRole);
+                window.location.href = 'dashboard.html';
+            } else {
+                showError(response.message || "Invalid ID or password");
+                resetLoginBtn();
+            }
+        })
+        .withFailureHandler(function(err) {
+            showError("Server Connection Error: " + err.message);
+            resetLoginBtn();
+        })
+        .authenticateUser(loginId, password, currentRole); 
+}
 
-            try {
-                // Check if offline
-                if (!navigator.onLine) {
-                    // Try offline login with cached credentials
-                    const cachedData = localStorage.getItem('userData');
-                    if (cachedData && currentRole === 'student') {
-                        const data = JSON.parse(cachedData);
-                        if (data.profile && data.profile.id === loginId && data.profile.password === password) {
-                            window.location.href = 'dashboard.html';
-                            return;
-                        }
-                    }
-                    showError("You are offline. Please connect to login.");
-                    return;
-                }
+// Add this helper if you don't have it to reset the button state
+function resetLoginBtn() {
+    const loginBtn = document.getElementById('loginBtn');
+    const loginText = document.getElementById('loginText');
+    loginBtn.disabled = false;
+    loginText.style.display = 'inline-block';
+    document.getElementById('loginSpinner').style.display = 'none';
+}
 
                 // ============================================
                 // STAFF LOGIN (Accountant/Admin)
