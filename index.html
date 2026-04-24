@@ -748,7 +748,7 @@
 
     <script>
         // Configuration - Your Google Apps Script URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqdYD-TMczt4izAbBhc4XfzuNvT-gghCc6kiSIp2Xt9FN34ghUinCIwUl27LOK80Q_/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDMKh5pYfxN2-pX6kAukK1UwXUzzKIFbBqFrpnfoAo_AGUd5Sv-KaTNU6NTrmhGYmE/exec";
         let deferredPrompt;
         let currentRole = 'student';
 
@@ -874,84 +874,60 @@
         }
 
         // Handle Login
-       async function handleLogin(event) {
-    event.preventDefault();
+        async function handleLogin(event) {
+            event.preventDefault();
 
-    const loginId = document.getElementById('loginId').value.trim();
-    const password = document.getElementById('password').value;
-    const loginBtn = document.getElementById('loginBtn');
-    const loginText = document.getElementById('loginText');
-    const errorMsg = document.getElementById('errorMessage');
+            const loginId = document.getElementById('loginId').value.trim();
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginText = document.getElementById('loginText');
+            const errorMsg = document.getElementById('errorMessage');
 
-    if (!loginId || !password) {
-        showError("Please enter both ID and password");
-        return;
-    }
-
-    // UI Feedback
-    loginBtn.disabled = true;
-    loginText.style.display = 'none';
-    document.getElementById('loginSpinner').style.display = 'inline-block';
-    errorMsg.style.display = 'none';
-
-    // 1. Offline Check
-    if (!navigator.onLine) {
-        const cachedData = localStorage.getItem('userData');
-        if (cachedData) {
-            const data = JSON.parse(cachedData);
-            if (data.profile && data.profile.id === loginId && data.profile.password === password) {
-                window.location.href = 'dashboard.html';
+            if (!loginId || !password) {
+                showError("Please enter both ID and password");
                 return;
             }
-        }
-        showError("You are offline. Please connect to login.");
-        resetLoginBtn();
-        return;
-    }
 
-    // 2. THE FIX: Calling the Google Apps Script Backend
-    google.script.run
-        .withSuccessHandler(function(response) {
-            if (response && response.success) {
-                localStorage.setItem('userData', JSON.stringify(response.data));
-                localStorage.setItem('userRole', currentRole);
-                window.location.href = 'dashboard.html';
-            } else {
-                showError(response.message || "Invalid ID or password");
-                resetLoginBtn();
-            }
-        })
-        .withFailureHandler(function(err) {
-            showError("Server Connection Error: " + err.message);
-            resetLoginBtn();
-        })
-        .authenticateUser(loginId, password, currentRole); 
-}
+            // UI Feedback
+            loginBtn.disabled = true;
+            loginText.style.display = 'none';
+            document.getElementById('loginSpinner').style.display = 'inline-block';
+            errorMsg.style.display = 'none';
 
-// Add this helper if you don't have it to reset the button state
-function resetLoginBtn() {
-    const loginBtn = document.getElementById('loginBtn');
-    const loginText = document.getElementById('loginText');
-    loginBtn.disabled = false;
-    loginText.style.display = 'inline-block';
-    document.getElementById('loginSpinner').style.display = 'none';
-}
+            try {
+                // 1. Offline Check
+                if (!navigator.onLine) {
+                    const cachedData = localStorage.getItem('userData');
+                    if (cachedData) {
+                        const data = JSON.parse(cachedData);
+                        if (data.profile && data.profile.id === loginId && data.profile.password === password) {
+                            window.location.href = 'dashboard.html';
+                            return;
+                        }
+                    }
+                    showError("You are offline. Please connect to login.");
+                    resetLoginBtn();
+                    return;
+                }
 
-                // ============================================
-                // STAFF LOGIN (Accountant/Admin)
-                // ============================================
+                let response;
+                let data;
+
+                // 2. Handle different login types
                 if (currentRole === 'admin') {
-                    const response = await fetch(`${SCRIPT_URL}?action=staff_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`);
+                    // Staff Login
+                    response = await fetch(`${SCRIPT_URL}?action=staff_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`);
+                    data = await response.json();
 
                     if (!response.ok) {
                         showError("Server error. Please try again.");
+                        resetLoginBtn();
                         return;
                     }
 
-                    const data = await response.json();
-
                     if (data.error) {
                         showError(data.error);
+                        resetLoginBtn();
                         return;
                     }
 
@@ -966,23 +942,20 @@ function resetLoginBtn() {
                         window.location.href = 'accountant.html';
                         return;
                     }
-                }
-
-                // ============================================
-                // EXECUTIVE DASHBOARD LOGIN (NEW)
-                // ============================================
-                else if (currentRole === 'executive') {
-                    const response = await fetch(`${SCRIPT_URL}?action=executive_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`);
+                } else if (currentRole === 'executive') {
+                    // Executive Login
+                    response = await fetch(`${SCRIPT_URL}?action=executive_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`);
+                    data = await response.json();
 
                     if (!response.ok) {
                         showError("Server error. Please try again.");
+                        resetLoginBtn();
                         return;
                     }
 
-                    const data = await response.json();
-
                     if (data.error) {
                         showError(data.error);
+                        resetLoginBtn();
                         return;
                     }
 
@@ -991,35 +964,34 @@ function resetLoginBtn() {
                         window.location.href = 'executive dashboard.html';
                         return;
                     }
-                }
-
-                // ============================================
-                // STUDENT LOGIN
-                // ============================================
-                else {
-                    const response = await fetch(`${SCRIPT_URL}?id=${encodeURIComponent(loginId)}&password=${encodeURIComponent(password)}`);
+                } else {
+                    // Student Login
+                    response = await fetch(`${SCRIPT_URL}?id=${encodeURIComponent(loginId)}&password=${encodeURIComponent(password)}`);
+                    data = await response.json();
 
                     if (!response.ok) {
                         showError("Server error. Please try again.");
+                        resetLoginBtn();
                         return;
                     }
 
-                    const data = await response.json();
-                    console.log("Login response:", data);
-
                     if (data.error) {
                         showError(data.error);
+                        resetLoginBtn();
                         return;
                     }
 
                     if (!data.profile) {
-                        showError("Login failed. Please check your credentials.");
+                        showError("Invalid ID or password");
+                        resetLoginBtn();
                         return;
                     }
 
+                    // Success - Save data and redirect
                     localStorage.setItem('userData', JSON.stringify(data));
                     localStorage.setItem('studentId', loginId);
 
+                    // Try to fetch results
                     try {
                         const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${encodeURIComponent(loginId)}`);
                         if (resultsRes.ok) {
@@ -1036,21 +1008,32 @@ function resetLoginBtn() {
                     return;
                 }
 
+                // If we get here, credentials were invalid
+                showError("Invalid ID or password. Please try again.");
+                resetLoginBtn();
+
             } catch (e) {
                 console.error('Login error:', e);
-                // Show helpful offline message
                 if (!navigator.onLine) {
                     showError("You are offline. Please connect to login.");
                 } else {
-                    showError("Connection error. Please try again.");
+                    showError("Connection error. Please check your internet and try again.");
                 }
-            } finally {
-                loginBtn.disabled = false;
-                loginText.style.display = 'block';
-                document.getElementById('loginSpinner').style.display = 'none';
+                resetLoginBtn();
             }
         }
 
+        // Reset login button state
+        function resetLoginBtn() {
+            const loginBtn = document.getElementById('loginBtn');
+            const loginText = document.getElementById('loginText');
+            if (loginBtn) loginBtn.disabled = false;
+            if (loginText) loginText.style.display = 'inline-block';
+            const spinner = document.getElementById('loginSpinner');
+            if (spinner) spinner.style.display = 'none';
+        }
+
+        // Show error message to user
         function showError(msg) {
             const errorMsg = document.getElementById('errorMessage');
             errorMsg.innerText = msg;
