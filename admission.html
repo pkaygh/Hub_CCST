@@ -674,22 +674,26 @@
     // REPLACE THIS WITH YOUR DEPLOYED WEB APP URL
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD0kPY5pAH3IZ7-y9PEll-7D5nm7CHXN1zhi1bgQXi3Dq2i5Vo4muXHfrpAuFZpnuz/exec";
 
-    // ================= TEST CONNECTION (no-cors friendly) =================
+    // ================= TEST CONNECTION (with CORS support) =================
     async function testGoogleSheetsConnection() {
         try {
             console.log("Testing connection to:", SCRIPT_URL);
-            // Use no-cors to avoid CORS errors; we cannot read response but request is sent
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'action=get_admissions'
-            });
-            console.log("Request sent (no-cors). Check Google Apps Script logs or sheet.");
-            showToast("Connection test sent. Check console for details.", "info");
+            // Use regular fetch with JSON to test connection
+            const response = await fetch(SCRIPT_URL + "?action=get_admissions");
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Connection successful! Data:", data);
+                showToast("Connected to Google Sheets", "success");
+                return true;
+            } else {
+                console.log("Connection failed with status:", response.status);
+                showToast("Connection failed. Data saved locally.", "info");
+                return false;
+            }
         } catch (error) {
             console.error("Connection error:", error);
-            showToast("Connection error: " + error.message, "danger");
+            showToast("Offline mode - data saved locally", "info");
+            return false;
         }
     }
 
@@ -973,7 +977,7 @@
         `;
     }
 
-    // ================= SUBMIT APPLICATION (NO-CORS + GET FALLBACK) =================
+    // ================= SUBMIT APPLICATION (ENHANCED WITH FETCH CORS SUPPORT) =================
     async function submitApplication() {
         if (!document.getElementById('confirmCheckbox').checked) {
             showToast("Please confirm your information", "danger");
@@ -1018,11 +1022,11 @@
             submittedAt: new Date().toISOString()
         };
 
-        // Save to localStorage (always works)
+        // Save to localStorage FIRST (guaranteed storage)
         let existingApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
         existingApps.push(application);
         localStorage.setItem('admissionApplications', JSON.stringify(existingApps));
-        
+
         let trackingData = JSON.parse(localStorage.getItem('admissionTracking') || '[]');
         trackingData.push({
             id: applicationId,
@@ -1034,61 +1038,129 @@
         });
         localStorage.setItem('admissionTracking', JSON.stringify(trackingData));
 
+        // Try to sync with Google Sheets using multiple methods
         let googleSheetsSuccess = false;
+        let syncError = null;
 
-        // ---- Method 1: POST with x-www-form-urlencoded (no-cors) ----
+        // ---- Method 1: JSON POST with proper CORS handling ----
         try {
-            const formData = new URLSearchParams();
-            formData.append('action', 'submit_admission');
-            formData.append('applicationId', applicationId);
-            formData.append('trackingCode', trackingCode);
-            formData.append('fullName', fullName);
-            formData.append('surname', surname);
-            formData.append('firstName', firstName);
-            formData.append('otherName', otherName);
-            formData.append('dob', application.dob);
-            formData.append('gender', application.gender);
-            formData.append('email', applicantEmail);
-            formData.append('phone', applicantPhone);
-            formData.append('altPhone', application.altPhone);
-            formData.append('address', application.address);
-            formData.append('program', application.program);
-            formData.append('entryMode', application.entryMode);
-            formData.append('certificates', JSON.stringify(certificatesData));
-            formData.append('transactionId', application.transactionId);
-            formData.append('paymentDate', application.paymentDate);
-            formData.append('paymentMethod', selectedPaymentMethod);
-            formData.append('status', 'pending_review');
-            formData.append('submittedAt', application.submittedAt);
-
-            await fetch(SCRIPT_URL, {
+            const response = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData.toString()
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'submit_admission',
+                    applicationId: applicationId,
+                    trackingCode: trackingCode,
+                    fullName: fullName,
+                    surname: surname,
+                    firstName: firstName,
+                    otherName: otherName,
+                    dob: application.dob,
+                    gender: application.gender,
+                    email: applicantEmail,
+                    phone: applicantPhone,
+                    altPhone: application.altPhone,
+                    address: application.address,
+                    program: application.program,
+                    entryMode: application.entryMode,
+                    certificates: JSON.stringify(certificatesData),
+                    transactionId: application.transactionId,
+                    paymentDate: application.paymentDate,
+                    paymentMethod: selectedPaymentMethod,
+                    status: 'pending_review',
+                    submittedAt: application.submittedAt
+                })
             });
-            googleSheetsSuccess = true;
-            console.log("POST (no-cors) request sent to Google Sheets");
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    googleSheetsSuccess = true;
+                    console.log("JSON POST to Google Sheets successful");
+                }
+            } else {
+                console.log("JSON POST response not ok:", response.status);
+            }
         } catch (error) {
-            console.error("POST no-cors failed:", error);
+            console.log("JSON POST failed:", error.message);
+            syncError = error.message;
         }
 
-        // ---- Method 2: GET fallback ----
+        // ---- Method 2: URL-encoded POST as fallback ----
         if (!googleSheetsSuccess) {
             try {
-                const getUrl = `${SCRIPT_URL}?action=submit_admission&applicationId=${encodeURIComponent(applicationId)}&trackingCode=${encodeURIComponent(trackingCode)}&fullName=${encodeURIComponent(fullName)}&email=${encodeURIComponent(applicantEmail)}&phone=${encodeURIComponent(applicantPhone)}&program=${encodeURIComponent(application.program)}&transactionId=${encodeURIComponent(application.transactionId)}&submittedAt=${encodeURIComponent(application.submittedAt)}`;
-                await fetch(getUrl, { mode: 'no-cors' });
-                googleSheetsSuccess = true;
-                console.log("GET fallback sent");
+                const formData = new URLSearchParams();
+                formData.append('action', 'submit_admission');
+                formData.append('applicationId', applicationId);
+                formData.append('trackingCode', trackingCode);
+                formData.append('fullName', fullName);
+                formData.append('surname', surname);
+                formData.append('firstName', firstName);
+                formData.append('otherName', otherName);
+                formData.append('dob', application.dob);
+                formData.append('gender', application.gender);
+                formData.append('email', applicantEmail);
+                formData.append('phone', applicantPhone);
+                formData.append('altPhone', application.altPhone);
+                formData.append('address', application.address);
+                formData.append('program', application.program);
+                formData.append('entryMode', application.entryMode);
+                formData.append('certificates', JSON.stringify(certificatesData));
+                formData.append('transactionId', application.transactionId);
+                formData.append('paymentDate', application.paymentDate);
+                formData.append('paymentMethod', selectedPaymentMethod);
+                formData.append('status', 'pending_review');
+                formData.append('submittedAt', application.submittedAt);
+
+                const response2 = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData.toString()
+                });
+
+                if (response2.ok) {
+                    googleSheetsSuccess = true;
+                    console.log("URL-encoded POST to Google Sheets successful");
+                }
             } catch (error) {
-                console.error("GET fallback also failed:", error);
+                console.log("URL-encoded POST failed:", error.message);
+            }
+        }
+
+        // ---- Method 3: GET request as final fallback ----
+        if (!googleSheetsSuccess) {
+            try {
+                const params = new URLSearchParams();
+                params.append('action', 'submit_admission');
+                params.append('applicationId', applicationId);
+                params.append('trackingCode', trackingCode);
+                params.append('fullName', fullName);
+                params.append('email', applicantEmail);
+                params.append('phone', applicantPhone);
+                params.append('program', application.program);
+                params.append('transactionId', application.transactionId);
+                params.append('submittedAt', application.submittedAt);
+
+                await fetch(`${SCRIPT_URL}?${params.toString()}`, {
+                    method: 'GET'
+                });
+                console.log("GET fallback sent to Google Sheets");
+                // For GET, we can't confirm success but we tried
+            } catch (error) {
+                console.log("GET fallback also failed:", error.message);
             }
         }
 
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalBtnText;
-        
-        showToast(`Application submitted! Tracking Code: ${trackingCode}`, "success");
+
+        // Show appropriate message based on sync status
+        if (googleSheetsSuccess) {
+            showToast(`Application submitted! Tracking Code: ${trackingCode}`, "success");
+        } else {
+            showToast(`Application saved locally! Tracking Code: ${trackingCode}`, "info");
+        }
+
         displayTrackingConfirmation(applicationId, trackingCode, fullName, applicantPhone, applicantEmail, application.program, googleSheetsSuccess);
     }
 
