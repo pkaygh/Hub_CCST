@@ -748,7 +748,7 @@
 
     <script>
         // Configuration - Your Google Apps Script URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby0MHpQXoHzdA8ibojrzVdHu8BkrA3rMpw3p_eDsI2PRvIh2-RuoNyY9imxoE3XAJQY/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXktlTYDoBNVzJxU06P-vtVzBwl2Vof8ANWLrzOVxAA9mhwctfnqrBMbKX-dAzsRF3/exec";
         let deferredPrompt;
         let currentRole = 'student';
 
@@ -934,7 +934,7 @@
                             id: loginId,
                             staffRole: data.staffRole || 'accountant',
                             name: data.name || 'Staff',
-                            permissions: data.permissions || []
+                            permissions: data.permissions || ['search']
                         }));
                         window.location.href = 'accountant.html';
                         return;

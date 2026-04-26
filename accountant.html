@@ -633,8 +633,8 @@
     <!-- SIDE MENU -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2><i class="fas fa-user-tie"></i> Accountant</h2>
-            <p style="font-size:0.85rem; opacity:0.8;">Financial & Academic Control</p>
+            <h2><i class="fas fa-user-shield"></i> Admin Portal</h2>
+            <p style="font-size:0.85rem; opacity:0.8;">CCST Management Dashboard</p>
         </div>
 
               <a href="#" class="menu-item active" id="searchMenuItem" onclick="showSection('search'); return false;">
@@ -684,8 +684,8 @@
     <div class="main-content">
 
         <div class="navbar">
-            <h3 id="pageTitle">Search Student</h3>
-            <div style="font-weight:bold;"><i class="fas fa-user-tie"></i> CCST Accountant</div>
+            <h3 id="pageTitle">Admin Dashboard</h3>
+            <div style="font-weight:bold;"><i class="fas fa-user-shield"></i> CCST Administrator</div>
         </div>
 
         <!-- SEARCH STUDENT SECTION -->
@@ -1123,59 +1123,17 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby0MHpQXoHzdA8ibojrzVdHu8BkrA3rMpw3p_eDsI2PRvIh2-RuoNyY9imxoE3XAJQY/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXktlTYDoBNVzJxU06P-vtVzBwl2Vof8ANWLrzOVxAA9mhwctfnqrBMbKX-dAzsRF3/exec";
         let currentStudent = null;
         let currentTranscriptStudent = null;
         let csvData = null;
         let parsedResults = [];
         let allStudents = [];
+        // ============================================
+        // STAFF PERMISSIONS SYSTEM
+        // ============================================
         let currentStaff = null;
         let staffPermissions = [];
-        const ROLE_PERMISSIONS = {
-            super_admin: ['all'],
-            admin: ['all'],
-
-            accountant: [
-                'search',
-                'clearance',
-                'reports',
-                'csv_upload',
-                'bulk_upload'
-            ],
-
-            registrar: [
-                'search',
-                'admissions',
-                'reports',
-                'courses'
-            ],
-
-            hod: [
-                'search',
-                'reports'
-            ],
-
-            exams_officer: [
-                'search',
-                'transcript',
-                'transcript_requests'
-    ]
-};
-
-        // DOMContentLoaded initialization
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const sidebar = document.querySelector('.sidebar');
-
-            if (menuToggle) {
-                menuToggle.addEventListener('click', () => {
-                    sidebar.classList.toggle('open');
-                });
-            }
-
-            // Check staff access on load
-            checkStaffAccess();
-        });
 
         // Check login and permissions on page load
         function checkStaffAccess() {
@@ -1186,10 +1144,9 @@
             }
 
             currentStaff = JSON.parse(adminData);
-            const role = currentStaff.staffRole || 'accountant';
-            if (['admin', 'superadmin', 'president', 'academic_director'].includes(role.toLowerCase())) {
-        role = 'super_admin';
-            staffPermissions = ROLE_PERMISSIONS[role] || currentStaff.permissions || ['search'];
+            // ADMIN HAS ALL PERMISSIONS - Override permission check
+            staffPermissions = ['all']; // Give admin full access
+
             updateMenuVisibility();
             return true;
         }
@@ -1208,9 +1165,9 @@
                 'reports': 'reportsMenuItem',
                 'admissions': 'admissionsMenuItem'
             };
-
+            
             const hasAllAccess = staffPermissions.includes('all');
-
+            
             for (const [permission, menuId] of Object.entries(menuItems)) {
                 const menuElement = document.getElementById(menuId);
                 if (menuElement) {
@@ -1221,42 +1178,78 @@
                     }
                 }
             }
-
+            
             const roleNames = {
-                'accountant': 'Finance Dashboard',
-                'registrar': 'Academic Registry',
-                'hod': 'HOD Dashboard',
-                'super_admin': 'Admin Dashboard',
-                'exams_officer': 'Exams Officer Dashboard'
+                'accountant': '💰 Finance Dashboard',
+                'registrar': '📚 Academic Registry',
+                'hod': '👨‍🏫 HOD Dashboard',
+                'super_admin': '👑 Admin Dashboard',
+                'exams_officer': '💻 Exams Officer Dashboard'
             };
-
+            
             const pageTitle = document.getElementById('pageTitle');
             if (pageTitle && currentStaff.staffRole) {
                 pageTitle.innerText = roleNames[currentStaff.staffRole] || 'Staff Dashboard';
             }
-
+            
             const navbarDiv = document.querySelector('.navbar div:last-child');
             if (navbarDiv && currentStaff.name) {
                 navbarDiv.innerHTML = `<i class="fas fa-user-tie"></i> ${currentStaff.name}`;
             }
         }
 
-        // Toggle sidebar for mobile
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('open');
-            document.querySelector('.sidebar-overlay').classList.toggle('show');
-        }
+        // Save original showSection function reference
+        const originalShowSection = window.showSection;
+        
+        // Override showSection with permission check
+        window.showSection = function(section) {
+            const permissionMap = {
+                'search': 'search',
+                'csv_upload': 'csv_upload',
+                'bulk_upload': 'bulk_upload',
+                'courses': 'courses',
+                'clearance': 'clearance',
+                'transcript': 'transcript',
+                'transcript_requests': 'transcript_requests',
+                'notifications': 'notifications',
+                'reports': 'reports',
+                'admissions': 'admissions'
+            };
+            
+            const requiredPermission = permissionMap[section];
+            const hasAllAccess = staffPermissions.includes('all');
+            
+            if (requiredPermission && !hasAllAccess && !staffPermissions.includes(requiredPermission)) {
+                showToast(`⛔ Access Denied: ${section} section requires additional permissions`, "danger");
+                return;
+            }
+            
+            if (typeof originalShowSection === 'function') {
+                originalShowSection(section);
+            } else {
+                // Fallback to original showSection logic
+                if (window.innerWidth <= 768) toggleSidebar();
+                document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+                const sectionElement = document.getElementById(section + 'Section');
+                if (sectionElement) sectionElement.style.display = 'block';
+                document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+                if (event && event.currentTarget) event.currentTarget.classList.add('active');
+                const titles = {
+                    search: 'Search Student', csv_upload: 'CSV Upload', bulk_upload: 'Bulk Operations',
+                    courses: 'Manage Courses', clearance: 'Financial Clearance', transcript: 'Generate Transcript',
+                    transcript_requests: 'Transcript Requests', admissions: 'Admissions Manager', notifications: 'Send Notifications', reports: 'Reports'
+                };
+                const pageTitle = document.getElementById('pageTitle');
+                if (pageTitle) pageTitle.innerText = titles[section] || 'Dashboard';
+                if (section === 'clearance' && typeof loadStudentClearanceList === 'function') loadStudentClearanceList();
+                if (section === 'transcript_requests' && typeof loadTranscriptRequests === 'function') { loadTranscriptRequests(); loadProcessedRequests(); }
+                if (section === 'admissions' && typeof loadAdmissions === 'function') loadAdmissions();
+            }
+        };
 
-        // Toast notification
-        function showToast(msg, type = "info") {
-            const toast = document.getElementById('toast');
-            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i> ${msg}`;
-            toast.style.background = type === 'success' ? '#27ae60' : type === 'danger' ? '#e74c3c' : '#3498db';
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 3000);
-        }
-
+        // ============================================
         // GRADING SYSTEMS
+        // ============================================
         const GRADING_SYSTEMS = {
             RM: [
                 { min: 80, max: 100, grade: "A", points: 4.0 },
@@ -1307,6 +1300,12 @@
             return 0;
         }
 
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('show');
+        }
+
+        // Convert short program code to full name
         function getFullProgramName(code) {
             const programNames = {
                 'RM': 'Registered Midwifery',
@@ -1316,92 +1315,73 @@
             return programNames[code] || code;
         }
 
-        // ============================================
-        // SHOW SECTION - Main Navigation Function
-        // ============================================
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i> ${msg}`;
+            toast.style.background = type === 'success' ? '#27ae60' : type === 'danger' ? '#e74c3c' : '#3498db';
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
         function showSection(section) {
-            function showSection(section) {
-    const target = document.getElementById(section + 'Section');
-    if (!target) {
-        console.error(`Section "${section}Section" not found`);
-        showToast(`Section "${section}" not available`, "danger");
+    console.log("Showing section:", section);
+    
+    if (window.innerWidth <= 768) toggleSidebar();
+    
+    // Hide all sections
+    document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+    
+    // Show selected section
+    const sectionToShow = document.getElementById(section + 'Section');
+    if (sectionToShow) {
+        sectionToShow.style.display = 'block';
+    } else {
+        console.error("Section not found:", section + 'Section');
         return;
+    }
+    
+    // Update active menu item
+    document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+    
+    // Find and activate the clicked menu item
+    const menuItems = document.querySelectorAll('.menu-item');
+    for (let item of menuItems) {
+        const onclickAttr = item.getAttribute('onclick');
+        if (onclickAttr && onclickAttr.includes(`'${section}'`)) {
+            item.classList.add('active');
+            break;
         }
-            console.log("Showing section:", section);
-
-            // Close sidebar on mobile
-            if (window.innerWidth <= 768) toggleSidebar();
-
-            // Get all sections
-            var sections = ['search', 'csv_upload', 'bulk_upload', 'courses', 'clearance', 'transcript', 'transcript_requests', 'notifications', 'reports', 'admissions'];
-
-            // Hide all sections
-            for (var i = 0; i < sections.length; i++) {
-                var sec = document.getElementById(sections[i] + 'Section');
-                if (sec) {
-                    sec.style.display = 'none';
-                }
-            }
-
-            // Show the selected section
-            var selectedSection = document.getElementById(section + 'Section');
-            if (selectedSection) {
-                selectedSection.style.display = 'block';
-                console.log("Showing section:", section + 'Section');
-            } else {
-                console.error("Section not found:", section + 'Section');
-                showToast("Section not found: " + section, "danger");
-                return;
-            }
-
-            // Update active menu item
-            var menuItems = document.querySelectorAll('.menu-item');
-            for (var i = 0; i < menuItems.length; i++) {
-                menuItems[i].classList.remove('active');
-            }
-
-            // Find and activate clicked menu item
-            var links = document.querySelectorAll('.menu-item');
-            for (var i = 0; i < links.length; i++) {
-                var link = links[i];
-                var onclickAttr = link.getAttribute('onclick');
-                if (onclickAttr && onclickAttr.indexOf("'" + section + "'") !== -1) {
-                    link.classList.add('active');
-                    break;
-                }
-            }
-
-            // Update page title
-            var titles = {
-                'search': 'Search Student',
-                'csv_upload': 'CSV Upload',
-                'bulk_upload': 'Bulk Operations',
-                'courses': 'Manage Courses',
-                'clearance': 'Financial Clearance',
-                'transcript': 'Generate Transcript',
-                'transcript_requests': 'Transcript Requests',
-                'admissions': 'Admissions Manager',
-                'notifications': 'Send Notifications',
-                'reports': 'Reports'
-            };
-
-            var pageTitle = document.getElementById('pageTitle');
-            if (pageTitle) {
-                pageTitle.innerText = titles[section] || section;
-            }
-
-            // Load section data if needed
-            if (section === 'clearance' && typeof loadStudentClearanceList === 'function') {
-                loadStudentClearanceList();
-            }
-            if (section === 'transcript_requests' && typeof loadTranscriptRequests === 'function') {
-                loadTranscriptRequests();
-                loadProcessedRequests();
-            }
-            if (section === 'admissions' && typeof loadAdmissions === 'function') {
-                loadAdmissions();
-            }
-        }
+    }
+    
+    // Update page title
+    const titles = {
+        search: 'Search Student', 
+        csv_upload: 'CSV Upload', 
+        bulk_upload: 'Bulk Operations',
+        courses: 'Manage Courses', 
+        clearance: 'Financial Clearance', 
+        transcript: 'Generate Transcript',
+        transcript_requests: 'Transcript Requests', 
+        admissions: 'Admissions Manager', 
+        notifications: 'Send Notifications', 
+        reports: 'Reports'
+    };
+    
+    const pageTitle = document.getElementById('pageTitle');
+    if (pageTitle) pageTitle.innerText = titles[section] || 'Dashboard';
+    
+    // Load section-specific data
+    if (section === 'clearance' && typeof loadStudentClearanceList === 'function') {
+        loadStudentClearanceList();
+    }
+    if (section === 'transcript_requests' && typeof loadTranscriptRequests === 'function') { 
+        loadTranscriptRequests(); 
+        loadProcessedRequests(); 
+    }
+    if (section === 'admissions' && typeof loadAdmissions === 'function') {
+        loadAdmissions();
+    }
+}
 
 // Search Student function - MUST be outside showSection
 async function searchStudent() {
@@ -1420,6 +1400,15 @@ async function searchStudent() {
         updateClearanceButton(data.isCleared);
     } catch (e) { showToast("Error connecting to server", "danger"); }
 }
+
+            function getFullProgramName(code) {
+                const programNames = {
+                    'RM': 'Registered Midwifery',
+                    'RN': 'Registered General Nursing', 
+                    'ML': 'Medical Laboratory Technology'
+                };
+                return programNames[code] || code;
+            }
 
         function updateClearanceButton(isCleared) {
             const btn = document.getElementById('toggleBtn');
