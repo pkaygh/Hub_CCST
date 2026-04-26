@@ -1131,6 +1131,35 @@
         let allStudents = [];
         let currentStaff = null;
         let staffPermissions = [];
+        const ROLE_PERMISSIONS = {
+            super_admin: ['all'],
+
+            accountant: [
+                'search',
+                'clearance',
+                'reports',
+                'csv_upload',
+                'bulk_upload'
+            ],
+
+            registrar: [
+                'search',
+                'admissions',
+                'reports',
+                'courses'
+            ],
+
+            hod: [
+                'search',
+                'reports'
+            ],
+
+            exams_officer: [
+                'search',
+                'transcript',
+                'transcript_requests'
+    ]
+};
 
         // DOMContentLoaded initialization
         document.addEventListener('DOMContentLoaded', function() {
@@ -1156,7 +1185,8 @@
             }
 
             currentStaff = JSON.parse(adminData);
-            staffPermissions = currentStaff.permissions || [];
+            const role = currentStaff.staffRole || 'accountant';
+            staffPermissions = ROLE_PERMISSIONS[role] || currentStaff.permissions || ['search'];
 
             if (staffPermissions.length === 0) {
                 staffPermissions = ['search'];
