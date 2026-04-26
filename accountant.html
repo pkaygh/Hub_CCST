@@ -1133,6 +1133,7 @@
         let staffPermissions = [];
         const ROLE_PERMISSIONS = {
             super_admin: ['all'],
+            admin: ['all'],
 
             accountant: [
                 'search',
@@ -1186,12 +1187,9 @@
 
             currentStaff = JSON.parse(adminData);
             const role = currentStaff.staffRole || 'accountant';
+            if (['admin', 'superadmin', 'president', 'academic_director'].includes(role.toLowerCase())) {
+        role = 'super_admin';
             staffPermissions = ROLE_PERMISSIONS[role] || currentStaff.permissions || ['search'];
-
-            if (staffPermissions.length === 0) {
-                staffPermissions = ['search'];
-            }
-
             updateMenuVisibility();
             return true;
         }
@@ -1322,6 +1320,13 @@
         // SHOW SECTION - Main Navigation Function
         // ============================================
         function showSection(section) {
+            function showSection(section) {
+    const target = document.getElementById(section + 'Section');
+    if (!target) {
+        console.error(`Section "${section}Section" not found`);
+        showToast(`Section "${section}" not available`, "danger");
+        return;
+        }
             console.log("Showing section:", section);
 
             // Close sidebar on mobile
