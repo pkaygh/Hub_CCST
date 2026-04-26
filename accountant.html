@@ -1329,57 +1329,73 @@
         function showSection(section) {
     console.log("Showing section:", section);
     
+    // Close sidebar on mobile
     if (window.innerWidth <= 768) toggleSidebar();
     
-    // Hide all sections
-    document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+    // Get all sections
+    var sections = ['search', 'csv_upload', 'bulk_upload', 'courses', 'clearance', 'transcript', 'transcript_requests', 'notifications', 'reports', 'admissions'];
     
-    // Show selected section
-    const sectionToShow = document.getElementById(section + 'Section');
-    if (sectionToShow) {
-        sectionToShow.style.display = 'block';
+    // Hide all sections
+    for (var i = 0; i < sections.length; i++) {
+        var sec = document.getElementById(sections[i] + 'Section');
+        if (sec) {
+            sec.style.display = 'none';
+        }
+    }
+    
+    // Show the selected section
+    var selectedSection = document.getElementById(section + 'Section');
+    if (selectedSection) {
+        selectedSection.style.display = 'block';
+        console.log("✅ Showing section:", section + 'Section');
     } else {
-        console.error("Section not found:", section + 'Section');
+        console.error("❌ Section not found:", section + 'Section');
         return;
     }
     
     // Update active menu item
-    document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+    var menuItems = document.querySelectorAll('.menu-item');
+    for (var i = 0; i < menuItems.length; i++) {
+        menuItems[i].classList.remove('active');
+    }
     
-    // Find and activate the clicked menu item
-    const menuItems = document.querySelectorAll('.menu-item');
-    for (let item of menuItems) {
-        const onclickAttr = item.getAttribute('onclick');
-        if (onclickAttr && onclickAttr.includes(`'${section}'`)) {
-            item.classList.add('active');
+    // Find and activate clicked menu item
+    var links = document.querySelectorAll('.menu-item');
+    for (var i = 0; i < links.length; i++) {
+        var link = links[i];
+        var onclickAttr = link.getAttribute('onclick');
+        if (onclickAttr && onclickAttr.indexOf("'" + section + "'") !== -1) {
+            link.classList.add('active');
             break;
         }
     }
     
     // Update page title
-    const titles = {
-        search: 'Search Student', 
-        csv_upload: 'CSV Upload', 
-        bulk_upload: 'Bulk Operations',
-        courses: 'Manage Courses', 
-        clearance: 'Financial Clearance', 
-        transcript: 'Generate Transcript',
-        transcript_requests: 'Transcript Requests', 
-        admissions: 'Admissions Manager', 
-        notifications: 'Send Notifications', 
-        reports: 'Reports'
+    var titles = {
+        'search': '🔍 Search Student',
+        'csv_upload': '📁 CSV Upload',
+        'bulk_upload': '📤 Bulk Operations',
+        'courses': '📚 Manage Courses',
+        'clearance': '✅ Financial Clearance',
+        'transcript': '📄 Generate Transcript',
+        'transcript_requests': '📧 Transcript Requests',
+        'admissions': '👥 Admissions Manager',
+        'notifications': '🔔 Send Notifications',
+        'reports': '📊 Reports'
     };
     
-    const pageTitle = document.getElementById('pageTitle');
-    if (pageTitle) pageTitle.innerText = titles[section] || 'Dashboard';
+    var pageTitle = document.getElementById('pageTitle');
+    if (pageTitle) {
+        pageTitle.innerText = titles[section] || section;
+    }
     
-    // Load section-specific data
+    // Load section data if needed
     if (section === 'clearance' && typeof loadStudentClearanceList === 'function') {
         loadStudentClearanceList();
     }
-    if (section === 'transcript_requests' && typeof loadTranscriptRequests === 'function') { 
-        loadTranscriptRequests(); 
-        loadProcessedRequests(); 
+    if (section === 'transcript_requests' && typeof loadTranscriptRequests === 'function') {
+        loadTranscriptRequests();
+        loadProcessedRequests();
     }
     if (section === 'admissions' && typeof loadAdmissions === 'function') {
         loadAdmissions();
