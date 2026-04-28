@@ -1388,6 +1388,9 @@
             padding: 25px;
             color: #666;
             font-size: 0.8rem;
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            border-top: 1px solid rgba(107, 142, 35, 0.2);
+            margin-top: 30px;
         }
 
         .footer a {
@@ -1395,6 +1398,75 @@
             text-decoration: none;
         }
 
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--primary-dark);
+            font-size: 0.85rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .footer-social {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .footer-social a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .footer-social a:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+        }
+
+        .footer-divider {
+            width: 50px;
+            height: 3px;
+            background: var(--primary);
+            margin: 15px auto;
+            border-radius: 2px;
+        }
+
+        .footer-contact {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .footer {
+                padding: 20px 15px;
+            }
+            .footer-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            .footer-social {
+                gap: 12px;
+            }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -1568,6 +1640,44 @@
                         <div class="detail-row">
                             <span class="detail-label"><i class="fas fa-venus-mars"></i> Gender</span>
                             <span class="detail-value" id="infoGender">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Address</span>
+                            <span class="detail-value" id="infoAddress">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-globe"></i> Nationality</span>
+                            <span class="detail-value" id="infoNationality">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-home"></i> Hometown</span>
+                            <span class="detail-value" id="infoHometown">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guardian Information Card -->
+                <div class="detail-card">
+                    <div class="detail-card-header">
+                        <i class="fas fa-users"></i>
+                        <h3>Guardian Information</h3>
+                    </div>
+                    <div class="detail-card-content">
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-user-shield"></i> Guardian Name</span>
+                            <span class="detail-value" id="infoGuardian">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-phone-square"></i> Emergency Contact</span>
+                            <span class="detail-value" id="infoEmergency">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-heartbeat"></i> Blood Group</span>
+                            <span class="detail-value" id="infoBloodGroup">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-exclamation-circle"></i> Allergies</span>
+                            <span class="detail-value" id="infoAllergies">None reported</span>
                         </div>
                     </div>
                 </div>
@@ -1909,6 +2019,28 @@
                 <div id="notificationList"><p style="text-align: center; color: #999;">Loading notifications...</p></div>
             </div>
         </div>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <div class="footer-links">
+                <a href="#" onclick="showSection('profile'); return false;"><i class="fas fa-home"></i> Home</a>
+                <a href="#" onclick="showSection('academic'); return false;"><i class="fas fa-graduation-cap"></i> Academic</a>
+                <a href="#" onclick="showSection('finance'); return false;"><i class="fas fa-money-bill-wave"></i> Finance</a>
+                <a href="#" onclick="showSection('transcript'); return false;"><i class="fas fa-file-alt"></i> Transcript</a>
+                <a href="#" onclick="showSection('notifications'); return false;"><i class="fas fa-bell"></i> Notifications</a>
+            </div>
+            <div class="footer-social">
+                <a href="https://www.Centralcollegegh.edu.gh" title="Website" target="_blank"><i class="fas fa-globe"></i></a>
+                <a href="mailto:info@centralcollegegh.com" title="Email"><i class="fas fa-envelope"></i></a>
+                <a href="tel:+23330551528184" title="Call"><i class="fas fa-phone"></i></a>
+            </div>
+            <div class="footer-divider"></div>
+            <p><strong>CCST Student Portal</strong> &copy; 2025 Central College of Science and Technology</p>
+            <p>Designed for Healthcare Excellence</p>
+            <div class="footer-contact">
+                <p><i class="fas fa-map-marker-alt"></i> Agona Swedru, Ghana | <i class="fas fa-phone"></i> +233 20 445 8182 | <i class="fas fa-envelope"></i> info@ccst.edu.gh</p>
+            </div>
+        </footer>
     </div>
 
     <div id="toast" class="toast" style="display: none;"></div>
@@ -1916,6 +2048,9 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby0MHpQXoHzdA8ibojrzVdHu8BkrA3rMpw3p_eDsI2PRvIh2-RuoNyY9imxoE3XAJQY/exec";
         let studentData = null;
+        let financeData = null;
+        let academicData = null;
+        let personalData = null;
         let userResults = [];
         let userPayments = [];
         let notifications = [];
@@ -2170,29 +2305,29 @@
 }
 
         function loadFinance() {
-            if (!studentData?.profile) return;
-            const p = studentData.profile;
-            
-            const previousBalance = parseFloat(p.previousBalance) || parseFloat(p.arrears) || 0;
-            const currentSemesterFees = parseFloat(p.currentSemesterFees) || parseFloat(p.totalFee) || 0;
+            const profile = studentData?.profile;
+            const finance = financeData || {};
+
+            // Use financeData if available from Google Sheets, otherwise fall back to profile
+            const previousBalance = parseFloat(finance.previousBalance) || parseFloat(profile?.previousBalance) || parseFloat(profile?.arrears) || 0;
+            const currentSemesterFees = parseFloat(finance.currentSemesterFees) || parseFloat(profile?.currentSemesterFees) || parseFloat(profile?.totalFee) || 0;
             const amountPayable = previousBalance + currentSemesterFees;
-            const amountPaid = parseFloat(p.amountPaid) || 0;
+            const amountPaid = parseFloat(finance.amountPaid) || parseFloat(profile?.amountPaid) || 0;
             const balance = amountPayable - amountPaid;
-            const arrears = balance < 0 ? 0 : (previousBalance > 0 ? previousBalance : 0);
-            
+            const arrears = finance.arrears || profile?.arrears || (balance < 0 ? 0 : (previousBalance > 0 ? previousBalance : 0));
+
             document.getElementById('previousBalance').innerHTML = `GH₵${previousBalance.toLocaleString()}`;
             document.getElementById('currentSemesterFees').innerHTML = `GH₵${currentSemesterFees.toLocaleString()}`;
             document.getElementById('amountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
             document.getElementById('amountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
             document.getElementById('balance').innerHTML = `GH₵${balance.toLocaleString()}`;
-            document.getElementById('arrears').innerHTML = `GH₵${(p.arrears || 0).toLocaleString()}`;
-            
+            document.getElementById('arrears').innerHTML = `GH₵${arrears.toLocaleString()}`;
+
             document.getElementById('calcPrevBalance').innerHTML = `GH₵${previousBalance.toLocaleString()}`;
             document.getElementById('calcCurrentFees').innerHTML = `GH₵${currentSemesterFees.toLocaleString()}`;
             document.getElementById('calcAmountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
             document.getElementById('calcAmountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
-            document.getElementById('calcBalance').innerHTML = `GH₵${balance.toLocaleString()}`;
-            
+
             const balanceElement = document.getElementById('calcBalance');
             if (balance > 0) {
                 balanceElement.style.color = '#e74c3c';
@@ -2204,11 +2339,11 @@
                 balanceElement.style.color = '#27ae60';
                 balanceElement.innerHTML = `GH₵0.00 (Fully Paid)`;
             }
-            
+
             const statusEl = document.getElementById('clearanceStatusFinance');
             statusEl.style.display = 'block';
-            const isCleared = (p.isCleared === true || p.isCleared === "TRUE" || balance <= 0);
-            
+            const isCleared = (finance.isCleared || profile?.isCleared === true || profile?.isCleared === "TRUE" || balance <= 0);
+
             if (isCleared) {
                 statusEl.innerHTML = '<i class="fas fa-check-circle"></i> ✅ FINANCIALLY CLEARED - You can register for courses';
                 statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
@@ -2218,7 +2353,7 @@
                 statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
                 statusEl.style.color = '#c62828';
             }
-            
+
             const historyContainer = document.getElementById('paymentHistory');
             if (userPayments?.length > 0) {
                 let totalPaid = 0;
@@ -2720,46 +2855,131 @@
         }
         
         function editProfile() { showToast('Edit feature coming soon'); }
-        
+
+        // Fetch all data from Google Sheets backend
         async function fetchStudentData() {
-    try {
-        const storedData = localStorage.getItem('userData');
-        console.log("Stored data found:", storedData ? "Yes" : "No");
-        
-        if (!storedData) { 
-            window.location.replace("index.html"); 
-            return; 
+            try {
+                const storedData = localStorage.getItem('userData');
+                console.log("Stored data found:", storedData ? "Yes" : "No");
+
+                if (!storedData) {
+                    window.location.replace("index.html");
+                    return;
+                }
+
+                studentData = JSON.parse(storedData);
+                console.log("Student profile loaded:", studentData.profile.name);
+
+                const studentId = studentData.profile.id;
+                console.log("Fetching all data for ID:", studentId);
+
+                // Fetch all data in parallel for better performance
+                const [financeRes, academicRes, personalRes, resultsRes, paymentsRes] = await Promise.all([
+                    fetch(`${SCRIPT_URL}?action=get_finance&id=${studentId}`),
+                    fetch(`${SCRIPT_URL}?action=get_academic&id=${studentId}`),
+                    fetch(`${SCRIPT_URL}?action=get_personal&id=${studentId}`),
+                    fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`),
+                    fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`)
+                ]);
+
+                const [financeDataRes, academicDataRes, personalDataRes, resultsData, paymentsData] = await Promise.all([
+                    financeRes.json(),
+                    academicRes.json(),
+                    personalRes.json(),
+                    resultsRes.json(),
+                    paymentsRes.json()
+                ]);
+
+                console.log("Finance data:", financeDataRes);
+                console.log("Academic data:", academicDataRes);
+                console.log("Personal data:", personalDataRes);
+                console.log("Results data:", resultsData);
+                console.log("Payments data:", paymentsData);
+
+                // Store fetched data
+                if (financeDataRes.finance) {
+                    financeData = financeDataRes.finance;
+                    // Update student profile with finance data
+                    Object.assign(studentData.profile, {
+                        previousBalance: financeData.previousBalance || 0,
+                        currentSemesterFees: financeData.currentSemesterFees || 0,
+                        amountPaid: financeData.amountPaid || 0,
+                        balance: financeData.balance || 0,
+                        arrears: financeData.arrears || 0,
+                        isCleared: financeData.isCleared || false
+                    });
+                }
+
+                if (academicDataRes.academic) {
+                    academicData = academicDataRes.academic;
+                }
+
+                if (personalDataRes.personal) {
+                    personalData = personalDataRes.personal;
+                }
+
+                if (resultsData.results) {
+                    userResults = resultsData.results;
+                } else {
+                    console.log("No results from server, using sample data");
+                    userResults = [{
+                        semester: "Semester 1 - 2025/2026", gpa: "3.25",
+                        details: [{ code: "COSC 101", name: "Introduction to Computing", credits: 3, ca: 35, exam: 55, grade: "A" },
+                                  { code: "MATH 101", name: "Algebra", credits: 3, ca: 30, exam: 48, grade: "B+" }]
+                    }];
+                }
+
+                if (paymentsData.payments) {
+                    userPayments = paymentsData.payments;
+                }
+
+                // Load all sections with fetched data
+                loadProfile();
+                loadAcademicResults();
+                loadFinance();
+                loadPersonalInfo();
+                loadNotifications();
+                loadTranscript();
+
+                // Save updated student data to localStorage
+                localStorage.setItem('userData', JSON.stringify(studentData));
+
+            } catch(e) {
+                console.log('Error in fetchStudentData:', e);
+                // Fallback to demo data
+                loadProfile();
+                loadAcademicResults();
+                loadFinance();
+                loadPersonalInfo();
+            }
         }
-        
-        studentData = JSON.parse(storedData);
-        console.log("Student profile loaded:", studentData.profile.name);
-        
-        const studentId = studentData.profile.id;
-        console.log("Fetching results for ID:", studentId);
-        
-        const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`);
-        const resultsData = await resultsRes.json();
-        console.log("Results data:", resultsData);
-        
-        if (resultsData.results) userResults = resultsData.results;
-        else {
-            console.log("No results from server, using sample data");
-            userResults = [{
-                semester: "Semester 1 - 2025/2026", gpa: "3.25",
-                details: [{ code: "COSC 101", name: "Introduction to Computing", credits: 3, ca: 35, exam: 55, grade: "A" },
-                          { code: "MATH 101", name: "Algebra", credits: 3, ca: 30, exam: 48, grade: "B+" }]
-            }];
+
+        // Load personal information from fetched data
+        function loadPersonalInfo() {
+            if (!personalData) return;
+
+            // Update personal info card if elements exist
+            const infoAddress = document.getElementById('infoAddress');
+            if (infoAddress) infoAddress.innerHTML = personalData.address || '--';
+
+            const infoEmergency = document.getElementById('infoEmergency');
+            if (infoEmergency) infoEmergency.innerHTML = personalData.emergencyPhone ? `${personalData.emergencyContact} (${personalData.emergencyPhone})` : personalData.emergencyContact || '--';
+
+            const infoGuardian = document.getElementById('infoGuardian');
+            if (infoGuardian) infoGuardian.innerHTML = personalData.guardianName || '--';
+
+            const infoBloodGroup = document.getElementById('infoBloodGroup');
+            if (infoBloodGroup) infoBloodGroup.innerHTML = personalData.bloodGroup || '--';
+
+            const infoNationality = document.getElementById('infoNationality');
+            if (infoNationality) infoNationality.innerHTML = personalData.nationality || '--';
+
+            const infoHometown = document.getElementById('infoHometown');
+            if (infoHometown) infoHometown.innerHTML = personalData.hometown || '--';
+
+            const infoAllergies = document.getElementById('infoAllergies');
+            if (infoAllergies) infoAllergies.innerHTML = personalData.allergies || 'None reported';
         }
-        
-        loadProfile();
-        loadAcademicResults();
-        loadFinance();
-        loadNotifications();
-        loadTranscript();
-    } catch(e) { 
-        console.log('Error in fetchStudentData:', e); 
-    }
-}
 
         function updateWelcomeMessage() {
             const welcomeName = document.getElementById('welcomeName');
