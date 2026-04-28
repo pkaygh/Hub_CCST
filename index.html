@@ -751,76 +751,6 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxw5xMV1TZ2tq8vFYxopZSNA_s0nmeBAg1_6X7kAbU5qQJYt3PAK6VKkPwNrdVhhkeY/exec";
         let deferredPrompt;
         let currentRole = 'student';
-        let backendStatus = 'checking'; // 'online', 'offline', 'checking'
-
-        // Check backend health on load
-        async function checkBackendHealth() {
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=health_check`, {
-                    method: 'GET',
-                    signal: AbortSignal.timeout(10000)
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Backend health:', data);
-                    backendStatus = 'online';
-                    updateBackendStatusIndicator('online');
-                    return true;
-                }
-            } catch (e) {
-                console.error('Backend health check failed:', e);
-                backendStatus = 'offline';
-                updateBackendStatusIndicator('offline');
-                return false;
-            }
-            return false;
-        }
-
-        function updateBackendStatusIndicator(status) {
-            const existingIndicator = document.getElementById('backendStatus');
-            if (existingIndicator) {
-                existingIndicator.remove();
-            }
-
-            const indicator = document.createElement('div');
-            indicator.id = 'backendStatus';
-            indicator.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                padding: 8px 16px;
-                border-radius: 20px;
-                font-size: 12px;
-                font-weight: 600;
-                z-index: 1000;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                transition: all 0.3s;
-            `;
-
-            if (status === 'online') {
-                indicator.style.background = '#d4edda';
-                indicator.style.color = '#155724';
-                indicator.innerHTML = '<span style="width:8px;height:8px;background:#28a745;border-radius:50%;"></span> Server Connected';
-            } else if (status === 'offline') {
-                indicator.style.background = '#f8d7da';
-                indicator.style.color = '#721c24';
-                indicator.innerHTML = '<span style="width:8px;height:8px;background:#dc3545;border-radius:50%;"></span> Server Offline';
-            } else {
-                indicator.style.background = '#fff3cd';
-                indicator.style.color = '#856404';
-                indicator.innerHTML = '<span style="width:8px;height:8px;background:#ffc107;border-radius:50%;"></span> Checking Server...';
-            }
-
-            document.body.appendChild(indicator);
-
-            if (status === 'offline') {
-                setTimeout(() => {
-                    showError("Cannot connect to server. Please check your internet and try again.");
-                }, 2000);
-            }
-        }
 
         // Particle Animation System
         const canvas = document.getElementById('particleCanvas');
@@ -943,6 +873,33 @@
             }
         }
 
+        // Reset Login Button
+        function resetLoginBtn() {
+            const loginBtn = document.getElementById('loginBtn');
+            const loginText = document.getElementById('loginText');
+            const spinner = document.getElementById('loginSpinner');
+            if (loginBtn) loginBtn.disabled = false;
+            if (loginText) loginText.style.display = 'inline';
+            if (spinner) spinner.style.display = 'none';
+        }
+
+        // Helper function for fetch with timeout
+        async function fetchWithTimeout(url, options, timeout = 10000) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                return response;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                throw error;
+            }
+        }
+
         // Handle Login
         async function handleLogin(event) {
             event.preventDefault();
@@ -982,7 +939,7 @@
             try {
                 // 2. Call the Google Apps Script Backend based on role
                 if (currentRole === 'admin') {
-                    const response = await fetch(`${SCRIPT_URL}?action=staff_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`);
+                    const response = await fetchWithTimeout(`${SCRIPT_URL}?action=staff_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`, {}, 15000);
 
                     if (!response.ok) {
                         showError("Server error. Please try again.");
@@ -1017,7 +974,7 @@
 
                 // 3. Executive Dashboard Login
                 else if (currentRole === 'executive') {
-                    const response = await fetch(`${SCRIPT_URL}?action=executive_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`);
+                    const response = await fetchWithTimeout(`${SCRIPT_URL}?action=executive_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`, {}, 15000);
 
                     if (!response.ok) {
                         showError("Server error. Please try again.");
@@ -1046,7 +1003,7 @@
 
                 // 4. Student Login
                 else {
-                    const response = await fetch(`${SCRIPT_URL}?id=${encodeURIComponent(loginId)}&password=${encodeURIComponent(password)}`);
+                    const response = await fetchWithTimeout(`${SCRIPT_URL}?id=${encodeURIComponent(loginId)}&password=${encodeURIComponent(password)}`, {}, 15000);
 
                     if (!response.ok) {
                         showError("Server error. Please try again.");
@@ -1073,7 +1030,7 @@
                     localStorage.setItem('studentId', loginId);
 
                     try {
-                        const resultsRes = await fetch(`${SCRIPT_URL}?action=get_results&id=${encodeURIComponent(loginId)}`);
+                        const resultsRes = await fetchWithTimeout(`${SCRIPT_URL}?action=get_results&id=${encodeURIComponent(loginId)}`, {}, 15000);
                         if (resultsRes.ok) {
                             const resultsData = await resultsRes.json();
                             if (resultsData.results) {
@@ -1093,9 +1050,7 @@
                 if (!navigator.onLine) {
                     showError("You are offline. Please connect to login.");
                 } else if (e.name === 'AbortError') {
-                    showError("Connection timed out. Please check your internet and try again.");
-                } else if (e.message && e.message.includes('Failed to fetch')) {
-                    showError("Cannot reach server. Please check your backend URL configuration.");
+                    showError("Request timed out. Please check your connection and try again.");
                 } else {
                     showError("Connection error. Please try again.");
                 }
@@ -1217,9 +1172,6 @@
         window.onload = function() {
             updateOnlineStatus();
             initParticles();
-
-            // Check backend health on page load
-            checkBackendHealth();
 
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js')
