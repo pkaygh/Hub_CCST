@@ -748,7 +748,7 @@
 
     <script>
         // Configuration - Your Google Apps Script URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxw5xMV1TZ2tq8vFYxopZSNA_s0nmeBAg1_6X7kAbU5qQJYt3PAK6VKkPwNrdVhhkeY/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxn1NmNOu-Lqe7C9dLrzmNuPLSPexZNRoNmC9ldjfIHZZWkF07eDypz87SIHwI7e6hw/exec";
         let deferredPrompt;
         let currentRole = 'student';
         let backendStatus = 'checking'; // 'online', 'offline', 'checking'
@@ -981,14 +981,26 @@
 
             try {
                 // 2. Call the Google Apps Script Backend based on role
-                if (currentRole === 'admin') {
-                    const response = await fetch(`${SCRIPT_URL}?action=staff_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`);
+                // This tells the script exactly what to do (action) and who is logging in (user/pass)
+const response = await fetch(`${SCRIPT_URL}?action=staff_login&user=${encodeURIComponent(id)}&pass=${encodeURIComponent(password)}`, {
+    method: 'GET'
+});
 
-                    if (!response.ok) {
-                        showError("Server error. Please try again.");
-                        resetLoginBtn();
-                        return;
-                    }
+const result = await response.json();
+
+if (result.authorized) {
+    // Save the user data for the dashboard to use
+    localStorage.setItem('userData', JSON.stringify(result));
+    
+    // Redirect based on role
+    if (result.role === 'super_admin' || result.role === 'admin') {
+        window.location.href = 'dashboard.html';
+    } else if (result.role === 'accountant') {
+        window.location.href = 'accountant.html';
+    }
+} else {
+    showError(result.message || "Invalid ID or Password");
+}
 
                     const data = await response.json();
 
