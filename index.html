@@ -874,6 +874,38 @@
                 });
             }
         }
+                // Error handling function
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMessage');
+            errorMsg.innerText = message;
+            errorMsg.style.display = 'block';
+        }
+
+        // Reset login button state
+        function resetLoginBtn() {
+            const loginBtn = document.getElementById('loginBtn');
+            const loginText = document.getElementById('loginText');
+            const loginSpinner = document.getElementById('loginSpinner');
+            
+            loginBtn.disabled = false;
+            loginText.style.display = 'inline';
+            loginSpinner.style.display = 'none';
+        }
+
+        // Modal functions
+        function openRegisterModal() {
+            document.getElementById('registerModal').classList.add('show');
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('registerModal').classList.remove('show');
+        }
+
+        // Handle Registration (placeholder - implement as needed)
+        async function handleRegister(event) {
+            event.preventDefault();
+            showError("Registration feature coming soon");
+        }
 
         // Handle Login
         async function handleLogin(event) {
@@ -2122,6 +2154,11 @@
     delete window.__iframeHighlightCleanup;
   };
 })();
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+    initParticles();
+    updateOnlineStatus();
+    });
 
 </script>
 </body>
