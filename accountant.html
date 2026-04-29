@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accountant Portal | CCST</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        /* Theme: Dots halftone grunge brush yellow green with white on dark green */
         :root {
             --primary: #6b8e23;
             --primary-light: #9acd32;
@@ -40,8 +40,10 @@
             height: 100vh;
             overflow-y: auto;
             transition: transform 0.3s;
-            background-image: linear-gradient(135deg, rgba(85, 107, 47, 0.3) 0%, transparent 50%),
-                              radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 0%, transparent 30%);
+            background-image:
+                linear-gradient(135deg, rgba(85, 107, 47, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(0,0,0,0.1) 0%, transparent 40%);
         }
 
         .sidebar-header {
@@ -148,6 +150,7 @@
         .warning-btn { background: var(--warning); }
         .info-btn { background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%); }
 
+        /* CSV Upload Styles */
         .upload-zone {
             border: 3px dashed var(--primary);
             border-radius: 12px;
@@ -163,7 +166,12 @@
             background: rgba(107, 142, 35, 0.1);
         }
 
-        .upload-zone i { font-size: 3rem; color: var(--primary); margin-bottom: 15px; }
+        .upload-zone i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
         .upload-zone input { display: none; }
 
         .file-preview {
@@ -173,6 +181,34 @@
             margin-top: 15px;
             border-left: 4px solid var(--primary);
         }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            display: block;
+        }
+
+        .results-table th, .results-table td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(107, 142, 35, 0.2);
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        .results-table tr:hover { background: rgba(107, 142, 35, 0.05); }
+        .results-table { max-height: 400px; overflow-y: auto; display: block; }
+
+        .status-cleared { color: var(--success); font-weight: bold; }
+        .status-not { color: var(--danger); font-weight: bold; }
 
         .student-list-container {
             max-height: 400px;
@@ -193,40 +229,118 @@
 
         .student-list-item:hover { background: rgba(107, 142, 35, 0.05); }
 
-        .student-info { display: flex; flex-direction: column; }
+        .student-info {
+            display: flex;
+            flex-direction: column;
+        }
+
         .student-name { font-weight: bold; color: var(--text-dark); }
         .student-details { font-size: 0.85rem; color: #666; }
 
-        .status-cleared { color: var(--success); font-weight: bold; }
-        .status-not { color: var(--danger); font-weight: bold; }
-
-        .filter-section {
-            background: rgba(107, 142, 35, 0.05);
-            padding: 15px;
+        /* Transcript Styles */
+        .transcript-preview {
+            font-family: 'Times New Roman', serif;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 20px;
+            background: white;
             border-radius: 8px;
-            margin-bottom: 20px;
         }
 
-        .filter-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
+        .transcript-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .transcript-header h1 {
+            color: var(--primary-dark);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .transcript-header h3 {
+            color: #555;
+            font-size: 1.2rem;
             margin-bottom: 10px;
         }
 
-        .tab-container { margin-bottom: 20px; }
-        .tab-buttons { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        .tab-btn {
-            padding: 10px 20px;
-            border-radius: 20px;
-            background: rgba(107, 142, 35, 0.1);
-            color: var(--primary-dark);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 2px solid transparent;
+        .student-info-table {
+            width: 100%;
+            margin-bottom: 25px;
+            border-collapse: collapse;
+            background: #f9f9f9;
+            border-radius: 8px;
+            overflow: hidden;
         }
-        .tab-btn.active { background: var(--primary); color: white; }
+
+        .student-info-table td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+        }
+
+        .student-info-table td:first-child {
+            font-weight: bold;
+            width: 30%;
+            background: #f0f0f0;
+        }
+
+        .transcript-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.85rem;
+        }
+
+        .transcript-table th {
+            background: var(--primary-dark);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid var(--primary);
+        }
+
+        .transcript-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .transcript-table td:first-child { text-align: left; }
+
+        .semester-summary {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .cgpa-section {
+            margin-top: 30px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(107, 142, 35, 0.1), rgba(154, 205, 50, 0.1));
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--primary);
+        }
+
+        .cgpa-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .transcript-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #999;
+            border-top: 1px solid #eee;
+        }
 
         .request-item {
             display: flex;
@@ -237,7 +351,34 @@
             background: white;
         }
 
-        .request-actions button { margin-left: 10px; padding: 8px 15px; width: auto; }
+        .request-item:hover { background: rgba(107, 142, 35, 0.05); }
+
+        .request-info { flex: 1; }
+        .request-info strong { display: block; color: var(--primary-dark); }
+        .request-info small { color: #666; }
+
+        .request-actions button {
+            margin-left: 10px;
+            padding: 8px 15px;
+            width: auto;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
 
         .stats-grid {
             display: grid;
@@ -265,57 +406,26 @@
             overflow: hidden;
             margin-top: 8px;
         }
+
         .progress-fill {
             height: 100%;
             background: linear-gradient(135deg, var(--success) 0%, var(--primary-light) 100%);
             transition: width 0.5s;
         }
 
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            z-index: 10000;
-            animation: slideIn 0.3s ease;
-            display: none;
+        .tab-container { margin-bottom: 20px; }
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab-btn {
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: rgba(107, 142, 35, 0.1);
+            color: var(--primary-dark);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
         }
-        @keyframes slideIn {
-            from { transform: translateX(100px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .menu-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1001; background: var(--primary); color: white; border: none; padding: 10px 12px; border-radius: 8px; cursor: pointer; }
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
-        .sidebar-overlay.show { display: block; }
-
-        .clearance-checkbox { display: flex; align-items: center; gap: 10px; }
-        .clearance-checkbox input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; margin: 0; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
-        .modal.show { display: flex; }
-        .modal-content { background: white; border-radius: 16px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 2px solid var(--primary); }
-        .close-modal { background: none; border: none; font-size: 28px; cursor: pointer; color: #999; width: auto; }
-
-        .transcript-preview {
-            font-family: 'Times New Roman', serif;
-            max-height: 600px;
-            overflow-y: auto;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-        }
-
-        .notification-history-item {
-            padding: 12px;
-            border-bottom: 1px solid rgba(107, 142, 35, 0.1);
-        }
-        .notification-title { font-weight: bold; color: var(--primary-dark); }
-        .notification-date { font-size: 0.75rem; color: #999; }
+        .tab-btn.active { background: var(--primary); color: white; }
 
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
@@ -323,403 +433,2281 @@
             .main-content { margin-left: 0; padding: 15px; }
             .menu-toggle { display: block; }
         }
-         
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        .sidebar-overlay.show { display: block; }
+        @media (max-width: 768px) { .menu-toggle { display: block; } }
+
+        /* Additional Clearance & Notification Styles */
+.student-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid rgba(107, 142, 35, 0.2);
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.student-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    border-bottom: 1px solid rgba(107, 142, 35, 0.1);
+    transition: background 0.2s;
+}
+
+.student-list-item:hover {
+    background: rgba(107, 142, 35, 0.05);
+}
+
+.student-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-name {
+    font-weight: bold;
+    color: var(--text-dark);
+}
+
+.student-details {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.clearance-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.clearance-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.status-cleared {
+    color: var(--success);
+    font-weight: bold;
+}
+
+.status-not {
+    color: var(--danger);
+    font-weight: bold;
+}
+
+.filter-section {
+    background: rgba(107, 142, 35, 0.05);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* Tab Styles */
+.tab-container {
+    margin-bottom: 20px;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    background: rgba(107, 142, 35, 0.1);
+    color: var(--primary-dark);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.tab-btn:hover {
+    background: rgba(107, 142, 35, 0.2);
+}
+
+.tab-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+/* Request Item Styles */
+.request-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    background: white;
+}
+
+.request-item:hover {
+    background: rgba(107, 142, 35, 0.05);
+}
+
+.request-info {
+    flex: 1;
+}
+
+.request-info strong {
+    display: block;
+    color: var(--primary-dark);
+}
+
+.request-info small {
+    color: #666;
+}
+
+.request-actions button {
+    margin-left: 10px;
+    padding: 8px 15px;
+    width: auto;
+}
+
+/* Notification History */
+.notification-history-item {
+    padding: 12px;
+    border-bottom: 1px solid rgba(107, 142, 35, 0.1);
+}
+
+.notification-history-item:last-child {
+    border-bottom: none;
+}
+
+.notification-title {
+    font-weight: bold;
+    color: var(--primary-dark);
+}
+
+.notification-date {
+    font-size: 0.75rem;
+    color: #999;
+}
+
+
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
-<button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-<!-- SIDE MENU -->
-<div class="sidebar">
-    <div class="sidebar-header">
-        <h2><i class="fas fa-user-tie"></i> Accountant</h2>
-        <p style="font-size:0.85rem; opacity:0.8;">Financial & Academic Control</p>
+    <!-- SIDE MENU -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-user-shield"></i> Admin Portal</h2>
+            <p style="font-size:0.85rem; opacity:0.8;">CCST Management Dashboard</p>
+        </div>
+
+              <a href="#" class="menu-item active" id="searchMenuItem" onclick="showSection('search'); return false;">
+    <i class="fas fa-search"></i> Search Student
+</a>
+<a href="#" class="menu-item" id="csvUploadMenuItem" onclick="showSection('csv_upload'); return false;">
+    <i class="fas fa-file-upload"></i> CSV Upload
+</a>
+<a href="#" class="menu-item" id="bulkUploadMenuItem" onclick="showSection('bulk_upload'); return false;">
+    <i class="fas fa-upload"></i> Bulk Upload
+</a>
+<a href="#" class="menu-item" id="coursesMenuItem" onclick="showSection('courses'); return false;">
+    <i class="fas fa-book"></i> Manage Courses
+</a>
+<a href="#" class="menu-item" id="clearanceMenuItem" onclick="showSection('clearance'); return false;">
+    <i class="fas fa-check-circle"></i> Financial Clearance
+</a>
+<a href="#" class="menu-item" id="transcriptMenuItem" onclick="showSection('transcript'); return false;">
+    <i class="fas fa-file-pdf"></i> Generate Transcript
+</a>
+<a href="#" class="menu-item" id="transcriptRequestsMenuItem" onclick="showSection('transcript_requests'); return false;">
+    <i class="fas fa-envelope"></i> Transcript Requests
+    <span id="requestBadge" class="badge" style="display:none;">0</span>
+</a>
+<a href="#" class="menu-item" id="notificationsMenuItem" onclick="showSection('notifications'); return false;">
+    <i class="fas fa-bell"></i> Send Notifications
+</a>
+<a href="#" class="menu-item" id="reportsMenuItem" onclick="showSection('reports'); return false;">
+    <i class="fas fa-chart-bar"></i> Reports
+</a>
+<a href="#" class="menu-item" id="admissionsMenuItem" onclick="showSection('admissions'); return false;">
+    <i class="fas fa-users"></i> Admissions Manager
+    <span id="admissionBadge" class="badge" style="display:none;">0</span>
+</a>
+<a href="#" class="menu-item" id="executiveMenuItem" onclick="openExecutiveDashboard(); return false;">
+    <i class="fas fa-chart-line"></i> Executive Dashboard
+    <span class="badge" style="background: var(--warning);">Admin</span>
+</a>
+        <hr style="margin: 20px 25px; border-color: rgba(255,255,255,0.1);">
+
+        <a href="#" class="menu-item" onclick="logout(); return false;">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
     </div>
-    <a href="#" class="menu-item active" id="searchMenuItem" onclick="showSection('search'); return false;"><i class="fas fa-search"></i> Search Student</a>
-    <a href="#" class="menu-item" id="csvUploadMenuItem" onclick="showSection('csv_upload'); return false;"><i class="fas fa-file-upload"></i> CSV Upload</a>
-    <a href="#" class="menu-item" id="bulkUploadMenuItem" onclick="showSection('bulk_upload'); return false;"><i class="fas fa-upload"></i> Bulk Upload</a>
-    <a href="#" class="menu-item" id="coursesMenuItem" onclick="showSection('courses'); return false;"><i class="fas fa-book"></i> Manage Courses</a>
-    <a href="#" class="menu-item" id="clearanceMenuItem" onclick="showSection('clearance'); return false;"><i class="fas fa-check-circle"></i> Financial Clearance</a>
-    <a href="#" class="menu-item" id="transcriptMenuItem" onclick="showSection('transcript'); return false;"><i class="fas fa-file-pdf"></i> Generate Transcript</a>
-    <a href="#" class="menu-item" id="transcriptRequestsMenuItem" onclick="showSection('transcript_requests'); return false;"><i class="fas fa-envelope"></i> Transcript Requests<span id="requestBadge" class="badge" style="display:none;">0</span></a>
-    <a href="#" class="menu-item" id="notificationsMenuItem" onclick="showSection('notifications'); return false;"><i class="fas fa-bell"></i> Send Notifications</a>
-    <a href="#" class="menu-item" id="reportsMenuItem" onclick="showSection('reports'); return false;"><i class="fas fa-chart-bar"></i> Reports</a>
-    <a href="#" class="menu-item" id="admissionsMenuItem" onclick="showSection('admissions'); return false;"><i class="fas fa-users"></i> Admissions Manager<span id="admissionBadge" class="badge" style="display:none;">0</span></a>
-    <a href="#" class="menu-item" id="executiveMenuItem" onclick="openExecutiveDashboard(); return false;"><i class="fas fa-chart-line"></i> Executive Dashboard<span class="badge" style="background: var(--warning);">Admin</span></a>
-    <hr style="margin: 20px 25px; border-color: rgba(255,255,255,0.1);">
-    <a href="#" class="menu-item" onclick="logout(); return false;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <div class="navbar">
+            <h3 id="pageTitle">Admin Dashboard</h3>
+            <div style="font-weight:bold;"><i class="fas fa-user-shield"></i> CCST Administrator</div>
+        </div>
+
+        <!-- SEARCH STUDENT SECTION -->
+        <div id="searchSection" class="section">
+            <div class="stats-grid">
+                <div class="stat-card" style="border-left: 4px solid var(--info);">
+                    <i class="fas fa-users" style="color: var(--info);"></i>
+                    <h3 id="totalStudents">0</h3>
+                    <p>Total Students</p>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--success);">
+                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                    <h3 id="clearedStudents">0</h3>
+                    <p>Cleared</p>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--danger);">
+                    <i class="fas fa-exclamation-circle" style="color: var(--danger);"></i>
+                    <h3 id="pendingStudents">0</h3>
+                    <p>Pending</p>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--warning);">
+                    <i class="fas fa-clock" style="color: var(--warning);"></i>
+                    <h3 id="pendingResults">0</h3>
+                    <p>Results Pending</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-search"></i> Search Student by ID</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input id="searchId" placeholder="Enter Student ID (e.g. CCST/RM/24/001)" style="flex: 1;">
+                    <button onclick="searchStudent()" style="width: auto; padding: 12px 25px;">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+
+                <div id="studentResult" style="display:none; margin-top:25px;">
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                        <h3 id="resName" style="color:var(--primary); margin-bottom: 10px;"></h3>
+                        <p id="resInfo" style="color: #666; margin-bottom: 15px;"></p>
+                        <button id="toggleBtn" onclick="toggleClearance()" style="margin-bottom: 15px;"></button>
+
+                        <hr style="margin: 20px 0;">
+                        <h4><i class="fas fa-upload"></i> Upload Semester Results</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <input id="resSemester" placeholder="Semester (e.g. Semester 2 2025/2026)">
+                            <input id="resProgram" placeholder="Program (e.g. RM)">
+                            <input id="resLevel" placeholder="Level (e.g. 100)" type="number">
+                            <input id="resGPA" placeholder="Overall GPA" type="number" step="0.01">
+                        </div>
+
+                        <div id="courseInputs" style="margin-top: 10px;">
+                            <div class="course-row">
+                                <input class="cCode" placeholder="Course Code" style="flex:1">
+                                <input class="cName" placeholder="Course Name" style="flex:2">
+                                <input class="cCredits" placeholder="Credits" type="number" value="3" style="flex:0.5">
+                                <input class="cCA" placeholder="CA" type="number" style="flex:0.5">
+                                <input class="cExam" placeholder="Exam" type="number" style="flex:0.5">
+                                <input class="cGrade" placeholder="Grade" style="flex:0.5">
+                            </div>
+                        </div>
+                        <button onclick="addCourseRow()" style="background:#555; width:auto; padding:8px 15px; font-size:14px;">
+                            <i class="fas fa-plus"></i> Add Course
+                        </button>
+                        <button onclick="uploadResults()" class="success-btn" style="margin-top:15px;">
+                            <i class="fas fa-upload"></i> UPLOAD RESULTS
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <!-- CSV UPLOAD SECTION -->
+        <div id="csv_uploadSection" class="section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-file-upload"></i> Upload Results via CSV</h3>
+                    <button onclick="downloadResultsTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                        <i class="fas fa-download"></i> Download Template
+                    </button>
+                </div>
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFileInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h4>Drop CSV file here or click to browse</h4>
+                    <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVSelect(event)">
+                </div>
+                <div id="filePreview" style="display:none;" class="file-preview">
+                    <h4><i class="fas fa-file-csv"></i> File Ready for Upload</h4>
+                    <div class="progress-bar"><div class="progress-fill" id="uploadProgress" style="width: 0%;"></div></div>
+                </div>
+                <button id="processBtn" onclick="processCSV()" class="success-btn" style="margin-top: 20px; display:none;">PROCESS & UPLOAD</button>
+            </div>
+        </div>
+
+        <!-- BULK UPLOAD SECTION -->
+        <div id="bulk_uploadSection" class="section" style="display:none;">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-upload"></i> Bulk Operations</h3></div>
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchBulkTab('clearance')">Financial Clearance</button>
+                        <button class="tab-btn" onclick="switchBulkTab('fees')">Update Fees</button>
+                        <button class="tab-btn" onclick="switchBulkTab('financeCSV')">Financial CSV Upload</button>
+                    </div>
+                </div>
+                <div id="bulkClearanceTab">
+                    <input id="bulkStudentId" placeholder="Student ID">
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="clearStudent()" class="success-btn">MARK CLEARED</button>
+                        <button onclick="unclearStudent()" class="danger-btn">REMOVE CLEARANCE</button>
+                    </div>
+                </div>
+                <div id="bulkFeesTab" style="display:none;">
+                    <input id="feeAmount" placeholder="Total Fee Amount">
+                    <input id="feeSemester" placeholder="Semester">
+                    <button onclick="updateFees()" class="info-btn">UPDATE FEES</button>
+                </div>
+                <div id="bulkFinanceCSVTab" style="display:none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+        <h4><i class="fas fa-file-csv"></i> Upload Financial Records via CSV</h4>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="downloadFinanceTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                <i class="fas fa-download"></i> Full Template
+            </button>
+            <button onclick="downloadSimpleFinanceTemplate()" class="info-btn" style="width: auto; padding: 8px 15px; background: #6b8e23;">
+                <i class="fas fa-download"></i> Simple Template
+            </button>
+        </div>
+    </div>
+    <div class="upload-zone" onclick="document.getElementById('financeFileInput').click()">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <h4>Drop CSV file here or click to browse</h4>
+        <input type="file" id="financeFileInput" accept=".csv" onchange="handleFinanceCSVSelect(event)">
+    </div>
+    <div id="financeFilePreview" class="file-preview" style="display: none;"></div>
+    <button id="processFinanceBtn" onclick="processFinanceCSV()" class="success-btn" style="display:none;">PROCESS FINANCIAL DATA</button>
 </div>
 
-<!-- MAIN CONTENT -->
-<div class="main-content">
-    <div class="navbar">
-        <h3 id="pageTitle">Search Student</h3>
-        <div style="font-weight:bold;"><i class="fas fa-user-tie"></i> CCST Accountant</div>
-    </div>
-
-    <!-- SEARCH SECTION -->
-    <div id="searchSection" class="section">
-        <div class="stats-grid">
-            <div class="stat-card" style="border-left: 4px solid var(--info);"><i class="fas fa-users" style="color: var(--info);"></i><h3 id="totalStudents">0</h3><p>Total Students</p></div>
-            <div class="stat-card" style="border-left: 4px solid var(--success);"><i class="fas fa-check-circle" style="color: var(--success);"></i><h3 id="clearedStudents">0</h3><p>Cleared</p></div>
-            <div class="stat-card" style="border-left: 4px solid var(--danger);"><i class="fas fa-exclamation-circle" style="color: var(--danger);"></i><h3 id="pendingStudents">0</h3><p>Pending</p></div>
-            <div class="stat-card" style="border-left: 4px solid var(--warning);"><i class="fas fa-clock" style="color: var(--warning);"></i><h3 id="pendingResults">0</h3><p>Results Pending</p></div>
-        </div>
-        <div class="card">
-            <h3><i class="fas fa-search"></i> Search Student by ID</h3>
-            <div style="display: flex; gap: 10px;">
-                <input id="searchId" placeholder="Enter Student ID (e.g. CCST/RM/24/001)" style="flex: 1;">
-                <button onclick="searchStudent()" style="width: auto; padding: 12px 25px;"><i class="fas fa-search"></i> Search</button>
+        <!-- MANAGE COURSES SECTION -->
+        <div id="coursesSection" class="section" style="display:none;">
+            <div class="card">
+                <h3><i class="fas fa-book"></i> Manage Courses</h3>
+                <input id="courseSemester" placeholder="Semester">
+                <input id="newCourseName" placeholder="Course Name">
+                <input id="newCourseCode" placeholder="Course Code">
+                <input id="newCourseCredits" placeholder="Credits" type="number">
+                <button onclick="addNewCourse()" class="success-btn">Add Course</button>
             </div>
-            <div id="studentResult" style="display:none; margin-top:25px;">
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
-                    <h3 id="resName" style="color:var(--primary); margin-bottom: 10px;"></h3>
-                    <p id="resInfo" style="color: #666; margin-bottom: 15px;"></p>
-                    <button id="toggleBtn" onclick="toggleClearance()" style="margin-bottom: 15px;"></button>
-                    <hr style="margin: 20px 0;">
-                    <h4><i class="fas fa-upload"></i> Upload Semester Results</h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <input id="resSemester" placeholder="Semester (e.g. Semester 2 2025/2026)">
-                        <input id="resProgram" placeholder="Program (e.g. RM)">
-                        <input id="resLevel" placeholder="Level (e.g. 100)" type="number">
-                        <input id="resGPA" placeholder="Overall GPA" type="number" step="0.01">
+        </div>
+
+        <!-- FINANCIAL CLEARANCE SECTION (Enhanced) -->
+<div id="clearanceSection" class="section" style="display:none;">
+    <div class="card">
+        <h3><i class="fas fa-check-circle"></i> Financial Clearance Management</h3>
+        <p style="color:#666; margin-bottom:15px;">Mark students as financially cleared for registration/exams</p>
+
+        <!-- Filter by Program/Level -->
+        <div class="filter-section">
+            <h4 style="margin-bottom: 10px;"><i class="fas fa-filter"></i> Filter Students</h4>
+            <div class="filter-row">
+                <select id="clearanceProgramFilter" onchange="loadStudentClearanceList()">
+                    <option value="">All Programs</option>
+                    <option value="RM">Registered Midwifery</option>
+                    <option value="RN">Registered Nursing</option>
+                    <option value="ML">Medical Laboratory Technology</option>
+                </select>
+                <select id="clearanceLevelFilter" onchange="loadStudentClearanceList()">
+                    <option value="">All Levels</option>
+                    <option value="100">Level 100</option>
+                    <option value="200">Level 200</option>
+                    <option value="300">Level 300</option>
+                </select>
+                <select id="clearanceStatusFilter" onchange="loadStudentClearanceList()">
+                    <option value="">All Status</option>
+                    <option value="cleared">Cleared</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button onclick="clearSelectedStudents()" class="success-btn" style="width: auto; flex: 1;">
+                    <i class="fas fa-check"></i> CLEAR SELECTED
+                </button>
+                <button onclick="unclearSelectedStudents()" class="danger-btn" style="width: auto; flex: 1;">
+                    <i class="fas fa-times"></i> UNCLEAR SELECTED
+                </button>
+            </div>
+        </div>
+
+        <!-- Select All -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="selectAllStudents" onchange="toggleSelectAll()">
+                <strong>Select All</strong>
+            </label>
+            <span id="selectedCount" style="color: #666;">0 selected</span>
+        </div>
+
+        <!-- Scrollable Student List -->
+        <div id="clearanceList" class="student-list-container">
+            <p style="text-align: center; color: #999; padding: 40px;">Loading students...</p>
+        </div>
+
+        <!-- Individual Clearance -->
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(107, 142, 35, 0.2);">
+            <h4 style="margin-bottom: 10px;"><i class="fas fa-user"></i> Individual Student Clearance</h4>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input id="clearanceId" placeholder="Student ID" style="flex: 1; min-width: 200px;">
+                <button onclick="clearStudentById()" class="success-btn" style="width: auto;">
+                    <i class="fas fa-check"></i> CLEAR
+                </button>
+                <button onclick="unclearStudentById()" class="danger-btn" style="width: auto;">
+                    <i class="fas fa-times"></i> UNCLEAR
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+        
+        <!-- TRANSCRIPT GENERATION SECTION -->
+        <div id="transcriptSection" class="section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-file-pdf"></i> Generate Student Transcript</h3>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label>Student ID:</label>
+                        <input type="text" id="transcriptStudentId" placeholder="Enter Student ID">
+                        <button onclick="searchStudentForTranscript()" class="info-btn">Search Student</button>
                     </div>
-                    <div id="courseInputs" style="margin-top: 10px;">
-                        <div class="course-row">
-                            <input class="cCode" placeholder="Course Code" style="flex:1">
-                            <input class="cName" placeholder="Course Name" style="flex:2">
-                            <input class="cCredits" placeholder="Credits" type="number" value="3" style="flex:0.5">
-                            <input class="cCA" placeholder="CA" type="number" style="flex:0.5">
-                            <input class="cExam" placeholder="Exam" type="number" style="flex:0.5">
-                            <input class="cGrade" placeholder="Grade" style="flex:0.5">
+                    <div>
+                        <label>Select Student:</label>
+                        <select id="transcriptStudentSelect" onchange="loadStudentForTranscript()">
+                            <option value="">-- Select Student --</option>
+                        </select>
+                        <button onclick="loadAllStudentsForTranscript()" class="info-btn">Load All Students</button>
+                    </div>
+                </div>
+                <div id="transcriptStudentInfo" style="display:none; margin-top:20px; padding:15px; background:#f8f9fa; border-radius:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h4 id="transcriptName"></h4>
+                            <p id="transcriptDetails"></p>
+                        </div>
+                        <div>
+                            <button onclick="generateOfficialTranscript()" class="success-btn" style="background:var(--danger);">Download PDF</button>
+                            <button onclick="printTranscriptPreview()" class="info-btn">Print Preview</button>
                         </div>
                     </div>
-                    <button onclick="addCourseRow()" style="background:#555; width:auto; padding:8px 15px; font-size:14px;"><i class="fas fa-plus"></i> Add Course</button>
-                    <button onclick="uploadResults()" class="success-btn" style="margin-top:15px;"><i class="fas fa-upload"></i> UPLOAD RESULTS</button>
+                </div>
+                <div id="transcriptPreview" style="margin-top:25px; display:none;">
+                    <h4>Transcript Preview</h4>
+                    <div id="transcriptContent" class="transcript-preview"></div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- CSV UPLOAD SECTION -->
-    <div id="csv_uploadSection" class="section" style="display:none;">
-        <div class="card">
-            <div class="card-header"><h3><i class="fas fa-file-upload"></i> Upload Results via CSV</h3><button onclick="downloadResultsTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;"><i class="fas fa-download"></i> Download Template</button></div>
-            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFileInput').click()">
-                <i class="fas fa-cloud-upload-alt"></i><h4>Drop CSV file here or click to browse</h4>
-                <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVSelect(event)">
-            </div>
-            <div id="filePreview" style="display:none;" class="file-preview"><h4><i class="fas fa-file-csv"></i> File Ready for Upload</h4><div class="progress-bar"><div class="progress-fill" id="uploadProgress" style="width: 0%;"></div></div></div>
-            <button id="processBtn" onclick="processCSV()" class="success-btn" style="margin-top: 20px; display:none;">PROCESS & UPLOAD</button>
-        </div>
-    </div>
-
-    <!-- BULK UPLOAD SECTION -->
-    <div id="bulk_uploadSection" class="section" style="display:none;">
-        <div class="card">
-            <div class="card-header"><h3><i class="fas fa-upload"></i> Bulk Operations</h3></div>
-            <div class="tab-container">
-                <div class="tab-buttons">
-                    <button class="tab-btn active" onclick="switchBulkTab('clearance')">Financial Clearance</button>
-                    <button class="tab-btn" onclick="switchBulkTab('fees')">Update Fees</button>
-                    <button class="tab-btn" onclick="switchBulkTab('financeCSV')">Financial CSV Upload</button>
+        <!-- TRANSCRIPT REQUESTS SECTION -->
+        <div id="transcript_requestsSection" class="section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-envelope"></i> Student Transcript Requests</h3>
+                    <button onclick="processAllRequests()" class="success-btn">Process All</button>
+                </div>
+                <div id="transcriptRequestsList" class="student-list-container">
+                    <p style="text-align:center; padding:40px;">No pending requests.</p>
                 </div>
             </div>
-            <div id="bulkClearanceTab">
-                <input id="bulkStudentId" placeholder="Student ID">
-                <div style="display: flex; gap: 10px;"><button onclick="clearStudent()" class="success-btn">MARK CLEARED</button><button onclick="unclearStudent()" class="danger-btn">REMOVE CLEARANCE</button></div>
-            </div>
-            <div id="bulkFeesTab" style="display:none;">
-                <input id="feeAmount" placeholder="Total Fee Amount"><input id="feeSemester" placeholder="Semester"><button onclick="updateFees()" class="info-btn">UPDATE FEES</button>
-            </div>
-            <div id="bulkFinanceCSVTab" style="display:none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-                    <h4><i class="fas fa-file-csv"></i> Upload Financial Records via CSV</h4>
-                    <div style="display: flex; gap: 10px;"><button onclick="downloadFinanceTemplate()" class="info-btn" style="width: auto;">Full Template</button><button onclick="downloadSimpleFinanceTemplate()" class="info-btn" style="background: #6b8e23;">Simple Template</button></div>
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-history"></i> Processed Requests</h3>
                 </div>
-                <div class="upload-zone" onclick="document.getElementById('financeFileInput').click()"><i class="fas fa-cloud-upload-alt"></i><h4>Drop CSV file here or click to browse</h4><input type="file" id="financeFileInput" accept=".csv" onchange="handleFinanceCSVSelect(event)"></div>
-                <div id="financeFilePreview" class="file-preview" style="display: none;"></div>
-                <button id="processFinanceBtn" onclick="processFinanceCSV()" class="success-btn" style="display:none;">PROCESS FINANCIAL DATA</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MANAGE COURSES -->
-    <div id="coursesSection" class="section" style="display:none;">
-        <div class="card">
-            <h3><i class="fas fa-book"></i> Manage Courses</h3>
-            <input id="courseSemester" placeholder="Semester"><input id="newCourseName" placeholder="Course Name"><input id="newCourseCode" placeholder="Course Code"><input id="newCourseCredits" placeholder="Credits" type="number"><button onclick="addNewCourse()" class="success-btn">Add Course</button>
-        </div>
-    </div>
-
-    <!-- FINANCIAL CLEARANCE -->
-    <div id="clearanceSection" class="section" style="display:none;">
-        <div class="card">
-            <h3><i class="fas fa-check-circle"></i> Financial Clearance Management</h3>
-            <div class="filter-section">
-                <h4 style="margin-bottom: 10px;"><i class="fas fa-filter"></i> Filter Students</h4>
-                <div class="filter-row">
-                    <select id="clearanceProgramFilter" onchange="loadStudentClearanceList()"><option value="">All Programs</option><option value="RM">Registered Midwifery</option><option value="RN">Registered Nursing</option><option value="ML">Medical Laboratory Technology</option></select>
-                    <select id="clearanceLevelFilter" onchange="loadStudentClearanceList()"><option value="">All Levels</option><option value="100">Level 100</option><option value="200">Level 200</option><option value="300">Level 300</option></select>
-                    <select id="clearanceStatusFilter" onchange="loadStudentClearanceList()"><option value="">All Status</option><option value="cleared">Cleared</option><option value="pending">Pending</option></select>
-                </div>
-                <div style="display: flex; gap: 10px; margin-top: 10px;"><button onclick="clearSelectedStudents()" class="success-btn" style="width: auto; flex: 1;"><i class="fas fa-check"></i> CLEAR SELECTED</button><button onclick="unclearSelectedStudents()" class="danger-btn" style="width: auto; flex: 1;"><i class="fas fa-times"></i> UNCLEAR SELECTED</button></div>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="display: flex; align-items: center; gap: 8px; cursor: pointer;"><input type="checkbox" id="selectAllStudents" onchange="toggleSelectAll()"><strong>Select All</strong></label><span id="selectedCount">0 selected</span></div>
-            <div id="clearanceList" class="student-list-container"><p style="text-align: center; color: #999; padding: 40px;">Loading students...</p></div>
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(107, 142, 35, 0.2);">
-                <h4 style="margin-bottom: 10px;"><i class="fas fa-user"></i> Individual Student Clearance</h4>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;"><input id="clearanceId" placeholder="Student ID" style="flex: 1;"><button onclick="clearStudentById()" class="success-btn" style="width: auto;">CLEAR</button><button onclick="unclearStudentById()" class="danger-btn" style="width: auto;">UNCLEAR</button></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- TRANSCRIPT -->
-    <div id="transcriptSection" class="section" style="display:none;">
-        <div class="card">
-            <div class="card-header"><h3><i class="fas fa-file-pdf"></i> Generate Student Transcript</h3></div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div><label>Student ID:</label><input type="text" id="transcriptStudentId" placeholder="Enter Student ID"><button onclick="searchStudentForTranscript()" class="info-btn">Search Student</button></div>
-                <div><label>Select Student:</label><select id="transcriptStudentSelect" onchange="loadStudentForTranscript()"><option value="">-- Select Student --</option></select><button onclick="loadAllStudentsForTranscript()" class="info-btn">Load All Students</button></div>
-            </div>
-            <div id="transcriptStudentInfo" style="display:none; margin-top:20px; padding:15px; background:#f8f9fa; border-radius:8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;"><div><h4 id="transcriptName"></h4><p id="transcriptDetails"></p></div><div><button onclick="generateOfficialTranscript()" class="success-btn" style="background:var(--danger);">Download PDF</button><button onclick="printTranscriptPreview()" class="info-btn">Print Preview</button></div></div>
-            </div>
-            <div id="transcriptPreview" style="margin-top:25px; display:none;"><h4>Transcript Preview</h4><div id="transcriptContent" class="transcript-preview"></div></div>
-        </div>
-    </div>
-
-    <!-- TRANSCRIPT REQUESTS -->
-    <div id="transcript_requestsSection" class="section" style="display:none;">
-        <div class="card"><div class="card-header"><h3><i class="fas fa-envelope"></i> Student Transcript Requests</h3><button onclick="processAllRequests()" class="success-btn">Process All</button></div><div id="transcriptRequestsList" class="student-list-container"><p style="text-align:center; padding:40px;">No pending requests.</p></div></div>
-        <div class="card"><div class="card-header"><h3><i class="fas fa-history"></i> Processed Requests</h3></div><div id="processedRequestsList"><p style="text-align:center; padding:20px;">No processed requests.</p></div></div>
-    </div>
-
-    <!-- NOTIFICATIONS -->
-    <div id="notificationsSection" class="section" style="display:none;">
-        <div class="card">
-            <div class="card-header"><h3><i class="fas fa-bell"></i> Send Notification to Students</h3></div>
-            <label style="font-weight: bold;">Notification Type:</label>
-            <select id="notifType" onchange="toggleTargetSelection()"><option value="all">All Students</option><option value="program">By Program</option><option value="level">By Level</option><option value="individual">Individual Student</option></select>
-            <div id="targetSelection" style="display: none; margin-bottom: 15px;"><input id="targetValue" placeholder="Enter Program (e.g., RM) or Level (e.g., 100)"></div>
-            <label style="font-weight: bold;">Title:</label><input id="notifTitle" placeholder="Notification Title">
-            <label style="font-weight: bold;">Message:</label><textarea id="notifMessage" rows="4" placeholder="Enter notification content..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;"></textarea>
-            <div style="display: flex; gap: 10px;"><button onclick="sendNotification()" class="success-btn" style="flex: 1;"><i class="fas fa-paper-plane"></i> SEND NOTIFICATION</button><button onclick="scheduleNotification()" class="info-btn" style="flex: 1;"><i class="fas fa-clock"></i> SCHEDULE</button></div>
-        </div>
-        <div class="card"><h3><i class="fas fa-history"></i> Recent Notifications</h3><div id="notificationHistory"><p style="text-align: center; color: #999;">No notifications sent yet.</p></div></div>
-    </div>
-
-    <!-- REPORTS -->
-    <div id="reportsSection" class="section" style="display:none;">
-        <div class="card"><h3><i class="fas fa-chart-bar"></i> Generate Reports</h3><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;"><button onclick="generateReport('clearance')" class="info-btn"><i class="fas fa-check-circle"></i> Clearance Report</button><button onclick="generateReport('results')" class="info-btn"><i class="fas fa-graduation-cap"></i> Academic Results Report</button><button onclick="generateReport('financial')" class="info-btn"><i class="fas fa-money-bill"></i> Financial Report</button><button onclick="generateReport('summary')" class="info-btn"><i class="fas fa-file-alt"></i> Summary Report</button></div></div>
-    </div>
-
-            <!-- ADMISSIONS MANAGER -->
-    <div id="admissionsSection" class="section" style="display:none;">
-        <div class="card">
-            <div class="card-header"><h3><i class="fas fa-users"></i> Student Applications</h3><div><button onclick="exportAdmissionsToCSV()" class="info-btn" style="width: auto;"><i class="fas fa-file-excel"></i> Export CSV</button><button onclick="refreshAdmissions()" class="info-btn" style="width: auto;"><i class="fas fa-sync-alt"></i> Refresh</button></div></div>
-            <div class="filter-section"><h4 style="margin-bottom: 10px;"><i class="fas fa-filter"></i> Filter Applications</h4>
-                <div class="filter-row">
-                    <select id="admissionStatusFilter" onchange="filterAdmissions()"><option value="all">All Status</option><option value="pending_review">Pending Review</option><option value="documents_verified">Documents Verified</option><option value="interview_scheduled">Interview Scheduled</option><option value="admitted">Admitted</option><option value="rejected">Rejected</option></select>
-                    <select id="admissionProgramFilter" onchange="filterAdmissions()"><option value="all">All Programs</option><option value="RM">Registered Midwifery (RM)</option><option value="RN">Registered Nursing (RN)</option><option value="ML">Medical Lab Technology (ML)</option></select>
-                    <input type="text" id="admissionSearchInput" placeholder="Search by name, ID, or phone" onkeyup="filterAdmissions()">
+                <div id="processedRequestsList">
+                    <p style="text-align:center; padding:20px;">No processed requests.</p>
                 </div>
             </div>
-            <div class="stats-grid">
-                <div class="stat-card"><i class="fas fa-file-alt" style="color: var(--info);"></i><h3 id="totalApplications">0</h3><p>Total Applications</p></div>
-                <div class="stat-card"><i class="fas fa-clock" style="color: var(--warning);"></i><h3 id="pendingApplications">0</h3><p>Pending Review</p></div>
-                <div class="stat-card"><i class="fas fa-check-circle" style="color: var(--success);"></i><h3 id="admittedCount">0</h3><p>Admitted</p></div>
-                <div class="stat-card"><i class="fas fa-times-circle" style="color: var(--danger);"></i><h3 id="rejectedCount">0</h3><p>Rejected</p></div>
-            </div>
-            <div id="admissionsList" class="student-list-container"><p style="text-align: center; color: #999; padding: 40px;">Loading applications...</p></div>
+        </div>
+
+        <!-- NOTIFICATIONS SECTION (Enhanced) -->
+<div id="notificationsSection" class="section" style="display:none;">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-bell"></i> Send Notification to Students</h3>
+        </div>
+
+        <label style="font-weight: bold;">Notification Type:</label>
+        <select id="notifType" onchange="toggleTargetSelection()" style="margin-bottom: 15px;">
+            <option value="all">All Students</option>
+            <option value="program">By Program</option>
+            <option value="level">By Level</option>
+            <option value="individual">Individual Student</option>
+        </select>
+
+        <div id="targetSelection" style="display: none; margin-bottom: 15px;">
+            <input id="targetValue" placeholder="Enter Program (e.g., RM) or Level (e.g., 100)">
+        </div>
+
+        <label style="font-weight: bold;">Title:</label>
+        <input id="notifTitle" placeholder="Notification Title (e.g., Examination Schedule)">
+
+        <label style="font-weight: bold;">Message:</label>
+        <textarea id="notifMessage" rows="4" placeholder="Enter notification content..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; resize: vertical;"></textarea>
+
+        <div style="display: flex; gap: 10px;">
+            <button onclick="sendNotification()" class="success-btn" style="flex: 1;">
+                <i class="fas fa-paper-plane"></i> SEND NOTIFICATION
+            </button>
+            <button onclick="scheduleNotification()" class="info-btn" style="flex: 1;">
+                <i class="fas fa-clock"></i> SCHEDULE
+            </button>
         </div>
     </div>
-</div>  
+
+    <div class="card">
+        <h3><i class="fas fa-history"></i> Recent Notifications</h3>
+        <div id="notificationHistory">
+            <p style="text-align: center; color: #999;">No notifications sent yet.</p>
+        </div>
+    </div>
+</div>
+
+        <!-- REPORTS SECTION (Enhanced) -->
+<div id="reportsSection" class="section" style="display:none;">
+    <div class="card">
+        <h3><i class="fas fa-chart-bar"></i> Generate Reports</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <button onclick="generateReport('clearance')" class="info-btn" style="padding: 20px;">
+                <i class="fas fa-check-circle"></i> Clearance Report
+            </button>
+            <button onclick="generateReport('results')" class="info-btn" style="padding: 20px;">
+                <i class="fas fa-graduation-cap"></i> Academic Results Report
+            </button>
+            <button onclick="generateReport('financial')" class="info-btn" style="padding: 20px;">
+                <i class="fas fa-money-bill"></i> Financial Report
+            </button>
+            <button onclick="generateReport('summary')" class="info-btn" style="padding: 20px;">
+                <i class="fas fa-file-alt"></i> Summary Report
+            </button>
+        </div>
+    </div>
+</div>
+
+        <!-- ADMISSIONS MANAGER SECTION -->
+<div id="admissionsSection" class="section" style="display:none;">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-users"></i> Student Applications</h3>
+            <div>
+                <button onclick="exportAdmissionsToCSV()" class="info-btn" style="width: auto; padding: 8px 15px; margin-right: 10px;">
+                    <i class="fas fa-file-excel"></i> Export CSV
+                </button>
+                <button onclick="refreshAdmissions()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h4 style="margin-bottom: 10px;"><i class="fas fa-filter"></i> Filter Applications</h4>
+            <div class="filter-row">
+                <select id="admissionStatusFilter" onchange="filterAdmissions()">
+                    <option value="all">All Status</option>
+                    <option value="pending_review">Pending Review</option>
+                    <option value="documents_verified">Documents Verified</option>
+                    <option value="interview_scheduled">Interview Scheduled</option>
+                    <option value="admitted">Admitted</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+                <select id="admissionProgramFilter" onchange="filterAdmissions()">
+                    <option value="all">All Programs</option>
+                    <option value="RM">Registered Midwifery (RM)</option>
+                    <option value="RN">Registered Nursing (RN)</option>
+                    <option value="ML">Medical Lab Technology (ML)</option>
+                </select>
+                <input type="text" id="admissionSearchInput" placeholder="Search by name, ID, or phone" onkeyup="filterAdmissions()">
+            </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="stats-grid" style="margin-bottom: 20px;">
+            <div class="stat-card" style="border-left: 4px solid var(--info);">
+                <i class="fas fa-file-alt" style="color: var(--info);"></i>
+                <h3 id="totalApplications">0</h3>
+                <p>Total Applications</p>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--warning);">
+                <i class="fas fa-clock" style="color: var(--warning);"></i>
+                <h3 id="pendingApplications">0</h3>
+                <p>Pending Review</p>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--success);">
+                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                <h3 id="admittedCount">0</h3>
+                <p>Admitted</p>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--danger);">
+                <i class="fas fa-times-circle" style="color: var(--danger);"></i>
+                <h3 id="rejectedCount">0</h3>
+                <p>Rejected</p>
+            </div>
+        </div>
+
+        <!-- Applications List -->
+        <div id="admissionsList" class="student-list-container" style="max-height: 500px;">
+            <p style="text-align: center; color: #999; padding: 40px;">Loading applications...</p>
+        </div>
+    </div>
+
+    <!-- Application Detail Modal -->
+    <div class="modal" id="applicationModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-alt"></i> Application Details</h3>
+                <button class="close-modal" onclick="closeApplicationModal()">&times;</button>
+            </div>
+            <div id="applicationDetailContent"></div>
+            <div class="btn-group" style="margin-top: 20px;">
+                <button onclick="approveApplication()" class="success-btn" style="flex: 1;">
+                    <i class="fas fa-check"></i> Approve & Admit
+                </button>
+                <button onclick="rejectApplication()" class="danger-btn" style="flex: 1;">
+                    <i class="fas fa-times"></i> Reject
+                </button>
+                <button onclick="scheduleInterview()" class="info-btn" style="flex: 1;">
+                    <i class="fas fa-calendar"></i> Schedule Interview
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
-<div id="toast" class="toast"></div>
+    <div id="toast" class="toast" style="display: none;"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXktlTYDoBNVzJxU06P-vtVzBwl2Vof8ANWLrzOVxAA9mhwctfnqrBMbKX-dAzsRF3/exec";
+        let currentStudent = null;
+        let currentTranscriptStudent = null;
+        let csvData = null;
+        let parsedResults = [];
+        let allStudents = [];
+        // ============================================
+        // STAFF PERMISSIONS SYSTEM
+        // ============================================
+        let currentStaff = null;
+        let staffPermissions = [];
+
+        // Check login and permissions on page load
+        function checkStaffAccess() {
+            const adminData = localStorage.getItem('adminData');
+            if (!adminData) {
+                window.location.href = 'index.html';
+                return false;
+            }
+
+            currentStaff = JSON.parse(adminData);
+            // ADMIN HAS ALL PERMISSIONS - Override permission check
+            staffPermissions = ['all']; // Give admin full access
+
+            updateMenuVisibility();
+            return true;
+        }
+
+        // Show/hide menu items based on permissions
+        function updateMenuVisibility() {
+            const menuItems = {
+                'search': 'searchMenuItem',
+                'csv_upload': 'csvUploadMenuItem',
+                'bulk_upload': 'bulkUploadMenuItem',
+                'courses': 'coursesMenuItem',
+                'clearance': 'clearanceMenuItem',
+                'transcript': 'transcriptMenuItem',
+                'transcript_requests': 'transcriptRequestsMenuItem',
+                'notifications': 'notificationsMenuItem',
+                'reports': 'reportsMenuItem',
+                'admissions': 'admissionsMenuItem'
+            };
+            
+            const hasAllAccess = staffPermissions.includes('all');
+            
+            for (const [permission, menuId] of Object.entries(menuItems)) {
+                const menuElement = document.getElementById(menuId);
+                if (menuElement) {
+                    if (hasAllAccess || staffPermissions.includes(permission)) {
+                        menuElement.style.display = 'flex';
+                    } else {
+                        menuElement.style.display = 'none';
+                    }
+                }
+            }
+            
+            const roleNames = {
+                'accountant': '💰 Finance Dashboard',
+                'registrar': '📚 Academic Registry',
+                'hod': '👨‍🏫 HOD Dashboard',
+                'super_admin': '👑 Admin Dashboard',
+                'exams_officer': '💻 Exams Officer Dashboard'
+            };
+            
+            const pageTitle = document.getElementById('pageTitle');
+            if (pageTitle && currentStaff.staffRole) {
+                pageTitle.innerText = roleNames[currentStaff.staffRole] || 'Staff Dashboard';
+            }
+            
+            const navbarDiv = document.querySelector('.navbar div:last-child');
+            if (navbarDiv && currentStaff.name) {
+                navbarDiv.innerHTML = `<i class="fas fa-user-tie"></i> ${currentStaff.name}`;
+            }
+        }
+
+        // Save original showSection function reference
+        const originalShowSection = window.showSection;
+        
+        // Override showSection with permission check
+        window.showSection = function(section) {
+            const permissionMap = {
+                'search': 'search',
+                'csv_upload': 'csv_upload',
+                'bulk_upload': 'bulk_upload',
+                'courses': 'courses',
+                'clearance': 'clearance',
+                'transcript': 'transcript',
+                'transcript_requests': 'transcript_requests',
+                'notifications': 'notifications',
+                'reports': 'reports',
+                'admissions': 'admissions'
+            };
+            
+            const requiredPermission = permissionMap[section];
+            const hasAllAccess = staffPermissions.includes('all');
+            
+            if (requiredPermission && !hasAllAccess && !staffPermissions.includes(requiredPermission)) {
+                showToast(`⛔ Access Denied: ${section} section requires additional permissions`, "danger");
+                return;
+            }
+            
+            if (typeof originalShowSection === 'function') {
+                originalShowSection(section);
+            } else {
+                // Fallback to original showSection logic
+                if (window.innerWidth <= 768) toggleSidebar();
+                document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+                const sectionElement = document.getElementById(section + 'Section');
+                if (sectionElement) sectionElement.style.display = 'block';
+                document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+                if (event && event.currentTarget) event.currentTarget.classList.add('active');
+                const titles = {
+                    search: 'Search Student', csv_upload: 'CSV Upload', bulk_upload: 'Bulk Operations',
+                    courses: 'Manage Courses', clearance: 'Financial Clearance', transcript: 'Generate Transcript',
+                    transcript_requests: 'Transcript Requests', admissions: 'Admissions Manager', notifications: 'Send Notifications', reports: 'Reports'
+                };
+                const pageTitle = document.getElementById('pageTitle');
+                if (pageTitle) pageTitle.innerText = titles[section] || 'Dashboard';
+                if (section === 'clearance' && typeof loadStudentClearanceList === 'function') loadStudentClearanceList();
+                if (section === 'transcript_requests' && typeof loadTranscriptRequests === 'function') { loadTranscriptRequests(); loadProcessedRequests(); }
+                if (section === 'admissions' && typeof loadAdmissions === 'function') loadAdmissions();
+            }
+        };
+
+        // ============================================
+        // GRADING SYSTEMS
+        // ============================================
+        const GRADING_SYSTEMS = {
+            RM: [
+                { min: 80, max: 100, grade: "A", points: 4.0 },
+                { min: 75, max: 79, grade: "B+", points: 3.5 },
+                { min: 70, max: 74, grade: "B", points: 3.0 },
+                { min: 65, max: 69, grade: "C+", points: 2.5 },
+                { min: 60, max: 64, grade: "C", points: 2.0 },
+                { min: 55, max: 59, grade: "D+", points: 1.5 },
+                { min: 50, max: 54, grade: "D", points: 1.0 },
+                { min: 0, max: 49, grade: "E", points: 0 }
+            ],
+            RN: [
+                { min: 80, max: 100, grade: "A", points: 4.0 },
+                { min: 75, max: 79, grade: "B+", points: 3.5 },
+                { min: 70, max: 74, grade: "B", points: 3.0 },
+                { min: 65, max: 69, grade: "C+", points: 2.5 },
+                { min: 60, max: 64, grade: "C", points: 2.0 },
+                { min: 55, max: 59, grade: "D+", points: 1.5 },
+                { min: 50, max: 54, grade: "D", points: 1.0 },
+                { min: 0, max: 49, grade: "E", points: 0 }
+            ],
+            ML: [
+                { min: 85, max: 100, grade: "A+", points: 5.0 },
+                { min: 80, max: 84, grade: "A", points: 4.5 },
+                { min: 75, max: 79, grade: "B+", points: 4.0 },
+                { min: 70, max: 74, grade: "B", points: 3.5 },
+                { min: 65, max: 69, grade: "C+", points: 3.0 },
+                { min: 60, max: 64, grade: "C", points: 2.5 },
+                { min: 55, max: 59, grade: "D+", points: 2.0 },
+                { min: 50, max: 54, grade: "D", points: 1.5 },
+                { min: 0, max: 49, grade: "E", points: 0 },
+            ]
+        };
+
+        function calculateGrade(score, program) {
+            const system = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RM;
+            for (const level of system) {
+                if (score >= level.min && score <= level.max) return level.grade;
+            }
+            return 'E';
+        }
+
+        function getGradePoints(grade, program) {
+            const system = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RM;
+            for (const level of system) {
+                if (level.grade === grade) return level.points;
+            }
+            return 0;
+        }
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('show');
+        }
+
+        // Convert short program code to full name
+        function getFullProgramName(code) {
+            const programNames = {
+                'RM': 'Registered Midwifery',
+                'RN': 'Registered General Nursing',
+                'ML': 'Medical Laboratory Technology'
+            };
+            return programNames[code] || code;
+        }
+
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i> ${msg}`;
+            toast.style.background = type === 'success' ? '#27ae60' : type === 'danger' ? '#e74c3c' : '#3498db';
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        function showSection(section) {
+    console.log("Showing section:", section);
+    
+    if (window.innerWidth <= 768) toggleSidebar();
+    
+    // Hide all sections
+    document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+    
+    // Show selected section
+    const sectionToShow = document.getElementById(section + 'Section');
+    if (sectionToShow) {
+        sectionToShow.style.display = 'block';
+    } else {
+        console.error("Section not found:", section + 'Section');
+        return;
+    }
+    
+    // Update active menu item
+    document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+    
+    // Find and activate the clicked menu item
+    const menuItems = document.querySelectorAll('.menu-item');
+    for (let item of menuItems) {
+        const onclickAttr = item.getAttribute('onclick');
+        if (onclickAttr && onclickAttr.includes(`'${section}'`)) {
+            item.classList.add('active');
+            break;
+        }
+    }
+    
+    // Update page title
+    const titles = {
+        search: 'Search Student', 
+        csv_upload: 'CSV Upload', 
+        bulk_upload: 'Bulk Operations',
+        courses: 'Manage Courses', 
+        clearance: 'Financial Clearance', 
+        transcript: 'Generate Transcript',
+        transcript_requests: 'Transcript Requests', 
+        admissions: 'Admissions Manager', 
+        notifications: 'Send Notifications', 
+        reports: 'Reports'
+    };
+    
+    const pageTitle = document.getElementById('pageTitle');
+    if (pageTitle) pageTitle.innerText = titles[section] || 'Dashboard';
+    
+    // Load section-specific data
+    if (section === 'clearance' && typeof loadStudentClearanceList === 'function') {
+        loadStudentClearanceList();
+    }
+    if (section === 'transcript_requests' && typeof loadTranscriptRequests === 'function') { 
+        loadTranscriptRequests(); 
+        loadProcessedRequests(); 
+    }
+    if (section === 'admissions' && typeof loadAdmissions === 'function') {
+        loadAdmissions();
+    }
+}
+
+// Search Student function - MUST be outside showSection
+async function searchStudent() {
+    const id = document.getElementById('searchId').value.trim();
+    if (!id) return showToast("Please enter Student ID", "warning");
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`);
+        const data = await res.json();
+        if (data.error) { showToast(data.error, "danger"); return; }
+        currentStudent = data;
+        document.getElementById('studentResult').style.display = 'block';
+        document.getElementById('resName').innerText = data.name;
+        document.getElementById('resInfo').innerText = `${getFullProgramName(data.program)} | Level ${data.level} | Balance: GH₵${(data.balance || 0).toLocaleString()}`;
+        if (data.program) document.getElementById('resProgram').value = data.program;
+        if (data.level) document.getElementById('resLevel').value = data.level;
+        updateClearanceButton(data.isCleared);
+    } catch (e) { showToast("Error connecting to server", "danger"); }
+}
+
+            function getFullProgramName(code) {
+                const programNames = {
+                    'RM': 'Registered Midwifery',
+                    'RN': 'Registered General Nursing', 
+                    'ML': 'Medical Laboratory Technology'
+                };
+                return programNames[code] || code;
+            }
+
+        function updateClearanceButton(isCleared) {
+            const btn = document.getElementById('toggleBtn');
+            if (isCleared === true || isCleared === "TRUE") {
+                btn.innerText = "✓ FINANCIALLY CLEARED";
+                btn.style.background = "#27ae60";
+            } else {
+                btn.innerText = "✗ MARK AS CLEARED";
+                btn.style.background = "#e74c3c";
+            }
+        }
+
+        async function toggleClearance() {
+            if (!currentStudent) return;
+            const newStatus = !(currentStudent.isCleared === true || currentStudent.isCleared === "TRUE");
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'toggle_clearance', id: currentStudent.id, cleared: newStatus })
+                });
+                currentStudent.isCleared = newStatus;
+                updateClearanceButton(newStatus);
+                showToast(newStatus ? "Student cleared!" : "Clearance removed.", "success");
+            } catch (e) { showToast("Failed to update clearance", "danger"); }
+        }
+
+        function addCourseRow() {
+            const div = document.createElement('div');
+            div.className = "course-row";
+            div.innerHTML = `<input class="cCode" placeholder="Code" style="flex:1"><input class="cName" placeholder="Name" style="flex:2"><input class="cCredits" placeholder="Credits" type="number" value="3" style="flex:0.5"><input class="cCA" placeholder="CA" type="number" style="flex:0.5"><input class="cExam" placeholder="Exam" type="number" style="flex:0.5"><input class="cGrade" placeholder="Grade" style="flex:0.5">`;
+            document.getElementById('courseInputs').appendChild(div);
+        }
+
+        async function uploadResults() {
+            if (!currentStudent) return showToast("Search for a student first", "warning");
+            const sem = document.getElementById('resSemester').value;
+            const gpa = document.getElementById('resGPA').value;
+            if (!sem || !gpa) return showToast("Semester and GPA required", "warning");
+            const codes = document.getElementsByClassName('cCode'), names = document.getElementsByClassName('cName'), credits = document.getElementsByClassName('cCredits'), cas = document.getElementsByClassName('cCA'), exams = document.getElementsByClassName('cExam'), grades = document.getElementsByClassName('cGrade');
+            let courses = [];
+            for (let i = 0; i < names.length; i++) {
+                if (names[i].value.trim()) {
+                    courses.push({
+                        code: codes[i].value.trim(), name: names[i].value.trim(),
+                        credits: parseInt(credits[i].value) || 3, ca: parseFloat(cas[i].value) || 0,
+                        exam: parseFloat(exams[i].value) || 0, grade: grades[i].value.trim()
+                    });
+                }
+            }
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'upload_results', id: currentStudent.id, semester: sem, gpa: gpa,
+                        program: document.getElementById('resProgram').value, level: document.getElementById('resLevel').value,
+                        details: JSON.stringify(courses)
+                    })
+                });
+                showToast("Results uploaded!", "success");
+                document.getElementById('studentResult').style.display = 'none';
+                document.getElementById('searchId').value = '';
+            } catch (e) { showToast("Upload failed", "danger"); }
+        }
+
+        // CSV Handling
+        function handleCSVSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            Papa.parse(file, { header: true, skipEmptyLines: true, complete: function(results) {
+                csvData = results;
+                parsedResults = results.data;
+                document.getElementById('filePreview').style.display = 'block';
+                document.getElementById('processBtn').style.display = 'block';
+            }});
+        }
+
+        async function processCSV() {
+            showToast("Processing CSV...", "info");
+            for (const row of parsedResults) {
+                const studentId = row['id'] || row['INDEX NUMBER'];
+                const program = row['PROGRAM'] || 'RM';
+                if (studentId) {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'upload_results', id: studentId, semester: row['SEMESTER'] || 'Semester 1', gpa: '0', program: program, details: '[]' })
+                    });
+                }
+            }
+            showToast("CSV processed!", "success");
+        }
+
+        function clearStudent() { const id = document.getElementById('bulkStudentId').value.trim(); if(id) performClearance(id, true); }
+        function unclearStudent() { const id = document.getElementById('bulkStudentId').value.trim(); if(id) performClearance(id, false); }
+        function clearStudentById() { const id = document.getElementById('clearanceId').value.trim(); if(id) performClearance(id, true); }
+        function unclearStudentById() { const id = document.getElementById('clearanceId').value.trim(); if(id) performClearance(id, false); }
+        async function performClearance(id, cleared) {
+            try {
+                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_clearance', id: id, cleared: cleared }) });
+                showToast(`Student ${cleared ? 'cleared' : 'uncleared'}`, "success");
+            } catch(e) { showToast("Operation failed", "danger"); }
+        }
+
+        function switchBulkTab(tab) {
+            document.getElementById('bulkClearanceTab').style.display = 'none';
+            document.getElementById('bulkFeesTab').style.display = 'none';
+            document.getElementById('bulkFinanceCSVTab').style.display = 'none';
+            if(tab === 'clearance') document.getElementById('bulkClearanceTab').style.display = 'block';
+            if(tab === 'fees') document.getElementById('bulkFeesTab').style.display = 'block';
+            if(tab === 'financeCSV') document.getElementById('bulkFinanceCSVTab').style.display = 'block';
+        }
+
+        function toggleNotifTarget() {
+            const type = document.getElementById('notifType').value;
+            const container = document.getElementById('notifTargetContainer');
+            const input = document.getElementById('notifStudentId');
+            if (type === 'all') {
+                container.style.display = 'none';
+                input.placeholder = '';
+            } else if (type === 'student') {
+                container.style.display = 'block';
+                input.placeholder = 'Enter Student ID';
+            } else if (type === 'program') {
+                container.style.display = 'block';
+                input.placeholder = 'Enter Program (e.g., RM, RN, ML)';
+            } else if (type === 'level') {
+                container.style.display = 'block';
+                input.placeholder = 'Enter Level (e.g., 100, 200, 300)';
+            }
+        }
+
+        function updateFees() { showToast("Fees updated!", "success"); }
+
+        // Toggle Target Selection for Notifications
+function toggleTargetSelection() {
+    const type = document.getElementById('notifType').value;
+    const selection = document.getElementById('targetSelection');
+    selection.style.display = (type === 'all') ? 'none' : 'block';
+}
+
+        // Enhanced Send Notification
+async function sendNotification() {
+    const title = document.getElementById('notifTitle').value;
+    const message = document.getElementById('notifMessage').value;
+    const type = document.getElementById('notifType').value;
+    const target = document.getElementById('targetValue').value;
+
+    if (!title || !message) {
+        showToast("Please enter title and message", "warning");
+        return;
+    }
+
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...';
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'send_notification',
+                title: title,
+                message: message,
+                type: type,
+                target: target || 'all'
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast("Notification sent successfully!", "success");
+            document.getElementById('notifTitle').value = '';
+            document.getElementById('notifMessage').value = '';
+            document.getElementById('targetValue').value = '';
+            
+            // Add to notification history
+            addToNotificationHistory(title, message, type, target);
+        } else {
+            throw new Error(data.error || 'Failed to send');
+        }
+    } catch (error) {
+        console.error('Notification error:', error);
+        showToast("Failed to send notification", "danger");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+// Schedule Notification (Placeholder)
+function scheduleNotification() {
+    showToast("Scheduled notifications coming soon!", "info");
+}
+
+// Add to Notification History
+function addToNotificationHistory(title, message, type, target) {
+    const container = document.getElementById('notificationHistory');
+    let history = JSON.parse(localStorage.getItem('notificationHistory') || '[]');
+    
+    history.unshift({
+        title: title,
+        message: message.substring(0, 100),
+        type: type,
+        target: target || 'all',
+        date: new Date().toLocaleString()
+    });
+    
+    // Keep only last 20
+    history = history.slice(0, 20);
+    localStorage.setItem('notificationHistory', JSON.stringify(history));
+    
+    displayNotificationHistory();
+}
+
+// Display Notification History
+function displayNotificationHistory() {
+    const container = document.getElementById('notificationHistory');
+    const history = JSON.parse(localStorage.getItem('notificationHistory') || '[]');
+    
+    if (history.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #999;">No notifications sent yet.</p>';
+        return;
+    }
+    
+    let html = '';
+    history.forEach(notif => {
+        let targetText = notif.target === 'all' ? 'All Students' : 
+                         notif.type === 'program' ? `Program: ${notif.target}` :
+                         notif.type === 'level' ? `Level: ${notif.target}` :
+                         `Student: ${notif.target}`;
+        
+        html += `
+            <div class="notification-history-item">
+                <div class="notification-title">${notif.title}</div>
+                <div style="font-size: 0.85rem; color: #666;">${notif.message}</div>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                    <small class="notification-date">${notif.date}</small>
+                    <small style="color: var(--primary);">${targetText}</small>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+// Demo Clearance List (Fallback)
+function loadDemoClearanceList(programFilter, levelFilter, statusFilter) {
+    const container = document.getElementById('clearanceList');
+    const demoStudents = [
+        { id: 'CCST/RM/24/001', name: 'Dorcas Anderson', program: 'RM', level: '100', isCleared: true },
+        { id: 'CCST/RN/24/002', name: 'Justina Arhin', program: 'RN', level: '100', isCleared: false },
+        { id: 'CCST/ML/24/001', name: 'Akosua Johnson', program: 'ML', level: '200', isCleared: true },
+        { id: 'CCST/ML/24/002', name: 'Evelyn Prah', program: 'ML', level: '100', isCleared: false },
+        { id: 'CCST/RM/23/001', name: 'Ernest Ahenkrah', program: 'RM', level: '200', isCleared: true },
+        { id: 'CCST/ML/23/002', name: 'Alice Essel', program: 'ML', level: '300', isCleared: false },
+    ];
+    
+    let filtered = demoStudents;
+    if (programFilter) filtered = filtered.filter(s => s.program === programFilter);
+    if (levelFilter) filtered = filtered.filter(s => s.level === levelFilter);
+    
+    let html = '';
+    filtered.forEach(student => {
+        const isCleared = student.isCleared;
+        const matchesStatus = !statusFilter ||
+            (statusFilter === 'cleared' && isCleared) ||
+            (statusFilter === 'pending' && !isCleared);
+        
+        if (matchesStatus) {
+            html += `
+                <div class="student-list-item">
+                    <div class="student-info">
+                        <span class="student-name">${student.name}</span>
+                        <span class="student-details">${getFullProgramName(student.program)} | Level ${student.level} | ID: ${student.id}</span>
+                    </div>
+                    <div class="clearance-checkbox">
+                        <span class="${isCleared ? 'status-cleared' : 'status-not'}">
+                            ${isCleared ? '<i class="fas fa-check-circle"></i> Cleared' : '<i class="fas fa-times-circle"></i> Pending'}
+                        </span>
+                        <input type="checkbox" data-id="${student.id}" onchange="updateSelectedCount()">
+                    </div>
+                </div>
+            `;
+        }
+    });
+    container.innerHTML = html || '<p style="text-align: center; color: #999; padding: 40px;">No students found.</p>';
+}
+
+// Update Selected Count
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('#clearanceList input[type="checkbox"]');
+    const selected = Array.from(checkboxes).filter(cb => cb.checked).length;
+    const countSpan = document.getElementById('selectedCount');
+    if (countSpan) countSpan.innerText = `${selected} selected`;
+}
+
+// Toggle Select All
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAllStudents');
+    if (!selectAll) return;
+    const checkboxes = document.querySelectorAll('#clearanceList input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    updateSelectedCount();
+}
+
+// Clear Selected Students
+async function clearSelectedStudents() {
+    const checkboxes = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]'))
+        .filter(cb => cb.checked);
+    
+    if (checkboxes.length === 0) {
+        showToast("Please select at least one student", "warning");
+        return;
+    }
+    
+    const ids = checkboxes.map(cb => cb.dataset.id);
+    
+    try {
+        for (const id of ids) {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'toggle_clearance',
+                    id: id,
+                    cleared: true
+                })
+            });
+        }
+        showToast(`${ids.length} students cleared successfully!`, "success");
+        loadStudentClearanceList();
+    } catch (e) {
+        showToast("Failed to clear students", "danger");
+    }
+}
+
+// Unclear Selected Students
+async function unclearSelectedStudents() {
+    const checkboxes = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]'))
+        .filter(cb => cb.checked);
+    
+    if (checkboxes.length === 0) {
+        showToast("Please select at least one student", "warning");
+        return;
+    }
+    
+    const ids = checkboxes.map(cb => cb.dataset.id);
+    
+    try {
+        for (const id of ids) {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'toggle_clearance',
+                    id: id,
+                    cleared: false
+                })
+            });
+        }
+        showToast(`${ids.length} students uncleared successfully!`, "success");
+        loadStudentClearanceList();
+    } catch (e) {
+        showToast("Failed to unclear students", "danger");
+    }
+}
+
+// Enhanced Generate Report
+function generateReport(type) {
+    showToast(`Generating ${type} report...`, "info");
+    
+    // Store report data in localStorage for potential download
+    const reportData = {
+        type: type,
+        date: new Date().toLocaleString(),
+        data: {}
+    };
+    
+    localStorage.setItem('lastReport', JSON.stringify(reportData));
+    
+    // Open a new window with report preview
+    const reportWindow = window.open('', '_blank');
+    reportWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>CCST ${type.toUpperCase()} Report</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; }
+                h1 { color: #1a472a; }
+                .report-date { color: #666; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+                th { background: #1a472a; color: white; }
+            </style>
+        </head>
+        <body>
+            <h1>CCST - ${type.toUpperCase()} Report</h1>
+            <p class="report-date">Generated on: ${new Date().toLocaleString()}</p>
+            <p>Report type: ${type}</p>
+            <p>This report is being generated. Please check back later for complete data.</p>
+            <button onclick="window.print()">Print Report</button>
+        </body>
+        </html>
+    `);
+    reportWindow.document.close();
+}
+
+// Add New Course (enhanced)
+function addNewCourse() {
+    const semester = document.getElementById('courseSemester').value;
+    const courseName = document.getElementById('newCourseName').value;
+    const courseCode = document.getElementById('newCourseCode').value;
+    const credits = document.getElementById('newCourseCredits').value;
+    
+    if (!semester || !courseName) {
+        showToast("Enter semester and course name", "warning");
+        return;
+    }
+    
+    showToast(`Course "${courseCode} - ${courseName}" added to ${semester} with ${credits} credits`, "success");
+    
+    // Clear inputs
+    document.getElementById('newCourseName').value = '';
+    document.getElementById('newCourseCode').value = '';
+    document.getElementById('newCourseCredits').value = '';
+}
+     
+        // Download CSV Template for Results Upload
+        function downloadResultsTemplate() {
+            const template = `id,NAME,PROGRAM,LEVEL,SEMESTER,COURSE_CODE_1,COURSE_NAME_1,CREDITS_1,CA_1,EXAM_1,GRADE_1,COURSE_CODE_2,COURSE_NAME_2,CREDITS_2,CA_2,EXAM_2,GRADE_2,COURSE_CODE_3,COURSE_NAME_3,CREDITS_3,CA_3,EXAM_3,GRADE_3
+CCST/RM/24/001,Justina Arhin,RM,100,Semester 1 2025/2026,COSC 101,Introduction to Computing,3,35,55,A,MATH 101,Algebra and Trigonometry,3,30,48,B+,ENGL 101,Communication Skills,2,32,42,B
+CCST/RM/24/002,Jane Smith,RM,100,Semester 1 2025/2026,COSC 101,Introduction to Computing,3,38,52,A,MATH 101,Algebra and Trigonometry,3,28,45,B+,ENGL 101,Communication Skills,2,30,40,B
+CCST/RN/24/001,Comfort Botwe,RN,100,Semester 1 2025/2026,NURS 101,Fundamentals of Nursing,3,40,50,A,NURS 102,Anatomy and Physiology,3,35,48,B+,PHAR 101,Pharmacology,2,32,42,B
+CCST/ML/24/001,Godfred Boadison,ML,100,Semester 1 2025/2026,CLSC 101,Clinical Chemistry,3,38,55,A+,CLSC 102,Hematology,3,35,50,A,CLSC 103,Immunology,2,32,48,B+
+CCST/ML/24/002,Sarah Williams,ML,100,Semester 1 2025/2026,CLSC 101,Clinical Chemistry,3,40,52,A+,CLSC 102,Hematology,3,38,48,A,CLSC 103,Immunology,2,30,45,B+`;
+
+            const blob = new Blob([template], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'CCST_Results_upload_template.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Results template downloaded! Follow the format for RM/RN/ML programs.", "success");
+        }
+
+        // Download Financial CSV Template 
+function downloadFinanceTemplate() {
+        const template = `ID,Name,Program,Level,PreviousBalance,CurrentFees,AmountPaid,IsCleared,Arrears,Semester
+CCST/RM/24/001,Justina Arhin,RM,100,0,4500,2500,FALSE,0,Semester 1 2026/2027
+CCST/RM/24/002,Jane Smith,RM,100,0,4500,4500,TRUE,0,Semester 1 2026/2027
+CCST/RN/24/001,Mary Johnson,RN,100,500,4500,3000,FALSE,0,Semester 1 2026/2027
+CCST/ML/24/001,Godfred Boadison,ML,100,500,5500,3500,FALSE,500,Semester 1 2026/2027
+CCST/ML/24/002,Comfort Botwe,ML,100,0,5500,5500,TRUE,0,Semester 1 2026/2027
+,,,,
+
+# INSTRUCTIONS:
+# PreviousBalance = Outstanding balance from previous semesters
+# CurrentFees = Fees for this current semester
+# AmountPaid = Total payments made so far
+# IsCleared = TRUE or FALSE (uppercase only)
+# Arrears = Overdue payments
+# Balance is CALCULATED automatically: (PreviousBalance + CurrentFees) - AmountPaid`;
+
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'CCST_financial_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Financial template downloaded! Use 'ID,Name,Program,Level,PreviousBalance,CurrentFees,AmountPaid,IsCleared,Arrears,Semester' format.", "success");
+}
+
+// Download Simple Financial CSV Template (Minimal)
+function downloadSimpleFinanceTemplate() {
+    const template = `ID,AmountPaid,IsCleared
+CCST/RM/24/001,2500,FALSE
+CCST/RM/24/002,4500,TRUE
+CCST/RN/24/001,3000,FALSE
+CCST/ML/24/001,3500,FALSE
+CCST/ML/24/002,5500,TRUE
+
+# SIMPLE TEMPLATE - Only update Amount Paid and Clearance Status
+# ID: Student ID
+# AmountPaid: Total amount paid so far
+# IsCleared: TRUE or FALSE`;
+
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'CCST_financial_simple_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Simple template downloaded! Use ID, AmountPaid, IsCleared format.", "success");
+}
 // ============================================
-// GLOBAL VARIABLES
+// FINANCIAL CSV UPLOAD FUNCTIONS
 // ============================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjuTXWQH--LL05qwUu2QYrXNJiI0hGv9JwZQvwLI8woKASmE1NExB2u_3bsXgu9byuUQ/exec";
-let currentStudent = null;
-let currentTranscriptStudent = null;
-let allStudents = [];
-let currentStaff = null;
-let staffPermissions = [];
+
+// Handle Financial CSV File Selection
+function handleFinanceCSVSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const filePreview = document.getElementById('filePreview');
+    const processBtn = document.getElementById('processFinanceBtn');
+    
+    Papa.parse(file, { 
+        header: true, 
+        skipEmptyLines: true, 
+        complete: function(results) {
+            window.financeCSVData = results;
+            window.parsedFinanceData = results.data;
+            
+            // Create or show preview
+            let previewDiv = document.getElementById('financeFilePreview');
+            if (!previewDiv) {
+                previewDiv = document.createElement('div');
+                previewDiv.id = 'financeFilePreview';
+                previewDiv.className = 'file-preview';
+                document.getElementById('bulkFinanceCSVTab').appendChild(previewDiv);
+            }
+            
+            previewDiv.style.display = 'block';
+            previewDiv.innerHTML = `
+                <h4><i class="fas fa-file-csv"></i> File Ready for Upload</h4>
+                <p><strong>${file.name}</strong></p>
+                <p>Found ${results.data.length} records to process</p>
+                <div class="progress-bar"><div class="progress-fill" id="financeUploadProgress" style="width: 0%;"></div></div>
+            `;
+            
+            if (processBtn) processBtn.style.display = 'block';
+            showToast(`Loaded ${results.data.length} records from CSV`, "success");
+        }
+    });
+}
+
+// Process Financial CSV Upload
+async function processFinanceCSV() {
+    if (!window.parsedFinanceData || window.parsedFinanceData.length === 0) {
+        showToast("No data to upload", "danger");
+        return;
+    }
+    
+    const processBtn = document.getElementById('processFinanceBtn');
+    const progressFill = document.getElementById('financeUploadProgress');
+    
+    processBtn.disabled = true;
+    processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
+    
+    let successCount = 0;
+    let errorCount = 0;
+    let errors = [];
+    
+    for (let i = 0; i < window.parsedFinanceData.length; i++) {
+        const row = window.parsedFinanceData[i];
+        const studentId = row.ID || row.id;
+        
+        if (!studentId) {
+            errorCount++;
+            errors.push({ id: 'Unknown', error: 'Missing student ID' });
+            continue;
+        }
+        
+        try {
+            const updatePayload = {
+                action: 'bulk_financial_update',
+                updates: [{
+                    id: studentId,
+                    name: row.Name || row.name || '',
+                    program: row.Program || row.program || '',
+                    level: row.Level || row.level || '',
+                    previousBalance: parseFloat(row.PreviousBalance || row.previousBalance || 0),
+                    currentFees: parseFloat(row.CurrentFees || row.currentFees || row.total_fee || 0),
+                    amountPaid: parseFloat(row.AmountPaid || row.amount_paid || 0),
+                    isCleared: (row.IsCleared === 'TRUE' || row.IsCleared === true || row.isCleared === 'TRUE'),
+                    arrears: parseFloat(row.Arrears || row.arrears || 0),
+                    semester: row.Semester || row.semester || ''
+                }]
+            };
+            
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatePayload)
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                successCount++;
+            } else {
+                errorCount++;
+                errors.push({ id: studentId, error: result.error || 'Update failed' });
+            }
+        } catch (err) {
+            errorCount++;
+            errors.push({ id: studentId, error: err.message });
+        }
+        
+        if (progressFill) {
+            const progress = ((i + 1) / window.parsedFinanceData.length) * 100;
+            progressFill.style.width = `${progress}%`;
+        }
+    }
+    
+    showToast(`Upload complete! ✅ ${successCount} successful, ❌ ${errorCount} failed`, successCount > 0 ? "success" : "danger");
+    
+    processBtn.disabled = false;
+    processBtn.innerHTML = 'PROCESS FINANCIAL DATA';
+    document.getElementById('financeFileInput').value = '';
+    window.parsedFinanceData = null;
+    
+    if (typeof loadStudentClearanceList === 'function') {
+        loadStudentClearanceList();
+    }
+}
+
+// Load Student Clearance List
+function loadStudentClearanceList() {
+    const container = document.getElementById('clearanceList');
+    if (!container) return;
+    
+    const programFilter = document.getElementById('clearanceProgramFilter')?.value || '';
+    const levelFilter = document.getElementById('clearanceLevelFilter')?.value || '';
+    const statusFilter = document.getElementById('clearanceStatusFilter')?.value || '';
+    
+    loadDemoClearanceList(programFilter, levelFilter, statusFilter);
+}
+
+        function updateFees() { showToast("Fees updated!", "success"); }
+
+        // ============================================
+        // TRANSCRIPT GENERATION FUNCTIONS
+        // ============================================
+
+        async function loadAllStudentsForTranscript() {
+            const select = document.getElementById('transcriptStudentSelect');
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=get_all_students`);
+                const data = await res.json();
+                select.innerHTML = '<option value="">-- Select Student --</option>';
+                if (data.students) {
+                    data.students.forEach(s => {
+                        const option = document.createElement('option');
+                        option.value = s.id;
+                        option.textContent = `${s.name} (${s.id}) - ${getFullProgramName(s.program)}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch(e) {
+                select.innerHTML = '<option value="">-- Select Student --</option><option value="CCST/RM/24/001">John Doe (CCST/RM/24/001) - RM</option><option value="CCST/ML/24/001">Michael Johnson (CCST/ML/24/001) - ML</option>';
+            }
+        }
+
+        async function searchStudentForTranscript() {
+            const studentId = document.getElementById('transcriptStudentId').value.trim();
+            if (!studentId) return showToast("Enter Student ID", "warning");
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${studentId}`);
+                const data = await res.json();
+                if (data.error) { showToast(data.error, "danger"); return; }
+                currentTranscriptStudent = data;
+                displayTranscriptStudentInfo(data);
+                await loadStudentResultsForTranscript(data.id);
+            } catch(e) {
+                currentTranscriptStudent = { id: studentId, name: "Demo Student", program: studentId.includes("ML") ? "ML" : "RM", level: "200" };
+                displayTranscriptStudentInfo(currentTranscriptStudent);
+                displayDemoTranscriptPreview(currentTranscriptStudent);
+            }
+        }
+
+        async function loadStudentForTranscript() {
+            const select = document.getElementById('transcriptStudentSelect');
+            const studentId = select.value;
+            if (!studentId) return;
+            document.getElementById('transcriptStudentId').value = studentId;
+            await searchStudentForTranscript();
+        }
+
+        function displayTranscriptStudentInfo(student) {
+            document.getElementById('transcriptStudentInfo').style.display = 'block';
+            document.getElementById('transcriptName').innerText = student.name;
+            document.getElementById('transcriptDetails').innerHTML = `ID: ${student.id} | Program: ${getFullProgramName(student.program)} | Level: ${student.level || '200'}`;
+        }
+
+        async function loadStudentResultsForTranscript(studentId) {
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`);
+                const data = await res.json();
+                if (data.results && data.results.length > 0) {
+                    displayTranscriptPreview(data.results, currentTranscriptStudent);
+                } else {
+                    displayDemoTranscriptPreview(currentTranscriptStudent);
+                }
+            } catch(e) {
+                displayDemoTranscriptPreview(currentTranscriptStudent);
+            }
+        }
+
+        function displayDemoTranscriptPreview(student) {
+            const demoResults = [
+                { semester: "Semester 1 - 2025/2026", gpa: "3.25", details: [
+                    { code: "COSC 101", name: "Introduction to Computing", credits: 3, ca: 35, exam: 55, total: 90, grade: "A" },
+                    { code: "MATH 101", name: "Algebra", credits: 3, ca: 30, exam: 48, total: 78, grade: "B+" },
+                    { code: "ENGL 101", name: "Communication Skills", credits: 2, ca: 32, exam: 42, total: 74, grade: "B" }
+                ]},
+                { semester: "Semester 2 - 2025/2026", gpa: "3.45", details: [
+                    { code: "COSC 102", name: "Programming", credits: 3, ca: 38, exam: 52, total: 90, grade: "A" },
+                    { code: "MATH 102", name: "Calculus", credits: 3, ca: 32, exam: 50, total: 82, grade: "A" }
+                ]}
+            ];
+            displayTranscriptPreview(demoResults, student);
+        }
+
+        function displayTranscriptPreview(results, student) {
+            const container = document.getElementById('transcriptContent');
+            const program = student.program;
+            let totalWeightedPoints = 0, totalCredits = 0;
+            let semesterSummaries = [];
+            results.forEach((sem, idx) => {
+                let semWeightedPoints = 0, semCredits = 0;
+                sem.details.forEach(c => {
+                    const credits = c.credits || 3;
+                    const points = getGradePoints(c.grade, program);
+                    semWeightedPoints += points * credits;
+                    semCredits += credits;
+                });
+                totalWeightedPoints += semWeightedPoints;
+                totalCredits += semCredits;
+                semesterSummaries.push({ name: sem.semester, gpa: sem.gpa || (semCredits > 0 ? (semWeightedPoints / semCredits).toFixed(2) : 0), credits: semCredits });
+            });
+            const cgpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '0.00';
+            const classification = cgpa >= 3.6 ? 'First Class Honours' : cgpa >= 3.0 ? 'Second Class Honours (Upper)' : cgpa >= 2.5 ? 'Second Class Honours (Lower)' : cgpa >= 2.0 ? 'Pass' : 'Fail';
+            
+            let html = `<div class="transcript-header"><h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1><h3>OFFICIAL ACADEMIC TRANSCRIPT</h3></div>
+            <table class="student-info-table"><tr><td>Student Name:</td><td><strong>${student.name}</strong></td><td>Student ID:</td><td><strong>${student.id}</strong></td></tr>
+            <tr><td>Program:</td><td><strong>${getFullProgramName(student.program)}</strong></td><td>Level:</td><td><strong>${student.level || '200'}</strong></td></tr>
+            <tr><td>Date of Issue:</td><td><strong>${new Date().toLocaleDateString()}</strong></td><td>Transcript ID:</td><td><strong>TR-${student.id}-${Date.now()}</strong></td></tr></table>`;
+            
+            results.forEach((sem, idx) => {
+                html += `<h4 style="margin-top:25px;">${sem.semester} (GPA: ${semesterSummaries[idx]?.gpa})</h4>
+                <table class="transcript-table"><thead><tr><th>Course Code</th><th>Course Title</th><th>Credits</th><th>CA</th><th>Exam</th><th>Total</th><th>Grade</th><th>Points</th></tr></thead><tbody>`;
+                sem.details.forEach(c => {
+                    const total = (c.ca || 0) + (c.exam || 0);
+                    const points = getGradePoints(c.grade, program);
+                    html += `<tr><td>${c.code || 'N/A'}</td><td>${c.name || 'N/A'}</td><td>${c.credits || 3}</td><td>${c.ca || '-'}</td><td>${c.exam || '-'}</td><td>${total}</td><td>${c.grade}</td><td>${points.toFixed(1)}</td></tr>`;
+                });
+                html += `</tbody></table><div class="semester-summary">Semester Credits: ${semesterSummaries[idx]?.credits || 0} | GPA: ${semesterSummaries[idx]?.gpa}</div>`;
+            });
+            
+            html += `<div class="cgpa-section"><h3>CGPA</h3><div class="cgpa-value">${cgpa} / 4.00</div><p>Classification: <strong>${classification}</strong></p><p>Total Credits: ${totalCredits} | Total Points: ${totalWeightedPoints.toFixed(2)}</p></div>
+            <div class="transcript-footer"><p>Generated on: ${new Date().toLocaleString()}</p><p>Registrar's Signature: ___________________</p></div>`;
+            
+            container.innerHTML = html;
+            document.getElementById('transcriptPreview').style.display = 'block';
+        }
+
+        function generateOfficialTranscript() {
+            if (!currentTranscriptStudent) return showToast("Select a student first", "warning");
+            const printWindow = window.open('', '_blank');
+            const content = document.getElementById('transcriptContent').innerHTML;
+            printWindow.document.write(`<!DOCTYPE html><html><head><title>Transcript - ${currentTranscriptStudent.name}</title><style>body{font-family:'Times New Roman',serif;margin:0.5in;} .transcript-header{text-align:center;margin-bottom:30px;border-bottom:2px solid #1a472a;} .student-info-table{width:100%;border-collapse:collapse;margin-bottom:25px;} .student-info-table td{padding:8px;border:1px solid #ddd;} .transcript-table{width:100%;border-collapse:collapse;} .transcript-table th,.transcript-table td{padding:6px;border:1px solid #ddd;text-align:center;} .cgpa-section{margin-top:30px;padding:15px;background:#f9f9f9;text-align:center;} @media print{body{margin:0.5in;}}</style></head><body>${content}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},500);};<\/script></body></html>`);
+            printWindow.document.close();
+            logTranscriptRequest(currentTranscriptStudent.id, currentTranscriptStudent.name, 'processed');
+        }
+
+        function printTranscriptPreview() {
+            const content = document.getElementById('transcriptContent').innerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`<!DOCTYPE html><html><head><title>Transcript Preview</title><style>body{font-family:'Times New Roman',serif;margin:40px;}</style></head><body>${content}</body></html>`);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // Transcript Requests Functions
+        function loadTranscriptRequests() {
+            const requests = JSON.parse(localStorage.getItem('transcriptRequests') || '[]');
+            const container = document.getElementById('transcriptRequestsList');
+            if (requests.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding:40px;">No pending requests.</p>';
+                document.getElementById('requestBadge').style.display = 'none';
+                return;
+            }
+            let html = '';
+            requests.forEach((req, idx) => {
+                html += `<div class="request-item"><div class="request-info"><strong>${req.name}</strong><small>ID: ${req.id} | ${getFullProgramName(req.program)} | Level: ${req.level}</small><small>Requested: ${req.date}</small><small>Purpose: ${req.purpose || 'Academic'}</small></div><div class="request-actions"><button onclick="processTranscriptRequest(${idx})" class="success-btn">Approve</button><button onclick="rejectTranscriptRequest(${idx})" class="danger-btn">Reject</button></div></div>`;
+            });
+            container.innerHTML = html;
+            document.getElementById('requestBadge').style.display = 'block';
+            document.getElementById('requestBadge').innerText = requests.length;
+        }
+
+        function loadProcessedRequests() {
+            const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]');
+            const container = document.getElementById('processedRequestsList');
+            if (processed.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding:20px;">No processed requests.</p>';
+                return;
+            }
+            let html = '';
+            processed.slice(-10).reverse().forEach(req => {
+                html += `<div class="request-item"><div class="request-info"><strong>${req.name}</strong><small>${req.id} | ${req.program}</small><small>Processed: ${req.processedDate}</small></div><div class="${req.status === 'Approved' ? 'status-cleared' : 'status-not'}">${req.status}</div></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        async function processTranscriptRequest(index) {
+            const requests = JSON.parse(localStorage.getItem('transcriptRequests') || '[]');
+            const request = requests[index];
+            if (!request) return;
+            currentTranscriptStudent = { id: request.id, name: request.name, program: request.program, level: request.level };
+            displayTranscriptStudentInfo(currentTranscriptStudent);
+            await loadStudentResultsForTranscript(request.id);
+            requests.splice(index, 1);
+            localStorage.setItem('transcriptRequests', JSON.stringify(requests));
+            const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]');
+            processed.push({ ...request, processedDate: new Date().toLocaleString(), status: 'Approved' });
+            localStorage.setItem('processedTranscripts', JSON.stringify(processed));
+            loadTranscriptRequests();
+            loadProcessedRequests();
+            showToast(`Request for ${request.name} approved`, "success");
+            setTimeout(() => generateOfficialTranscript(), 500);
+        }
+
+        function rejectTranscriptRequest(index) {
+            const requests = JSON.parse(localStorage.getItem('transcriptRequests') || '[]');
+            const request = requests[index];
+            if (confirm(`Reject request for ${request.name}?`)) {
+                requests.splice(index, 1);
+                localStorage.setItem('transcriptRequests', JSON.stringify(requests));
+                const rejected = JSON.parse(localStorage.getItem('processedTranscripts') || '[]');
+                rejected.push({ ...request, processedDate: new Date().toLocaleString(), status: 'Rejected' });
+                localStorage.setItem('processedTranscripts', JSON.stringify(rejected));
+                loadTranscriptRequests();
+                loadProcessedRequests();
+                showToast(`Request for ${request.name} rejected`, "warning");
+            }
+        }
+
+        function processAllRequests() {
+            const requests = JSON.parse(localStorage.getItem('transcriptRequests') || '[]');
+            if (requests.length === 0) return showToast("No pending requests", "warning");
+            if (confirm(`Process all ${requests.length} requests?`)) {
+                requests.forEach(req => {
+                    const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]');
+                    processed.push({ ...req, processedDate: new Date().toLocaleString(), status: 'Approved' });
+                    localStorage.setItem('processedTranscripts', JSON.stringify(processed));
+                });
+                localStorage.setItem('transcriptRequests', '[]');
+                loadTranscriptRequests();
+                loadProcessedRequests();
+                showToast(`Processed ${requests.length} requests`, "success");
+            }
+        }
+
+        function logTranscriptRequest(studentId, studentName, status) {
+            console.log(`Transcript: ${studentName} (${studentId}) - ${status}`);
+        }
+
+        function logout() {
+    if (confirm("Logout?")) {
+        window.location.replace("index.html");
+    }
+    return false;
+}
+
+               window.onload = () => {
+                // Initialize staff permissions first
+                if (!checkStaffAccess()) {
+                return; // Will redirect to login
+                }
+    
+                // Show default section based on permissions
+                    if (staffPermissions.includes('all') || staffPermissions.includes('search')) {
+                     showSection('search');
+                        } else if (staffPermissions.includes('clearance')) {
+                        showSection('clearance');
+                        } else if (staffPermissions.includes('reports')) {
+                        showSection('reports');
+                        } else {
+                            showSection('search');
+                        }
+    
+                        document.getElementById('totalStudents').innerText = '156';
+                        document.getElementById('clearedStudents').innerText = '142';
+                        document.getElementById('pendingStudents').innerText = '14';
+                        document.getElementById('pendingResults').innerText = '23';
+                        loadAllStudentsForTranscript();
+                        loadTranscriptRequests();
+                        loadProcessedRequests();
+                         displayNotificationHistory();
+                        };
+
+        function openExecutiveDashboard() {
+            // Check if user has permission (only admin/president/executive)
+            const adminData = localStorage.getItem('adminData');
+            if (adminData) {
+            const staff = JSON.parse(adminData);
+                // Allow specific roles to access executive dashboard
+            const allowedRoles = ['super_admin', 'president', 'academic_director', 'admin'];
+                if (allowedRoles.includes(staff.staffRole) || staff.permissions?.includes('executive')) {
+                    window.open('executive dashboard.html', '_blank');
+                } else {
+                    showToast("Access Denied: Executive Dashboard requires special permissions", "danger");
+                }
+            } else {
+                showToast("Please login as executive staff to access this feature", "danger");
+            }
+        }
+
+// ============================================
+// ADMISSIONS MANAGER FUNCTIONS
+// ============================================
+
 let allApplications = [];
 let currentSelectedApplication = null;
 
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
-function toggleSidebar() { document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('show'); }
-function showToast(msg, type = "info") { const toast = document.getElementById('toast'); toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i> ${msg}`; toast.style.background = type === 'success' ? '#27ae60' : type === 'danger' ? '#e74c3c' : '#3498db'; toast.style.display = 'block'; setTimeout(() => toast.style.display = 'none', 3000); }
-
-function getFullProgramName(code) { const names = { 'RM': 'Registered Midwifery', 'RN': 'Registered General Nursing', 'ML': 'Medical Laboratory Technology' }; return names[code] || code; }
-
-// ============================================
-// GRADING SYSTEM
-// ============================================
-const GRADING_SYSTEMS = {
-    RM: [{ min: 80, grade: "A", points: 4.0 }, { min: 75, grade: "B+", points: 3.5 }, { min: 70, grade: "B", points: 3.0 }, { min: 65, grade: "C+", points: 2.5 }, { min: 60, grade: "C", points: 2.0 }, { min: 55, grade: "D+", points: 1.5 }, { min: 50, grade: "D", points: 1.0 }, { min: 0, grade: "E", points: 0 }],
-    RN: [{ min: 80, grade: "A", points: 4.0 }, { min: 75, grade: "B+", points: 3.5 }, { min: 70, grade: "B", points: 3.0 }, { min: 65, grade: "C+", points: 2.5 }, { min: 60, grade: "C", points: 2.0 }, { min: 55, grade: "D+", points: 1.5 }, { min: 50, grade: "D", points: 1.0 }, { min: 0, grade: "E", points: 0 }],
-    ML: [{ min: 85, grade: "A+", points: 5.0 }, { min: 80, grade: "A", points: 4.5 }, { min: 75, grade: "B+", points: 4.0 }, { min: 70, grade: "B", points: 3.5 }, { min: 65, grade: "C+", points: 3.0 }, { min: 60, grade: "C", points: 2.5 }, { min: 55, grade: "D+", points: 2.0 }, { min: 50, grade: "D", points: 1.5 }, { min: 0, grade: "E", points: 0 }]
-};
-function getGradePoints(grade, program) { const sys = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RM; for (const l of sys) if (l.grade === grade) return l.points; return 0; }
-
-// ============================================
-// STAFF ACCESS
-// ============================================
-function checkStaffAccess() { const adminData = localStorage.getItem('adminData'); if (!adminData) { window.location.href = 'index.html'; return false; } currentStaff = JSON.parse(adminData); staffPermissions = currentStaff.permissions || ['search']; updateMenuVisibility(); return true; }
-function updateMenuVisibility() { const menuItems = { search: 'searchMenuItem', csv_upload: 'csvUploadMenuItem', bulk_upload: 'bulkUploadMenuItem', courses: 'coursesMenuItem', clearance: 'clearanceMenuItem', transcript: 'transcriptMenuItem', transcript_requests: 'transcriptRequestsMenuItem', notifications: 'notificationsMenuItem', reports: 'reportsMenuItem', admissions: 'admissionsMenuItem' }; const hasAll = staffPermissions.includes('all'); for (const [perm, id] of Object.entries(menuItems)) { const el = document.getElementById(id); if (el) el.style.display = (hasAll || staffPermissions.includes(perm)) ? 'flex' : 'none'; } const pageTitle = document.getElementById('pageTitle'); if (pageTitle && currentStaff.staffRole) pageTitle.innerText = { accountant: 'Finance Dashboard', registrar: 'Academic Registry', hod: 'HOD Dashboard', super_admin: 'Admin Dashboard', exams_officer: 'Exams Officer Dashboard' }[currentStaff.staffRole] || 'Staff Dashboard'; }
-
-// ============================================
-// SHOW SECTION
-// ============================================
-function showSection(section) {
-    if (window.innerWidth <= 768) toggleSidebar();
-    const sections = ['search', 'csv_upload', 'bulk_upload', 'courses', 'clearance', 'transcript', 'transcript_requests', 'notifications', 'reports', 'admissions'];
-    sections.forEach(s => { const sec = document.getElementById(s + 'Section'); if (sec) sec.style.display = 'none'; });
-    const selected = document.getElementById(section + 'Section'); if (selected) selected.style.display = 'block'; else { showToast("Section not found", "danger"); return; }
-    document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-    document.querySelectorAll('.menu-item').forEach(link => { if (link.getAttribute('onclick')?.indexOf("'" + section + "'") !== -1) link.classList.add('active'); });
-    const titles = { search: 'Search Student', csv_upload: 'CSV Upload', bulk_upload: 'Bulk Operations', courses: 'Manage Courses', clearance: 'Financial Clearance', transcript: 'Generate Transcript', transcript_requests: 'Transcript Requests', admissions: 'Admissions Manager', notifications: 'Send Notifications', reports: 'Reports' };
-    if (document.getElementById('pageTitle')) document.getElementById('pageTitle').innerText = titles[section] || section;
-    if (section === 'clearance') loadStudentClearanceList();
-    if (section === 'transcript_requests') { loadTranscriptRequests(); loadProcessedRequests(); }
-    if (section === 'admissions') loadAdmissions();
+// Load admissions from Google Sheets or localStorage
+async function loadAdmissions() {
+    const container = document.getElementById('admissionsList');
+    container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;"><i class="fas fa-spinner fa-spin"></i> Loading applications...</p>';
+    
+    try {
+        // Try to fetch from Google Sheets first
+        const response = await fetch(`${SCRIPT_URL}?action=get_admissions`);
+        const data = await response.json();
+        
+        if (data.admissions && data.admissions.length > 0) {
+            allApplications = data.admissions;
+            localStorage.setItem('cachedAdmissions', JSON.stringify(allApplications));
+        } else {
+            const cached = localStorage.getItem('cachedAdmissions');
+            if (cached) {
+                allApplications = JSON.parse(cached);
+            } else {
+                allApplications = getDemoApplications();
+            }
+        }
+    } catch (error) {
+        console.log('Using cached/demo admissions data');
+        const cached = localStorage.getItem('cachedAdmissions');
+        if (cached) {
+            allApplications = JSON.parse(cached);
+        } else {
+            allApplications = getDemoApplications();
+        }
+    }
+    
+    updateAdmissionStats();
+    displayAdmissions();
 }
 
-// ============================================
-// SEARCH STUDENT
-// ============================================
-async function searchStudent() { const id = document.getElementById('searchId').value.trim(); if (!id) return showToast("Please enter Student ID", "warning"); try { const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`); const data = await res.json(); if (data.error) { showToast(data.error, "danger"); return; } currentStudent = data; document.getElementById('studentResult').style.display = 'block'; document.getElementById('resName').innerText = data.name; document.getElementById('resInfo').innerHTML = `${getFullProgramName(data.program)} | Level ${data.level} | Balance: GH₵${(data.balance || 0).toLocaleString()}`; if (data.program) document.getElementById('resProgram').value = data.program; if (data.level) document.getElementById('resLevel').value = data.level; updateClearanceButton(data.isCleared); } catch (e) { showToast("Error connecting to server", "danger"); } }
-function updateClearanceButton(isCleared) { const btn = document.getElementById('toggleBtn'); if (isCleared === true || isCleared === "TRUE") { btn.innerText = "✓ FINANCIALLY CLEARED"; btn.style.background = "#27ae60"; } else { btn.innerText = "✗ MARK AS CLEARED"; btn.style.background = "#e74c3c"; } }
-async function toggleClearance() { if (!currentStudent) return; const newStatus = !(currentStudent.isCleared === true || currentStudent.isCleared === "TRUE"); try { await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_clearance', id: currentStudent.id, cleared: newStatus }) }); currentStudent.isCleared = newStatus; updateClearanceButton(newStatus); showToast(newStatus ? "Student cleared!" : "Clearance removed.", "success"); } catch (e) { showToast("Failed to update clearance", "danger"); } }
-function addCourseRow() { const div = document.createElement('div'); div.className = "course-row"; div.innerHTML = `<input class="cCode" placeholder="Code" style="flex:1"><input class="cName" placeholder="Name" style="flex:2"><input class="cCredits" placeholder="Credits" type="number" value="3" style="flex:0.5"><input class="cCA" placeholder="CA" type="number" style="flex:0.5"><input class="cExam" placeholder="Exam" type="number" style="flex:0.5"><input class="cGrade" placeholder="Grade" style="flex:0.5">`; document.getElementById('courseInputs').appendChild(div); }
-async function uploadResults() { if (!currentStudent) return showToast("Search for a student first", "warning"); const sem = document.getElementById('resSemester').value; const gpa = document.getElementById('resGPA').value; if (!sem || !gpa) return showToast("Semester and GPA required", "warning"); const codes = document.getElementsByClassName('cCode'), names = document.getElementsByClassName('cName'), credits = document.getElementsByClassName('cCredits'), cas = document.getElementsByClassName('cCA'), exams = document.getElementsByClassName('cExam'), grades = document.getElementsByClassName('cGrade'); let courses = []; for (let i = 0; i < names.length; i++) if (names[i].value.trim()) courses.push({ code: codes[i].value.trim(), name: names[i].value.trim(), credits: parseInt(credits[i].value) || 3, ca: parseFloat(cas[i].value) || 0, exam: parseFloat(exams[i].value) || 0, grade: grades[i].value.trim() }); try { await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'upload_results', id: currentStudent.id, semester: sem, gpa: gpa, program: document.getElementById('resProgram').value, level: document.getElementById('resLevel').value, details: JSON.stringify(courses) }) }); showToast("Results uploaded!", "success"); document.getElementById('studentResult').style.display = 'none'; document.getElementById('searchId').value = ''; } catch (e) { showToast("Upload failed", "danger"); } }
+// Demo applications for testing
+function getDemoApplications() {
+    return [
+        {
+            applicationId: "APP-2025-0001",
+            trackingCode: "ABC123XY",
+            fullName: "Dorcas Anderson",
+            email: "dorcas@example.com",
+            phone: "0241000001",
+            program: "RM",
+            entryMode: "WASSCE",
+            status: "pending_review",
+            submittedAt: new Date().toISOString(),
+            certificates: "[{\"type\":\"WASSCE\",\"institution\":\"Kumasi High\",\"year\":\"2023\"}]",
+            transactionId: "MOMO123456",
+            paymentMethod: "momo"
+        },
+        {
+            applicationId: "APP-2025-0002",
+            trackingCode: "DEF456UV",
+            fullName: "Justina Arhin",
+            email: "justina@example.com",
+            phone: "0241000002",
+            program: "RN",
+            entryMode: "WASSCE",
+            status: "documents_verified",
+            submittedAt: new Date().toISOString(),
+            certificates: "[{\"type\":\"WASSCE\",\"institution\":\"Accra Academy\",\"year\":\"2022\"}]",
+            transactionId: "MOMO789012",
+            paymentMethod: "bank"
+        },
+        {
+            applicationId: "APP-2025-0003",
+            trackingCode: "GHI789WZ",
+            fullName: "Godfred Boadison",
+            email: "godfred@example.com",
+            phone: "0241000003",
+            program: "ML",
+            entryMode: "WASSCE",
+            status: "admitted",
+            submittedAt: new Date().toISOString(),
+            certificates: "[{\"type\":\"WASSCE\",\"institution\":\"Oyoko Methodist\",\"year\":\"2023\"}]",
+            transactionId: "MOMO345678",
+            paymentMethod: "momo"
+        }
+    ];
+}
 
-// ============================================
-// CSV HANDLING
-// ============================================
-let csvData = null, parsedResults = [];
-function handleCSVSelect(event) { const file = event.target.files[0]; if (!file) return; Papa.parse(file, { header: true, skipEmptyLines: true, complete: (results) => { csvData = results; parsedResults = results.data; document.getElementById('filePreview').style.display = 'block'; document.getElementById('processBtn').style.display = 'block'; } }); }
-async function processCSV() { showToast("Processing CSV...", "info"); for (const row of parsedResults) { const studentId = row['id'] || row['INDEX NUMBER']; const program = row['PROGRAM'] || 'RM'; if (studentId) await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'upload_results', id: studentId, semester: row['SEMESTER'] || 'Semester 1', gpa: '0', program: program, details: '[]' }) }); } showToast("CSV processed!", "success"); }
-function downloadResultsTemplate() { const template = `id,NAME,PROGRAM,LEVEL,SEMESTER,COURSE_CODE_1,COURSE_NAME_1,CREDITS_1,CA_1,EXAM_1,GRADE_1\nCCST/RM/24/001,Justina Arhin,RM,100,Semester 1 2025/2026,COSC 101,Introduction to Computing,3,35,55,A`; const blob = new Blob([template], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'CCST_Results_upload_template.csv'; a.click(); URL.revokeObjectURL(URL); showToast("Template downloaded!", "success"); }
+// Update statistics
+function updateAdmissionStats() {
+    document.getElementById('totalApplications').innerText = allApplications.length;
+    document.getElementById('pendingApplications').innerText = allApplications.filter(a => a.status === 'pending_review').length;
+    document.getElementById('admittedCount').innerText = allApplications.filter(a => a.status === 'admitted').length;
+    document.getElementById('rejectedCount').innerText = allApplications.filter(a => a.status === 'rejected').length;
+    
+    const badge = document.getElementById('admissionBadge');
+    const pendingCount = allApplications.filter(a => a.status === 'pending_review').length;
+    if (pendingCount > 0) {
+        badge.style.display = 'block';
+        badge.innerText = pendingCount;
+    } else {
+        badge.style.display = 'none';
+    }
+}
 
-// ============================================
-// BULK CLEARANCE
-// ============================================
-function clearStudent() { const id = document.getElementById('bulkStudentId').value.trim(); if (id) performClearance(id, true); }
-function unclearStudent() { const id = document.getElementById('bulkStudentId').value.trim(); if (id) performClearance(id, false); }
-function clearStudentById() { const id = document.getElementById('clearanceId').value.trim(); if (id) performClearance(id, true); }
-function unclearStudentById() { const id = document.getElementById('clearanceId').value.trim(); if (id) performClearance(id, false); }
-async function performClearance(id, cleared) { try { await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_clearance', id: id, cleared: cleared }) }); showToast(`Student ${cleared ? 'cleared' : 'uncleared'}`, "success"); } catch (e) { showToast("Operation failed", "danger"); } }
-function switchBulkTab(tab) { document.getElementById('bulkClearanceTab').style.display = 'none'; document.getElementById('bulkFeesTab').style.display = 'none'; document.getElementById('bulkFinanceCSVTab').style.display = 'none'; if (tab === 'clearance') document.getElementById('bulkClearanceTab').style.display = 'block'; if (tab === 'fees') document.getElementById('bulkFeesTab').style.display = 'block'; if (tab === 'financeCSV') document.getElementById('bulkFinanceCSVTab').style.display = 'block'; }
-function updateFees() { showToast("Fees updated!", "success"); }
-function downloadFinanceTemplate() { const template = `ID,Name,Program,Level,PreviousBalance,CurrentFees,AmountPaid,IsCleared,Arrears,Semester\nCCST/RM/24/001,Justina Arhin,RM,100,0,4500,2500,FALSE,0,Semester 1`; const blob = new Blob([template], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'CCST_financial_template.csv'; a.click(); URL.revokeObjectURL(URL); showToast("Template downloaded!", "success"); }
-function downloadSimpleFinanceTemplate() { const template = `ID,AmountPaid,IsCleared\nCCST/RM/24/001,2500,FALSE`; const blob = new Blob([template], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'CCST_financial_simple_template.csv'; a.click(); URL.revokeObjectURL(URL); showToast("Simple template downloaded!", "success"); }
-let parsedFinanceData = null;
-function handleFinanceCSVSelect(event) { const file = event.target.files[0]; if (!file) return; Papa.parse(file, { header: true, skipEmptyLines: true, complete: (results) => { parsedFinanceData = results.data; const preview = document.getElementById('financeFilePreview'); preview.style.display = 'block'; preview.innerHTML = `<h4><i class="fas fa-file-csv"></i> File Ready</h4><p>${results.data.length} records</p><div class="progress-bar"><div class="progress-fill" id="financeUploadProgress" style="width: 0%;"></div></div>`; document.getElementById('processFinanceBtn').style.display = 'block'; } }); }
-async function processFinanceCSV() { if (!parsedFinanceData || parsedFinanceData.length === 0) { showToast("No data", "danger"); return; } const btn = document.getElementById('processFinanceBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...'; let success = 0; for (let i = 0; i < parsedFinanceData.length; i++) { const row = parsedFinanceData[i]; const studentId = row.ID || row.id; if (studentId) { try { await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_clearance', id: studentId, cleared: row.IsCleared === 'TRUE' }) }); success++; } catch(e) {} } if (document.getElementById('financeUploadProgress')) document.getElementById('financeUploadProgress').style.width = `${((i+1)/parsedFinanceData.length)*100}%`; } showToast(`Processed ${success} records`, "success"); btn.disabled = false; btn.innerHTML = 'PROCESS FINANCIAL DATA'; parsedFinanceData = null; }
-
-// ============================================
-// CLEARANCE LIST
-// ============================================
-function loadDemoClearanceList(programFilter, levelFilter, statusFilter) {
-    const demo = [{ id: 'CCST/RM/24/001', name: 'Dorcas Anderson', program: 'RM', level: '100', isCleared: true }, { id: 'CCST/RN/24/002', name: 'Justina Arhin', program: 'RN', level: '100', isCleared: false }, { id: 'CCST/ML/24/001', name: 'Godfred Boadison', program: 'ML', level: '200', isCleared: true }, { id: 'CCST/ML/24/002', name: 'Evelyn Prah', program: 'ML', level: '100', isCleared: false }];
-    let filtered = demo.filter(s => (!programFilter || s.program === programFilter) && (!levelFilter || s.level === levelFilter));
-    const container = document.getElementById('clearanceList');
+// Display admissions list
+function displayAdmissions() {
+    const container = document.getElementById('admissionsList');
+    const statusFilter = document.getElementById('admissionStatusFilter').value;
+    const programFilter = document.getElementById('admissionProgramFilter').value;
+    const searchTerm = document.getElementById('admissionSearchInput').value.toLowerCase();
+    
+    let filtered = [...allApplications];
+    
+    if (statusFilter !== 'all') {
+        filtered = filtered.filter(app => app.status === statusFilter);
+    }
+    if (programFilter !== 'all') {
+        filtered = filtered.filter(app => app.program === programFilter);
+    }
+    if (searchTerm) {
+        filtered = filtered.filter(app => 
+            app.fullName.toLowerCase().includes(searchTerm) ||
+            app.applicationId.toLowerCase().includes(searchTerm) ||
+            app.phone.includes(searchTerm) ||
+            app.email.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No applications found.</p>';
+        return;
+    }
+    
+    const programNames = { 'RM': 'Midwifery', 'RN': 'Nursing', 'ML': 'Med Lab' };
+    const statusColors = {
+        'pending_review': '#f39c12',
+        'documents_verified': '#3498db',
+        'interview_scheduled': '#9b59b6',
+        'admitted': '#27ae60',
+        'rejected': '#e74c3c'
+    };
+    const statusLabels = {
+        'pending_review': 'Pending Review',
+        'documents_verified': 'Documents Verified',
+        'interview_scheduled': 'Interview Scheduled',
+        'admitted': 'Admitted',
+        'rejected': 'Rejected'
+    };
+    
     let html = '';
-    filtered.forEach(s => { const matches = !statusFilter || (statusFilter === 'cleared' && s.isCleared) || (statusFilter === 'pending' && !s.isCleared); if (matches) html += `<div class="student-list-item"><div class="student-info"><span class="student-name">${s.name}</span><span class="student-details">${getFullProgramName(s.program)} | Level ${s.level} | ID: ${s.id}</span></div><div class="clearance-checkbox"><span class="${s.isCleared ? 'status-cleared' : 'status-not'}">${s.isCleared ? '<i class="fas fa-check-circle"></i> Cleared' : '<i class="fas fa-times-circle"></i> Pending'}</span><input type="checkbox" data-id="${s.id}" onchange="updateSelectedCount()"></div></div>`; });
-    container.innerHTML = html || '<p style="text-align: center; padding: 40px;">No students found.</p>';
+    filtered.forEach(app => {
+        const submittedDate = new Date(app.submittedAt).toLocaleDateString();
+        html += `
+            <div class="student-list-item" onclick="viewApplicationDetails('${app.applicationId}')" style="cursor: pointer;">
+                <div class="student-info">
+                    <span class="student-name">${app.fullName}</span>
+                    <span class="student-details">
+                        ${app.applicationId} | ${programNames[app.program] || app.program} | ${app.phone}
+                    </span>
+                    <small>Submitted: ${submittedDate}</small>
+                </div>
+                <div style="text-align: right;">
+                    <span style="background: ${statusColors[app.status]}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;">
+                        ${statusLabels[app.status]}
+                    </span>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
 }
-function loadStudentClearanceList() { const prog = document.getElementById('clearanceProgramFilter').value; const lev = document.getElementById('clearanceLevelFilter').value; const stat = document.getElementById('clearanceStatusFilter').value; loadDemoClearanceList(prog, lev, stat); }
-function updateSelectedCount() { const checkboxes = document.querySelectorAll('#clearanceList input[type="checkbox"]'); const selected = Array.from(checkboxes).filter(cb => cb.checked).length; const span = document.getElementById('selectedCount'); if (span) span.innerText = `${selected} selected`; }
-function toggleSelectAll() { const selectAll = document.getElementById('selectAllStudents'); if (!selectAll) return; const checkboxes = document.querySelectorAll('#clearanceList input[type="checkbox"]'); checkboxes.forEach(cb => cb.checked = selectAll.checked); updateSelectedCount(); }
-async function clearSelectedStudents() { const ids = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]')).filter(cb => cb.checked).map(cb => cb.dataset.id); if (ids.length === 0) return showToast("Select students", "warning"); for (const id of ids) await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_clearance', id: id, cleared: true }) }); showToast(`${ids.length} students cleared`, "success"); loadStudentClearanceList(); }
-async function unclearSelectedStudents() { const ids = Array.from(document.querySelectorAll('#clearanceList input[type="checkbox"]')).filter(cb => cb.checked).map(cb => cb.dataset.id); if (ids.length === 0) return showToast("Select students", "warning"); for (const id of ids) await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_clearance', id: id, cleared: false }) }); showToast(`${ids.length} students uncleared`, "success"); loadStudentClearanceList(); }
 
-// ============================================
-// NOTIFICATIONS
-// ============================================
-function toggleTargetSelection() { const type = document.getElementById('notifType').value; document.getElementById('targetSelection').style.display = type === 'all' ? 'none' : 'block'; }
-async function sendNotification() { const title = document.getElementById('notifTitle').value; const message = document.getElementById('notifMessage').value; const type = document.getElementById('notifType').value; const target = document.getElementById('targetValue').value; if (!title || !message) return showToast("Enter title and message", "warning"); const btn = event.target.closest('button'); const orig = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...'; try { const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'send_notification', title, message, type, target: target || 'all' }) }); const data = await res.json(); if (data.success) { showToast("Notification sent!", "success"); document.getElementById('notifTitle').value = ''; document.getElementById('notifMessage').value = ''; document.getElementById('targetValue').value = ''; addToNotificationHistory(title, message, type, target); } else throw new Error(); } catch (e) { showToast("Failed to send", "danger"); } finally { btn.disabled = false; btn.innerHTML = orig; } }
-function scheduleNotification() { showToast("Scheduled notifications coming soon!", "info"); }
-function addToNotificationHistory(title, message, type, target) { let history = JSON.parse(localStorage.getItem('notificationHistory') || '[]'); history.unshift({ title, message: message.substring(0, 100), type, target: target || 'all', date: new Date().toLocaleString() }); history = history.slice(0, 20); localStorage.setItem('notificationHistory', JSON.stringify(history)); displayNotificationHistory(); }
-function displayNotificationHistory() { const container = document.getElementById('notificationHistory'); const history = JSON.parse(localStorage.getItem('notificationHistory') || '[]'); if (history.length === 0) { container.innerHTML = '<p style="text-align: center;">No notifications sent yet.</p>'; return; } let html = ''; history.forEach(n => { html += `<div class="notification-history-item"><div class="notification-title">${n.title}</div><div style="font-size:0.85rem;">${n.message}</div><div style="display:flex;justify-content:space-between;margin-top:8px;"><small class="notification-date">${n.date}</small><small style="color:var(--primary);">${n.target === 'all' ? 'All Students' : n.type === 'program' ? `Program: ${n.target}` : n.type === 'level' ? `Level: ${n.target}` : `Student: ${n.target}`}</small></div></div>`; }); container.innerHTML = html; }
+// Filter admissions
+function filterAdmissions() {
+    displayAdmissions();
+}
 
-// ============================================
-// REPORTS
-// ============================================
-function generateReport(type) { showToast(`Generating ${type} report...`, "info"); const win = window.open('', '_blank'); win.document.write(`<!DOCTYPE html><html><head><title>CCST ${type.toUpperCase()} Report</title><style>body{font-family:Arial;margin:40px;} h1{color:#1a472a;}</style></head><body><h1>CCST - ${type.toUpperCase()} Report</h1><p>Generated: ${new Date().toLocaleString()}</p><button onclick="window.print()">Print</button></body></html>`); win.document.close(); }
+// Refresh admissions
+function refreshAdmissions() {
+    loadAdmissions();
+    showToast("Applications refreshed!", "success");
+}
 
-// ============================================
-// COURSES
-// ============================================
-function addNewCourse() { const sem = document.getElementById('courseSemester').value; const name = document.getElementById('newCourseName').value; const code = document.getElementById('newCourseCode').value; const credits = document.getElementById('newCourseCredits').value; if (!sem || !name) return showToast("Enter semester and course name", "warning"); showToast(`Course "${code} - ${name}" added to ${sem}`, "success"); document.getElementById('newCourseName').value = ''; document.getElementById('newCourseCode').value = ''; document.getElementById('newCourseCredits').value = ''; }
+// View application details
+async function viewApplicationDetails(applicationId) {
+    currentSelectedApplication = allApplications.find(app => app.applicationId === applicationId);
+    if (!currentSelectedApplication) return;
+    
+    const modal = document.getElementById('applicationModal');
+    const content = document.getElementById('applicationDetailContent');
+    
+    let certificates = [];
+    try {
+        certificates = JSON.parse(currentSelectedApplication.certificates || '[]');
+    } catch(e) {
+        certificates = [];
+    }
+    
+    let certHtml = '';
+    certificates.forEach(cert => {
+        certHtml += `<li><strong>${cert.type}</strong> - ${cert.institution || 'N/A'} (${cert.year || 'N/A'})</li>`;
+    });
+    
+    const programNames = { 'RM': 'Registered Midwifery', 'RN': 'Registered Nursing', 'ML': 'Medical Lab Technology' };
+    const statusLabels = {
+        'pending_review': 'Pending Review',
+        'documents_verified': 'Documents Verified',
+        'interview_scheduled': 'Interview Scheduled',
+        'admitted': 'Admitted',
+        'rejected': 'Rejected'
+    };
+    
+    content.innerHTML = `
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div><strong>Application ID:</strong><br>${currentSelectedApplication.applicationId}</div>
+                <div><strong>Tracking Code:</strong><br>${currentSelectedApplication.trackingCode || 'N/A'}</div>
+                <div><strong>Full Name:</strong><br>${currentSelectedApplication.fullName}</div>
+                <div><strong>Program:</strong><br>${programNames[currentSelectedApplication.program] || currentSelectedApplication.program}</div>
+                <div><strong>Email:</strong><br>${currentSelectedApplication.email}</div>
+                <div><strong>Phone:</strong><br>${currentSelectedApplication.phone}</div>
+                <div><strong>Entry Mode:</strong><br>${currentSelectedApplication.entryMode || 'N/A'}</div>
+                <div><strong>Submitted:</strong><br>${new Date(currentSelectedApplication.submittedAt).toLocaleString()}</div>
+                <div><strong>Payment Transaction:</strong><br>${currentSelectedApplication.transactionId || 'N/A'}</div>
+                <div><strong>Payment Method:</strong><br>${currentSelectedApplication.paymentMethod || 'N/A'}</div>
+                <div><strong>Current Status:</strong><br><span style="background: ${currentSelectedApplication.status === 'admitted' ? '#27ae60' : currentSelectedApplication.status === 'rejected' ? '#e74c3c' : '#f39c12'}; color: white; padding: 4px 12px; border-radius: 20px; display: inline-block;">${statusLabels[currentSelectedApplication.status]}</span></div>
+            </div>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <strong><i class="fas fa-certificate"></i> Academic Certificates:</strong>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                ${certHtml || '<li>No certificates uploaded</li>'}
+            </ul>
+        </div>
+    `;
+    
+    modal.classList.add('show');
+}
 
-// ============================================
-// TRANSCRIPT FUNCTIONS
-// ============================================
-async function loadAllStudentsForTranscript() { const select = document.getElementById('transcriptStudentSelect'); try { const res = await fetch(`${SCRIPT_URL}?action=get_all_students`); const data = await res.json(); select.innerHTML = '<option value="">-- Select Student --</option>'; if (data.students) data.students.forEach(s => { const opt = document.createElement('option'); opt.value = s.id; opt.textContent = `${s.name} (${s.id})`; select.appendChild(opt); }); } catch(e) { select.innerHTML = '<option value="">-- Select Student --</option><option value="CCST/RM/24/001">John Doe (CCST/RM/24/001)</option>'; } }
-async function searchStudentForTranscript() { const id = document.getElementById('transcriptStudentId').value.trim(); if (!id) return showToast("Enter Student ID", "warning"); try { const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`); const data = await res.json(); if (data.error) { showToast(data.error, "danger"); return; } currentTranscriptStudent = data; displayTranscriptStudentInfo(data); displayDemoTranscriptPreview(data); } catch(e) { currentTranscriptStudent = { id, name: "Demo Student", program: "RM", level: "200" }; displayTranscriptStudentInfo(currentTranscriptStudent); displayDemoTranscriptPreview(currentTranscriptStudent); } }
-async function loadStudentForTranscript() { const select = document.getElementById('transcriptStudentSelect'); const id = select.value; if (id) { document.getElementById('transcriptStudentId').value = id; await searchStudentForTranscript(); } }
-function displayTranscriptStudentInfo(s) { document.getElementById('transcriptStudentInfo').style.display = 'block'; document.getElementById('transcriptName').innerText = s.name; document.getElementById('transcriptDetails').innerHTML = `ID: ${s.id} | Program: ${getFullProgramName(s.program)} | Level: ${s.level || '200'}`; }
-function displayDemoTranscriptPreview(s) { const demo = [{ semester: "Semester 1 - 2025/2026", gpa: "3.25", details: [{ code: "COSC 101", name: "Computing", credits: 3, ca: 35, exam: 55, total: 90, grade: "A" }] }]; displayTranscriptPreview(demo, s); }
-function displayTranscriptPreview(results, student) { const container = document.getElementById('transcriptContent'); let totalPoints = 0, totalCredits = 0; let html = `<div class="transcript-header"><h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1><h3>OFFICIAL ACADEMIC TRANSCRIPT</h3></div><table class="student-info-table"><tr><td>Name:</td><td><strong>${student.name}</strong></td><td>ID:</td><td><strong>${student.id}</strong></td></tr>`; results.forEach(sem => { html += `<h4>${sem.semester}</h4><table class="transcript-table"><tr><th>Code</th><th>Course</th><th>Credits</th><th>Grade</th></tr>`; sem.details.forEach(c => { const pts = getGradePoints(c.grade, student.program); totalPoints += pts * (c.credits||3); totalCredits += (c.credits||3); html += `<tr><td>${c.code}</td><td>${c.name}</td><td>${c.credits||3}</td><td>${c.grade}</td></tr>`; }); html += `</table>`; }); const cgpa = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00'; html += `<div class="cgpa-section"><h3>CGPA: ${cgpa} / 4.00</h3></div>`; container.innerHTML = html; document.getElementById('transcriptPreview').style.display = 'block'; }
-function generateOfficialTranscript() { if (!currentTranscriptStudent) return showToast("Select a student", "warning"); const win = window.open('', '_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Transcript</title><style>body{font-family:'Times New Roman';margin:0.5in;}</style></head><body>${document.getElementById('transcriptContent').innerHTML}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},500);};<\/script></body></html>`); win.document.close(); }
-function printTranscriptPreview() { const win = window.open('', '_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Transcript Preview</title><style>body{font-family:'Times New Roman';margin:40px;}</style></head><body>${document.getElementById('transcriptContent').innerHTML}</body></html>`); win.document.close(); win.print(); }
+// Close application modal
+function closeApplicationModal() {
+    document.getElementById('applicationModal').classList.remove('show');
+}
 
-// ============================================
-// TRANSCRIPT REQUESTS
-// ============================================
-function loadTranscriptRequests() { const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); const container = document.getElementById('transcriptRequestsList'); if (reqs.length === 0) { container.innerHTML = '<p style="text-align:center; padding:40px;">No pending requests.</p>'; document.getElementById('requestBadge').style.display = 'none'; return; } let html = ''; reqs.forEach((r, i) => { html += `<div class="request-item"><div class="request-info"><strong>${r.name}</strong><small>ID: ${r.id}</small></div><div class="request-actions"><button onclick="processTranscriptRequest(${i})" class="success-btn">Approve</button><button onclick="rejectTranscriptRequest(${i})" class="danger-btn">Reject</button></div></div>`; }); container.innerHTML = html; document.getElementById('requestBadge').style.display = 'block'; document.getElementById('requestBadge').innerText = reqs.length; }
-function loadProcessedRequests() { const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); const container = document.getElementById('processedRequestsList'); if (processed.length === 0) { container.innerHTML = '<p style="text-align:center; padding:20px;">No processed requests.</p>'; return; } let html = ''; processed.slice(-10).reverse().forEach(r => { html += `<div class="request-item"><div class="request-info"><strong>${r.name}</strong><small>${r.id}</small><small>Processed: ${r.processedDate}</small></div><div class="${r.status === 'Approved' ? 'status-cleared' : 'status-not'}">${r.status}</div></div>`; }); container.innerHTML = html; }
-function processTranscriptRequest(idx) { const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); const req = reqs[idx]; if (!req) return; currentTranscriptStudent = { id: req.id, name: req.name, program: req.program, level: req.level }; displayTranscriptStudentInfo(currentTranscriptStudent); displayDemoTranscriptPreview(currentTranscriptStudent); reqs.splice(idx, 1); localStorage.setItem('transcriptRequests', JSON.stringify(reqs)); const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); processed.push({ ...req, processedDate: new Date().toLocaleString(), status: 'Approved' }); localStorage.setItem('processedTranscripts', JSON.stringify(processed)); loadTranscriptRequests(); loadProcessedRequests(); showToast(`Request for ${req.name} approved`, "success"); setTimeout(() => generateOfficialTranscript(), 500); }
-function rejectTranscriptRequest(idx) { const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); const req = reqs[idx]; if (confirm(`Reject request for ${req.name}?`)) { reqs.splice(idx, 1); localStorage.setItem('transcriptRequests', JSON.stringify(reqs)); const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); processed.push({ ...req, processedDate: new Date().toLocaleString(), status: 'Rejected' }); localStorage.setItem('processedTranscripts', JSON.stringify(processed)); loadTranscriptRequests(); loadProcessedRequests(); showToast(`Request for ${req.name} rejected`, "warning"); } }
-function processAllRequests() { const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); if (reqs.length === 0) return showToast("No pending requests", "warning"); if (confirm(`Process all ${reqs.length} requests?`)) { reqs.forEach(r => { const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); processed.push({ ...r, processedDate: new Date().toLocaleString(), status: 'Approved' }); localStorage.setItem('processedTranscripts', JSON.stringify(processed)); }); localStorage.setItem('transcriptRequests', '[]'); loadTranscriptRequests(); loadProcessedRequests(); showToast(`Processed ${reqs.length} requests`, "success"); } }
+// Approve application (Admit student)
+async function approveApplication() {
+    if (!currentSelectedApplication) return;
+    
+    if (confirm(`Admit ${currentSelectedApplication.fullName} to ${currentSelectedApplication.program}?`)) {
+        currentSelectedApplication.status = 'admitted';
+        await updateApplicationStatus(currentSelectedApplication.applicationId, 'admitted');
+        
+        sendAdmissionNotification(currentSelectedApplication.phone, currentSelectedApplication.email, currentSelectedApplication.fullName, 'admitted');
+        
+        showToast(`${currentSelectedApplication.fullName} has been admitted!`, "success");
+        closeApplicationModal();
+        loadAdmissions();
+    }
+}
 
-// ============================================
-// ADMISSIONS MANAGER
-// ============================================
-function getDemoApplications() { return [{ applicationId: "APP-2025-0001", trackingCode: "ABC123", fullName: "Dorcas Anderson", email: "dorcas@example.com", phone: "0241000001", program: "RM", entryMode: "WASSCE", status: "pending_review", submittedAt: new Date().toISOString(), certificates: "[]", transactionId: "MOMO123", paymentMethod: "momo" }]; }
-async function loadAdmissions() { const container = document.getElementById('admissionsList'); container.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading...</p>'; try { const res = await fetch(`${SCRIPT_URL}?action=get_admissions`); const data = await res.json(); if (data.admissions && data.admissions.length) allApplications = data.admissions; else { const cached = localStorage.getItem('cachedAdmissions'); allApplications = cached ? JSON.parse(cached) : getDemoApplications(); } } catch(e) { const cached = localStorage.getItem('cachedAdmissions'); allApplications = cached ? JSON.parse(cached) : getDemoApplications(); } updateAdmissionStats(); displayAdmissions(); }
-function updateAdmissionStats() { document.getElementById('totalApplications').innerText = allApplications.length; document.getElementById('pendingApplications').innerText = allApplications.filter(a => a.status === 'pending_review').length; document.getElementById('admittedCount').innerText = allApplications.filter(a => a.status === 'admitted').length; document.getElementById('rejectedCount').innerText = allApplications.filter(a => a.status === 'rejected').length; const badge = document.getElementById('admissionBadge'); const pending = allApplications.filter(a => a.status === 'pending_review').length; if (pending > 0) { badge.style.display = 'block'; badge.innerText = pending; } else badge.style.display = 'none'; }
-function displayAdmissions() { const container = document.getElementById('admissionsList'); const statusFilter = document.getElementById('admissionStatusFilter').value; const programFilter = document.getElementById('admissionProgramFilter').value; const search = document.getElementById('admissionSearchInput').value.toLowerCase(); let filtered = allApplications.filter(a => (statusFilter === 'all' || a.status === statusFilter) && (programFilter === 'all' || a.program === programFilter) && (!search || a.fullName.toLowerCase().includes(search) || a.applicationId.toLowerCase().includes(search) || a.phone.includes(search))); if (filtered.length === 0) { container.innerHTML = '<p style="text-align:center; padding:40px;">No applications found.</p>'; return; } const statusColors = { pending_review: '#f39c12', documents_verified: '#3498db', interview_scheduled: '#9b59b6', admitted: '#27ae60', rejected: '#e74c3c' }; const statusLabels = { pending_review: 'Pending Review', documents_verified: 'Documents Verified', interview_scheduled: 'Interview Scheduled', admitted: 'Admitted', rejected: 'Rejected' }; let html = ''; filtered.forEach(app => { html += `<div class="student-list-item" onclick="viewApplicationDetails('${app.applicationId}')" style="cursor:pointer;"><div class="student-info"><span class="student-name">${app.fullName}</span><span class="student-details">${app.applicationId} | ${app.program} | ${app.phone}</span><small>Submitted: ${new Date(app.submittedAt).toLocaleDateString()}</small></div><div style="text-align:right;"><span style="background:${statusColors[app.status]}; color:white; padding:4px 12px; border-radius:20px; font-size:0.75rem;">${statusLabels[app.status]}</span></div></div>`; }); container.innerHTML = html; }
-function filterAdmissions() { displayAdmissions(); }
-function refreshAdmissions() { loadAdmissions(); showToast("Refreshed!", "success"); }
-function viewApplicationDetails(appId) { currentSelectedApplication = allApplications.find(a => a.applicationId === appId); if (!currentSelectedApplication) return; const modal = document.getElementById('applicationModal'); if (!modal) { const modalDiv = document.createElement('div'); modalDiv.id = 'applicationModal'; modalDiv.className = 'modal'; modalDiv.innerHTML = `<div class="modal-content"><div class="modal-header"><h3>Application Details</h3><button class="close-modal" onclick="closeApplicationModal()">&times;</button></div><div id="applicationDetailContent"></div><div class="btn-group" style="display:flex; gap:10px; padding:20px;"><button onclick="approveApplication()" class="success-btn" style="flex:1;">Approve</button><button onclick="rejectApplication()" class="danger-btn" style="flex:1;">Reject</button><button onclick="scheduleInterview()" class="info-btn" style="flex:1;">Interview</button></div></div>`; document.body.appendChild(modalDiv); } const content = document.getElementById('applicationDetailContent'); content.innerHTML = `<div><strong>${currentSelectedApplication.fullName}</strong><br>ID: ${currentSelectedApplication.applicationId}<br>Program: ${currentSelectedApplication.program}<br>Phone: ${currentSelectedApplication.phone}<br>Email: ${currentSelectedApplication.email}<br>Status: ${currentSelectedApplication.status}</div>`; document.getElementById('applicationModal').classList.add('show'); }
-function closeApplicationModal() { const modal = document.getElementById('applicationModal'); if (modal) modal.classList.remove('show'); }
-async function approveApplication() { if (!currentSelectedApplication) return; if (confirm(`Admit ${currentSelectedApplication.fullName}?`)) { currentSelectedApplication.status = 'admitted'; await updateApplicationStatus(currentSelectedApplication.applicationId, 'admitted'); showToast(`${currentSelectedApplication.fullName} admitted!`, "success"); closeApplicationModal(); loadAdmissions(); } }
-async function rejectApplication() { if (!currentSelectedApplication) return; if (confirm(`Reject ${currentSelectedApplication.fullName}?`)) { currentSelectedApplication.status = 'rejected'; await updateApplicationStatus(currentSelectedApplication.applicationId, 'rejected'); showToast(`Application rejected`, "warning"); closeApplicationModal(); loadAdmissions(); } }
-function scheduleInterview() { if (!currentSelectedApplication) return; const date = prompt("Enter interview date and time"); if (date) { currentSelectedApplication.status = 'interview_scheduled'; updateApplicationStatus(currentSelectedApplication.applicationId, 'interview_scheduled'); showToast(`Interview scheduled`, "success"); closeApplicationModal(); loadAdmissions(); } }
-async function updateApplicationStatus(appId, status) { const idx = allApplications.findIndex(a => a.applicationId === appId); if (idx !== -1) allApplications[idx].status = status; localStorage.setItem('cachedAdmissions', JSON.stringify(allApplications)); try { await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'update_admission_status', applicationId: appId, status: status }) }); } catch(e) {} }
-function exportAdmissionsToCSV() { let csv = "ID,Name,Email,Phone,Program,Status,Submitted\n"; allApplications.forEach(a => { csv += `"${a.applicationId}","${a.fullName}","${a.email}","${a.phone}","${a.program}","${a.status}","${new Date(a.submittedAt).toLocaleString()}"\n`; }); const blob = new Blob([csv], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `CCST_Admissions_${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(URL); showToast("Exported!", "success"); }
-function openExecutiveDashboard() { showToast("Executive Dashboard - Coming Soon", "info"); }
-function logout() { if (confirm("Logout?")) { localStorage.removeItem('adminData'); localStorage.removeItem('currentStaff'); window.location.href = 'index.html'; } }
+// Reject application
+async function rejectApplication() {
+    if (!currentSelectedApplication) return;
+    
+    if (confirm(`Reject ${currentSelectedApplication.fullName}'s application?`)) {
+        currentSelectedApplication.status = 'rejected';
+        await updateApplicationStatus(currentSelectedApplication.applicationId, 'rejected');
+        
+        sendAdmissionNotification(currentSelectedApplication.phone, currentSelectedApplication.email, currentSelectedApplication.fullName, 'rejected');
+        
+        showToast(`${currentSelectedApplication.fullName}'s application has been rejected.`, "warning");
+        closeApplicationModal();
+        loadAdmissions();
+    }
+}
 
-// ============================================
-// INITIALIZATION
-// ============================================
-window.onload = () => {
-    if (!checkStaffAccess()) return;
-    showSection('search');
-    document.getElementById('totalStudents').innerText = '156';
-    document.getElementById('clearedStudents').innerText = '142';
-    document.getElementById('pendingStudents').innerText = '14';
-    document.getElementById('pendingResults').innerText = '23';
-    loadAllStudentsForTranscript();
-    loadTranscriptRequests();
-    loadProcessedRequests();
-    displayNotificationHistory();
-};
-</script>
+// Schedule interview
+function scheduleInterview() {
+    if (!currentSelectedApplication) return;
+    
+    const interviewDate = prompt("Enter interview date and time (e.g., April 25, 2026 at 10:00 AM)");
+    if (interviewDate) {
+        currentSelectedApplication.status = 'interview_scheduled';
+        updateApplicationStatus(currentSelectedApplication.applicationId, 'interview_scheduled');
+        
+        sendInterviewNotification(currentSelectedApplication.phone, currentSelectedApplication.email, currentSelectedApplication.fullName, interviewDate);
+        
+        showToast(`Interview scheduled for ${currentSelectedApplication.fullName}`, "success");
+        closeApplicationModal();
+        loadAdmissions();
+    }
+}
+
+// Update application status in storage
+async function updateApplicationStatus(applicationId, status) {
+    const index = allApplications.findIndex(a => a.applicationId === applicationId);
+    if (index !== -1) {
+        allApplications[index].status = status;
+        localStorage.setItem('cachedAdmissions', JSON.stringify(allApplications));
+    }
+    
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'update_admission_status',
+                applicationId: applicationId,
+                status: status
+            })
+        });
+    } catch (error) {
+        console.log('Status update will sync later');
+    }
+}
+
+// Send admission notification
+function sendAdmissionNotification(phone, email, name, status) {
+    const message = status === 'admitted' 
+        ? `Congratulations ${name}! You have been ADMITTED to CCST. Login with your application ID to proceed.`
+        : `Dear ${name}, we regret to inform you that your application was not successful. Thank you for applying to CCST.`;
+    
+    console.log(`SMS to ${phone}: ${message}`);
+    console.log(`Email to ${email}: ${message}`);
+    
+    const notifications = JSON.parse(localStorage.getItem('admissionNotifications') || '[]');
+    notifications.push({
+        to: phone,
+        email: email,
+        message: message,
+        date: new Date().toISOString()
+    });
+    localStorage.setItem('admissionNotifications', JSON.stringify(notifications));
+}
+
+// Send interview notification
+function sendInterviewNotification(phone, email, name, interviewDate) {
+    const message = `Dear ${name}, your interview at CCST has been scheduled for ${interviewDate}. Please bring your original documents.`;
+    
+    console.log(`SMS to ${phone}: ${message}`);
+    console.log(`Email to ${email}: ${message}`);
+    
+    const notifications = JSON.parse(localStorage.getItem('admissionNotifications') || '[]');
+    notifications.push({
+        to: phone,
+        email: email,
+        message: message,
+        date: new Date().toISOString()
+    });
+    localStorage.setItem('admissionNotifications', JSON.stringify(notifications));
+}
+
+// Export admissions to CSV
+function exportAdmissionsToCSV() {
+    let csv = "Application ID,Tracking Code,Full Name,Email,Phone,Program,Entry Mode,Status,Submitted Date\n";
+
+    allApplications.forEach(app => {
+        csv += `"${app.applicationId}","${app.trackingCode || ''}","${app.fullName}","${app.email}","${app.phone}","${app.program}","${app.entryMode || ''}","${app.status}","${new Date(app.submittedAt).toLocaleString()}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `CCST_Admissions_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Admissions exported to CSV!", "success");
+}
+
+// Logout function
+function logout() {
+    localStorage.removeItem('adminData');
+    localStorage.removeItem('currentStaff');
+    window.location.href = 'index.html';
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    checkStaffAccess();
+});
+
+
+    </script>
 </body>
 </html>
