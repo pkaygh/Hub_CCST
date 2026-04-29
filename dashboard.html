@@ -2196,8 +2196,14 @@
             const p = studentData.profile;
             
             document.getElementById('profileName').innerText = p.name;
-            document.getElementById('profileProgram').innerText = `${getFullProgramName(p.program)} | Level ${p.level}`;
-            document.getElementById('profileId').innerText = `ID: ${p.id}`;
+            // profileProgram and profileId don't exist in HTML — use the badges that do exist
+            const profileBadgeEl = document.getElementById('profileBadge');
+            if (profileBadgeEl) profileBadgeEl.innerText = getFullProgramName(p.program);
+            const levelBadgeEl = document.getElementById('levelBadge');
+            if (levelBadgeEl) levelBadgeEl.innerText = `Level ${p.level}`;
+            const profileIdShortEl = document.getElementById('profileIdShort');
+            if (profileIdShortEl) profileIdShortEl.innerText = p.id ? p.id.split('/').pop() : p.id;
+
             document.getElementById('sidebarName').innerText = p.name;
             document.getElementById('sidebarDetails').innerText = `Level ${p.level} | ${getFullProgramName(p.program)}`;
             document.getElementById('studentNameHeader').innerText = p.name;
@@ -2205,13 +2211,20 @@
             // Load photo
             setProfilePhoto(p.id);
             
-            const statusBox = document.getElementById('clearanceStatus');
-            if (p.isCleared === true || p.isCleared === "TRUE") {
-                statusBox.innerText = "✅ FINANCIALLY CLEARED";
-                statusBox.className = "status-badge cleared";
-            } else {
-                statusBox.innerText = "❌ NOT CLEARED - See Accountant";
-                statusBox.className = "status-badge not-cleared";
+            // clearanceStatus element doesn't exist — update the finance card instead
+            const clearanceStatusFinance = document.getElementById('clearanceStatusFinance');
+            if (clearanceStatusFinance) {
+                const isCleared = p.isCleared === true || p.isCleared === "TRUE";
+                clearanceStatusFinance.style.display = 'block';
+                if (isCleared) {
+                    clearanceStatusFinance.innerHTML = '<i class="fas fa-check-circle"></i> ✅ FINANCIALLY CLEARED - You can register for courses';
+                    clearanceStatusFinance.style.background = 'rgba(85, 107, 47, 0.1)';
+                    clearanceStatusFinance.style.color = '#2e7d32';
+                } else {
+                    clearanceStatusFinance.innerHTML = '<i class="fas fa-exclamation-circle"></i> ⚠️ NOT CLEARED - Outstanding balance. Please contact the Accountant.';
+                    clearanceStatusFinance.style.background = 'rgba(139, 0, 0, 0.1)';
+                    clearanceStatusFinance.style.color = '#c62828';
+                }
             }
             
             updateWelcomeMessage();
@@ -2287,9 +2300,13 @@
                 container.innerHTML += `<div class="semester-card" data-semester="${sem.semester}"><div class="semester-header"><h4>${sem.semester}</h4><span class="gpa-badge">GPA: ${sem.gpa || (semCredits > 0 ? (semWeightedPoints / semCredits).toFixed(2) : 0)}</span></div><div class="course-grid"><div class="course-header">Course</div><div class="course-header">Points</div><div class="course-header">Grade</div>${courseRows}</div></div>`;
             });
             const cgpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '--';
-            document.getElementById('cgpaDisplay').innerText = cgpa;
-            document.getElementById('totalCredits').innerText = totalCredits;
-            document.getElementById('academicStatus').innerText = cgpa >= 2.0 ? 'Good' : 'Review';
+            // Use the IDs that actually exist in the HTML
+            const overallCGPAEl = document.getElementById('overallCGPA');
+            if (overallCGPAEl) overallCGPAEl.innerText = cgpa;
+            const totalCreditsEarnedEl = document.getElementById('totalCreditsEarned');
+            if (totalCreditsEarnedEl) totalCreditsEarnedEl.innerText = totalCredits;
+            const cgpaClassEl = document.getElementById('cgpaClassification');
+            if (cgpaClassEl) cgpaClassEl.innerText = cgpa >= 2.0 ? 'Good Standing' : 'Academic Review';
         }
 
         function filterResults() {
@@ -2873,52 +2890,48 @@
                 const studentId = studentData.profile.id;
                 console.log("Fetching all data for ID:", studentId);
 
-                // Fetch all data in parallel for better performance
-                const [financeRes, academicRes, personalRes, resultsRes, paymentsRes] = await Promise.all([
-                    fetch(`${SCRIPT_URL}?action=get_finance&id=${studentId}`),
-                    fetch(`${SCRIPT_URL}?action=get_academic&id=${studentId}`),
-                    fetch(`${SCRIPT_URL}?action=get_personal&id=${studentId}`),
+                // Fetch only endpoints that exist in the backend
+                const [resultsRes, notifRes] = await Promise.all([
                     fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`),
-                    fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`)
+                    fetch(`${SCRIPT_URL}?action=get_notifications&id=${studentId}&program=${studentData.profile.program}&level=${studentData.profile.level}`)
                 ]);
 
-                const [financeDataRes, academicDataRes, personalDataRes, resultsData, paymentsData] = await Promise.all([
-                    financeRes.json(),
-                    academicRes.json(),
-                    personalRes.json(),
+                const [resultsData, notifData] = await Promise.all([
                     resultsRes.json(),
-                    paymentsRes.json()
+                    notifRes.json()
                 ]);
 
-                console.log("Finance data:", financeDataRes);
-                console.log("Academic data:", academicDataRes);
-                console.log("Personal data:", personalDataRes);
                 console.log("Results data:", resultsData);
-                console.log("Payments data:", paymentsData);
 
-                // Store fetched data
-                if (financeDataRes.finance) {
-                    financeData = financeDataRes.finance;
-                    // Update student profile with finance data
-                    Object.assign(studentData.profile, {
-                        previousBalance: financeData.previousBalance || 0,
-                        currentSemesterFees: financeData.currentSemesterFees || 0,
-                        amountPaid: financeData.amountPaid || 0,
-                        balance: financeData.balance || 0,
-                        arrears: financeData.arrears || 0,
-                        isCleared: financeData.isCleared || false
-                    });
-                }
+                // Finance & personal data come directly from the login profile response
+                // (the backend's studentLogin() already returns all these fields)
+                const p = studentData.profile;
+                financeData = {
+                    previousBalance:     parseFloat(p.previousBalance)      || 0,
+                    currentSemesterFees: parseFloat(p.currentSemesterFees)  || parseFloat(p.totalFee) || 0,
+                    amountPaid:          parseFloat(p.amountPaid)            || 0,
+                    arrears:             parseFloat(p.arrears)               || 0,
+                    isCleared:           p.isCleared === true || p.isCleared === "TRUE"
+                };
+                financeData.balance = (financeData.previousBalance + financeData.currentSemesterFees) - financeData.amountPaid;
 
-                if (academicDataRes.academic) {
-                    academicData = academicDataRes.academic;
-                }
+                // Personal data — map from profile fields stored at login
+                personalData = {
+                    address:          p.address          || '--',
+                    email:            p.email            || '--',
+                    phone:            p.phone            || '--',
+                    dob:              p.dob              || '--',
+                    gender:           p.gender           || '--',
+                    guardianName:     p.guardianName     || p.guardian     || '--',
+                    emergencyContact: p.emergencyContact || '--',
+                    emergencyPhone:   p.emergencyPhone   || '',
+                    bloodGroup:       p.bloodGroup       || '--',
+                    nationality:      p.nationality      || 'Ghanaian',
+                    hometown:         p.hometown         || '--',
+                    allergies:        p.allergies        || 'None reported'
+                };
 
-                if (personalDataRes.personal) {
-                    personalData = personalDataRes.personal;
-                }
-
-                if (resultsData.results) {
+                if (resultsData.results && resultsData.results.length > 0) {
                     userResults = resultsData.results;
                 } else {
                     console.log("No results from server, using sample data");
@@ -2929,9 +2942,8 @@
                     }];
                 }
 
-                if (paymentsData.payments) {
-                    userPayments = paymentsData.payments;
-                }
+                // Payments not yet a backend endpoint — initialise empty
+                userPayments = [];
 
                 // Load all sections with fetched data
                 loadProfile();
@@ -2956,29 +2968,31 @@
 
         // Load personal information from fetched data
         function loadPersonalInfo() {
-            if (!personalData) return;
+            // Use personalData if populated, otherwise fall back directly to profile
+            const src = personalData || studentData?.profile || {};
 
-            // Update personal info card if elements exist
             const infoAddress = document.getElementById('infoAddress');
-            if (infoAddress) infoAddress.innerHTML = personalData.address || '--';
+            if (infoAddress) infoAddress.innerHTML = src.address || '--';
 
             const infoEmergency = document.getElementById('infoEmergency');
-            if (infoEmergency) infoEmergency.innerHTML = personalData.emergencyPhone ? `${personalData.emergencyContact} (${personalData.emergencyPhone})` : personalData.emergencyContact || '--';
+            if (infoEmergency) infoEmergency.innerHTML = src.emergencyPhone
+                ? `${src.emergencyContact} (${src.emergencyPhone})`
+                : (src.emergencyContact || '--');
 
             const infoGuardian = document.getElementById('infoGuardian');
-            if (infoGuardian) infoGuardian.innerHTML = personalData.guardianName || '--';
+            if (infoGuardian) infoGuardian.innerHTML = src.guardianName || src.guardian || '--';
 
             const infoBloodGroup = document.getElementById('infoBloodGroup');
-            if (infoBloodGroup) infoBloodGroup.innerHTML = personalData.bloodGroup || '--';
+            if (infoBloodGroup) infoBloodGroup.innerHTML = src.bloodGroup || '--';
 
             const infoNationality = document.getElementById('infoNationality');
-            if (infoNationality) infoNationality.innerHTML = personalData.nationality || '--';
+            if (infoNationality) infoNationality.innerHTML = src.nationality || 'Ghanaian';
 
             const infoHometown = document.getElementById('infoHometown');
-            if (infoHometown) infoHometown.innerHTML = personalData.hometown || '--';
+            if (infoHometown) infoHometown.innerHTML = src.hometown || '--';
 
             const infoAllergies = document.getElementById('infoAllergies');
-            if (infoAllergies) infoAllergies.innerHTML = personalData.allergies || 'None reported';
+            if (infoAllergies) infoAllergies.innerHTML = src.allergies || 'None reported';
         }
 
         function updateWelcomeMessage() {
