@@ -2932,15 +2932,11 @@
                 };
 
                 if (resultsData.results && resultsData.results.length > 0) {
-                    userResults = resultsData.results;
-                } else {
-                    console.log("No results from server, using sample data");
-                    userResults = [{
-                        semester: "Semester 1 - 2025/2026", gpa: "3.25",
-                        details: [{ code: "COSC 101", name: "Introduction to Computing", credits: 3, ca: 35, exam: 55, grade: "A" },
-                                  { code: "MATH 101", name: "Algebra", credits: 3, ca: 30, exam: 48, grade: "B+" }]
-                    }];
-                }
+    userResults = resultsData.results;
+} else {
+    console.log("No results found for this student");
+    userResults = [];
+}
 
                 // Payments not yet a backend endpoint — initialise empty
                 userPayments = [];
