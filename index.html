@@ -916,6 +916,23 @@
                 return;
             }
 
+            function resetLoginBtn() {
+    const loginBtn = document.getElementById('loginBtn');
+    const loginText = document.getElementById('loginText');
+    const spinner = document.getElementById('loginSpinner');
+
+    loginBtn.disabled = false;
+    loginText.style.display = 'inline';
+    spinner.style.display = 'none';
+}
+
+const controller = new AbortController();
+const timeout = setTimeout(() => controller.abort(), 10000);
+
+const response = await fetch(url, { signal: controller.signal });
+
+clearTimeout(timeout);
+
             // UI Feedback
             loginBtn.disabled = true;
             loginText.style.display = 'none';
