@@ -797,7 +797,7 @@
 
     <script>
     // Configuration - Your Google Apps Script URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMiP5PuKEJcFDXQFFIdAzphQcNWrLm7kPT14GI7Bwq_hSW9PsauqreKDo-JuVoaJ5ktQ/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyIj8zgZzobN0eauUHQEma7PbVOQo6kuAyRXsUg9C2DNu2N10LRmdu7IJEg_n-XihTpOA/exec";
     let deferredPrompt;
     let currentRole = 'student';
     
@@ -892,7 +892,7 @@
     }
 
     // ========== ID AVAILABILITY CHECK FUNCTIONS ==========
-    async function checkStudentIdAvailability(studentId) {
+        function checkStudentIdAvailability(studentId) {
         if (!studentId || studentId.length < 5) {
             document.getElementById('idAvailabilityIcon').innerHTML = '';
             document.getElementById('idAvailabilityMessage').innerHTML = '';
@@ -906,44 +906,45 @@
         document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator id-availability-checking';
         document.getElementById('idAvailabilityMessage').innerHTML = 'Checking availability...';
         document.getElementById('idAvailabilityMessage').className = 'id-message checking';
+
+        // Use JSONP to bypass CORS for GET requests
+        const script = document.createElement('script');
+        const callbackName = 'idCheckCallback_' + Date.now();
         
-        try {
-            // Check with backend server
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-            
-            const response = await fetch(`${SCRIPT_URL}?action=check_id&id=${encodeURIComponent(studentId)}&t=${Date.now()}`, {
-                signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.exists === true) {
-                    document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-times-circle"></i>';
-                    document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator id-availability-taken';
-                    document.getElementById('idAvailabilityMessage').innerHTML = '❌ This Student ID is already taken. Please use a different ID.';
-                    document.getElementById('idAvailabilityMessage').className = 'id-message taken';
-                    isIdAvailable = false;
-                    return;
-                }
+        window[callbackName] = function(data) {
+            if (data.exists === true) {
+                document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-times-circle"></i>';
+                document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator id-availability-taken';
+                document.getElementById('idAvailabilityMessage').innerHTML = '❌ This Student ID is already taken. Please use a different ID.';
+                document.getElementById('idAvailabilityMessage').className = 'id-message taken';
+                isIdAvailable = false;
+            } else {
+                document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-check-circle"></i>';
+                document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator id-availability-available';
+                document.getElementById('idAvailabilityMessage').innerHTML = '✅ Student ID is available for registration.';
+                document.getElementById('idAvailabilityMessage').className = 'id-message available';
+                isIdAvailable = true;
             }
-            
-            // ID is available
-            document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-check-circle"></i>';
-            document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator id-availability-available';
-            document.getElementById('idAvailabilityMessage').innerHTML = '✅ Student ID is available for registration.';
-            document.getElementById('idAvailabilityMessage').className = 'id-message available';
-            isIdAvailable = true;
-            
-        } catch (error) {
-            console.error('ID check error:', error);
+            // Cleanup
+            delete window[callbackName];
+            if (script.parentNode) {
+                document.head.removeChild(script);
+            }
+        };
+        
+        script.src = `${SCRIPT_URL}?action=check_id&id=${encodeURIComponent(studentId)}&callback=${callbackName}&t=${Date.now()}`;
+        
+        script.onerror = function() {
+            console.error('JSONP request failed');
             document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-question-circle"></i>';
             document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator';
             document.getElementById('idAvailabilityMessage').innerHTML = '⚠️ Cannot verify ID. Registration may fail if ID is taken.';
             document.getElementById('idAvailabilityMessage').className = 'id-message checking';
             isIdAvailable = true;
-        }
+            delete window[callbackName];
+        };
+        
+        document.head.appendChild(script);
     }
 
     function onIdInput() {
