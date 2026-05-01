@@ -797,12 +797,14 @@
 
     <script>
     // Configuration - Your Google Apps Script URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6EqXyTtGH4FlzeyMhN0gZaSzJIpPqpRG44yXiSzClzdhW0zMk8hhhGPdWDDNBnKjTjQ/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySRgMCWg-n9aKObsjDORipuUz-Dzwde4QD6tbe8EcTeazTteiznoI7Vs4tU9Ylknq2/exec";
     let deferredPrompt;
     let currentRole = 'student';
-    let isIdAvailable = false;  // EXPLICITLY DECLARED
-    let idCheckTimeout;
     
+    // ========== ID AVAILABILITY VARIABLES ==========
+    let isIdAvailable = false;
+    let idCheckTimeout;
+
     // Particle Animation System
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
@@ -890,9 +892,7 @@
     }
 
     // ========== ID AVAILABILITY CHECK FUNCTIONS ==========
-    function checkStudentIdAvailability(studentId) {
-        console.log("Checking ID:", studentId);
-        
+        function checkStudentIdAvailability(studentId) {
         if (!studentId || studentId.length < 5) {
             document.getElementById('idAvailabilityIcon').innerHTML = '';
             document.getElementById('idAvailabilityMessage').innerHTML = '';
@@ -906,15 +906,12 @@
         document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator id-availability-checking';
         document.getElementById('idAvailabilityMessage').innerHTML = 'Checking availability...';
         document.getElementById('idAvailabilityMessage').className = 'id-message checking';
-        isIdAvailable = false;  // Reset while checking
 
         // Use JSONP to bypass CORS for GET requests
         const script = document.createElement('script');
         const callbackName = 'idCheckCallback_' + Date.now();
         
         window[callbackName] = function(data) {
-            console.log("ID check response:", data);
-            
             if (data.exists === true) {
                 document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-times-circle"></i>';
                 document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator id-availability-taken';
@@ -938,12 +935,12 @@
         script.src = `${SCRIPT_URL}?action=check_id&id=${encodeURIComponent(studentId)}&callback=${callbackName}&t=${Date.now()}`;
         
         script.onerror = function() {
-            console.error('JSONP request failed for ID check');
+            console.error('JSONP request failed');
             document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-question-circle"></i>';
             document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator';
-            document.getElementById('idAvailabilityMessage').innerHTML = '⚠️ Cannot verify ID. You may proceed but registration may fail if ID is taken.';
+            document.getElementById('idAvailabilityMessage').innerHTML = '⚠️ Cannot verify ID. Registration may fail if ID is taken.';
             document.getElementById('idAvailabilityMessage').className = 'id-message checking';
-            isIdAvailable = true;  // Allow proceed on check failure
+            isIdAvailable = true;
             delete window[callbackName];
         };
         
@@ -1056,7 +1053,7 @@
             const cachedData = localStorage.getItem('userData');
             if (cachedData) {
                 const data = JSON.parse(cachedData);
-                if (data.profile && data.profile.id === loginId) {
+                if (data.profile && data.profile.id === loginId && data.profile.password === password) {
                     window.location.href = 'dashboard.html';
                     return;
                 }
@@ -1078,7 +1075,6 @@
                 }
 
                 const data = await response.json();
-                console.log("Staff login response:", data);
 
                 if (data.error) {
                     showError(data.error);
@@ -1114,7 +1110,6 @@
                 }
 
                 const data = await response.json();
-                console.log("Executive login response:", data);
 
                 if (data.error) {
                     showError(data.error);
@@ -1147,7 +1142,7 @@
                 console.log("Login response:", data);
 
                 if (data.error) {
-                    showError(data.message || data.error);
+                    showError(data.error);
                     resetLoginBtn();
                     return;
                 }
@@ -1195,7 +1190,8 @@
     function openRegisterModal() {
         document.getElementById('registerModal').classList.add('show');
         document.getElementById('registerError').style.display = 'none';
-        isIdAvailable = false;  // Reset
+        // Reset ID availability when opening modal
+        isIdAvailable = false;
         document.getElementById('idAvailabilityIcon').innerHTML = '';
         document.getElementById('idAvailabilityMessage').innerHTML = '';
     }
@@ -1206,7 +1202,7 @@
         isIdAvailable = false;
     }
 
-    // Handle Registration - Using JSONP to bypass CORS
+    // Handle Registration - Using JSONP to bypass CORS restrictions
     async function handleRegister(event) {
         event.preventDefault();
 
@@ -1216,13 +1212,10 @@
         const level = document.getElementById('regLevel').value.trim();
         const password = document.getElementById('regPassword').value;
         const confirmPassword = document.getElementById('regConfirmPassword').value;
-
         const errorMsg = document.getElementById('registerError');
         const registerBtn = document.getElementById('registerBtn');
         const registerText = document.getElementById('registerText');
         const registerSpinner = document.getElementById('registerSpinner');
-
-        console.log("Register attempt:", { name, id, program, level, isIdAvailable });
 
         // Validation
         if (!name || !id || !program || !level || !password) {
@@ -1230,22 +1223,13 @@
             errorMsg.style.display = 'block';
             return;
         }
-
         if (password !== confirmPassword) {
             errorMsg.innerText = "Passwords do not match";
             errorMsg.style.display = 'block';
             return;
         }
-
         if (password.length < 6) {
             errorMsg.innerText = "Password must be at least 6 characters";
-            errorMsg.style.display = 'block';
-            return;
-        }
-
-        // Check ID availability - BUT allow if check failed (isIdAvailable might be true from fallback)
-        if (isIdAvailable === false) {
-            errorMsg.innerText = "Please wait for ID check or use a different ID";
             errorMsg.style.display = 'block';
             return;
         }
@@ -1255,11 +1239,15 @@
         registerSpinner.style.display = 'inline-block';
         errorMsg.style.display = 'none';
 
-        // Use JSONP for registration
+        // Use JSONP to bypass CORS for registration (same technique as check_id)
         const callbackName = 'registerCallback_' + Date.now();
+
+        // Set a timeout to handle cases where JSONP fails silently
         const timeoutId = setTimeout(() => {
-            if (window[callbackName]) delete window[callbackName];
-            errorMsg.innerText = "Connection timeout. Please check your internet.";
+            if (window[callbackName]) {
+                delete window[callbackName];
+            }
+            errorMsg.innerText = "Connection timeout. Please check your internet and try again.";
             errorMsg.style.display = 'block';
             registerBtn.disabled = false;
             registerText.style.display = 'inline';
@@ -1268,15 +1256,14 @@
 
         window[callbackName] = function(data) {
             clearTimeout(timeoutId);
-            console.log("Registration response:", data);
-            
+
             if (data.success) {
-                alert("✅ Registration successful! Please login with your Student ID and password.");
+                alert("Registration successful! Please login with your Student ID and password.");
                 closeRegisterModal();
                 document.getElementById('loginId').value = id;
                 selectRole('student');
             } else {
-                errorMsg.innerText = data.error || data.message || "Registration failed. Please try again.";
+                errorMsg.innerText = data.error || "Registration failed. Please try again.";
                 errorMsg.style.display = 'block';
                 // If server says ID is taken, update availability
                 if (data.error && data.error.includes('already')) {
@@ -1289,7 +1276,9 @@
             }
 
             delete window[callbackName];
-            if (script.parentNode) document.head.removeChild(script);
+            if (script.parentNode) {
+                document.head.removeChild(script);
+            }
             registerBtn.disabled = false;
             registerText.style.display = 'inline';
             registerSpinner.style.display = 'none';
@@ -1304,7 +1293,9 @@
             errorMsg.innerText = "Registration failed. Please check your internet connection and try again.";
             errorMsg.style.display = 'block';
             delete window[callbackName];
-            if (script.parentNode) document.head.removeChild(script);
+            if (script.parentNode) {
+                document.head.removeChild(script);
+            }
             registerBtn.disabled = false;
             registerText.style.display = 'inline';
             registerSpinner.style.display = 'none';
