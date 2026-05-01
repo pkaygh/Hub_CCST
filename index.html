@@ -797,7 +797,7 @@
 
     <script>
     // Configuration - Your Google Apps Script URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6EqXyTtGH4FlzeyMhN0gZaSzJIpPqpRG44yXiSzClzdhW0zMk8hhhGPdWDDNBnKjTjQ/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTZ8LVkoTIzm4gFOR3cFdUiTw7h1tb_dbC4Cg4EwTgQBAb3sZb2T6ZMV4WVd3ZiRfDfA/exec";
     let deferredPrompt;
     let currentRole = 'student';
     
@@ -1199,106 +1199,103 @@
     }
 
     // Handle Registration - Using JSONP to bypass CORS restrictions
-    async function handleRegister(event) {
-        event.preventDefault();
+    // Handle Registration - Using JSONP to bypass CORS
+async function handleRegister(event) {
+    event.preventDefault();
 
-        const name = document.getElementById('regName').value.trim();
-        const id = document.getElementById('regId').value.trim();
-        const program = document.getElementById('regProgram').value.trim();
-        const level = document.getElementById('regLevel').value.trim();
-        const password = document.getElementById('regPassword').value;
-        const confirmPassword = document.getElementById('regConfirmPassword').value;
-        const errorMsg = document.getElementById('registerError');
-        const registerBtn = document.getElementById('registerBtn');
-        const registerText = document.getElementById('registerText');
-        const registerSpinner = document.getElementById('registerSpinner');
+    const name = document.getElementById('regName').value.trim();
+    const id = document.getElementById('regId').value.trim();
+    const program = document.getElementById('regProgram').value.trim();
+    const level = document.getElementById('regLevel').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const confirmPassword = document.getElementById('regConfirmPassword').value;
+    const errorMsg = document.getElementById('registerError');
+    const registerBtn = document.getElementById('registerBtn');
+    const registerText = document.getElementById('registerText');
+    const registerSpinner = document.getElementById('registerSpinner');
 
-        // Validation
-        if (!name || !id || !program || !level || !password) {
-            errorMsg.innerText = "All fields are required";
-            errorMsg.style.display = 'block';
-            return;
-        }
-        if (password !== confirmPassword) {
-            errorMsg.innerText = "Passwords do not match";
-            errorMsg.style.display = 'block';
-            return;
-        }
-        if (password.length < 6) {
-            errorMsg.innerText = "Password must be at least 6 characters";
-            errorMsg.style.display = 'block';
-            return;
-        }
-
-        registerBtn.disabled = true;
-        registerText.style.display = 'none';
-        registerSpinner.style.display = 'inline-block';
-        errorMsg.style.display = 'none';
-
-        // Use JSONP to bypass CORS for registration (same technique as check_id)
-        const callbackName = 'registerCallback_' + Date.now();
-
-        // Set a timeout to handle cases where JSONP fails silently
-        const timeoutId = setTimeout(() => {
-            if (window[callbackName]) {
-                delete window[callbackName];
-            }
-            errorMsg.innerText = "Connection timeout. Please check your internet and try again.";
-            errorMsg.style.display = 'block';
-            registerBtn.disabled = false;
-            registerText.style.display = 'inline';
-            registerSpinner.style.display = 'none';
-        }, 20000);
-
-        window[callbackName] = function(data) {
-            clearTimeout(timeoutId);
-
-            if (data.success) {
-                alert("Registration successful! Please login with your Student ID and password.");
-                closeRegisterModal();
-                document.getElementById('loginId').value = id;
-                selectRole('student');
-            } else {
-                errorMsg.innerText = data.error || "Registration failed. Please try again.";
-                errorMsg.style.display = 'block';
-                // If server says ID is taken, update availability
-                if (data.error && data.error.includes('already')) {
-                    isIdAvailable = false;
-                    document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-times-circle"></i>';
-                    document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator id-availability-taken';
-                    document.getElementById('idAvailabilityMessage').innerHTML = '❌ This Student ID is already taken.';
-                    document.getElementById('idAvailabilityMessage').className = 'id-message taken';
-                }
-            }
-
-            delete window[callbackName];
-            if (script.parentNode) {
-                document.head.removeChild(script);
-            }
-            registerBtn.disabled = false;
-            registerText.style.display = 'inline';
-            registerSpinner.style.display = 'none';
-        };
-
-        const script = document.createElement('script');
-        script.src = `${SCRIPT_URL}?action=register&name=${encodeURIComponent(name)}&id=${encodeURIComponent(id)}&program=${encodeURIComponent(program)}&level=${encodeURIComponent(level)}&password=${encodeURIComponent(password)}&callback=${callbackName}&t=${Date.now()}`;
-
-        script.onerror = function() {
-            clearTimeout(timeoutId);
-            console.error('Registration JSONP request failed');
-            errorMsg.innerText = "Registration failed. Please check your internet connection and try again.";
-            errorMsg.style.display = 'block';
-            delete window[callbackName];
-            if (script.parentNode) {
-                document.head.removeChild(script);
-            }
-            registerBtn.disabled = false;
-            registerText.style.display = 'inline';
-            registerSpinner.style.display = 'none';
-        };
-
-        document.head.appendChild(script);
+    // Validation
+    if (!name || !id || !program || !level || !password) {
+        errorMsg.innerText = "All fields are required";
+        errorMsg.style.display = 'block';
+        return;
     }
+    if (password !== confirmPassword) {
+        errorMsg.innerText = "Passwords do not match";
+        errorMsg.style.display = 'block';
+        return;
+    }
+    if (password.length < 6) {
+        errorMsg.innerText = "Password must be at least 6 characters";
+        errorMsg.style.display = 'block';
+        return;
+    }
+    
+    // Check ID availability
+    if (!isIdAvailable) {
+        errorMsg.innerText = "Please wait for ID check or use a different ID";
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    registerBtn.disabled = true;
+    registerText.style.display = 'none';
+    registerSpinner.style.display = 'inline-block';
+    errorMsg.style.display = 'none';
+
+    // Use JSONP for registration
+    const callbackName = 'registerCallback_' + Date.now();
+    const timeoutId = setTimeout(() => {
+        if (window[callbackName]) {
+            delete window[callbackName];
+        }
+        errorMsg.innerText = "Connection timeout. Please check your internet.";
+        errorMsg.style.display = 'block';
+        registerBtn.disabled = false;
+        registerText.style.display = 'inline';
+        registerSpinner.style.display = 'none';
+    }, 20000);
+
+    window[callbackName] = function(data) {
+        clearTimeout(timeoutId);
+        
+        if (data.success) {
+            alert("✅ Registration successful! Please login with your Student ID and password.");
+            closeRegisterModal();
+            document.getElementById('loginId').value = id;
+            selectRole('student');
+        } else {
+            errorMsg.innerText = data.error || data.message || "Registration failed. Please try again.";
+            errorMsg.style.display = 'block';
+        }
+
+        delete window[callbackName];
+        if (script.parentNode) {
+            document.head.removeChild(script);
+        }
+        registerBtn.disabled = false;
+        registerText.style.display = 'inline';
+        registerSpinner.style.display = 'none';
+    };
+
+    const script = document.createElement('script');
+    script.src = `${SCRIPT_URL}?action=register&name=${encodeURIComponent(name)}&id=${encodeURIComponent(id)}&program=${encodeURIComponent(program)}&level=${encodeURIComponent(level)}&password=${encodeURIComponent(password)}&callback=${callbackName}&t=${Date.now()}`;
+
+    script.onerror = function() {
+        clearTimeout(timeoutId);
+        errorMsg.innerText = "Registration failed. Please check your connection.";
+        errorMsg.style.display = 'block';
+        delete window[callbackName];
+        if (script.parentNode) {
+            document.head.removeChild(script);
+        }
+        registerBtn.disabled = false;
+        registerText.style.display = 'inline';
+        registerSpinner.style.display = 'none';
+    };
+
+    document.head.appendChild(script);
+}
 
     // Initialize
     window.onload = function() {
