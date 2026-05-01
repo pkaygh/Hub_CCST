@@ -600,6 +600,51 @@
                 width: 100%;
             }
         }
+        /* ID Availability Styles */
+.id-check-wrapper {
+    position: relative;
+}
+
+.id-availability-indicator {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
+.id-availability-available {
+    color: #27ae60;
+}
+
+.id-availability-taken {
+    color: #e74c3c;
+}
+
+.id-availability-checking {
+    color: #f39c12;
+}
+
+.id-message {
+    font-size: 0.75rem;
+    margin-top: 5px;
+    padding-left: 15px;
+}
+
+.id-message.available {
+    color: #27ae60;
+}
+
+.id-message.taken {
+    color: #e74c3c;
+}
+
+.id-message.checking {
+    color: #f39c12;
+}
+
+
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -709,9 +754,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Student ID</label>
-                    <input type="text" id="regId" placeholder="e.g., CCST/RM/24/001" required>
-                </div>
+    <label>Student ID</label>
+    <div class="id-check-wrapper">
+        <input type="text" id="regId" placeholder="e.g., CCST/RM/24/001" required>
+        <span class="id-availability-indicator" id="idAvailabilityIcon"></span>
+    </div>
+    <div id="idAvailabilityMessage" class="id-message"></div>
+</div>
 
                 <div class="form-group">
                     <label>Program</label>
@@ -747,981 +796,604 @@
     </div>
 
     <script>
-        // Configuration - Your Google Apps Script URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjuTXWQH--LL05qwUu2QYrXNJiI0hGv9JwZQvwLI8woKASmE1NExB2u_3bsXgu9byuUQ/exec";
-        let deferredPrompt;
-        let currentRole = 'student';
+    // Configuration - Your Google Apps Script URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMiP5PuKEJcFDXQFFIdAzphQcNWrLm7kPT14GI7Bwq_hSW9PsauqreKDo-JuVoaJ5ktQ/exec";
+    let deferredPrompt;
+    let currentRole = 'student';
+    
+    // ========== ID AVAILABILITY VARIABLES ==========
+    let isIdAvailable = false;
+    let idCheckTimeout;
 
-        // Particle Animation System
-        const canvas = document.getElementById('particleCanvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        let animationId = null;
+    // Particle Animation System
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let animationId = null;
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    function createParticles() {
+        const particleCount = 60;
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2 + 1,
+                speedX: (Math.random() - 0.5) * 0.3,
+                speedY: (Math.random() - 0.5) * 0.3,
+                opacity: Math.random() * 0.4 + 0.1,
+                color: `rgba(154, 205, 50, ${Math.random() * 0.3 + 0.1})`
+            });
         }
+    }
 
-        function createParticles() {
-            const particleCount = 60;
-            for (let i = 0; i < particleCount; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: Math.random() * 2 + 1,
-                    speedX: (Math.random() - 0.5) * 0.3,
-                    speedY: (Math.random() - 0.5) * 0.3,
-                    opacity: Math.random() * 0.4 + 0.1,
-                    color: `rgba(154, 205, 50, ${Math.random() * 0.3 + 0.1})`
-                });
-            }
-        }
-
-        function animateParticles() {
-            if (!canvas) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function animateParticles() {
+        if (!canvas) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.fill();
             
-            for (let i = 0; i < particles.length; i++) {
-                const p = particles[i];
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.fill();
-                
-                p.x += p.speedX;
-                p.y += p.speedY;
-                
-                if (p.x < 0) p.x = canvas.width;
-                if (p.x > canvas.width) p.x = 0;
-                if (p.y < 0) p.y = canvas.height;
-                if (p.y > canvas.height) p.y = 0;
-            }
+            p.x += p.speedX;
+            p.y += p.speedY;
             
-            animationId = requestAnimationFrame(animateParticles);
+            if (p.x < 0) p.x = canvas.width;
+            if (p.x > canvas.width) p.x = 0;
+            if (p.y < 0) p.y = canvas.height;
+            if (p.y > canvas.height) p.y = 0;
         }
+        
+        animationId = requestAnimationFrame(animateParticles);
+    }
 
-        function initParticles() {
-            resizeCanvas();
-            createParticles();
-            animateParticles();
+    function initParticles() {
+        resizeCanvas();
+        createParticles();
+        animateParticles();
+    }
+
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+        particles = [];
+        createParticles();
+    });
+
+    // Select Role
+    function selectRole(role) {
+        currentRole = role;
+
+        if (role === 'student') {
+            document.getElementById('studentRole').classList.add('active');
+            document.getElementById('adminRole').classList.remove('active');
+            document.getElementById('executiveRole')?.classList.remove('active');
+            document.getElementById('idLabel').innerText = 'Student ID';
+            document.getElementById('loginId').placeholder = 'Enter your student ID';
+        } else if (role === 'executive') {
+            document.getElementById('executiveRole').classList.add('active');
+            document.getElementById('studentRole').classList.remove('active');
+            document.getElementById('adminRole').classList.remove('active');
+            document.getElementById('idLabel').innerText = 'Executive ID';
+            document.getElementById('loginId').placeholder = 'Enter executive username';
+        } else {
+            document.getElementById('adminRole').classList.add('active');
+            document.getElementById('studentRole').classList.remove('active');
+            document.getElementById('executiveRole')?.classList.remove('active');
+            document.getElementById('idLabel').innerText = 'Staff ID';
+            document.getElementById('loginId').placeholder = 'Enter staff ID';
         }
+    }
 
-        window.addEventListener('resize', () => {
-            resizeCanvas();
-            particles = [];
-            createParticles();
-        });
-
-        // Select Role
-                function selectRole(role) {
-            currentRole = role;
-
-            if (role === 'student') {
-                document.getElementById('studentRole').classList.add('active');
-                document.getElementById('adminRole').classList.remove('active');
-                document.getElementById('executiveRole')?.classList.remove('active');
-                document.getElementById('idLabel').innerText = 'Student ID';
-                document.getElementById('loginId').placeholder = 'Enter your student ID';
-            } else if (role === 'executive') {
-                document.getElementById('executiveRole').classList.add('active');
-                document.getElementById('studentRole').classList.remove('active');
-                document.getElementById('adminRole').classList.remove('active');
-                document.getElementById('idLabel').innerText = 'Executive ID';
-                document.getElementById('loginId').placeholder = 'Enter executive username';
-            } else {
-                document.getElementById('adminRole').classList.add('active');
-                document.getElementById('studentRole').classList.remove('active');
-                document.getElementById('executiveRole')?.classList.remove('active');
-                document.getElementById('idLabel').innerText = 'Staff ID';
-                document.getElementById('loginId').placeholder = 'Enter staff ID';
-            }
+    // ========== ID AVAILABILITY CHECK FUNCTIONS ==========
+    async function checkStudentIdAvailability(studentId) {
+        if (!studentId || studentId.length < 5) {
+            document.getElementById('idAvailabilityIcon').innerHTML = '';
+            document.getElementById('idAvailabilityMessage').innerHTML = '';
+            document.getElementById('idAvailabilityMessage').className = 'id-message';
+            isIdAvailable = false;
+            return;
         }
-
-        // Check online status
-        function updateOnlineStatus() {
-            const notice = document.getElementById('offlineNotice');
-            if (!navigator.onLine) {
-                if (notice) notice.classList.add('show');
-            } else {
-                if (notice) notice.classList.remove('show');
-            }
-        }
-
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-
-        // PWA Install prompt
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            const banner = document.getElementById('installBanner');
-            if (banner) banner.classList.add('show');
-        });
-
-        function installPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('User accepted the A2HS prompt');
-                    }
-                    deferredPrompt = null;
-                    const banner = document.getElementById('installBanner');
-                    if (banner) banner.classList.remove('show');
-                });
-            }
-        }
-
-        // Reset Login Button
-        function resetLoginBtn() {
-            const loginBtn = document.getElementById('loginBtn');
-            const loginText = document.getElementById('loginText');
-            const spinner = document.getElementById('loginSpinner');
-            if (loginBtn) loginBtn.disabled = false;
-            if (loginText) loginText.style.display = 'inline';
-            if (spinner) spinner.style.display = 'none';
-        }
-
-        // Helper function for fetch with timeout
-        async function fetchWithTimeout(url, options, timeout = 10000) {
+        
+        // Show checking indicator
+        document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator id-availability-checking';
+        document.getElementById('idAvailabilityMessage').innerHTML = 'Checking availability...';
+        document.getElementById('idAvailabilityMessage').className = 'id-message checking';
+        
+        try {
+            // Check with backend server
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeout);
-            try {
-                const response = await fetch(url, {
-                    ...options,
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                return response;
-            } catch (error) {
-                clearTimeout(timeoutId);
-                throw error;
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const response = await fetch(`${SCRIPT_URL}?action=check_id&id=${encodeURIComponent(studentId)}&t=${Date.now()}`, {
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.exists === true) {
+                    document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-times-circle"></i>';
+                    document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator id-availability-taken';
+                    document.getElementById('idAvailabilityMessage').innerHTML = '❌ This Student ID is already taken. Please use a different ID.';
+                    document.getElementById('idAvailabilityMessage').className = 'id-message taken';
+                    isIdAvailable = false;
+                    return;
+                }
             }
+            
+            // ID is available
+            document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-check-circle"></i>';
+            document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator id-availability-available';
+            document.getElementById('idAvailabilityMessage').innerHTML = '✅ Student ID is available for registration.';
+            document.getElementById('idAvailabilityMessage').className = 'id-message available';
+            isIdAvailable = true;
+            
+        } catch (error) {
+            console.error('ID check error:', error);
+            document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-question-circle"></i>';
+            document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator';
+            document.getElementById('idAvailabilityMessage').innerHTML = '⚠️ Cannot verify ID. Registration may fail if ID is taken.';
+            document.getElementById('idAvailabilityMessage').className = 'id-message checking';
+            isIdAvailable = true;
+        }
+    }
+
+    function onIdInput() {
+        const studentId = document.getElementById('regId').value.trim();
+        if (idCheckTimeout) clearTimeout(idCheckTimeout);
+        idCheckTimeout = setTimeout(() => {
+            checkStudentIdAvailability(studentId);
+        }, 500);
+    }
+
+    // Check online status
+    function updateOnlineStatus() {
+        const notice = document.getElementById('offlineNotice');
+        if (!navigator.onLine) {
+            if (notice) notice.classList.add('show');
+        } else {
+            if (notice) notice.classList.remove('show');
+        }
+    }
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+
+    // PWA Install prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const banner = document.getElementById('installBanner');
+        if (banner) banner.classList.add('show');
+    });
+
+    function installPWA() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the A2HS prompt');
+                }
+                deferredPrompt = null;
+                const banner = document.getElementById('installBanner');
+                if (banner) banner.classList.remove('show');
+            });
+        }
+    }
+
+    // Reset Login Button
+    function resetLoginBtn() {
+        const loginBtn = document.getElementById('loginBtn');
+        const loginText = document.getElementById('loginText');
+        const spinner = document.getElementById('loginSpinner');
+        if (loginBtn) loginBtn.disabled = false;
+        if (loginText) loginText.style.display = 'inline';
+        if (spinner) spinner.style.display = 'none';
+    }
+
+    // Helper function for fetch with timeout
+    async function fetchWithTimeout(url, options, timeout = 10000) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        try {
+            const response = await fetch(url, {
+                ...options,
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            return response;
+        } catch (error) {
+            clearTimeout(timeoutId);
+            throw error;
+        }
+    }
+
+    function showError(msg) {
+        const errorMsg = document.getElementById('errorMessage');
+        errorMsg.innerText = msg;
+        errorMsg.style.display = 'block';
+
+        setTimeout(() => {
+            errorMsg.style.display = 'none';
+        }, 5000);
+    }
+
+    // Handle Login
+    async function handleLogin(event) {
+        event.preventDefault();
+
+        const loginId = document.getElementById('loginId').value.trim();
+        const password = document.getElementById('password').value;
+        const loginBtn = document.getElementById('loginBtn');
+        const loginText = document.getElementById('loginText');
+        const errorMsg = document.getElementById('errorMessage');
+
+        if (!loginId || !password) {
+            showError("Please enter both ID and password");
+            return;
         }
 
-        // Handle Login
-        async function handleLogin(event) {
-            event.preventDefault();
+        // UI Feedback
+        loginBtn.disabled = true;
+        loginText.style.display = 'none';
+        document.getElementById('loginSpinner').style.display = 'inline-block';
+        errorMsg.style.display = 'none';
 
-            const loginId = document.getElementById('loginId').value.trim();
-            const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
-            const loginText = document.getElementById('loginText');
-            const errorMsg = document.getElementById('errorMessage');
-
-            if (!loginId || !password) {
-                showError("Please enter both ID and password");
-                return;
-            }
-
-            // UI Feedback
-            loginBtn.disabled = true;
-            loginText.style.display = 'none';
-            document.getElementById('loginSpinner').style.display = 'inline-block';
-            errorMsg.style.display = 'none';
-
-            // 1. Offline Check
-            if (!navigator.onLine) {
-                const cachedData = localStorage.getItem('userData');
-                if (cachedData) {
-                    const data = JSON.parse(cachedData);
-                    if (data.profile && data.profile.id === loginId && data.profile.password === password) {
-                        window.location.href = 'dashboard.html';
-                        return;
-                    }
-                }
-                showError("You are offline. Please connect to login.");
-                resetLoginBtn();
-                return;
-            }
-
-            try {
-                // 2. Call the Google Apps Script Backend based on role
-                if (currentRole === 'admin') {
-                    const response = await fetchWithTimeout(`${SCRIPT_URL}?action=staff_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`, {}, 15000);
-
-                    if (!response.ok) {
-                        showError("Server error. Please try again.");
-                        resetLoginBtn();
-                        return;
-                    }
-
-                    const data = await response.json();
-
-                    if (data.error) {
-                        showError(data.error);
-                        resetLoginBtn();
-                        return;
-                    }
-
-                    if (data.authorized) {
-                        localStorage.setItem('adminData', JSON.stringify({
-                            role: 'admin',
-                            id: loginId,
-                            staffRole: data.staffRole || 'accountant',
-                            name: data.name || 'Staff',
-                            permissions: data.permissions || ['search']
-                        }));
-                        window.location.href = 'accountant.html';
-                        return;
-                    } else {
-                        showError(data.error || "Invalid credentials");
-                        resetLoginBtn();
-                        return;
-                    }
-                }
-
-                // 3. Executive Dashboard Login
-                else if (currentRole === 'executive') {
-                    const response = await fetchWithTimeout(`${SCRIPT_URL}?action=executive_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`, {}, 15000);
-
-                    if (!response.ok) {
-                        showError("Server error. Please try again.");
-                        resetLoginBtn();
-                        return;
-                    }
-
-                    const data = await response.json();
-
-                    if (data.error) {
-                        showError(data.error);
-                        resetLoginBtn();
-                        return;
-                    }
-
-                    if (data.authorized) {
-                        localStorage.setItem('executiveData', JSON.stringify(data));
-                        window.location.href = 'executive dashboard.html';
-                        return;
-                    } else {
-                        showError(data.error || "Invalid credentials");
-                        resetLoginBtn();
-                        return;
-                    }
-                }
-
-                // 4. Student Login
-                else {
-                    const response = await fetchWithTimeout(`${SCRIPT_URL}?id=${encodeURIComponent(loginId)}&password=${encodeURIComponent(password)}`, {}, 15000);
-
-                    if (!response.ok) {
-                        showError("Server error. Please try again.");
-                        resetLoginBtn();
-                        return;
-                    }
-
-                    const data = await response.json();
-                    console.log("Login response:", data);
-
-                    if (data.error) {
-                        showError(data.error);
-                        resetLoginBtn();
-                        return;
-                    }
-
-                    if (!data.profile) {
-                        showError("Login failed. Please check your credentials.");
-                        resetLoginBtn();
-                        return;
-                    }
-
-                    localStorage.setItem('userData', JSON.stringify(data));
-                    localStorage.setItem('studentId', loginId);
-
-                    try {
-                        const resultsRes = await fetchWithTimeout(`${SCRIPT_URL}?action=get_results&id=${encodeURIComponent(loginId)}`, {}, 15000);
-                        if (resultsRes.ok) {
-                            const resultsData = await resultsRes.json();
-                            if (resultsData.results) {
-                                localStorage.setItem('userResults', JSON.stringify(resultsData.results));
-                            }
-                        }
-                    } catch (e) {
-                        console.log('Could not fetch results:', e);
-                    }
-
+        // Offline Check
+        if (!navigator.onLine) {
+            const cachedData = localStorage.getItem('userData');
+            if (cachedData) {
+                const data = JSON.parse(cachedData);
+                if (data.profile && data.profile.id === loginId && data.profile.password === password) {
                     window.location.href = 'dashboard.html';
                     return;
                 }
-
-            } catch (e) {
-                console.error('Login error:', e);
-                if (!navigator.onLine) {
-                    showError("You are offline. Please connect to login.");
-                } else if (e.name === 'AbortError') {
-                    showError("Request timed out. Please check your connection and try again.");
-                } else {
-                    showError("Connection error. Please try again.");
-                }
-            } finally {
-                resetLoginBtn();
             }
+            showError("You are offline. Please connect to login.");
+            resetLoginBtn();
+            return;
         }
 
-        function showError(msg) {
-            const errorMsg = document.getElementById('errorMessage');
-            errorMsg.innerText = msg;
-            errorMsg.style.display = 'block';
-
-            setTimeout(() => {
-                errorMsg.style.display = 'none';
-            }, 5000);
-        }
-
-        // Registration Modal Functions
-        function openRegisterModal() {
-            document.getElementById('registerModal').classList.add('show');
-            document.getElementById('registerError').style.display = 'none';
-        }
-
-        function closeRegisterModal() {
-            document.getElementById('registerModal').classList.remove('show');
-            document.getElementById('registerForm').reset();
-        }
-
-        // Handle Registration
-        async function handleRegister(event) {
-            event.preventDefault();
-
-            const name = document.getElementById('regName').value.trim();
-            const id = document.getElementById('regId').value.trim();
-            const program = document.getElementById('regProgram').value.trim();
-            const level = document.getElementById('regLevel').value.trim();
-            const password = document.getElementById('regPassword').value;
-            const confirmPassword = document.getElementById('regConfirmPassword').value;
-            const errorMsg = document.getElementById('registerError');
-            const registerBtn = document.getElementById('registerBtn');
-            const registerText = document.getElementById('registerText');
-            const registerSpinner = document.getElementById('registerSpinner');
-
-            if (!name || !id || !program || !level || !password) {
-                errorMsg.innerText = "All fields are required";
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                errorMsg.innerText = "Passwords do not match";
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            if (password.length < 6) {
-                errorMsg.innerText = "Password must be at least 6 characters";
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            registerBtn.disabled = true;
-            registerText.style.display = 'none';
-            registerSpinner.style.display = 'inline-block';
-            errorMsg.style.display = 'none';
-
-            try {
-                if (!navigator.onLine) {
-                    errorMsg.innerText = "Registration requires internet connection";
-                    errorMsg.style.display = 'block';
-                    return;
-                }
-
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'register',
-                        name: name,
-                        id: id,
-                        program: program,
-                        level: level,
-                        password: password
-                    })
-                });
+        try {
+            // Call the Google Apps Script Backend based on role
+            if (currentRole === 'admin') {
+                const response = await fetchWithTimeout(`${SCRIPT_URL}?action=staff_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`, {}, 15000);
 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Registration failed:', response.status, errorText);
-                    errorMsg.innerText = "Registration failed. Please try again.";
-                    errorMsg.style.display = 'block';
+                    showError("Server error. Please try again.");
+                    resetLoginBtn();
                     return;
                 }
 
                 const data = await response.json();
 
-                if (data.success) {
-                    alert("Registration successful! Please login with your Student ID and password.");
-                    closeRegisterModal();
-                    document.getElementById('loginId').value = id;
-                    selectRole('student');
-                } else {
-                    errorMsg.innerText = data.error || "Registration failed. Please try again.";
-                    errorMsg.style.display = 'block';
+                if (data.error) {
+                    showError(data.error);
+                    resetLoginBtn();
+                    return;
                 }
-            } catch (e) {
-                console.error('Registration error:', e);
-                errorMsg.innerText = "Connection error. Please check your internet and try again.";
+
+                if (data.authorized) {
+                    localStorage.setItem('adminData', JSON.stringify({
+                        role: 'admin',
+                        id: loginId,
+                        staffRole: data.staffRole || 'accountant',
+                        name: data.name || 'Staff',
+                        permissions: data.permissions || ['search']
+                    }));
+                    window.location.href = 'accountant.html';
+                    return;
+                } else {
+                    showError(data.error || "Invalid credentials");
+                    resetLoginBtn();
+                    return;
+                }
+            }
+
+            // Executive Dashboard Login
+            else if (currentRole === 'executive') {
+                const response = await fetchWithTimeout(`${SCRIPT_URL}?action=executive_login&user=${encodeURIComponent(loginId)}&pass=${encodeURIComponent(password)}`, {}, 15000);
+
+                if (!response.ok) {
+                    showError("Server error. Please try again.");
+                    resetLoginBtn();
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                    resetLoginBtn();
+                    return;
+                }
+
+                if (data.authorized) {
+                    localStorage.setItem('executiveData', JSON.stringify(data));
+                    window.location.href = 'executive dashboard.html';
+                    return;
+                } else {
+                    showError(data.error || "Invalid credentials");
+                    resetLoginBtn();
+                    return;
+                }
+            }
+
+            // Student Login
+            else {
+                const response = await fetchWithTimeout(`${SCRIPT_URL}?id=${encodeURIComponent(loginId)}&password=${encodeURIComponent(password)}`, {}, 15000);
+
+                if (!response.ok) {
+                    showError("Server error. Please try again.");
+                    resetLoginBtn();
+                    return;
+                }
+
+                const data = await response.json();
+                console.log("Login response:", data);
+
+                if (data.error) {
+                    showError(data.error);
+                    resetLoginBtn();
+                    return;
+                }
+
+                if (!data.profile) {
+                    showError("Login failed. Please check your credentials.");
+                    resetLoginBtn();
+                    return;
+                }
+
+                localStorage.setItem('userData', JSON.stringify(data));
+                localStorage.setItem('studentId', loginId);
+
+                try {
+                    const resultsRes = await fetchWithTimeout(`${SCRIPT_URL}?action=get_results&id=${encodeURIComponent(loginId)}`, {}, 15000);
+                    if (resultsRes.ok) {
+                        const resultsData = await resultsRes.json();
+                        if (resultsData.results) {
+                            localStorage.setItem('userResults', JSON.stringify(resultsData.results));
+                        }
+                    }
+                } catch (e) {
+                    console.log('Could not fetch results:', e);
+                }
+
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+        } catch (e) {
+            console.error('Login error:', e);
+            if (!navigator.onLine) {
+                showError("You are offline. Please connect to login.");
+            } else if (e.name === 'AbortError') {
+                showError("Request timed out. Please check your connection and try again.");
+            } else {
+                showError("Connection error. Please try again.");
+            }
+        } finally {
+            resetLoginBtn();
+        }
+    }
+
+    // Registration Modal Functions
+    function openRegisterModal() {
+        document.getElementById('registerModal').classList.add('show');
+        document.getElementById('registerError').style.display = 'none';
+        // Reset ID availability when opening modal
+        isIdAvailable = false;
+        document.getElementById('idAvailabilityIcon').innerHTML = '';
+        document.getElementById('idAvailabilityMessage').innerHTML = '';
+    }
+
+    function closeRegisterModal() {
+        document.getElementById('registerModal').classList.remove('show');
+        document.getElementById('registerForm').reset();
+        isIdAvailable = false;
+    }
+
+    // Handle Registration
+    async function handleRegister(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById('regName').value.trim();
+        const id = document.getElementById('regId').value.trim();
+        const program = document.getElementById('regProgram').value;
+        const level = document.getElementById('regLevel').value;
+        const password = document.getElementById('regPassword').value;
+        const confirmPassword = document.getElementById('regConfirmPassword').value;
+        const errorMsg = document.getElementById('registerError');
+        const registerBtn = document.getElementById('registerBtn');
+        const registerText = document.getElementById('registerText');
+        const registerSpinner = document.getElementById('registerSpinner');
+
+        // Validation
+        if (!name || !id || !program || !level || !password) {
+            errorMsg.innerText = "All fields are required";
+            errorMsg.style.display = 'block';
+            return;
+        }
+        if (password !== confirmPassword) {
+            errorMsg.innerText = "Passwords do not match";
+            errorMsg.style.display = 'block';
+            return;
+        }
+        if (password.length < 6) {
+            errorMsg.innerText = "Password must be at least 6 characters";
+            errorMsg.style.display = 'block';
+            return;
+        }
+        
+        // CHECK IF ID IS TAKEN BEFORE REGISTERING
+        if (!isIdAvailable) {
+            errorMsg.innerText = "This Student ID is already taken. Please use a different ID.";
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        registerBtn.disabled = true;
+        registerText.style.display = 'none';
+        registerSpinner.style.display = 'inline-block';
+        errorMsg.style.display = 'none';
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        try {
+            if (!navigator.onLine) {
+                errorMsg.innerText = "Registration requires internet connection";
                 errorMsg.style.display = 'block';
-            } finally {
-                registerBtn.disabled = false;
-                registerText.style.display = 'inline';
-                registerSpinner.style.display = 'none';
+                return;
             }
-        }
 
-        // Initialize
-        window.onload = function() {
-            updateOnlineStatus();
-            initParticles();
+            // Send registration to backend
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'register',
+                    name: name,
+                    id: id,
+                    program: program,
+                    level: level,
+                    password: password
+                }),
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
 
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js')
-                    .then(registration => {
-                        console.log('SW registered:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('SW registration failed:', error);
-                    });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
-        };
 
-        // Cleanup animation on page unload
-        window.addEventListener('beforeunload', () => {
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-            }
-        });
-
-        // Close modal on outside click
-        document.getElementById('registerModal').addEventListener('click', function(e) {
-            if (e.target === this) {
+            const data = await response.json();
+            
+            if (data.success) {
+                alert("Registration successful! Please login with your Student ID and password.");
                 closeRegisterModal();
+                document.getElementById('loginId').value = id;
+                selectRole('student');
+            } else {
+                errorMsg.innerText = data.error || "Registration failed. Please try again.";
+                errorMsg.style.display = 'block';
+                // If server says ID is taken, update availability
+                if (data.error && data.error.includes('already')) {
+                    isIdAvailable = false;
+                    document.getElementById('idAvailabilityIcon').innerHTML = '<i class="fas fa-times-circle"></i>';
+                    document.getElementById('idAvailabilityIcon').className = 'id-availability-indicator id-availability-taken';
+                    document.getElementById('idAvailabilityMessage').innerHTML = '❌ This Student ID is already taken.';
+                    document.getElementById('idAvailabilityMessage').className = 'id-message taken';
+                }
             }
-        });
-    </script>
-
-
-<script>
-/**
- * Iframe 元素高亮注入脚本
- * 需要在目标网站中引入此脚本来支持跨域 iframe 高亮功能
- *
- * 使用方法：
- * 1. 将此脚本添加到目标网站的 HTML 中
- * 2. 或通过浏览器扩展、用户脚本等方式注入
- */
-
-(function () {
-  "use strict";
-
-  // 检查是否在 iframe 中
-  if (window.self === window.top) {
-    return; // 不在 iframe 中，不执行
-  }
-
-  // 检查是否已经初始化过
-  if (window.__iframeHighlightInitialized) {
-    return;
-  }
-  window.__iframeHighlightInitialized = true;
-  console.log("Iframe 高亮脚本已加载");
-
-  // 创建高亮覆盖层
-  var overlay = document.createElement("div");
-  overlay.id = "iframe-highlight-overlay";
-  overlay.style.cssText = "\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100vw;\n    height: 100vh;\n    pointer-events: none;\n    z-index: 999999;\n    overflow: hidden;\n  ";
-
-  // 创建悬停高亮框（虚线边框）
-  var highlightBox = document.createElement("div");
-  highlightBox.id = "iframe-highlight-box";
-  highlightBox.style.cssText = "\n    position: absolute;\n    border: 2px dashed #007AFF;\n    background: rgba(0, 122, 255, 0.08);\n    pointer-events: none;\n    display: none;\n    transition: all 0.1s ease;\n    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);\n    border-radius: 2px;\n  ";
-
-  // 创建选中节点的常驻高亮框（实线边框）
-  var selectedBox = document.createElement("div");
-  selectedBox.id = "iframe-selected-box";
-  selectedBox.style.cssText = "\n    position: absolute;\n    border: 2px solid #007AFF;\n    pointer-events: none;\n    display: none;\n    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 107, 53, 0.4);\n    border-radius: 2px;\n    z-index: 1000000;\n  ";
-
-  // 创建悬停标签显示
-  var tagLabel = document.createElement("div");
-  tagLabel.id = "iframe-tag-label";
-  tagLabel.style.cssText = "\n    position: absolute;\n    background: #007AFF;\n    color: white;\n    padding: 2px 6px;\n    font-size: 11px;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n    border-radius: 2px;\n    pointer-events: none;\n    display: none;\n    white-space: nowrap;\n    z-index: 1000001;\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);\n    font-weight: 500;\n  ";
-
-  // 创建选中节点标签
-  var selectedLabel = document.createElement("div");
-  selectedLabel.id = "iframe-selected-label";
-  selectedLabel.style.cssText = "\n    position: absolute;\n    background: #007AFF;\n    color: white;\n    padding: 3px 8px;\n    font-size: 11px;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n    border-radius: 3px;\n    pointer-events: none;\n    display: none;\n    white-space: nowrap;\n    z-index: 1000002;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);\n    font-weight: 600;\n  ";
-  overlay.appendChild(highlightBox);
-  overlay.appendChild(selectedBox);
-  overlay.appendChild(tagLabel);
-  overlay.appendChild(selectedLabel);
-  document.body.appendChild(overlay);
-
-  // 存储当前选中的元素
-  var selectedElement = null;
-  var highlightEnabled = false;
-
-  // 更新选中元素的高亮显示
-  function updateSelectedHighlight(element) {
-    console.log("updateSelectedHighlight called with:", element);
-    if (!element) {
-      selectedBox.style.display = "none";
-      selectedLabel.style.display = "none";
-      selectedElement = null;
-      console.log("Cleared selected highlight");
-      return;
-    }
-    selectedElement = element;
-    var rect = element.getBoundingClientRect();
-    console.log("Selected element rect:", rect);
-
-    // 更新选中高亮框位置
-    selectedBox.style.display = "block";
-    selectedBox.style.left = "".concat(rect.left - 2, "px");
-    selectedBox.style.top = "".concat(rect.top - 2, "px");
-    selectedBox.style.width = "".concat(rect.width + 4, "px");
-    selectedBox.style.height = "".concat(rect.height + 4, "px");
-
-    // 更新选中标签位置和内容
-    selectedLabel.style.display = "block";
-    selectedLabel.textContent = "\u2713 <".concat(element.tagName.toLowerCase(), ">");
-
-    // 计算标签位置，确保不超出视窗
-    var labelTop = rect.top - 28;
-    var labelLeft = rect.left;
-
-    // 如果标签会超出顶部，显示在元素下方
-    if (labelTop < 5) {
-      labelTop = rect.bottom + 5;
-    }
-
-    // 如果标签会超出右侧，向左调整
-    var labelWidth = selectedLabel.offsetWidth || 100; // 预估宽度
-    if (labelLeft + labelWidth > window.innerWidth - 10) {
-      labelLeft = window.innerWidth - labelWidth - 10;
-    }
-    selectedLabel.style.left = "".concat(Math.max(5, labelLeft), "px");
-    selectedLabel.style.top = "".concat(labelTop, "px");
-    console.log("Selected highlight positioned at:", {
-      left: selectedBox.style.left,
-      top: selectedBox.style.top,
-      width: selectedBox.style.width,
-      height: selectedBox.style.height
-    });
-  }
-  function getElementSelector(element) {
-    if (!(element instanceof Element)) throw new Error('Argument must be a DOM element');
-    var segments = [];
-    var current = element;
-    while (current !== document.documentElement) {
-      var selector = '';
-      // 优先检查唯一ID
-      if (current.id && document.querySelectorAll("#".concat(current.id)).length === 1) {
-        segments.unshift("#".concat(current.id));
-        break; // ID唯一，无需继续向上
-      }
-
-      // 生成类名选择器（取第一个有效类名）
-      var classes = Array.from(current.classList).filter(function (c) {
-        return !c.startsWith('js-');
-      });
-      var className = classes.length > 0 ? ".".concat(classes[0]) : '';
-
-      // 生成位置索引（nth-child）
-      var tag = current.tagName.toLowerCase();
-      if (!className) {
-        var siblings = Array.from(current.parentNode.children);
-        var index = siblings.findIndex(function (el) {
-          return el === current;
-        }) + 1;
-        selector = "".concat(tag, ":nth-child(").concat(index, ")");
-      } else {
-        selector = className;
-      }
-      segments.unshift(selector);
-      current = current.parentElement;
-    }
-
-    // 处理根元素
-    if (current === document.documentElement) {
-      segments.unshift('html');
-    }
-    return segments.join(' > ');
-  }
-
-  // 获取元素文本内容
-  function getElementText(element) {
-    var _element$textContent;
-    if (element.tagName === "INPUT") {
-      return element.value || element.placeholder || "";
-    }
-    if (element.tagName === "TEXTAREA") {
-      return element.value || element.placeholder || "";
-    }
-    var text = ((_element$textContent = element.textContent) === null || _element$textContent === void 0 ? void 0 : _element$textContent.trim()) || "";
-    return text.length > 50 ? text.substring(0, 50) + "..." : text;
-  }
-
-  // 获取元素属性信息
-  function getElementAttributes(element) {
-    var attrs = {};
-    for (var i = 0; i < element.attributes.length; i++) {
-      var attr = element.attributes[i];
-      attrs[attr.name] = attr.value;
-    }
-    return attrs;
-  }
-
-  // 鼠标悬停事件处理
-  function handleMouseOver(e) {
-    if (!highlightEnabled) return;
-    var target = e.target;
-    if (!target || target === overlay || target === highlightBox || target === tagLabel || target === selectedBox || target === selectedLabel) {
-      return;
-    }
-
-    // 避免高亮 html 和 body 元素
-    if (target === document.documentElement || target === document.body) {
-      return;
-    }
-
-    // 如果是已选中的元素，不显示悬停高亮
-    if (target === selectedElement) {
-      highlightBox.style.display = "none";
-      tagLabel.style.display = "none";
-      return;
-    }
-    var rect = target.getBoundingClientRect();
-    var selector = getElementSelector(target);
-    var text = getElementText(target);
-    var attributes = getElementAttributes(target);
-
-    // 更新悬停高亮框位置
-    highlightBox.style.display = "block";
-    highlightBox.style.left = "".concat(rect.left - 2, "px");
-    highlightBox.style.top = "".concat(rect.top - 2, "px");
-    highlightBox.style.width = "".concat(rect.width + 4, "px");
-    highlightBox.style.height = "".concat(rect.height + 4, "px");
-
-    // 更新标签位置和内容
-    tagLabel.style.display = "block";
-    tagLabel.textContent = "<".concat(target.tagName.toLowerCase(), ">");
-
-    // 计算标签位置，确保不超出视窗
-    var labelTop = rect.top - 22;
-    var labelLeft = rect.left;
-
-    // 如果标签会超出顶部，显示在元素下方
-    if (labelTop < 0) {
-      labelTop = rect.bottom + 5;
-    }
-
-    // 如果标签会超出右侧，向左调整
-    if (labelLeft + tagLabel.offsetWidth > window.innerWidth) {
-      labelLeft = window.innerWidth - tagLabel.offsetWidth - 5;
-    }
-    tagLabel.style.left = "".concat(Math.max(0, labelLeft), "px");
-    tagLabel.style.top = "".concat(labelTop, "px");
-
-    // 发送消息到父窗口
-    var elementInfo = {
-      tagName: target.tagName.toLowerCase(),
-      rect: {
-        left: rect.left,
-        top: rect.top,
-        right: rect.right,
-        bottom: rect.bottom,
-        width: rect.width,
-        height: rect.height,
-        x: rect.x,
-        y: rect.y
-      },
-      selector: selector,
-      text: text,
-      attributes: attributes,
-      url: window.location.href,
-      path: window.location.pathname,
-      timestamp: Date.now()
-    };
-    try {
-      window.parent.postMessage({
-        type: "iframe-element-hover",
-        data: elementInfo,
-        source: "iframe-highlight-injector"
-      }, "*");
-    } catch (error) {
-      console.warn("无法发送消息到父窗口:", error);
-    }
-  }
-
-  // 鼠标离开事件处理
-  function handleMouseOut(e) {
-    if (!highlightEnabled) return;
-    var relatedTarget = e.relatedTarget;
-
-    // 如果鼠标移动到高亮相关元素上，不隐藏高亮
-    if (relatedTarget && (relatedTarget === highlightBox || relatedTarget === tagLabel || relatedTarget === overlay || relatedTarget === selectedBox || relatedTarget === selectedLabel)) {
-      return;
-    }
-    highlightBox.style.display = "none";
-    tagLabel.style.display = "none";
-    try {
-      window.parent.postMessage({
-        type: "iframe-element-hover",
-        data: null,
-        source: "iframe-highlight-injector"
-      }, "*");
-    } catch (error) {
-      console.warn("无法发送消息到父窗口:", error);
-    }
-  }
-
-  // 点击事件处理
-  function handleClick(e) {
-    var target = e.target;
-    if (!target || target === overlay || target === highlightBox || target === tagLabel || target === selectedBox || target === selectedLabel) {
-      return;
-    }
-
-    // 避免处理 html 和 body 元素
-    if (target === document.documentElement || target === document.body) {
-      return;
-    }
-
-    // 检查是否是交互元素，这些元素需要保留默认行为
-    var isInteractiveElement = ['input', 'textarea', 'select', 'button', 'a'].includes(target.tagName.toLowerCase());
-
-    // 如果高亮功能启用，对于非交互元素阻止默认行为和事件传播
-    if (highlightEnabled) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    var rect = target.getBoundingClientRect();
-    var selector = getElementSelector(target);
-    var text = getElementText(target);
-    var attributes = getElementAttributes(target);
-    console.log("Element clicked:", {
-      tagName: target.tagName,
-      selector: selector,
-      rect: rect
-    });
-
-    // 立即更新选中高亮
-    updateSelectedHighlight(target);
-
-    // 隐藏悬停高亮，因为现在是选中状态
-    highlightBox.style.display = "none";
-    tagLabel.style.display = "none";
-    var elementInfo = {
-      tagName: target.tagName.toLowerCase(),
-      rect: {
-        left: rect.left,
-        top: rect.top,
-        right: rect.right,
-        bottom: rect.bottom,
-        width: rect.width,
-        height: rect.height,
-        x: rect.x,
-        y: rect.y
-      },
-      selector: selector,
-      text: text,
-      attributes: attributes,
-      url: window.location.href,
-      path: window.location.pathname,
-      timestamp: Date.now()
-    };
-    try {
-      window.parent.postMessage({
-        type: "iframe-element-click",
-        data: elementInfo,
-        source: "iframe-highlight-injector"
-      }, "*");
-    } catch (error) {
-      console.warn("无法发送消息到父窗口:", error);
-    }
-  }
-
-  // 监听来自父窗口的消息
-  function handleParentMessage(event) {
-    console.log("Received message from parent:", event.data);
-    if (event.data.type === "iframe-highlight-toggle") {
-      var enabled = event.data.enabled;
-      console.log("Highlight toggle:", enabled);
-      if (enabled) {
-        enableHighlight();
-      } else {
-        disableHighlight();
-      }
-    } else if (event.data.type === "enable-iframe-highlight") {
-      console.log("Enable iframe highlight");
-      enableHighlight();
-    } else if (event.data.type === "disable-iframe-highlight") {
-      console.log("Disable iframe highlight");
-      disableHighlight();
-    } else if (event.data.type === "toggle-iframe-highlight") {
-      var _enabled = event.data.enabled !== undefined ? event.data.enabled : !highlightEnabled;
-      console.log("Toggle iframe highlight to:", _enabled);
-      if (_enabled) {
-        enableHighlight();
-      } else {
-        disableHighlight();
-      }
-    } else if (event.data.type === "update-selected-element") {
-      var selector = event.data.selector;
-      console.log("Update selected element with selector:", selector);
-      if (selector) {
-        try {
-          var element = document.querySelector(selector);
-          console.log("Found element by selector:", element);
-          updateSelectedHighlight(element);
         } catch (error) {
-          console.warn("Failed to select element:", error);
-          updateSelectedHighlight(null);
+            clearTimeout(timeoutId);
+            console.error('Registration error:', error);
+            if (error.name === 'AbortError') {
+                errorMsg.innerText = "Connection timeout. Please check your internet.";
+            } else {
+                errorMsg.innerText = `Registration error: ${error.message}`;
+            }
+            errorMsg.style.display = 'block';
+        } finally {
+            registerBtn.disabled = false;
+            registerText.style.display = 'inline';
+            registerSpinner.style.display = 'none';
         }
-      } else {
-        updateSelectedHighlight(null);
-      }
-    } else if (event.data.type === "clear-selected-element") {
-      console.log("Clear selected element");
-      updateSelectedHighlight(null);
     }
-  }
 
-  // 启用高亮功能
-  function enableHighlight() {
-    console.log("Enabling highlight");
-    document.addEventListener("mouseover", handleMouseOver, true);
-    document.addEventListener("mouseout", handleMouseOut, true);
-    document.addEventListener("click", handleClick, true);
-    highlightEnabled = true;
-    overlay.style.display = "block";
-  }
+    // Initialize
+    window.onload = function() {
+        updateOnlineStatus();
+        initParticles();
 
-  // 禁用高亮功能
-  function disableHighlight() {
-    console.log("Disabling highlight");
-    highlightEnabled = false;
-    // 保持事件监听器，但通过 highlightEnabled 变量控制行为
-    // 这样可以保留选中状态的显示
-    highlightBox.style.display = "none";
-    tagLabel.style.display = "none";
-    // 不隐藏 selectedBox 和 selectedLabel，保留选中状态
-  }
+        // Add ID availability check listener
+        const regIdInput = document.getElementById('regId');
+        if (regIdInput) {
+            regIdInput.addEventListener('input', onIdInput);
+        }
 
-  // 完全禁用高亮功能（移除所有监听器）
-  function fullyDisableHighlight() {
-    console.log("Fully disabling highlight");
-    highlightEnabled = false;
-    document.removeEventListener("mouseover", handleMouseOver, true);
-    document.removeEventListener("mouseout", handleMouseOut, true);
-    document.removeEventListener("click", handleClick, true);
-    overlay.style.display = "none";
-    highlightBox.style.display = "none";
-    tagLabel.style.display = "none";
-    selectedBox.style.display = "none";
-    selectedLabel.style.display = "none";
-  }
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(registration => {
+                    console.log('SW registered:', registration.scope);
+                })
+                .catch(error => {
+                    console.log('SW registration failed:', error);
+                });
+        }
+    };
 
-  // 添加事件监听
-  enableHighlight();
-  window.addEventListener("message", handleParentMessage);
+    // Cleanup animation on page unload
+    window.addEventListener('beforeunload', () => {
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+        }
+    });
 
-  // 暴露全局函数供外部调用
-  window.__iframeHighlightControl = {
-    enable: enableHighlight,
-    disable: disableHighlight,
-    fullyDisable: fullyDisableHighlight,
-    isEnabled: function isEnabled() {
-      return highlightEnabled;
-    },
-    getSelectedElement: function getSelectedElement() {
-      return selectedElement;
-    },
-    updateSelected: updateSelectedHighlight,
-    // 通过消息发送开关控制
-    sendToggleMessage: function sendToggleMessage(enabled) {
-      window.parent.postMessage({
-        type: 'iframe-highlight-status',
-        enabled: enabled || highlightEnabled,
-        source: 'iframe-highlight-injector'
-      }, '*');
-    }
-  };
-
-  // 通知父窗口脚本已加载
-  try {
-    window.parent.postMessage({
-      type: "iframe-highlight-ready",
-      data: {
-        url: window.location.href,
-        userAgent: navigator.userAgent,
-        timestamp: Date.now()
-      },
-      source: "iframe-highlight-injector"
-    }, "*");
-  } catch (error) {
-    console.warn("无法发送就绪消息到父窗口:", error);
-  }
-
-  // 清理函数
-  window.__iframeHighlightCleanup = function () {
-    fullyDisableHighlight();
-    window.removeEventListener("message", handleParentMessage);
-    if (overlay.parentElement) {
-      overlay.parentElement.removeChild(overlay);
-    }
-    delete window.__iframeHighlightInitialized;
-    delete window.__iframeHighlightCleanup;
-  };
-})();
-
+    // Close modal on outside click
+    document.getElementById('registerModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeRegisterModal();
+        }
+    });
 </script>
 
+
 <script>
 /**
- * Iframe 元素高亮注入脚本
- * 需要在目标网站中引入此脚本来支持跨域 iframe 高亮功能
+ * Iframe Element Highlighter Injection Script
+ * Add this script to your target website to enable cross-origin iframe highlighting
  *
- * 使用方法：
- * 1. 将此脚本添加到目标网站的 HTML 中
- * 2. 或通过浏览器扩展、用户脚本等方式注入
+ * Usage:
+ * 1. Add this script to the target website's HTML
+ * 2. Or inject via browser extension, userscript, etc.
  */
 
 (function () {
   "use strict";
 
-  // 检查是否在 iframe 中
+  // Check if inside iframe
   if (window.self === window.top) {
-    return; // 不在 iframe 中，不执行
+    return; // Not in iframe, don't execute
   }
 
-  // 检查是否已经初始化过
+  // Check if already initialized
   if (window.__iframeHighlightInitialized) {
     return;
   }
   window.__iframeHighlightInitialized = true;
-  console.log("Iframe 高亮脚本已加载");
+  console.log("Iframe highlighter script loaded");
 
-  // 创建高亮覆盖层
+  // Create highlight overlay layer
   var overlay = document.createElement("div");
   overlay.id = "iframe-highlight-overlay";
   overlay.style.cssText = "\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100vw;\n    height: 100vh;\n    pointer-events: none;\n    z-index: 999999;\n    overflow: hidden;\n  ";
 
-  // 创建悬停高亮框（虚线边框）
+  // Create hover highlight box (dashed border)
   var highlightBox = document.createElement("div");
   highlightBox.id = "iframe-highlight-box";
   highlightBox.style.cssText = "\n    position: absolute;\n    border: 2px dashed #007AFF;\n    background: rgba(0, 122, 255, 0.08);\n    pointer-events: none;\n    display: none;\n    transition: all 0.1s ease;\n    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);\n    border-radius: 2px;\n  ";
 
-  // 创建选中节点的常驻高亮框（实线边框）
+  // Create selected element persistent highlight box (solid border)
   var selectedBox = document.createElement("div");
   selectedBox.id = "iframe-selected-box";
   selectedBox.style.cssText = "\n    position: absolute;\n    border: 2px solid #007AFF;\n    pointer-events: none;\n    display: none;\n    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 107, 53, 0.4);\n    border-radius: 2px;\n    z-index: 1000000;\n  ";
 
-  // 创建悬停标签显示
+  // Create hover tag label display
   var tagLabel = document.createElement("div");
   tagLabel.id = "iframe-tag-label";
   tagLabel.style.cssText = "\n    position: absolute;\n    background: #007AFF;\n    color: white;\n    padding: 2px 6px;\n    font-size: 11px;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n    border-radius: 2px;\n    pointer-events: none;\n    display: none;\n    white-space: nowrap;\n    z-index: 1000001;\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);\n    font-weight: 500;\n  ";
 
-  // 创建选中节点标签
+  // Create selected node label
   var selectedLabel = document.createElement("div");
   selectedLabel.id = "iframe-selected-label";
   selectedLabel.style.cssText = "\n    position: absolute;\n    background: #007AFF;\n    color: white;\n    padding: 3px 8px;\n    font-size: 11px;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n    border-radius: 3px;\n    pointer-events: none;\n    display: none;\n    white-space: nowrap;\n    z-index: 1000002;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);\n    font-weight: 600;\n  ";
@@ -1731,11 +1403,11 @@
   overlay.appendChild(selectedLabel);
   document.body.appendChild(overlay);
 
-  // 存储当前选中的元素
+  // Store currently selected element
   var selectedElement = null;
   var highlightEnabled = false;
 
-  // 更新选中元素的高亮显示
+  // Update selected element highlight display
   function updateSelectedHighlight(element) {
     console.log("updateSelectedHighlight called with:", element);
     if (!element) {
@@ -1749,28 +1421,28 @@
     var rect = element.getBoundingClientRect();
     console.log("Selected element rect:", rect);
 
-    // 更新选中高亮框位置
+    // Update selected highlight box position
     selectedBox.style.display = "block";
     selectedBox.style.left = "".concat(rect.left - 2, "px");
     selectedBox.style.top = "".concat(rect.top - 2, "px");
     selectedBox.style.width = "".concat(rect.width + 4, "px");
     selectedBox.style.height = "".concat(rect.height + 4, "px");
 
-    // 更新选中标签位置和内容
+    // Update selected label position and content
     selectedLabel.style.display = "block";
     selectedLabel.textContent = "\u2713 <".concat(element.tagName.toLowerCase(), ">");
 
-    // 计算标签位置，确保不超出视窗
+    // Calculate label position, ensure it doesn't go out of viewport
     var labelTop = rect.top - 28;
     var labelLeft = rect.left;
 
-    // 如果标签会超出顶部，显示在元素下方
+    // If label would go above top, show below element
     if (labelTop < 5) {
       labelTop = rect.bottom + 5;
     }
 
-    // 如果标签会超出右侧，向左调整
-    var labelWidth = selectedLabel.offsetWidth || 100; // 预估宽度
+    // If label would go off right side, adjust left
+    var labelWidth = selectedLabel.offsetWidth || 100;
     if (labelLeft + labelWidth > window.innerWidth - 10) {
       labelLeft = window.innerWidth - labelWidth - 10;
     }
@@ -1783,25 +1455,26 @@
       height: selectedBox.style.height
     });
   }
+  
   function getElementSelector(element) {
     if (!(element instanceof Element)) throw new Error('Argument must be a DOM element');
     var segments = [];
     var current = element;
     while (current !== document.documentElement) {
       var selector = '';
-      // 优先检查唯一ID
+      // Prioritize checking for unique ID
       if (current.id && document.querySelectorAll("#".concat(current.id)).length === 1) {
         segments.unshift("#".concat(current.id));
-        break; // ID唯一，无需继续向上
+        break; // ID is unique, no need to continue up
       }
 
-      // 生成类名选择器（取第一个有效类名）
+      // Generate class selector (take first valid class)
       var classes = Array.from(current.classList).filter(function (c) {
         return !c.startsWith('js-');
       });
       var className = classes.length > 0 ? ".".concat(classes[0]) : '';
 
-      // 生成位置索引（nth-child）
+      // Generate position index (nth-child)
       var tag = current.tagName.toLowerCase();
       if (!className) {
         var siblings = Array.from(current.parentNode.children);
@@ -1816,14 +1489,14 @@
       current = current.parentElement;
     }
 
-    // 处理根元素
+    // Handle root element
     if (current === document.documentElement) {
       segments.unshift('html');
     }
     return segments.join(' > ');
   }
 
-  // 获取元素文本内容
+  // Get element text content
   function getElementText(element) {
     var _element$textContent;
     if (element.tagName === "INPUT") {
@@ -1836,7 +1509,7 @@
     return text.length > 50 ? text.substring(0, 50) + "..." : text;
   }
 
-  // 获取元素属性信息
+  // Get element attribute information
   function getElementAttributes(element) {
     var attrs = {};
     for (var i = 0; i < element.attributes.length; i++) {
@@ -1846,7 +1519,7 @@
     return attrs;
   }
 
-  // 鼠标悬停事件处理
+  // Mouse hover event handler
   function handleMouseOver(e) {
     if (!highlightEnabled) return;
     var target = e.target;
@@ -1854,12 +1527,12 @@
       return;
     }
 
-    // 避免高亮 html 和 body 元素
+    // Avoid highlighting html and body elements
     if (target === document.documentElement || target === document.body) {
       return;
     }
 
-    // 如果是已选中的元素，不显示悬停高亮
+    // If it's the already selected element, don't show hover highlight
     if (target === selectedElement) {
       highlightBox.style.display = "none";
       tagLabel.style.display = "none";
@@ -1870,34 +1543,34 @@
     var text = getElementText(target);
     var attributes = getElementAttributes(target);
 
-    // 更新悬停高亮框位置
+    // Update hover highlight box position
     highlightBox.style.display = "block";
     highlightBox.style.left = "".concat(rect.left - 2, "px");
     highlightBox.style.top = "".concat(rect.top - 2, "px");
     highlightBox.style.width = "".concat(rect.width + 4, "px");
     highlightBox.style.height = "".concat(rect.height + 4, "px");
 
-    // 更新标签位置和内容
+    // Update label position and content
     tagLabel.style.display = "block";
     tagLabel.textContent = "<".concat(target.tagName.toLowerCase(), ">");
 
-    // 计算标签位置，确保不超出视窗
+    // Calculate label position, ensure it doesn't go out of viewport
     var labelTop = rect.top - 22;
     var labelLeft = rect.left;
 
-    // 如果标签会超出顶部，显示在元素下方
+    // If label would go above top, show below element
     if (labelTop < 0) {
       labelTop = rect.bottom + 5;
     }
 
-    // 如果标签会超出右侧，向左调整
+    // If label would go off right side, adjust left
     if (labelLeft + tagLabel.offsetWidth > window.innerWidth) {
       labelLeft = window.innerWidth - tagLabel.offsetWidth - 5;
     }
     tagLabel.style.left = "".concat(Math.max(0, labelLeft), "px");
     tagLabel.style.top = "".concat(labelTop, "px");
 
-    // 发送消息到父窗口
+    // Send message to parent window
     var elementInfo = {
       tagName: target.tagName.toLowerCase(),
       rect: {
@@ -1924,16 +1597,16 @@
         source: "iframe-highlight-injector"
       }, "*");
     } catch (error) {
-      console.warn("无法发送消息到父窗口:", error);
+      console.warn("Unable to send message to parent window:", error);
     }
   }
 
-  // 鼠标离开事件处理
+  // Mouse leave event handler
   function handleMouseOut(e) {
     if (!highlightEnabled) return;
     var relatedTarget = e.relatedTarget;
 
-    // 如果鼠标移动到高亮相关元素上，不隐藏高亮
+    // If mouse moves to highlight-related elements, don't hide highlight
     if (relatedTarget && (relatedTarget === highlightBox || relatedTarget === tagLabel || relatedTarget === overlay || relatedTarget === selectedBox || relatedTarget === selectedLabel)) {
       return;
     }
@@ -1946,26 +1619,26 @@
         source: "iframe-highlight-injector"
       }, "*");
     } catch (error) {
-      console.warn("无法发送消息到父窗口:", error);
+      console.warn("Unable to send message to parent window:", error);
     }
   }
 
-  // 点击事件处理
+  // Click event handler
   function handleClick(e) {
     var target = e.target;
     if (!target || target === overlay || target === highlightBox || target === tagLabel || target === selectedBox || target === selectedLabel) {
       return;
     }
 
-    // 避免处理 html 和 body 元素
+    // Avoid handling html and body elements
     if (target === document.documentElement || target === document.body) {
       return;
     }
 
-    // 检查是否是交互元素，这些元素需要保留默认行为
+    // Check if it's an interactive element, these need to retain default behavior
     var isInteractiveElement = ['input', 'textarea', 'select', 'button', 'a'].includes(target.tagName.toLowerCase());
 
-    // 如果高亮功能启用，对于非交互元素阻止默认行为和事件传播
+    // If highlighting is enabled, prevent default behavior and event propagation for non-interactive elements
     if (highlightEnabled) {
       e.preventDefault();
       e.stopPropagation();
@@ -1980,10 +1653,10 @@
       rect: rect
     });
 
-    // 立即更新选中高亮
+    // Immediately update selected highlight
     updateSelectedHighlight(target);
 
-    // 隐藏悬停高亮，因为现在是选中状态
+    // Hide hover highlight since it's now selected
     highlightBox.style.display = "none";
     tagLabel.style.display = "none";
     var elementInfo = {
@@ -2012,11 +1685,11 @@
         source: "iframe-highlight-injector"
       }, "*");
     } catch (error) {
-      console.warn("无法发送消息到父窗口:", error);
+      console.warn("Unable to send message to parent window:", error);
     }
   }
 
-  // 监听来自父窗口的消息
+  // Listen for messages from parent window
   function handleParentMessage(event) {
     console.log("Received message from parent:", event.data);
     if (event.data.type === "iframe-highlight-toggle") {
@@ -2062,7 +1735,7 @@
     }
   }
 
-  // 启用高亮功能
+  // Enable highlight functionality
   function enableHighlight() {
     console.log("Enabling highlight");
     document.addEventListener("mouseover", handleMouseOver, true);
@@ -2072,18 +1745,18 @@
     overlay.style.display = "block";
   }
 
-  // 禁用高亮功能
+  // Disable highlight functionality
   function disableHighlight() {
     console.log("Disabling highlight");
     highlightEnabled = false;
-    // 保持事件监听器，但通过 highlightEnabled 变量控制行为
-    // 这样可以保留选中状态的显示
+    // Keep event listeners, but control behavior through highlightEnabled variable
+    // This preserves selected state display
     highlightBox.style.display = "none";
     tagLabel.style.display = "none";
-    // 不隐藏 selectedBox 和 selectedLabel，保留选中状态
+    // Don't hide selectedBox and selectedLabel, preserve selected state
   }
 
-  // 完全禁用高亮功能（移除所有监听器）
+  // Fully disable highlight functionality (remove all listeners)
   function fullyDisableHighlight() {
     console.log("Fully disabling highlight");
     highlightEnabled = false;
@@ -2097,11 +1770,11 @@
     selectedLabel.style.display = "none";
   }
 
-  // 添加事件监听
+  // Add event listeners
   enableHighlight();
   window.addEventListener("message", handleParentMessage);
 
-  // 暴露全局函数供外部调用
+  // Expose global functions for external calls
   window.__iframeHighlightControl = {
     enable: enableHighlight,
     disable: disableHighlight,
@@ -2113,7 +1786,6 @@
       return selectedElement;
     },
     updateSelected: updateSelectedHighlight,
-    // 通过消息发送开关控制
     sendToggleMessage: function sendToggleMessage(enabled) {
       window.parent.postMessage({
         type: 'iframe-highlight-status',
@@ -2123,7 +1795,7 @@
     }
   };
 
-  // 通知父窗口脚本已加载
+  // Notify parent window that script is loaded
   try {
     window.parent.postMessage({
       type: "iframe-highlight-ready",
@@ -2135,10 +1807,10 @@
       source: "iframe-highlight-injector"
     }, "*");
   } catch (error) {
-    console.warn("无法发送就绪消息到父窗口:", error);
+    console.warn("Unable to send ready message to parent window:", error);
   }
 
-  // 清理函数
+  // Cleanup function
   window.__iframeHighlightCleanup = function () {
     fullyDisableHighlight();
     window.removeEventListener("message", handleParentMessage);
@@ -2149,483 +1821,6 @@
     delete window.__iframeHighlightCleanup;
   };
 })();
-
-</script>
-
-<script>
-/**
- * Iframe 元素高亮注入脚本
- * 需要在目标网站中引入此脚本来支持跨域 iframe 高亮功能
- *
- * 使用方法：
- * 1. 将此脚本添加到目标网站的 HTML 中
- * 2. 或通过浏览器扩展、用户脚本等方式注入
- */
-
-(function () {
-  "use strict";
-
-  // 检查是否在 iframe 中
-  if (window.self === window.top) {
-    return; // 不在 iframe 中，不执行
-  }
-
-  // 检查是否已经初始化过
-  if (window.__iframeHighlightInitialized) {
-    return;
-  }
-  window.__iframeHighlightInitialized = true;
-  console.log("Iframe 高亮脚本已加载");
-
-  // 创建高亮覆盖层
-  var overlay = document.createElement("div");
-  overlay.id = "iframe-highlight-overlay";
-  overlay.style.cssText = "\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100vw;\n    height: 100vh;\n    pointer-events: none;\n    z-index: 999999;\n    overflow: hidden;\n  ";
-
-  // 创建悬停高亮框（虚线边框）
-  var highlightBox = document.createElement("div");
-  highlightBox.id = "iframe-highlight-box";
-  highlightBox.style.cssText = "\n    position: absolute;\n    border: 2px dashed #007AFF;\n    background: rgba(0, 122, 255, 0.08);\n    pointer-events: none;\n    display: none;\n    transition: all 0.1s ease;\n    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);\n    border-radius: 2px;\n  ";
-
-  // 创建选中节点的常驻高亮框（实线边框）
-  var selectedBox = document.createElement("div");
-  selectedBox.id = "iframe-selected-box";
-  selectedBox.style.cssText = "\n    position: absolute;\n    border: 2px solid #007AFF;\n    pointer-events: none;\n    display: none;\n    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 107, 53, 0.4);\n    border-radius: 2px;\n    z-index: 1000000;\n  ";
-
-  // 创建悬停标签显示
-  var tagLabel = document.createElement("div");
-  tagLabel.id = "iframe-tag-label";
-  tagLabel.style.cssText = "\n    position: absolute;\n    background: #007AFF;\n    color: white;\n    padding: 2px 6px;\n    font-size: 11px;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n    border-radius: 2px;\n    pointer-events: none;\n    display: none;\n    white-space: nowrap;\n    z-index: 1000001;\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);\n    font-weight: 500;\n  ";
-
-  // 创建选中节点标签
-  var selectedLabel = document.createElement("div");
-  selectedLabel.id = "iframe-selected-label";
-  selectedLabel.style.cssText = "\n    position: absolute;\n    background: #007AFF;\n    color: white;\n    padding: 3px 8px;\n    font-size: 11px;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n    border-radius: 3px;\n    pointer-events: none;\n    display: none;\n    white-space: nowrap;\n    z-index: 1000002;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);\n    font-weight: 600;\n  ";
-  overlay.appendChild(highlightBox);
-  overlay.appendChild(selectedBox);
-  overlay.appendChild(tagLabel);
-  overlay.appendChild(selectedLabel);
-  document.body.appendChild(overlay);
-
-  // 存储当前选中的元素
-  var selectedElement = null;
-  var highlightEnabled = false;
-
-  // 更新选中元素的高亮显示
-  function updateSelectedHighlight(element) {
-    console.log("updateSelectedHighlight called with:", element);
-    if (!element) {
-      selectedBox.style.display = "none";
-      selectedLabel.style.display = "none";
-      selectedElement = null;
-      console.log("Cleared selected highlight");
-      return;
-    }
-    selectedElement = element;
-    var rect = element.getBoundingClientRect();
-    console.log("Selected element rect:", rect);
-
-    // 更新选中高亮框位置
-    selectedBox.style.display = "block";
-    selectedBox.style.left = "".concat(rect.left - 2, "px");
-    selectedBox.style.top = "".concat(rect.top - 2, "px");
-    selectedBox.style.width = "".concat(rect.width + 4, "px");
-    selectedBox.style.height = "".concat(rect.height + 4, "px");
-
-    // 更新选中标签位置和内容
-    selectedLabel.style.display = "block";
-    selectedLabel.textContent = "\u2713 <".concat(element.tagName.toLowerCase(), ">");
-
-    // 计算标签位置，确保不超出视窗
-    var labelTop = rect.top - 28;
-    var labelLeft = rect.left;
-
-    // 如果标签会超出顶部，显示在元素下方
-    if (labelTop < 5) {
-      labelTop = rect.bottom + 5;
-    }
-
-    // 如果标签会超出右侧，向左调整
-    var labelWidth = selectedLabel.offsetWidth || 100; // 预估宽度
-    if (labelLeft + labelWidth > window.innerWidth - 10) {
-      labelLeft = window.innerWidth - labelWidth - 10;
-    }
-    selectedLabel.style.left = "".concat(Math.max(5, labelLeft), "px");
-    selectedLabel.style.top = "".concat(labelTop, "px");
-    console.log("Selected highlight positioned at:", {
-      left: selectedBox.style.left,
-      top: selectedBox.style.top,
-      width: selectedBox.style.width,
-      height: selectedBox.style.height
-    });
-  }
-  function getElementSelector(element) {
-    if (!(element instanceof Element)) throw new Error('Argument must be a DOM element');
-    var segments = [];
-    var current = element;
-    while (current !== document.documentElement) {
-      var selector = '';
-      // 优先检查唯一ID
-      if (current.id && document.querySelectorAll("#".concat(current.id)).length === 1) {
-        segments.unshift("#".concat(current.id));
-        break; // ID唯一，无需继续向上
-      }
-
-      // 生成类名选择器（取第一个有效类名）
-      var classes = Array.from(current.classList).filter(function (c) {
-        return !c.startsWith('js-');
-      });
-      var className = classes.length > 0 ? ".".concat(classes[0]) : '';
-
-      // 生成位置索引（nth-child）
-      var tag = current.tagName.toLowerCase();
-      if (!className) {
-        var siblings = Array.from(current.parentNode.children);
-        var index = siblings.findIndex(function (el) {
-          return el === current;
-        }) + 1;
-        selector = "".concat(tag, ":nth-child(").concat(index, ")");
-      } else {
-        selector = className;
-      }
-      segments.unshift(selector);
-      current = current.parentElement;
-    }
-
-    // 处理根元素
-    if (current === document.documentElement) {
-      segments.unshift('html');
-    }
-    return segments.join(' > ');
-  }
-
-  // 获取元素文本内容
-  function getElementText(element) {
-    var _element$textContent;
-    if (element.tagName === "INPUT") {
-      return element.value || element.placeholder || "";
-    }
-    if (element.tagName === "TEXTAREA") {
-      return element.value || element.placeholder || "";
-    }
-    var text = ((_element$textContent = element.textContent) === null || _element$textContent === void 0 ? void 0 : _element$textContent.trim()) || "";
-    return text.length > 50 ? text.substring(0, 50) + "..." : text;
-  }
-
-  // 获取元素属性信息
-  function getElementAttributes(element) {
-    var attrs = {};
-    for (var i = 0; i < element.attributes.length; i++) {
-      var attr = element.attributes[i];
-      attrs[attr.name] = attr.value;
-    }
-    return attrs;
-  }
-
-  // 鼠标悬停事件处理
-  function handleMouseOver(e) {
-    if (!highlightEnabled) return;
-    var target = e.target;
-    if (!target || target === overlay || target === highlightBox || target === tagLabel || target === selectedBox || target === selectedLabel) {
-      return;
-    }
-
-    // 避免高亮 html 和 body 元素
-    if (target === document.documentElement || target === document.body) {
-      return;
-    }
-
-    // 如果是已选中的元素，不显示悬停高亮
-    if (target === selectedElement) {
-      highlightBox.style.display = "none";
-      tagLabel.style.display = "none";
-      return;
-    }
-    var rect = target.getBoundingClientRect();
-    var selector = getElementSelector(target);
-    var text = getElementText(target);
-    var attributes = getElementAttributes(target);
-
-    // 更新悬停高亮框位置
-    highlightBox.style.display = "block";
-    highlightBox.style.left = "".concat(rect.left - 2, "px");
-    highlightBox.style.top = "".concat(rect.top - 2, "px");
-    highlightBox.style.width = "".concat(rect.width + 4, "px");
-    highlightBox.style.height = "".concat(rect.height + 4, "px");
-
-    // 更新标签位置和内容
-    tagLabel.style.display = "block";
-    tagLabel.textContent = "<".concat(target.tagName.toLowerCase(), ">");
-
-    // 计算标签位置，确保不超出视窗
-    var labelTop = rect.top - 22;
-    var labelLeft = rect.left;
-
-    // 如果标签会超出顶部，显示在元素下方
-    if (labelTop < 0) {
-      labelTop = rect.bottom + 5;
-    }
-
-    // 如果标签会超出右侧，向左调整
-    if (labelLeft + tagLabel.offsetWidth > window.innerWidth) {
-      labelLeft = window.innerWidth - tagLabel.offsetWidth - 5;
-    }
-    tagLabel.style.left = "".concat(Math.max(0, labelLeft), "px");
-    tagLabel.style.top = "".concat(labelTop, "px");
-
-    // 发送消息到父窗口
-    var elementInfo = {
-      tagName: target.tagName.toLowerCase(),
-      rect: {
-        left: rect.left,
-        top: rect.top,
-        right: rect.right,
-        bottom: rect.bottom,
-        width: rect.width,
-        height: rect.height,
-        x: rect.x,
-        y: rect.y
-      },
-      selector: selector,
-      text: text,
-      attributes: attributes,
-      url: window.location.href,
-      path: window.location.pathname,
-      timestamp: Date.now()
-    };
-    try {
-      window.parent.postMessage({
-        type: "iframe-element-hover",
-        data: elementInfo,
-        source: "iframe-highlight-injector"
-      }, "*");
-    } catch (error) {
-      console.warn("无法发送消息到父窗口:", error);
-    }
-  }
-
-  // 鼠标离开事件处理
-  function handleMouseOut(e) {
-    if (!highlightEnabled) return;
-    var relatedTarget = e.relatedTarget;
-
-    // 如果鼠标移动到高亮相关元素上，不隐藏高亮
-    if (relatedTarget && (relatedTarget === highlightBox || relatedTarget === tagLabel || relatedTarget === overlay || relatedTarget === selectedBox || relatedTarget === selectedLabel)) {
-      return;
-    }
-    highlightBox.style.display = "none";
-    tagLabel.style.display = "none";
-    try {
-      window.parent.postMessage({
-        type: "iframe-element-hover",
-        data: null,
-        source: "iframe-highlight-injector"
-      }, "*");
-    } catch (error) {
-      console.warn("无法发送消息到父窗口:", error);
-    }
-  }
-
-  // 点击事件处理
-  function handleClick(e) {
-    var target = e.target;
-    if (!target || target === overlay || target === highlightBox || target === tagLabel || target === selectedBox || target === selectedLabel) {
-      return;
-    }
-
-    // 避免处理 html 和 body 元素
-    if (target === document.documentElement || target === document.body) {
-      return;
-    }
-
-    // 检查是否是交互元素，这些元素需要保留默认行为
-    var isInteractiveElement = ['input', 'textarea', 'select', 'button', 'a'].includes(target.tagName.toLowerCase());
-
-    // 如果高亮功能启用，对于非交互元素阻止默认行为和事件传播
-    if (highlightEnabled) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    var rect = target.getBoundingClientRect();
-    var selector = getElementSelector(target);
-    var text = getElementText(target);
-    var attributes = getElementAttributes(target);
-    console.log("Element clicked:", {
-      tagName: target.tagName,
-      selector: selector,
-      rect: rect
-    });
-
-    // 立即更新选中高亮
-    updateSelectedHighlight(target);
-
-    // 隐藏悬停高亮，因为现在是选中状态
-    highlightBox.style.display = "none";
-    tagLabel.style.display = "none";
-    var elementInfo = {
-      tagName: target.tagName.toLowerCase(),
-      rect: {
-        left: rect.left,
-        top: rect.top,
-        right: rect.right,
-        bottom: rect.bottom,
-        width: rect.width,
-        height: rect.height,
-        x: rect.x,
-        y: rect.y
-      },
-      selector: selector,
-      text: text,
-      attributes: attributes,
-      url: window.location.href,
-      path: window.location.pathname,
-      timestamp: Date.now()
-    };
-    try {
-      window.parent.postMessage({
-        type: "iframe-element-click",
-        data: elementInfo,
-        source: "iframe-highlight-injector"
-      }, "*");
-    } catch (error) {
-      console.warn("无法发送消息到父窗口:", error);
-    }
-  }
-
-  // 监听来自父窗口的消息
-  function handleParentMessage(event) {
-    console.log("Received message from parent:", event.data);
-    if (event.data.type === "iframe-highlight-toggle") {
-      var enabled = event.data.enabled;
-      console.log("Highlight toggle:", enabled);
-      if (enabled) {
-        enableHighlight();
-      } else {
-        disableHighlight();
-      }
-    } else if (event.data.type === "enable-iframe-highlight") {
-      console.log("Enable iframe highlight");
-      enableHighlight();
-    } else if (event.data.type === "disable-iframe-highlight") {
-      console.log("Disable iframe highlight");
-      disableHighlight();
-    } else if (event.data.type === "toggle-iframe-highlight") {
-      var _enabled = event.data.enabled !== undefined ? event.data.enabled : !highlightEnabled;
-      console.log("Toggle iframe highlight to:", _enabled);
-      if (_enabled) {
-        enableHighlight();
-      } else {
-        disableHighlight();
-      }
-    } else if (event.data.type === "update-selected-element") {
-      var selector = event.data.selector;
-      console.log("Update selected element with selector:", selector);
-      if (selector) {
-        try {
-          var element = document.querySelector(selector);
-          console.log("Found element by selector:", element);
-          updateSelectedHighlight(element);
-        } catch (error) {
-          console.warn("Failed to select element:", error);
-          updateSelectedHighlight(null);
-        }
-      } else {
-        updateSelectedHighlight(null);
-      }
-    } else if (event.data.type === "clear-selected-element") {
-      console.log("Clear selected element");
-      updateSelectedHighlight(null);
-    }
-  }
-
-  // 启用高亮功能
-  function enableHighlight() {
-    console.log("Enabling highlight");
-    document.addEventListener("mouseover", handleMouseOver, true);
-    document.addEventListener("mouseout", handleMouseOut, true);
-    document.addEventListener("click", handleClick, true);
-    highlightEnabled = true;
-    overlay.style.display = "block";
-  }
-
-  // 禁用高亮功能
-  function disableHighlight() {
-    console.log("Disabling highlight");
-    highlightEnabled = false;
-    // 保持事件监听器，但通过 highlightEnabled 变量控制行为
-    // 这样可以保留选中状态的显示
-    highlightBox.style.display = "none";
-    tagLabel.style.display = "none";
-    // 不隐藏 selectedBox 和 selectedLabel，保留选中状态
-  }
-
-  // 完全禁用高亮功能（移除所有监听器）
-  function fullyDisableHighlight() {
-    console.log("Fully disabling highlight");
-    highlightEnabled = false;
-    document.removeEventListener("mouseover", handleMouseOver, true);
-    document.removeEventListener("mouseout", handleMouseOut, true);
-    document.removeEventListener("click", handleClick, true);
-    overlay.style.display = "none";
-    highlightBox.style.display = "none";
-    tagLabel.style.display = "none";
-    selectedBox.style.display = "none";
-    selectedLabel.style.display = "none";
-  }
-
-  // 添加事件监听
-  enableHighlight();
-  window.addEventListener("message", handleParentMessage);
-
-  // 暴露全局函数供外部调用
-  window.__iframeHighlightControl = {
-    enable: enableHighlight,
-    disable: disableHighlight,
-    fullyDisable: fullyDisableHighlight,
-    isEnabled: function isEnabled() {
-      return highlightEnabled;
-    },
-    getSelectedElement: function getSelectedElement() {
-      return selectedElement;
-    },
-    updateSelected: updateSelectedHighlight,
-    // 通过消息发送开关控制
-    sendToggleMessage: function sendToggleMessage(enabled) {
-      window.parent.postMessage({
-        type: 'iframe-highlight-status',
-        enabled: enabled || highlightEnabled,
-        source: 'iframe-highlight-injector'
-      }, '*');
-    }
-  };
-
-  // 通知父窗口脚本已加载
-  try {
-    window.parent.postMessage({
-      type: "iframe-highlight-ready",
-      data: {
-        url: window.location.href,
-        userAgent: navigator.userAgent,
-        timestamp: Date.now()
-      },
-      source: "iframe-highlight-injector"
-    }, "*");
-  } catch (error) {
-    console.warn("无法发送就绪消息到父窗口:", error);
-  }
-
-  // 清理函数
-  window.__iframeHighlightCleanup = function () {
-    fullyDisableHighlight();
-    window.removeEventListener("message", handleParentMessage);
-    if (overlay.parentElement) {
-      overlay.parentElement.removeChild(overlay);
-    }
-    delete window.__iframeHighlightInitialized;
-    delete window.__iframeHighlightCleanup;
-  };
-})();
-
 </script>
 </body>
 </html>

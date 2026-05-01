@@ -1467,6 +1467,22 @@
                 gap: 12px;
             }
         }
+
+        /* Edit Profile Modal Styles */
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(107, 142, 35, 0.2);
+        }
+
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -2019,6 +2035,7 @@
                 <div id="notificationList"><p style="text-align: center; color: #999;">Loading notifications...</p></div>
             </div>
         </div>
+    
 
         <!-- FOOTER -->
         <footer class="footer">
@@ -2044,9 +2061,79 @@
     </div>
 
     <div id="toast" class="toast" style="display: none;"></div>
+    <!-- Edit Profile Modal -->
+<div class="modal-overlay" id="editProfileModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-user-edit"></i> Edit Personal Information</h2>
+            <button class="modal-close" onclick="closeEditProfileModal()">&times;</button>
+        </div>
+
+        <form id="editProfileForm" onsubmit="saveProfileChanges(event)">
+            <div class="form-group">
+                <label><i class="fas fa-tint"></i> Blood Group</label>
+                <select id="editBloodGroup" class="form-input" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
+                    <option value="">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-phone"></i> Emergency Contact Name</label>
+                <input type="text" id="editEmergencyContact" class="form-input" placeholder="e.g., John Doe" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-phone-alt"></i> Emergency Phone Number</label>
+                <input type="tel" id="editEmergencyPhone" class="form-input" placeholder="e.g., 024XXXXXXX" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-user-friends"></i> Guardian/Parent Name</label>
+                <input type="text" id="editGuardianName" class="form-input" placeholder="Guardian's full name" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-map-marker-alt"></i> Hometown</label>
+                <input type="text" id="editHometown" class="form-input" placeholder="Your hometown" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-flag"></i> Nationality</label>
+                <input type="text" id="editNationality" class="form-input" placeholder="e.g., Ghanaian" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-home"></i> Residential Address</label>
+                <textarea id="editAddress" rows="2" placeholder="Your current address" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-allergies"></i> Allergies (if any)</label>
+                <input type="text" id="editAllergies" class="form-input" placeholder="e.g., None, Peanuts, Dust" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
+            </div>
+
+            <div class="btn-group" style="margin-top: 20px;">
+                <button type="submit" class="styled-submit-btn" style="background: #27ae60;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <button type="button" class="btn-cancel" onclick="closeEditProfileModal()" style="padding: 12px 20px;">Cancel</button>
+            </div>
+
+            <div id="editProfileError" class="error-message" style="margin-top: 15px; display: none;"></div>
+        </form>
+    </div>
+</div>
             
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjuTXWQH--LL05qwUu2QYrXNJiI0hGv9JwZQvwLI8woKASmE1NExB2u_3bsXgu9byuUQ/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMiP5PuKEJcFDXQFFIdAzphQcNWrLm7kPT14GI7Bwq_hSW9PsauqreKDo-JuVoaJ5ktQ/exec";
         let studentData = null;
         let financeData = null;
         let academicData = null;
@@ -2871,7 +2958,106 @@
             }
         }
         
-        function editProfile() { showToast('Edit feature coming soon'); }
+                function editProfile() {
+            // Load current data into the modal
+            const p = studentData?.profile || {};
+            const personal = personalData || {};
+            
+            document.getElementById('editBloodGroup').value = personal.bloodGroup || p.bloodGroup || '';
+            document.getElementById('editEmergencyContact').value = personal.emergencyContact || p.emergencyContact || '';
+            document.getElementById('editEmergencyPhone').value = personal.emergencyPhone || '';
+            document.getElementById('editGuardianName').value = personal.guardianName || p.guardian || '';
+            document.getElementById('editHometown').value = personal.hometown || p.hometown || '';
+            document.getElementById('editNationality').value = personal.nationality || p.nationality || 'Ghanaian';
+            document.getElementById('editAddress').value = personal.address || p.address || '';
+            document.getElementById('editAllergies').value = personal.allergies || 'None';
+            
+            document.getElementById('editProfileModal').classList.add('show');
+        }
+
+        function closeEditProfileModal() {
+            document.getElementById('editProfileModal').classList.remove('show');
+            document.getElementById('editProfileError').style.display = 'none';
+        }
+
+        async function saveProfileChanges(event) {
+            event.preventDefault();
+            
+            const bloodGroup = document.getElementById('editBloodGroup').value;
+            const emergencyContact = document.getElementById('editEmergencyContact').value;
+            const emergencyPhone = document.getElementById('editEmergencyPhone').value;
+            const guardianName = document.getElementById('editGuardianName').value;
+            const hometown = document.getElementById('editHometown').value;
+            const nationality = document.getElementById('editNationality').value;
+            const address = document.getElementById('editAddress').value;
+            const allergies = document.getElementById('editAllergies').value;
+            
+            const saveBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            saveBtn.disabled = true;
+            
+            try {
+                const studentId = studentData.profile.id;
+                
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'update_personal_info',
+                        studentId: studentId,
+                        bloodGroup: bloodGroup,
+                        emergencyContact: emergencyContact,
+                        emergencyPhone: emergencyPhone,
+                        guardianName: guardianName,
+                        hometown: hometown,
+                        nationality: nationality,
+                        address: address,
+                        allergies: allergies
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (!personalData) personalData = {};
+                    personalData.bloodGroup = bloodGroup;
+                    personalData.emergencyContact = emergencyContact;
+                    personalData.emergencyPhone = emergencyPhone;
+                    personalData.guardianName = guardianName;
+                    personalData.hometown = hometown;
+                    personalData.nationality = nationality;
+                    personalData.address = address;
+                    personalData.allergies = allergies;
+                    
+                    if (studentData.profile) {
+                        studentData.profile.bloodGroup = bloodGroup;
+                        studentData.profile.emergencyContact = emergencyContact;
+                        studentData.profile.guardian = guardianName;
+                        studentData.profile.hometown = hometown;
+                        studentData.profile.nationality = nationality;
+                        studentData.profile.address = address;
+                        localStorage.setItem('userData', JSON.stringify(studentData));
+                    }
+                    
+                    updateDetailedProfile();
+                    loadPersonalInfo();
+                    
+                    showToast('Profile updated successfully!');
+                    closeEditProfileModal();
+                } else {
+                    throw new Error(data.error || 'Update failed');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                const errorDiv = document.getElementById('editProfileError');
+                errorDiv.innerText = error.message || 'Failed to save. Please try again.';
+                errorDiv.style.display = 'block';
+            } finally {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        }
 
         // Fetch all data from Google Sheets backend
         async function fetchStudentData() {
@@ -3143,6 +3329,13 @@
         
       // Single initialization - runs once when page loads
         window.onload = function() {
+            const editModal = document.getElementById('editProfileModal');
+            if (editModal) {
+                editModal.addEventListener('click', function(e) {
+                    if (e.target === this) closeEditProfileModal();
+                });
+            }
+
             // Check if user is logged in
             const storedData = localStorage.getItem('userData');
             const storedId = localStorage.getItem('studentId');
