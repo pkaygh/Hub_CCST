@@ -1480,7 +1480,7 @@
     <!-- SIDE MENU -->
 <div class="sidebar">
     <div class="sidebar-header">
-        <img id="sidebarPhoto" src="https://via.placeholder.com/80" class="profile-pic-sidebar" onclick="document.getElementById('photoUpload').click()">
+        <img id="sidebarPhoto" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e0e0e0'/%3E%3Ctext x='50' y='55' text-anchor='middle' fill='%23999' font-size='30'%3E👤%3C/text%3E%3C/svg%3E" class="profile-pic-sidebar" onclick="document.getElementById('photoUpload').click()">
         <input type="file" id="photoUpload" accept="image/*" style="display:none;" onchange="uploadPhoto(event)">
         <h3 id="sidebarName">Student</h3>
         <p id="sidebarDetails">Level 100</p>
@@ -1550,7 +1550,7 @@
                 <div class="profile-content-wrapper">
                     <div class="profile-avatar-section">
                         <div class="profile-avatar">
-                            <img id="profilePic" src="https://via.placeholder.com/120" onclick="document.getElementById('photoUpload').click()">
+                            <img id="profilePic" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e0e0e0'/%3E%3Ctext x='60' y='65' text-anchor='middle' fill='%23999' font-size='40'%3E👤%3C/text%3E%3C/svg%3E" onclick="document.getElementById('photoUpload').click()">
                             <div class="avatar-edit-btn" onclick="document.getElementById('photoUpload').click()">
                                 <i class="fas fa-camera"></i>
                             </div>
@@ -1657,30 +1657,30 @@
                 </div>
 
                 <!-- Guardian Information Card -->
-                <div class="detail-card">
-                    <div class="detail-card-header">
-                        <i class="fas fa-users"></i>
-                        <h3>Guardian Information</h3>
-                    </div>
-                    <div class="detail-card-content">
-                        <div class="detail-row">
-                            <span class="detail-label"><i class="fas fa-user-shield"></i> Guardian Name</span>
-                            <span class="detail-value" id="infoGuardian">--</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label"><i class="fas fa-phone-square"></i> Emergency Contact</span>
-                            <span class="detail-value" id="infoEmergency">--</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label"><i class="fas fa-heartbeat"></i> Blood Group</span>
-                            <span class="detail-value" id="infoBloodGroup">--</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label"><i class="fas fa-exclamation-circle"></i> Allergies</span>
-                            <span class="detail-value" id="infoAllergies">None reported</span>
-                        </div>
-                    </div>
-                </div>
+<div class="detail-card">
+    <div class="detail-card-header">
+        <i class="fas fa-users"></i>
+        <h3>Guardian Information</h3>
+    </div>
+    <div class="detail-card-content">
+        <div class="detail-row">
+            <span class="detail-label"><i class="fas fa-user-shield"></i> Guardian Name</span>
+            <span class="detail-value" id="infoGuardian">--</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label"><i class="fas fa-phone-square"></i> Emergency Contact</span>
+            <span class="detail-value" id="infoEmergency">--</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label"><i class="fas fa-tint"></i> Blood Group</span>
+            <span class="detail-value" id="infoBloodGroup">--</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label"><i class="fas fa-heartbeat"></i> Allergies/Medical</span>
+            <span class="detail-value" id="infoAllergies">None reported</span>
+        </div>
+    </div>
+</div>
 
                 <!-- Academic Information Card -->
                 <div class="detail-card">
@@ -2046,7 +2046,18 @@
     <div id="toast" class="toast" style="display: none;"></div>
             
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySRgMCWg-n9aKObsjDORipuUz-Dzwde4QD6tbe8EcTeazTteiznoI7Vs4tU9Ylknq2/exec";
+
+        // Helper function to set element text safely
+function setElementText(elementId, text) {
+    const element = document.getElementById(elementId);
+    if (element) element.innerHTML = text;
+}
+
+function getCurrentAcademicYear() {
+    const currentYear = new Date().getFullYear();
+    return `${currentYear}/${currentYear + 1}`;
+}
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQ-6PeloC3Ac6tsZv2UQN_dndoSAOdQyng3JVpYz3d9tdvqe9cVSKUPeT4t7U8qzhQ/exec";
         let studentData = null;
         let financeData = null;
         let academicData = null;
@@ -2191,37 +2202,74 @@
         }
 
                 
-                function loadProfile() {
-            if (!studentData?.profile) return;
-            const p = studentData.profile;
-            
-            document.getElementById('profileName').innerText = p.name;
-            document.getElementById('profileProgram').innerText = `${getFullProgramName(p.program)} | Level ${p.level}`;
-            document.getElementById('profileId').innerText = `ID: ${p.id}`;
-            document.getElementById('sidebarName').innerText = p.name;
-            document.getElementById('sidebarDetails').innerText = `Level ${p.level} | ${getFullProgramName(p.program)}`;
-            document.getElementById('studentNameHeader').innerText = p.name;
-            
-            // Load photo
-            setProfilePhoto(p.id);
-            
-            const statusBox = document.getElementById('clearanceStatus');
-            if (p.isCleared === true || p.isCleared === "TRUE") {
-                statusBox.innerText = "✅ FINANCIALLY CLEARED";
-                statusBox.className = "status-badge cleared";
-            } else {
-                statusBox.innerText = "❌ NOT CLEARED - See Accountant";
-                statusBox.className = "status-badge not-cleared";
-            }
-            
-            updateWelcomeMessage();
-            updateCurrentDate();
-            updateQuickStats();
-            updateDetailedProfile();
-            loadRecentActivities();
-            updateAchievements();
-            renderGradingTable();
+            function loadPersonalInfo() {
+    const p = studentData?.profile;
+    if (!p) return;
+    
+    console.log("Loading personal info for:", p.name);
+    
+    // Personal Information
+    setElementText('infoId', p.id || '--');
+    setElementText('infoEmail', p.email || 'student@ccst.edu.gh');
+    setElementText('infoPhone', p.phone || 'Not provided');
+    setElementText('infoDob', p.dob || 'Not provided');
+    setElementText('infoGender', p.gender || 'Not provided');
+    setElementText('infoAddress', p.address || 'Not provided');
+    setElementText('infoNationality', p.nationality || 'Ghanaian');
+    setElementText('infoHometown', p.hometown || 'Not provided');
+    
+    // Guardian Information
+    setElementText('infoGuardian', p.guardianName || 'Not provided');
+    setElementText('infoEmergency', p.emergencyPhone ? `${p.emergencyContact || 'Contact'} (${p.emergencyPhone})` : (p.emergencyContact || 'Not provided'));
+    setElementText('infoBloodGroup', p.bloodGroup || 'Not specified');
+    
+    // Academic Information
+    const programFull = getFullProgramName(p.program);
+    setElementText('infoProgram', programFull);
+    setElementText('infoLevel', `Level ${p.level || '100'}`);
+    setElementText('infoAcademicYear', getCurrentAcademicYear());
+    
+    // Calculate CGPA
+    const stats = calculateEnhancedStats();
+    if (stats) {
+        setElementText('infoCGPA', stats.cgpa);
+        setElementText('infoClassification', stats.standing);
+    } else {
+        setElementText('infoCGPA', '--');
+        setElementText('infoClassification', 'Pending');
+    }
+    
+    // Financial Information
+    const previousBalance = parseFloat(p.previousBalance) || 0;
+    const currentFees = parseFloat(p.currentSemesterFees) || parseFloat(p.totalFee) || 0;
+    const amountPayable = previousBalance + currentFees;
+    const amountPaid = parseFloat(p.amountPaid) || 0;
+    const balance = amountPayable - amountPaid;
+    
+    setElementText('infoAmountPayable', `GH₵${amountPayable.toLocaleString()}`);
+    setElementText('infoAmountPaid', `GH₵${amountPaid.toLocaleString()}`);
+    
+    const balanceElement = document.getElementById('infoBalance');
+    if (balanceElement) {
+        if (balance > 0) {
+            balanceElement.innerHTML = `<span style="color:#e74c3c;">GH₵${balance.toLocaleString()}</span>`;
+        } else if (balance < 0) {
+            balanceElement.innerHTML = `<span style="color:#27ae60;">GH₵${Math.abs(balance).toLocaleString()} (Credit)</span>`;
+        } else {
+            balanceElement.innerHTML = `<span style="color:#27ae60;">GH₵0.00 (Fully Paid)</span>`;
         }
+    }
+    
+    const clearanceElement = document.getElementById('infoClearance');
+    if (clearanceElement) {
+        const isCleared = (p.isCleared === true || p.isCleared === "TRUE" || balance <= 0);
+        if (isCleared) {
+            clearanceElement.innerHTML = '<span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Cleared</span>';
+        } else {
+            clearanceElement.innerHTML = '<span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Not Cleared</span>';
+        }
+    }
+}
         
         // Photo functions - moved outside loadProfile
         async function setProfilePhoto(studentId) {
@@ -2692,53 +2740,8 @@
                     </div>
                 </div>`;
             });
-        } else {
-            // Use demo notifications if no server data
-            const demoNotifications = [
-                {
-                    id: 1,
-                    title: "📢 Welcome to CCST Portal",
-                    content: "Welcome to the Central College of Science and Technology student portal. Please update your profile information.",
-                    date: new Date().toLocaleDateString(),
-                    type: "general"
-                },
-                {
-                    id: 2,
-                    title: "💰 Fee Payment Deadline",
-                    content: "Please note the deadline for second semester fee payment. Please ensure timely payment to avoid penalties.",
-                    date: new Date().toLocaleDateString(),
-                    type: "finance"
-                },
-                {
-                    id: 3,
-                    title: "📚 Registration Opening",
-                    content: "Course registration for the 2025/2026 academic year opens on April 4, 2026.",
-                    date: new Date().toLocaleDateString(),
-                    type: "academic"
-                },
-                {
-                    id: 4,
-                    title: "🎓 Results Update",
-                    content: "This student portal is yours. Trace your academic progress and act accordinly.",
-                    date: new Date().toLocaleDateString(),
-                    type: "reminder"
                 }
-            ];
-            
-            demoNotifications.forEach(notif => {
-                const isRead = readNotifIds.includes(notif.id);
-                if (!isRead) unreadCount++;
-                html += `<div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${notif.id})">
-                    <div class="notification-icon"><i class="fas ${notif.type === 'finance' ? 'fa-money-bill-wave' : notif.type === 'academic' ? 'fa-graduation-cap' : 'fa-bullhorn'}"></i></div>
-                    <div>
-                        <h4>${notif.title}</h4>
-                        <p>${notif.content}</p>
-                        <small>${notif.date}</small>
-                    </div>
-                </div>`;
-            });
-        }
-        
+
         container.innerHTML = html || '<p style="text-align: center; padding: 40px;">No notifications at this time.</p>';
         
         const badge = document.getElementById('notifBadge');
@@ -2774,7 +2777,19 @@
         function markAllRead() {
             const studentId = studentData?.profile?.id;
             const storageKey = studentId ? `readNotifications_${studentId}` : 'readNotifications';
-            let read = [1, 2];
+            // Get all current notification IDs from the DOM
+            const notifItems = document.querySelectorAll('.notification-item');
+            let read = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            notifItems.forEach(item => {
+                const onclick = item.getAttribute('onclick');
+                if (onclick) {
+                    const match = onclick.match(/markRead\((\d+)\)/);
+                    if (match) {
+                        const id = parseInt(match[1]);
+                        if (!read.includes(id)) read.push(id);
+                    }
+                }
+            });
             localStorage.setItem(storageKey, JSON.stringify(read));
             loadNotifications();
             showToast('All marked as read');
@@ -2858,128 +2873,94 @@
 
         // Fetch all data from Google Sheets backend
         async function fetchStudentData() {
-            try {
-                const storedData = localStorage.getItem('userData');
-                console.log("Stored data found:", storedData ? "Yes" : "No");
-
-                if (!storedData) {
-                    window.location.replace("index.html");
-                    return;
-                }
-
-                studentData = JSON.parse(storedData);
-                console.log("Student profile loaded:", studentData.profile.name);
-
-                const studentId = studentData.profile.id;
-                console.log("Fetching all data for ID:", studentId);
-
-                // Fetch all data in parallel for better performance
-                const [financeRes, academicRes, personalRes, resultsRes, paymentsRes] = await Promise.all([
-                    fetch(`${SCRIPT_URL}?action=get_finance&id=${studentId}`),
-                    fetch(`${SCRIPT_URL}?action=get_academic&id=${studentId}`),
-                    fetch(`${SCRIPT_URL}?action=get_personal&id=${studentId}`),
-                    fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`),
-                    fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`)
-                ]);
-
-                const [financeDataRes, academicDataRes, personalDataRes, resultsData, paymentsData] = await Promise.all([
-                    financeRes.json(),
-                    academicRes.json(),
-                    personalRes.json(),
-                    resultsRes.json(),
-                    paymentsRes.json()
-                ]);
-
-                console.log("Finance data:", financeDataRes);
-                console.log("Academic data:", academicDataRes);
-                console.log("Personal data:", personalDataRes);
-                console.log("Results data:", resultsData);
-                console.log("Payments data:", paymentsData);
-
-                // Store fetched data
-                if (financeDataRes.finance) {
-                    financeData = financeDataRes.finance;
-                    // Update student profile with finance data
-                    Object.assign(studentData.profile, {
-                        previousBalance: financeData.previousBalance || 0,
-                        currentSemesterFees: financeData.currentSemesterFees || 0,
-                        amountPaid: financeData.amountPaid || 0,
-                        balance: financeData.balance || 0,
-                        arrears: financeData.arrears || 0,
-                        isCleared: financeData.isCleared || false
-                    });
-                }
-
-                if (academicDataRes.academic) {
-                    academicData = academicDataRes.academic;
-                }
-
-                if (personalDataRes.personal) {
-                    personalData = personalDataRes.personal;
-                }
-
-                if (resultsData.results) {
-                    userResults = resultsData.results;
-                } else {
-                    console.log("No results from server, using sample data");
-                    userResults = [{
-                        semester: "Semester 1 - 2025/2026", gpa: "3.25",
-                        details: [{ code: "COSC 101", name: "Introduction to Computing", credits: 3, ca: 35, exam: 55, grade: "A" },
-                                  { code: "MATH 101", name: "Algebra", credits: 3, ca: 30, exam: 48, grade: "B+" }]
-                    }];
-                }
-
-                if (paymentsData.payments) {
-                    userPayments = paymentsData.payments;
-                }
-
-                // Load all sections with fetched data
-                loadProfile();
-                loadAcademicResults();
-                loadFinance();
-                loadPersonalInfo();
-                loadNotifications();
-                loadTranscript();
-
-                // Save updated student data to localStorage
-                localStorage.setItem('userData', JSON.stringify(studentData));
-
-            } catch(e) {
-                console.log('Error in fetchStudentData:', e);
-                // Fallback to demo data
-                loadProfile();
-                loadAcademicResults();
-                loadFinance();
-                loadPersonalInfo();
-            }
+    try {
+        const storedData = localStorage.getItem('userData');
+        if (!storedData) {
+            window.location.replace("index.html");
+            return;
         }
 
-        // Load personal information from fetched data
-        function loadPersonalInfo() {
-            if (!personalData) return;
+        studentData = JSON.parse(storedData);
+        console.log("Student profile loaded:", studentData.profile.name);
+        
+        const studentId = studentData.profile.id;
+        console.log("Fetching all data for ID:", studentId);
+        
+        showToast("Loading your data...", "info");
 
-            // Update personal info card if elements exist
-            const infoAddress = document.getElementById('infoAddress');
-            if (infoAddress) infoAddress.innerHTML = personalData.address || '--';
+        // Fetch all data in parallel
+        const [personalRes, academicRes, financeRes, resultsRes, paymentsRes] = await Promise.all([
+            fetch(`${SCRIPT_URL}?action=get_personal_info&id=${studentId}`),
+            fetch(`${SCRIPT_URL}?action=get_academic_info&id=${studentId}`),
+            fetch(`${SCRIPT_URL}?action=get_finance_info&id=${studentId}`),
+            fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`),
+            fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`)
+        ]);
 
-            const infoEmergency = document.getElementById('infoEmergency');
-            if (infoEmergency) infoEmergency.innerHTML = personalData.emergencyPhone ? `${personalData.emergencyContact} (${personalData.emergencyPhone})` : personalData.emergencyContact || '--';
+        const [personalDataRes, academicDataRes, financeDataRes, resultsData, paymentsData] = await Promise.all([
+            personalRes.json(),
+            academicRes.json(),
+            financeRes.json(),
+            resultsRes.json(),
+            paymentsRes.json()
+        ]);
 
-            const infoGuardian = document.getElementById('infoGuardian');
-            if (infoGuardian) infoGuardian.innerHTML = personalData.guardianName || '--';
+        console.log("Personal data:", personalDataRes);
+        console.log("Academic data:", academicDataRes);
+        console.log("Finance data:", financeDataRes);
+        console.log("Results data:", resultsData);
+        console.log("Payments data:", paymentsData);
 
-            const infoBloodGroup = document.getElementById('infoBloodGroup');
-            if (infoBloodGroup) infoBloodGroup.innerHTML = personalData.bloodGroup || '--';
-
-            const infoNationality = document.getElementById('infoNationality');
-            if (infoNationality) infoNationality.innerHTML = personalData.nationality || '--';
-
-            const infoHometown = document.getElementById('infoHometown');
-            if (infoHometown) infoHometown.innerHTML = personalData.hometown || '--';
-
-            const infoAllergies = document.getElementById('infoAllergies');
-            if (infoAllergies) infoAllergies.innerHTML = personalData.allergies || 'None reported';
+        // Store fetched data
+        personalData = personalDataRes;
+        academicData = academicDataRes;
+        financeData = financeDataRes;
+        
+        // Update student profile with fetched data
+        if (personalDataRes) {
+            studentData.profile = {
+                ...studentData.profile,
+                ...personalDataRes,
+                ...academicDataRes,
+                ...financeDataRes
+            };
         }
+        
+        if (financeDataRes) {
+            studentData.profile.totalFee = financeDataRes.totalFee || 0;
+            studentData.profile.amountPaid = financeDataRes.amountPaid || 0;
+            studentData.profile.balance = financeDataRes.balance || 0;
+            studentData.profile.previousBalance = financeDataRes.previousBalance || 0;
+            studentData.profile.currentSemesterFees = financeDataRes.currentSemesterFees || 0;
+            studentData.profile.isCleared = financeDataRes.isCleared || false;
+        }
+
+        userResults = resultsData.results || [];
+
+        userPayments = paymentsData.payments || [];
+
+        // Load all sections with fetched data
+        loadProfile();
+        loadAcademicResults();
+        loadFinance();
+        loadNotifications();
+        
+        // Save updated student data
+        localStorage.setItem('userData', JSON.stringify(studentData));
+        
+        showToast("Dashboard loaded successfully!", "success");
+
+    } catch(e) {
+        console.error('Error in fetchStudentData:', e);
+        showToast("Error loading data. Using cached data.", "error");
+        
+        
+        // Load only cached profile data
+        if (studentData) {
+            loadProfile();
+        }
+    }
+}
 
         function updateWelcomeMessage() {
             const welcomeName = document.getElementById('welcomeName');
@@ -2987,14 +2968,8 @@
     if (studentData?.profile?.name) {
         welcomeName.innerText = studentData.profile.name.split(' ')[0];
         }
-    const quotes = [
-        "Knowledge, Service, Security",
-        "Excellence in Healthcare Education",
-        "Your Future Starts Here",
-        "Learn, Lead, Serve"
-    ];
-    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-    if (welcomeQuote) welcomeQuote.innerText = randomQuote;
+    // Quote from college motto
+    if (welcomeQuote) welcomeQuote.innerText = "Knowledge, Service, Security";
 }
         
         function updateCurrentDate() {
@@ -3026,37 +3001,31 @@
     
     console.log("Updating detailed profile for:", p.name);
     
-    // Personal Information - with existence checks
-    const infoId = document.getElementById('infoId');
-    if (infoId) infoId.innerHTML = p.id || '--';
+    // Profile header
+    setElementText('profileName', p.name || 'Student');
+    setElementText('profileIdShort', p.id ? p.id.split('/').pop() : p.id);
+    setElementText('profileBadge', getFullProgramName(p.program));
+    setElementText('levelBadge', `Level ${p.level || '100'}`);
     
-    const infoEmail = document.getElementById('infoEmail');
-    if (infoEmail) infoEmail.innerHTML = p.email || 'student@ccst.edu.gh';
+    // Personal Information
+    setElementText('infoId', p.id || '--');
+    setElementText('infoEmail', p.email || 'student@ccst.edu.gh');
+    setElementText('infoPhone', p.phone || '--');
+    setElementText('infoDob', p.dob || '--');
+    setElementText('infoGender', p.gender || '--');
+    setElementText('infoAddress', p.address || '--');
+    setElementText('infoNationality', p.nationality || '--');
+    setElementText('infoHometown', p.hometown || '--');
+    setElementText('infoBloodGroup', p.bloodGroup || '--');
     
-    const infoPhone = document.getElementById('infoPhone');
-    if (infoPhone) infoPhone.innerHTML = p.phone || '--';
-    
-    const infoDob = document.getElementById('infoDob');
-    if (infoDob) infoDob.innerHTML = p.dob || '--';
-    
-    const infoGender = document.getElementById('infoGender');
-    if (infoGender) infoGender.innerHTML = p.gender || '--';
-    
-    const profileIdShort = document.getElementById('profileIdShort');
-    if (profileIdShort) profileIdShort.innerHTML = p.id ? p.id.split('/').pop() : p.id;
-    
-    const profileBadge = document.getElementById('profileBadge');
-    if (profileBadge) profileBadge.innerHTML = getFullProgramName(p.program);
-    
-    const levelBadge = document.getElementById('levelBadge');
-    if (levelBadge) levelBadge.innerHTML = `Level ${p.level}`;
+    // Guardian Information
+    setElementText('infoGuardian', p.guardianName || '--');
+    setElementText('infoEmergency', p.emergencyPhone ? `${p.emergencyContact || 'Contact'} (${p.emergencyPhone})` : (p.emergencyContact || '--'));
     
     // Academic Information
-    const infoProgram = document.getElementById('infoProgram');
-    if (infoProgram) infoProgram.innerHTML = getFullProgramName(p.program);
-    
-    const infoLevel = document.getElementById('infoLevel');
-    if (infoLevel) infoLevel.innerHTML = `Level ${p.level}`;
+    setElementText('infoProgram', getFullProgramName(p.program));
+    setElementText('infoLevel', `Level ${p.level || '100'}`);
+    setElementText('infoAcademicYear', getCurrentAcademicYear());
     
     // Financial Information - Auto calculated
     const previousBalance = parseFloat(p.previousBalance) || 0;
@@ -3065,49 +3034,63 @@
     const amountPaid = parseFloat(p.amountPaid) || 0;
     const balance = amountPayable - amountPaid;
     
-    const infoAmountPayable = document.getElementById('infoAmountPayable');
-    if (infoAmountPayable) infoAmountPayable.innerHTML = `GH₵${amountPayable.toLocaleString()}`;
-    
-    const infoAmountPaid = document.getElementById('infoAmountPaid');
-    if (infoAmountPaid) infoAmountPaid.innerHTML = `GH₵${amountPaid.toLocaleString()}`;
+    setElementText('infoAmountPayable', `GH₵${amountPayable.toLocaleString()}`);
+    setElementText('infoAmountPaid', `GH₵${amountPaid.toLocaleString()}`);
     
     const infoBalance = document.getElementById('infoBalance');
-    if (infoBalance) infoBalance.innerHTML = balance > 0 ? `GH₵${balance.toLocaleString()}` : 'GH₵0.00';
+    if (infoBalance) {
+        if (balance > 0) {
+            infoBalance.innerHTML = `<span style="color:#e74c3c;">GH₵${balance.toLocaleString()}</span>`;
+        } else if (balance < 0) {
+            infoBalance.innerHTML = `<span style="color:#27ae60;">GH₵${Math.abs(balance).toLocaleString()} (Credit)</span>`;
+        } else {
+            infoBalance.innerHTML = `<span style="color:#27ae60;">GH₵0.00</span>`;
+        }
+    }
     
     const infoClearance = document.getElementById('infoClearance');
     if (infoClearance) {
-        const clearanceStatus = (balance <= 0) ? '<span style="color:#27ae60;">✓ Cleared</span>' : '<span style="color:#e74c3c;">✗ Not Cleared</span>';
+        const clearanceStatus = (balance <= 0) ? 
+            '<span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Cleared</span>' : 
+            '<span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Not Cleared</span>';
         infoClearance.innerHTML = clearanceStatus;
     }
     
     // CGPA - Auto calculated from grades
     const stats = calculateEnhancedStats();
     if (stats) {
-        const infoCGPA = document.getElementById('infoCGPA');
-        if (infoCGPA) infoCGPA.innerHTML = stats.cgpa;
-        
-        const infoClassification = document.getElementById('infoClassification');
-        if (infoClassification) infoClassification.innerHTML = stats.standing;
+        setElementText('infoCGPA', stats.cgpa);
+        setElementText('infoClassification', stats.standing);
     }
 }
         
-        function loadRecentActivities() {
+        async function loadRecentActivities() {
             const container = document.getElementById('recentActivitiesList');
-            const activities = [
-                { title: 'Logged in to portal', time: 'Just now', icon: 'fa-sign-in-alt' },
-                { title: 'Viewed academic results', time: '2 hours ago', icon: 'fa-graduation-cap' },
-                { title: 'Checked financial status', time: 'Yesterday', icon: 'fa-money-bill-wave' },
-                { title: 'Downloaded transcript', time: '3 days ago', icon: 'fa-file-pdf' },
-            ];
-            container.innerHTML = activities.map(act => `
-                <div class="activity-item-mini">
-                    <div class="activity-icon-mini"><i class="fas ${act.icon}"></i></div>
-                    <div class="activity-detail-mini">
-                        <div class="activity-title-mini">${act.title}</div>
-                        <div class="activity-time-mini">${act.time}</div>
-                    </div>
-                </div>
-            `).join('');
+            const studentId = studentData?.profile?.id;
+
+            container.innerHTML = '<div class="activity-placeholder"><i class="fas fa-spinner fa-spin"></i> Loading activities...</div>';
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=get_activities&id=${studentId}`);
+                const data = await response.json();
+
+                if (data.activities && data.activities.length > 0) {
+                    container.innerHTML = data.activities.map(act => `
+                        <div class="activity-item-mini">
+                            <div class="activity-icon-mini"><i class="fas ${act.icon || 'fa-circle'}"></i></div>
+                            <div class="activity-detail-mini">
+                                <div class="activity-title-mini">${act.title}</div>
+                                <div class="activity-time-mini">${act.time}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="activity-placeholder"><i class="fas fa-inbox"></i> No recent activities found.</div>';
+                }
+            } catch (error) {
+                console.error('Error loading activities:', error);
+                container.innerHTML = '<div class="activity-placeholder"><i class="fas fa-inbox"></i> No recent activities available.</div>';
+            }
         }
         
         function viewAllActivities() {
@@ -3117,8 +3100,9 @@
         function updateAchievements() {
             const stats = calculateEnhancedStats();
             const grid = document.getElementById('achievementGrid');
+            const enrollmentYear = studentData?.profile?.enrollmentYear || studentData?.profile?.yearAdmitted || '---';
             const achievements = [
-                { icon: 'fa-check-circle', text: `Enrolled ${new Date().getFullYear()}` },
+                { icon: 'fa-check-circle', text: `Enrolled ${enrollmentYear}` },
                 { icon: 'fa-book', text: `Completed ${stats?.totalCredits || 0} Credits` },
                 { icon: 'fa-chart-line', text: `CGPA: ${stats?.cgpa || '--'}` },
                 { icon: 'fa-trophy', text: stats?.standing || 'Academic Standing' }
@@ -3131,7 +3115,34 @@
             `).join('');
         }
         
-      // Single initialization - runs once when page loads
+      function loadProfile() {
+            if (!studentData?.profile) return;
+
+            // Update sidebar
+            const sidebarName = document.getElementById('sidebarName');
+            const sidebarDetails = document.getElementById('sidebarDetails');
+            if (sidebarName) sidebarName.innerText = studentData.profile.name || 'Student';
+            if (sidebarDetails) sidebarDetails.innerText = `Level ${studentData.profile.level || '100'}`;
+
+            // Update header
+            const studentNameHeader = document.getElementById('studentNameHeader');
+            if (studentNameHeader) studentNameHeader.innerText = studentData.profile.name || '';
+
+            // Load all profile sub-sections
+            updateDetailedProfile();
+            updateWelcomeMessage();
+            updateCurrentDate();
+            updateQuickStats();
+            loadRecentActivities();
+            updateAchievements();
+
+            // Load photo
+            if (studentData.profile.id) {
+                setProfilePhoto(studentData.profile.id);
+            }
+        }
+
+        // Single initialization - runs once when page loads
         window.onload = function() {
             // Check if user is logged in
             const storedData = localStorage.getItem('userData');
@@ -3363,28 +3374,41 @@
             });
         }
         
-        function viewRegisteredCourses() {
+        async function viewRegisteredCourses() {
             const container = document.getElementById('registrationStatus');
-            container.innerHTML = `
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                    <p><strong>Current Semester Courses:</strong></p>
-                    <div class="course-registration-item">
-                        <span><span class="course-code">COSC 101</span> - Introduction to Computing</span>
-                        <span class="course-credits">3 Credits</span>
-                    </div>
-                    <div class="course-registration-item">
-                        <span><span class="course-code">MATH 101</span> - Algebra</span>
-                        <span class="course-credits">3 Credits</span>
-                    </div>
-                    <div class="course-registration-item">
-                        <span><span class="course-code">ENGL 101</span> - Communication Skills</span>
-                        <span class="course-credits">2 Credits</span>
-                    </div>
-                    <p style="margin-top: 15px; color: #666;"><i class="fas fa-info-circle"></i> Total Credits: 8</p>
-                    <p style="color: #27ae60;"><i class="fas fa-check-circle"></i> Registration is COMPLETE</p>
-                </div>
-            `;
-            showToast("Course registration status loaded", "info");
+            const studentId = studentData?.profile?.id;
+
+            container.innerHTML = '<p style="text-align: center; color: #999;"><i class="fas fa-spinner fa-spin"></i> Loading registered courses...</p>';
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=get_registered_courses&id=${studentId}`);
+                const data = await response.json();
+
+                if (data.courses && data.courses.length > 0) {
+                    let coursesHtml = data.courses.map(c => `
+                        <div class="course-registration-item">
+                            <span><span class="course-code">${c.code}</span> - ${c.name}</span>
+                            <span class="course-credits">${c.credits} Credits</span>
+                        </div>
+                    `).join('');
+
+                    const totalCredits = data.courses.reduce((sum, c) => sum + (parseInt(c.credits) || 0), 0);
+
+                    container.innerHTML = `
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                            <p><strong>Current Semester Courses:</strong></p>
+                            ${coursesHtml}
+                            <p style="margin-top: 15px; color: #666;"><i class="fas fa-info-circle"></i> Total Credits: ${totalCredits}</p>
+                            <p style="color: #27ae60;"><i class="fas fa-check-circle"></i> Registration is COMPLETE</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No registered courses found for this semester.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 20px;">Unable to load course registration data.</p>';
+            }
         }
         
         const originalLoadAcademicResults = loadAcademicResults;
