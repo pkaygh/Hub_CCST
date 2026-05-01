@@ -1233,13 +1233,7 @@
             return;
         }
         
-        // CHECK IF ID IS TAKEN BEFORE REGISTERING
-        if (!isIdAvailable) {
-            errorMsg.innerText = "This Student ID is already taken. Please use a different ID.";
-            errorMsg.style.display = 'block';
-            return;
-        }
-
+        
         registerBtn.disabled = true;
         registerText.style.display = 'none';
         registerSpinner.style.display = 'inline-block';
