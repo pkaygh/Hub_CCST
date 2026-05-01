@@ -797,7 +797,7 @@
 
     <script>
     // Configuration - Your Google Apps Script URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEMFd9kSCUcaNaa8LF3wb0KB_Lfs9ofbYIb036mbD5yHWgpq3HhHiqjA-e8iWhnUlZfA/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzI4kxm5JqonPFl2nl95C1XEZ1ZUNRCPYxFfbE10U6KDJsk8L3EIk0kWRC_wzxtigV/exec";
     let deferredPrompt;
     let currentRole = 'student';
     
@@ -1202,14 +1202,14 @@
         isIdAvailable = false;
     }
 
-    // Handle Registration
+    // Handle Registration - Using JSONP to bypass CORS restrictions
     async function handleRegister(event) {
         event.preventDefault();
-        
+
         const name = document.getElementById('regName').value.trim();
         const id = document.getElementById('regId').value.trim();
-        const program = document.getElementById('regProgram').value;
-        const level = document.getElementById('regLevel').value;
+        const program = document.getElementById('regProgram').value.trim();
+        const level = document.getElementById('regLevel').value.trim();
         const password = document.getElementById('regPassword').value;
         const confirmPassword = document.getElementById('regConfirmPassword').value;
         const errorMsg = document.getElementById('registerError');
@@ -1233,45 +1233,30 @@
             errorMsg.style.display = 'block';
             return;
         }
-        
-        
+
         registerBtn.disabled = true;
         registerText.style.display = 'none';
         registerSpinner.style.display = 'inline-block';
         errorMsg.style.display = 'none';
 
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        // Use JSONP to bypass CORS for registration (same technique as check_id)
+        const callbackName = 'registerCallback_' + Date.now();
 
-        try {
-            if (!navigator.onLine) {
-                errorMsg.innerText = "Registration requires internet connection";
-                errorMsg.style.display = 'block';
-                return;
+        // Set a timeout to handle cases where JSONP fails silently
+        const timeoutId = setTimeout(() => {
+            if (window[callbackName]) {
+                delete window[callbackName];
             }
+            errorMsg.innerText = "Connection timeout. Please check your internet and try again.";
+            errorMsg.style.display = 'block';
+            registerBtn.disabled = false;
+            registerText.style.display = 'inline';
+            registerSpinner.style.display = 'none';
+        }, 20000);
 
-            // Send registration to backend
-            const response = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'register',
-                    name: name,
-                    id: id,
-                    program: program,
-                    level: level,
-                    password: password
-                }),
-                signal: controller.signal
-            });
+        window[callbackName] = function(data) {
             clearTimeout(timeoutId);
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const data = await response.json();
-            
             if (data.success) {
                 alert("Registration successful! Please login with your Student ID and password.");
                 closeRegisterModal();
@@ -1289,20 +1274,34 @@
                     document.getElementById('idAvailabilityMessage').className = 'id-message taken';
                 }
             }
-        } catch (error) {
-            clearTimeout(timeoutId);
-            console.error('Registration error:', error);
-            if (error.name === 'AbortError') {
-                errorMsg.innerText = "Connection timeout. Please check your internet.";
-            } else {
-                errorMsg.innerText = `Registration error: ${error.message}`;
+
+            delete window[callbackName];
+            if (script.parentNode) {
+                document.head.removeChild(script);
             }
-            errorMsg.style.display = 'block';
-        } finally {
             registerBtn.disabled = false;
             registerText.style.display = 'inline';
             registerSpinner.style.display = 'none';
-        }
+        };
+
+        const script = document.createElement('script');
+        script.src = `${SCRIPT_URL}?action=register&name=${encodeURIComponent(name)}&id=${encodeURIComponent(id)}&program=${encodeURIComponent(program)}&level=${encodeURIComponent(level)}&password=${encodeURIComponent(password)}&callback=${callbackName}&t=${Date.now()}`;
+
+        script.onerror = function() {
+            clearTimeout(timeoutId);
+            console.error('Registration JSONP request failed');
+            errorMsg.innerText = "Registration failed. Please check your internet connection and try again.";
+            errorMsg.style.display = 'block';
+            delete window[callbackName];
+            if (script.parentNode) {
+                document.head.removeChild(script);
+            }
+            registerBtn.disabled = false;
+            registerText.style.display = 'inline';
+            registerSpinner.style.display = 'none';
+        };
+
+        document.head.appendChild(script);
     }
 
     // Initialize

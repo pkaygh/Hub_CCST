@@ -1467,22 +1467,6 @@
                 gap: 12px;
             }
         }
-
-        /* Edit Profile Modal Styles */
-        .form-input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 14px;
-            font-family: inherit;
-        }
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(107, 142, 35, 0.2);
-        }
-
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -2035,7 +2019,6 @@
                 <div id="notificationList"><p style="text-align: center; color: #999;">Loading notifications...</p></div>
             </div>
         </div>
-    
 
         <!-- FOOTER -->
         <footer class="footer">
@@ -2061,79 +2044,10 @@
     </div>
 
     <div id="toast" class="toast" style="display: none;"></div>
-    <!-- Edit Profile Modal -->
-<div class="modal-overlay" id="editProfileModal">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h2><i class="fas fa-user-edit"></i> Edit Personal Information</h2>
-            <button class="modal-close" onclick="closeEditProfileModal()">&times;</button>
-        </div>
-
-        <form id="editProfileForm" onsubmit="saveProfileChanges(event)">
-            <div class="form-group">
-                <label><i class="fas fa-tint"></i> Blood Group</label>
-                <select id="editBloodGroup" class="form-input" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
-                    <option value="">Select Blood Group</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label><i class="fas fa-phone"></i> Emergency Contact Name</label>
-                <input type="text" id="editEmergencyContact" class="form-input" placeholder="e.g., John Doe" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
-            </div>
-
-            <div class="form-group">
-                <label><i class="fas fa-phone-alt"></i> Emergency Phone Number</label>
-                <input type="tel" id="editEmergencyPhone" class="form-input" placeholder="e.g., 024XXXXXXX" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
-            </div>
-
-            <div class="form-group">
-                <label><i class="fas fa-user-friends"></i> Guardian/Parent Name</label>
-                <input type="text" id="editGuardianName" class="form-input" placeholder="Guardian's full name" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
-            </div>
-
-            <div class="form-group">
-                <label><i class="fas fa-map-marker-alt"></i> Hometown</label>
-                <input type="text" id="editHometown" class="form-input" placeholder="Your hometown" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
-            </div>
-
-            <div class="form-group">
-                <label><i class="fas fa-flag"></i> Nationality</label>
-                <input type="text" id="editNationality" class="form-input" placeholder="e.g., Ghanaian" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
-            </div>
-
-            <div class="form-group">
-                <label><i class="fas fa-home"></i> Residential Address</label>
-                <textarea id="editAddress" rows="2" placeholder="Your current address" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label><i class="fas fa-allergies"></i> Allergies (if any)</label>
-                <input type="text" id="editAllergies" class="form-input" placeholder="e.g., None, Peanuts, Dust" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;">
-            </div>
-
-            <div class="btn-group" style="margin-top: 20px;">
-                <button type="submit" class="styled-submit-btn" style="background: #27ae60;">
-                    <i class="fas fa-save"></i> Save Changes
-                </button>
-                <button type="button" class="btn-cancel" onclick="closeEditProfileModal()" style="padding: 12px 20px;">Cancel</button>
-            </div>
-
-            <div id="editProfileError" class="error-message" style="margin-top: 15px; display: none;"></div>
-        </form>
-    </div>
-</div>
             
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEMFd9kSCUcaNaa8LF3wb0KB_Lfs9ofbYIb036mbD5yHWgpq3HhHiqjA-e8iWhnUlZfA/exec"
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzI4kxm5JqonPFl2nl95C1XEZ1ZUNRCPYxFfbE10U6KDJsk8L3EIk0kWRC_wzxtigV/exec";
+        let studentData = null;
         let financeData = null;
         let academicData = null;
         let personalData = null;
@@ -2282,14 +2196,8 @@
             const p = studentData.profile;
             
             document.getElementById('profileName').innerText = p.name;
-            // profileProgram and profileId don't exist in HTML — use the badges that do exist
-            const profileBadgeEl = document.getElementById('profileBadge');
-            if (profileBadgeEl) profileBadgeEl.innerText = getFullProgramName(p.program);
-            const levelBadgeEl = document.getElementById('levelBadge');
-            if (levelBadgeEl) levelBadgeEl.innerText = `Level ${p.level}`;
-            const profileIdShortEl = document.getElementById('profileIdShort');
-            if (profileIdShortEl) profileIdShortEl.innerText = p.id ? p.id.split('/').pop() : p.id;
-
+            document.getElementById('profileProgram').innerText = `${getFullProgramName(p.program)} | Level ${p.level}`;
+            document.getElementById('profileId').innerText = `ID: ${p.id}`;
             document.getElementById('sidebarName').innerText = p.name;
             document.getElementById('sidebarDetails').innerText = `Level ${p.level} | ${getFullProgramName(p.program)}`;
             document.getElementById('studentNameHeader').innerText = p.name;
@@ -2297,20 +2205,13 @@
             // Load photo
             setProfilePhoto(p.id);
             
-            // clearanceStatus element doesn't exist — update the finance card instead
-            const clearanceStatusFinance = document.getElementById('clearanceStatusFinance');
-            if (clearanceStatusFinance) {
-                const isCleared = p.isCleared === true || p.isCleared === "TRUE";
-                clearanceStatusFinance.style.display = 'block';
-                if (isCleared) {
-                    clearanceStatusFinance.innerHTML = '<i class="fas fa-check-circle"></i> ✅ FINANCIALLY CLEARED - You can register for courses';
-                    clearanceStatusFinance.style.background = 'rgba(85, 107, 47, 0.1)';
-                    clearanceStatusFinance.style.color = '#2e7d32';
-                } else {
-                    clearanceStatusFinance.innerHTML = '<i class="fas fa-exclamation-circle"></i> ⚠️ NOT CLEARED - Outstanding balance. Please contact the Accountant.';
-                    clearanceStatusFinance.style.background = 'rgba(139, 0, 0, 0.1)';
-                    clearanceStatusFinance.style.color = '#c62828';
-                }
+            const statusBox = document.getElementById('clearanceStatus');
+            if (p.isCleared === true || p.isCleared === "TRUE") {
+                statusBox.innerText = "✅ FINANCIALLY CLEARED";
+                statusBox.className = "status-badge cleared";
+            } else {
+                statusBox.innerText = "❌ NOT CLEARED - See Accountant";
+                statusBox.className = "status-badge not-cleared";
             }
             
             updateWelcomeMessage();
@@ -2386,13 +2287,9 @@
                 container.innerHTML += `<div class="semester-card" data-semester="${sem.semester}"><div class="semester-header"><h4>${sem.semester}</h4><span class="gpa-badge">GPA: ${sem.gpa || (semCredits > 0 ? (semWeightedPoints / semCredits).toFixed(2) : 0)}</span></div><div class="course-grid"><div class="course-header">Course</div><div class="course-header">Points</div><div class="course-header">Grade</div>${courseRows}</div></div>`;
             });
             const cgpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '--';
-            // Use the IDs that actually exist in the HTML
-            const overallCGPAEl = document.getElementById('overallCGPA');
-            if (overallCGPAEl) overallCGPAEl.innerText = cgpa;
-            const totalCreditsEarnedEl = document.getElementById('totalCreditsEarned');
-            if (totalCreditsEarnedEl) totalCreditsEarnedEl.innerText = totalCredits;
-            const cgpaClassEl = document.getElementById('cgpaClassification');
-            if (cgpaClassEl) cgpaClassEl.innerText = cgpa >= 2.0 ? 'Good Standing' : 'Academic Review';
+            document.getElementById('cgpaDisplay').innerText = cgpa;
+            document.getElementById('totalCredits').innerText = totalCredits;
+            document.getElementById('academicStatus').innerText = cgpa >= 2.0 ? 'Good' : 'Review';
         }
 
         function filterResults() {
@@ -2957,106 +2854,7 @@
             }
         }
         
-                function editProfile() {
-            // Load current data into the modal
-            const p = studentData?.profile || {};
-            const personal = personalData || {};
-            
-            document.getElementById('editBloodGroup').value = personal.bloodGroup || p.bloodGroup || '';
-            document.getElementById('editEmergencyContact').value = personal.emergencyContact || p.emergencyContact || '';
-            document.getElementById('editEmergencyPhone').value = personal.emergencyPhone || '';
-            document.getElementById('editGuardianName').value = personal.guardianName || p.guardian || '';
-            document.getElementById('editHometown').value = personal.hometown || p.hometown || '';
-            document.getElementById('editNationality').value = personal.nationality || p.nationality || 'Ghanaian';
-            document.getElementById('editAddress').value = personal.address || p.address || '';
-            document.getElementById('editAllergies').value = personal.allergies || 'None';
-            
-            document.getElementById('editProfileModal').classList.add('show');
-        }
-
-        function closeEditProfileModal() {
-            document.getElementById('editProfileModal').classList.remove('show');
-            document.getElementById('editProfileError').style.display = 'none';
-        }
-
-        async function saveProfileChanges(event) {
-            event.preventDefault();
-            
-            const bloodGroup = document.getElementById('editBloodGroup').value;
-            const emergencyContact = document.getElementById('editEmergencyContact').value;
-            const emergencyPhone = document.getElementById('editEmergencyPhone').value;
-            const guardianName = document.getElementById('editGuardianName').value;
-            const hometown = document.getElementById('editHometown').value;
-            const nationality = document.getElementById('editNationality').value;
-            const address = document.getElementById('editAddress').value;
-            const allergies = document.getElementById('editAllergies').value;
-            
-            const saveBtn = event.target.querySelector('button[type="submit"]');
-            const originalText = saveBtn.innerHTML;
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-            saveBtn.disabled = true;
-            
-            try {
-                const studentId = studentData.profile.id;
-                
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'update_personal_info',
-                        studentId: studentId,
-                        bloodGroup: bloodGroup,
-                        emergencyContact: emergencyContact,
-                        emergencyPhone: emergencyPhone,
-                        guardianName: guardianName,
-                        hometown: hometown,
-                        nationality: nationality,
-                        address: address,
-                        allergies: allergies
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    if (!personalData) personalData = {};
-                    personalData.bloodGroup = bloodGroup;
-                    personalData.emergencyContact = emergencyContact;
-                    personalData.emergencyPhone = emergencyPhone;
-                    personalData.guardianName = guardianName;
-                    personalData.hometown = hometown;
-                    personalData.nationality = nationality;
-                    personalData.address = address;
-                    personalData.allergies = allergies;
-                    
-                    if (studentData.profile) {
-                        studentData.profile.bloodGroup = bloodGroup;
-                        studentData.profile.emergencyContact = emergencyContact;
-                        studentData.profile.guardian = guardianName;
-                        studentData.profile.hometown = hometown;
-                        studentData.profile.nationality = nationality;
-                        studentData.profile.address = address;
-                        localStorage.setItem('userData', JSON.stringify(studentData));
-                    }
-                    
-                    updateDetailedProfile();
-                    loadPersonalInfo();
-                    
-                    showToast('Profile updated successfully!');
-                    closeEditProfileModal();
-                } else {
-                    throw new Error(data.error || 'Update failed');
-                }
-            } catch (error) {
-                console.error('Save error:', error);
-                const errorDiv = document.getElementById('editProfileError');
-                errorDiv.innerText = error.message || 'Failed to save. Please try again.';
-                errorDiv.style.display = 'block';
-            } finally {
-                saveBtn.innerHTML = originalText;
-                saveBtn.disabled = false;
-            }
-        }
+        function editProfile() { showToast('Edit feature coming soon'); }
 
         // Fetch all data from Google Sheets backend
         async function fetchStudentData() {
@@ -3075,56 +2873,65 @@
                 const studentId = studentData.profile.id;
                 console.log("Fetching all data for ID:", studentId);
 
-                // Fetch only endpoints that exist in the backend
-                const [resultsRes, notifRes] = await Promise.all([
+                // Fetch all data in parallel for better performance
+                const [financeRes, academicRes, personalRes, resultsRes, paymentsRes] = await Promise.all([
+                    fetch(`${SCRIPT_URL}?action=get_finance&id=${studentId}`),
+                    fetch(`${SCRIPT_URL}?action=get_academic&id=${studentId}`),
+                    fetch(`${SCRIPT_URL}?action=get_personal&id=${studentId}`),
                     fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`),
-                    fetch(`${SCRIPT_URL}?action=get_notifications&id=${studentId}&program=${studentData.profile.program}&level=${studentData.profile.level}`)
+                    fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`)
                 ]);
 
-                const [resultsData, notifData] = await Promise.all([
+                const [financeDataRes, academicDataRes, personalDataRes, resultsData, paymentsData] = await Promise.all([
+                    financeRes.json(),
+                    academicRes.json(),
+                    personalRes.json(),
                     resultsRes.json(),
-                    notifRes.json()
+                    paymentsRes.json()
                 ]);
 
+                console.log("Finance data:", financeDataRes);
+                console.log("Academic data:", academicDataRes);
+                console.log("Personal data:", personalDataRes);
                 console.log("Results data:", resultsData);
+                console.log("Payments data:", paymentsData);
 
-                // Finance & personal data come directly from the login profile response
-                // (the backend's studentLogin() already returns all these fields)
-                const p = studentData.profile;
-                financeData = {
-                    previousBalance:     parseFloat(p.previousBalance)      || 0,
-                    currentSemesterFees: parseFloat(p.currentSemesterFees)  || parseFloat(p.totalFee) || 0,
-                    amountPaid:          parseFloat(p.amountPaid)            || 0,
-                    arrears:             parseFloat(p.arrears)               || 0,
-                    isCleared:           p.isCleared === true || p.isCleared === "TRUE"
-                };
-                financeData.balance = (financeData.previousBalance + financeData.currentSemesterFees) - financeData.amountPaid;
+                // Store fetched data
+                if (financeDataRes.finance) {
+                    financeData = financeDataRes.finance;
+                    // Update student profile with finance data
+                    Object.assign(studentData.profile, {
+                        previousBalance: financeData.previousBalance || 0,
+                        currentSemesterFees: financeData.currentSemesterFees || 0,
+                        amountPaid: financeData.amountPaid || 0,
+                        balance: financeData.balance || 0,
+                        arrears: financeData.arrears || 0,
+                        isCleared: financeData.isCleared || false
+                    });
+                }
 
-                // Personal data — map from profile fields stored at login
-                personalData = {
-                    address:          p.address          || '--',
-                    email:            p.email            || '--',
-                    phone:            p.phone            || '--',
-                    dob:              p.dob              || '--',
-                    gender:           p.gender           || '--',
-                    guardianName:     p.guardianName     || p.guardian     || '--',
-                    emergencyContact: p.emergencyContact || '--',
-                    emergencyPhone:   p.emergencyPhone   || '',
-                    bloodGroup:       p.bloodGroup       || '--',
-                    nationality:      p.nationality      || 'Ghanaian',
-                    hometown:         p.hometown         || '--',
-                    allergies:        p.allergies        || 'None reported'
-                };
+                if (academicDataRes.academic) {
+                    academicData = academicDataRes.academic;
+                }
 
-                if (resultsData.results && resultsData.results.length > 0) {
-    userResults = resultsData.results;
-} else {
-    console.log("No results found for this student");
-    userResults = [];
-}
+                if (personalDataRes.personal) {
+                    personalData = personalDataRes.personal;
+                }
 
-                // Payments not yet a backend endpoint — initialise empty
-                userPayments = [];
+                if (resultsData.results) {
+                    userResults = resultsData.results;
+                } else {
+                    console.log("No results from server, using sample data");
+                    userResults = [{
+                        semester: "Semester 1 - 2025/2026", gpa: "3.25",
+                        details: [{ code: "COSC 101", name: "Introduction to Computing", credits: 3, ca: 35, exam: 55, grade: "A" },
+                                  { code: "MATH 101", name: "Algebra", credits: 3, ca: 30, exam: 48, grade: "B+" }]
+                    }];
+                }
+
+                if (paymentsData.payments) {
+                    userPayments = paymentsData.payments;
+                }
 
                 // Load all sections with fetched data
                 loadProfile();
@@ -3149,31 +2956,29 @@
 
         // Load personal information from fetched data
         function loadPersonalInfo() {
-            // Use personalData if populated, otherwise fall back directly to profile
-            const src = personalData || studentData?.profile || {};
+            if (!personalData) return;
 
+            // Update personal info card if elements exist
             const infoAddress = document.getElementById('infoAddress');
-            if (infoAddress) infoAddress.innerHTML = src.address || '--';
+            if (infoAddress) infoAddress.innerHTML = personalData.address || '--';
 
             const infoEmergency = document.getElementById('infoEmergency');
-            if (infoEmergency) infoEmergency.innerHTML = src.emergencyPhone
-                ? `${src.emergencyContact} (${src.emergencyPhone})`
-                : (src.emergencyContact || '--');
+            if (infoEmergency) infoEmergency.innerHTML = personalData.emergencyPhone ? `${personalData.emergencyContact} (${personalData.emergencyPhone})` : personalData.emergencyContact || '--';
 
             const infoGuardian = document.getElementById('infoGuardian');
-            if (infoGuardian) infoGuardian.innerHTML = src.guardianName || src.guardian || '--';
+            if (infoGuardian) infoGuardian.innerHTML = personalData.guardianName || '--';
 
             const infoBloodGroup = document.getElementById('infoBloodGroup');
-            if (infoBloodGroup) infoBloodGroup.innerHTML = src.bloodGroup || '--';
+            if (infoBloodGroup) infoBloodGroup.innerHTML = personalData.bloodGroup || '--';
 
             const infoNationality = document.getElementById('infoNationality');
-            if (infoNationality) infoNationality.innerHTML = src.nationality || 'Ghanaian';
+            if (infoNationality) infoNationality.innerHTML = personalData.nationality || '--';
 
             const infoHometown = document.getElementById('infoHometown');
-            if (infoHometown) infoHometown.innerHTML = src.hometown || '--';
+            if (infoHometown) infoHometown.innerHTML = personalData.hometown || '--';
 
             const infoAllergies = document.getElementById('infoAllergies');
-            if (infoAllergies) infoAllergies.innerHTML = src.allergies || 'None reported';
+            if (infoAllergies) infoAllergies.innerHTML = personalData.allergies || 'None reported';
         }
 
         function updateWelcomeMessage() {
@@ -3328,13 +3133,6 @@
         
       // Single initialization - runs once when page loads
         window.onload = function() {
-            const editModal = document.getElementById('editProfileModal');
-            if (editModal) {
-                editModal.addEventListener('click', function(e) {
-                    if (e.target === this) closeEditProfileModal();
-                });
-            }
-
             // Check if user is logged in
             const storedData = localStorage.getItem('userData');
             const storedId = localStorage.getItem('studentId');
