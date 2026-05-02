@@ -1657,30 +1657,39 @@
                 </div>
 
                 <!-- Guardian Information Card -->
-<div class="detail-card">
-    <div class="detail-card-header">
-        <i class="fas fa-users"></i>
-        <h3>Guardian Information</h3>
-    </div>
-    <div class="detail-card-content">
-        <div class="detail-row">
-            <span class="detail-label"><i class="fas fa-user-shield"></i> Guardian Name</span>
-            <span class="detail-value" id="infoGuardian">--</span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label"><i class="fas fa-phone-square"></i> Emergency Contact</span>
-            <span class="detail-value" id="infoEmergency">--</span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label"><i class="fas fa-tint"></i> Blood Group</span>
-            <span class="detail-value" id="infoBloodGroup">--</span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label"><i class="fas fa-heartbeat"></i> Allergies/Medical</span>
-            <span class="detail-value" id="infoAllergies">None reported</span>
-        </div>
-    </div>
-</div>
+                <div class="detail-card">
+                    <div class="detail-card-header">
+                        <i class="fas fa-users"></i>
+                        <h3>Guardian Information</h3>
+                        <button onclick="editProfile()" class="view-all-btn" style="color:#1a472a;"><i class="fas fa-pen"></i> Edit</button>
+                    </div>
+                    <div class="detail-card-content">
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-user-shield"></i> Guardian Name</span>
+                            <span class="detail-value" id="infoGuardian">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-phone-square"></i> Contact Info</span>
+                            <span class="detail-value" id="infoEmergency">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-envelope"></i> Guardian Email</span>
+                            <span class="detail-value" id="infoGuardianEmail">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Guardian Address</span>
+                            <span class="detail-value" id="infoGuardianAddress">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-tint"></i> Blood Group</span>
+                            <span class="detail-value" id="infoBloodGroup">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-heartbeat"></i> Allergies/Medical</span>
+                            <span class="detail-value" id="infoAllergies">None reported</span>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Academic Information Card -->
                 <div class="detail-card">
@@ -1755,24 +1764,29 @@
                 </div>
             </div>
 
-            <!-- Achievement Section -->
-            <div class="achievement-card">
-                <div class="achievement-header">
-                    <i class="fas fa-medal"></i>
-                    <h3>Achievements & Milestones</h3>
+            <!-- Achievements & Milestones Section -->
+            <div class="card" style="background: linear-gradient(135deg, #1a472a, #2d6a3d); border: none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:50px; height:50px; background:rgba(255,255,255,0.2); border-radius:14px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fas fa-trophy" style="font-size:1.5rem; color:#ffd700;"></i>
+                        </div>
+                        <div>
+                            <h3 style="color:white; margin:0;">Achievements & Milestones</h3>
+                            <p style="color:rgba(255,255,255,0.7); margin:4px 0 0 0; font-size:0.85rem;">Track your academic journey</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="achievement-grid" id="achievementGrid">
-                    <div class="achievement-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Enrolled 2025</span>
-                    </div>
-                    <div class="achievement-item">
-                        <i class="fas fa-book"></i>
-                        <span>Completed 12 Courses</span>
-                    </div>
-                    <div class="achievement-item">
-                        <i class="fas fa-chart-line"></i>
-                        <span>CGPA: Computing...</span>
+
+                <div id="achievementsContainer">
+                    <!-- Dynamic achievements loaded here -->
+                </div>
+
+                <!-- Milestones Progress -->
+                <div style="margin-top:25px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.15);">
+                    <h4 style="color:rgba(255,255,255,0.9); margin-bottom:15px;"><i class="fas fa-flag-checkered"></i> Academic Milestones</h4>
+                    <div id="milestonesContainer" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+                        <!-- Dynamic milestones -->
                     </div>
                 </div>
             </div>
@@ -2057,7 +2071,7 @@ function getCurrentAcademicYear() {
     const currentYear = new Date().getFullYear();
     return `${currentYear}/${currentYear + 1}`;
 }
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoy8kGgbQi0YkvFbEQtwu726uOheUXbc67x-UWsMXkyxNPyUANQ0eHl6wzEhpPoYTX/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzM7mOX-Y2TiJ12Cws6LuKB0LAghROxyLyXa1qGk4jzlhTbp-Xd8HFO7bBGk48Lcm_7/exec";
         let studentData = null;
         let financeData = null;
         let academicData = null;
@@ -2576,7 +2590,127 @@ function getCurrentAcademicYear() {
                     .transcript-table th,.transcript-table td{border:1px solid #ddd; padding:6px; text-align:center;}
                     @media print{body{margin:0.3in;} .watermark-layer{opacity:0.12;}}
                 </style>
-                </head><body>${generateTranscriptHTML()}${generateTranscriptBackPage()}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script></body></html>`);
+                </head><body>${generateTranscriptHTML()}${generateTranscriptBackPage()}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script>
+    <!-- EDIT PROFILE MODAL -->
+    <div id="editProfileModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center; padding:20px;">
+        <div style="background:white; border-radius:20px; max-width:700px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="background:linear-gradient(135deg, #1a472a, #2d6a3d); padding:25px; border-radius:20px 20px 0 0; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="color:white; margin:0;"><i class="fas fa-user-edit"></i> Edit Profile</h3>
+                <button onclick="closeEditProfile()" style="background:rgba(255,255,255,0.2); border:none; color:white; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1.2rem;">&times;</button>
+            </div>
+            <div style="padding:25px;">
+                <form id="editProfileForm" onsubmit="saveProfile(event)">
+                    <!-- Personal Information -->
+                    <div style="margin-bottom:25px;">
+                        <h4 style="color:#1a472a; border-bottom:2px solid #6b8e23; padding-bottom:10px; margin-bottom:15px;"><i class="fas fa-user"></i> Personal Information</h4>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Phone Number</label>
+                                <input type="tel" id="editPhone" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Email Address</label>
+                                <input type="email" id="editEmail" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Date of Birth</label>
+                                <input type="date" id="editDob" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Gender</label>
+                                <select id="editGender" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div style="grid-column:1 / -1;">
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Residential Address</label>
+                                <textarea id="editAddress" rows="2" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;"></textarea>
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Nationality</label>
+                                <input type="text" id="editNationality" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Hometown</label>
+                                <input type="text" id="editHometown" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guardian Information -->
+                    <div style="margin-bottom:25px;">
+                        <h4 style="color:#1a472a; border-bottom:2px solid #6b8e23; padding-bottom:10px; margin-bottom:15px;"><i class="fas fa-users"></i> Guardian Information</h4>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Guardian Name</label>
+                                <input type="text" id="editGuardianName" placeholder="Full name of parent/guardian" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Guardian Phone</label>
+                                <input type="tel" id="editGuardianPhone" placeholder="Emergency contact number" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Relationship</label>
+                                <select id="editGuardianRelation" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                                    <option value="">Select Relationship</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Mother">Mother</option>
+                                    <option value="Spouse">Spouse</option>
+                                    <option value="Sibling">Sibling</option>
+                                    <option value="Uncle">Uncle</option>
+                                    <option value="Aunt">Aunt</option>
+                                    <option value="Grandparent">Grandparent</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Guardian Email</label>
+                                <input type="email" id="editGuardianEmail" placeholder="Guardian email address" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div style="grid-column:1 / -1;">
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Guardian Address</label>
+                                <textarea id="editGuardianAddress" rows="2" placeholder="Guardian's residential address" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Information -->
+                    <div style="margin-bottom:25px;">
+                        <h4 style="color:#1a472a; border-bottom:2px solid #6b8e23; padding-bottom:10px; margin-bottom:15px;"><i class="fas fa-heartbeat"></i> Medical Information</h4>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Blood Group</label>
+                                <select id="editBloodGroup" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                                    <option value="">Select Blood Group</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Allergies / Medical Conditions</label>
+                                <input type="text" id="editAllergies" placeholder="Any allergies or conditions" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:15px; justify-content:flex-end; margin-top:20px;">
+                        <button type="button" onclick="closeEditProfile()" style="padding:12px 25px; border:2px solid #ddd; background:white; color:#555; border-radius:10px; cursor:pointer; font-weight:600;">Cancel</button>
+                        <button type="submit" style="padding:12px 30px; background:linear-gradient(135deg, #1a472a, #2d6a3d); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:600; box-shadow:0 4px 15px rgba(26,71,42,0.3);"><i class="fas fa-save"></i> Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body></html>`);
             printWindow.document.close();
         }
         
@@ -2586,7 +2720,127 @@ function getCurrentAcademicYear() {
                 return;
             }
             const printWindow = window.open('', '_blank');
-            printWindow.document.write(`<!DOCTYPE html><html><head><title>Transcript</title><style>body{font-family:'Times New Roman',serif;margin:40px;}</style></head><body>${generateTranscriptHTML()}</body></html>`);
+            printWindow.document.write(`<!DOCTYPE html><html><head><title>Transcript</title><style>body{font-family:'Times New Roman',serif;margin:40px;}</style></head><body>${generateTranscriptHTML()}
+    <!-- EDIT PROFILE MODAL -->
+    <div id="editProfileModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center; padding:20px;">
+        <div style="background:white; border-radius:20px; max-width:700px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="background:linear-gradient(135deg, #1a472a, #2d6a3d); padding:25px; border-radius:20px 20px 0 0; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="color:white; margin:0;"><i class="fas fa-user-edit"></i> Edit Profile</h3>
+                <button onclick="closeEditProfile()" style="background:rgba(255,255,255,0.2); border:none; color:white; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1.2rem;">&times;</button>
+            </div>
+            <div style="padding:25px;">
+                <form id="editProfileForm" onsubmit="saveProfile(event)">
+                    <!-- Personal Information -->
+                    <div style="margin-bottom:25px;">
+                        <h4 style="color:#1a472a; border-bottom:2px solid #6b8e23; padding-bottom:10px; margin-bottom:15px;"><i class="fas fa-user"></i> Personal Information</h4>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Phone Number</label>
+                                <input type="tel" id="editPhone" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Email Address</label>
+                                <input type="email" id="editEmail" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Date of Birth</label>
+                                <input type="date" id="editDob" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Gender</label>
+                                <select id="editGender" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div style="grid-column:1 / -1;">
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Residential Address</label>
+                                <textarea id="editAddress" rows="2" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;"></textarea>
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Nationality</label>
+                                <input type="text" id="editNationality" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Hometown</label>
+                                <input type="text" id="editHometown" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guardian Information -->
+                    <div style="margin-bottom:25px;">
+                        <h4 style="color:#1a472a; border-bottom:2px solid #6b8e23; padding-bottom:10px; margin-bottom:15px;"><i class="fas fa-users"></i> Guardian Information</h4>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Guardian Name</label>
+                                <input type="text" id="editGuardianName" placeholder="Full name of parent/guardian" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Guardian Phone</label>
+                                <input type="tel" id="editGuardianPhone" placeholder="Emergency contact number" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Relationship</label>
+                                <select id="editGuardianRelation" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                                    <option value="">Select Relationship</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Mother">Mother</option>
+                                    <option value="Spouse">Spouse</option>
+                                    <option value="Sibling">Sibling</option>
+                                    <option value="Uncle">Uncle</option>
+                                    <option value="Aunt">Aunt</option>
+                                    <option value="Grandparent">Grandparent</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Guardian Email</label>
+                                <input type="email" id="editGuardianEmail" placeholder="Guardian email address" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div style="grid-column:1 / -1;">
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Guardian Address</label>
+                                <textarea id="editGuardianAddress" rows="2" placeholder="Guardian's residential address" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Information -->
+                    <div style="margin-bottom:25px;">
+                        <h4 style="color:#1a472a; border-bottom:2px solid #6b8e23; padding-bottom:10px; margin-bottom:15px;"><i class="fas fa-heartbeat"></i> Medical Information</h4>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Blood Group</label>
+                                <select id="editBloodGroup" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                                    <option value="">Select Blood Group</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Allergies / Medical Conditions</label>
+                                <input type="text" id="editAllergies" placeholder="Any allergies or conditions" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:15px; justify-content:flex-end; margin-top:20px;">
+                        <button type="button" onclick="closeEditProfile()" style="padding:12px 25px; border:2px solid #ddd; background:white; color:#555; border-radius:10px; cursor:pointer; font-weight:600;">Cancel</button>
+                        <button type="submit" style="padding:12px 30px; background:linear-gradient(135deg, #1a472a, #2d6a3d); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:600; box-shadow:0 4px 15px rgba(26,71,42,0.3);"><i class="fas fa-save"></i> Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body></html>`);
             printWindow.document.close();
             printWindow.print();
         }
@@ -2869,7 +3123,95 @@ function getCurrentAcademicYear() {
             }
         }
         
-        function editProfile() { showToast('Edit feature coming soon'); }
+
+        // ============================================
+        // EDIT PROFILE FUNCTIONS
+        // ============================================
+
+        function editProfile() {
+            const p = studentData?.profile;
+            if (!p) return;
+
+            // Populate form with current data
+            document.getElementById('editPhone').value = p.phone || '';
+            document.getElementById('editEmail').value = p.email || '';
+            document.getElementById('editDob').value = p.dob || '';
+            document.getElementById('editGender').value = p.gender || '';
+            document.getElementById('editAddress').value = p.address || '';
+            document.getElementById('editNationality').value = p.nationality || '';
+            document.getElementById('editHometown').value = p.hometown || '';
+            document.getElementById('editGuardianName').value = p.guardianName || '';
+            document.getElementById('editGuardianPhone').value = p.emergencyPhone || '';
+            document.getElementById('editGuardianRelation').value = p.emergencyContact || '';
+            document.getElementById('editGuardianEmail').value = p.guardianEmail || '';
+            document.getElementById('editGuardianAddress').value = p.guardianAddress || '';
+            document.getElementById('editBloodGroup').value = p.bloodGroup || '';
+            document.getElementById('editAllergies').value = p.allergies || '';
+
+            document.getElementById('editProfileModal').style.display = 'flex';
+        }
+
+        function closeEditProfile() {
+            document.getElementById('editProfileModal').style.display = 'none';
+        }
+
+        async function saveProfile(event) {
+            event.preventDefault();
+
+            const studentId = studentData?.profile?.id;
+            if (!studentId) {
+                showToast('Error: Student ID not found');
+                return;
+            }
+
+            const updateData = {
+                action: 'update_profile',
+                studentId: studentId,
+                phone: document.getElementById('editPhone').value.trim(),
+                email: document.getElementById('editEmail').value.trim(),
+                dob: document.getElementById('editDob').value,
+                gender: document.getElementById('editGender').value,
+                address: document.getElementById('editAddress').value.trim(),
+                nationality: document.getElementById('editNationality').value.trim(),
+                hometown: document.getElementById('editHometown').value.trim(),
+                guardianName: document.getElementById('editGuardianName').value.trim(),
+                emergencyPhone: document.getElementById('editGuardianPhone').value.trim(),
+                emergencyContact: document.getElementById('editGuardianRelation').value,
+                guardianEmail: document.getElementById('editGuardianEmail').value.trim(),
+                guardianAddress: document.getElementById('editGuardianAddress').value.trim(),
+                bloodGroup: document.getElementById('editBloodGroup').value,
+                allergies: document.getElementById('editAllergies').value.trim()
+            };
+
+            showToast('Saving profile...');
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Update local data
+                    studentData.profile = { ...studentData.profile, ...updateData };
+                    localStorage.setItem('userData', JSON.stringify(studentData));
+
+                    // Refresh UI
+                    loadProfile();
+                    closeEditProfile();
+                    showToast('Profile updated successfully!');
+                } else {
+                    showToast('Error: ' + (result.error || 'Failed to update'));
+                }
+            } catch (error) {
+                console.error('Save profile error:', error);
+                showToast('Network error. Please try again.');
+            }
+        }
+
 
         // Fetch all data from Google Sheets backend
         async function fetchStudentData() {
@@ -2888,21 +3230,23 @@ function getCurrentAcademicYear() {
         
         showToast("Loading your data...", "info");
 
-        // Fetch all data in parallel
-        const [personalRes, academicRes, financeRes, resultsRes, paymentsRes] = await Promise.all([
+        // Fetch all data in parallel (guardian info is optional - won't break if backend doesn't have it yet)
+        const [personalRes, academicRes, financeRes, resultsRes, paymentsRes, guardianRes] = await Promise.all([
             fetch(`${SCRIPT_URL}?action=get_personal_info&id=${studentId}`),
             fetch(`${SCRIPT_URL}?action=get_academic_info&id=${studentId}`),
             fetch(`${SCRIPT_URL}?action=get_finance_info&id=${studentId}`),
             fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`),
-            fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`)
+            fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`),
+            fetch(`${SCRIPT_URL}?action=get_guardian_info&id=${studentId}`).catch(() => ({ json: async () => ({}) }))
         ]);
 
-        const [personalDataRes, academicDataRes, financeDataRes, resultsData, paymentsData] = await Promise.all([
+        const [personalDataRes, academicDataRes, financeDataRes, resultsData, paymentsData, guardianData] = await Promise.all([
             personalRes.json(),
             academicRes.json(),
             financeRes.json(),
             resultsRes.json(),
-            paymentsRes.json()
+            paymentsRes.json(),
+            guardianRes.json()
         ]);
 
         console.log("Personal data:", personalDataRes);
@@ -2922,7 +3266,8 @@ function getCurrentAcademicYear() {
                 ...studentData.profile,
                 ...personalDataRes,
                 ...academicDataRes,
-                ...financeDataRes
+                ...financeDataRes,
+                ...guardianData
             };
         }
         
@@ -3097,49 +3442,142 @@ function getCurrentAcademicYear() {
             showToast('Full activity log coming soon!', 'info');
         }
         
-        function updateAchievements() {
+        async function updateAchievements() {
+            const container = document.getElementById('achievementsContainer');
+            const milestonesContainer = document.getElementById('milestonesContainer');
+            const studentId = studentData?.profile?.id;
             const stats = calculateEnhancedStats();
-            const grid = document.getElementById('achievementGrid');
-            const enrollmentYear = studentData?.profile?.enrollmentYear || studentData?.profile?.yearAdmitted || '---';
-            const achievements = [
-                { icon: 'fa-check-circle', text: `Enrolled ${enrollmentYear}` },
-                { icon: 'fa-book', text: `Completed ${stats?.totalCredits || 0} Credits` },
-                { icon: 'fa-chart-line', text: `CGPA: ${stats?.cgpa || '--'}` },
-                { icon: 'fa-trophy', text: stats?.standing || 'Academic Standing' }
-            ];
-            grid.innerHTML = achievements.map(ach => `
-                <div class="achievement-item">
-                    <i class="fas ${ach.icon}"></i>
-                    <span>${ach.text}</span>
+            const p = studentData?.profile;
+
+            // Build achievements based on real data
+            const achievements = [];
+
+            // Enrollment achievement
+            const enrollmentYear = p?.enrollmentYear || p?.yearAdmitted || new Date().getFullYear();
+            achievements.push({
+                icon: 'fa-calendar-check',
+                color: '#4caf50',
+                title: 'Enrolled',
+                value: enrollmentYear,
+                desc: 'Started academic journey'
+            });
+
+            // Credits achievement
+            const totalCredits = stats?.totalCredits || 0;
+            if (totalCredits > 0) {
+                achievements.push({
+                    icon: 'fa-book-open',
+                    color: '#2196f3',
+                    title: 'Credits Earned',
+                    value: totalCredits,
+                    desc: 'Total credit hours completed'
+                });
+            }
+
+            // CGPA achievement
+            if (stats?.cgpa && stats.cgpa !== '--') {
+                const cgpaNum = parseFloat(stats.cgpa);
+                let cgpaColor = '#ff9800';
+                let cgpaLabel = 'Pass';
+                if (cgpaNum >= 3.6) { cgpaColor = '#4caf50'; cgpaLabel = 'First Class'; }
+                else if (cgpaNum >= 3.0) { cgpaColor = '#8bc34a'; cgpaLabel = '2nd Upper'; }
+                else if (cgpaNum >= 2.5) { cgpaColor = '#ffc107'; cgpaLabel = '2nd Lower'; }
+
+                achievements.push({
+                    icon: 'fa-graduation-cap',
+                    color: cgpaColor,
+                    title: 'CGPA',
+                    value: stats.cgpa,
+                    desc: cgpaLabel
+                });
+            }
+
+            // Level achievement
+            const currentLevel = p?.level || '100';
+            achievements.push({
+                icon: 'fa-layer-group',
+                color: '#9c27b0',
+                title: 'Current Level',
+                value: `Level ${currentLevel}`,
+                desc: 'Academic progression'
+            });
+
+            // Financial clearance
+            const isCleared = p?.isCleared === true || p?.isCleared === "TRUE";
+            achievements.push({
+                icon: isCleared ? 'fa-check-circle' : 'fa-clock',
+                color: isCleared ? '#4caf50' : '#ff9800',
+                title: 'Financial Status',
+                value: isCleared ? 'Cleared' : 'Pending',
+                desc: isCleared ? 'All fees paid' : 'Outstanding balance'
+            });
+
+            // Render achievements
+            container.innerHTML = achievements.map(ach => `
+                <div style="display:flex; align-items:center; gap:15px; padding:15px; background:rgba(255,255,255,0.1); border-radius:12px; margin-bottom:10px; backdrop-filter:blur(10px);">
+                    <div style="width:45px; height:45px; background:${ach.color}; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i class="fas ${ach.icon}" style="color:white; font-size:1.1rem;"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:rgba(255,255,255,0.7); font-size:0.8rem;">${ach.title}</span>
+                            <span style="color:white; font-weight:bold; font-size:1.1rem;">${ach.value}</span>
+                        </div>
+                        <p style="color:rgba(255,255,255,0.5); font-size:0.75rem; margin:4px 0 0 0;">${ach.desc}</p>
+                    </div>
                 </div>
             `).join('');
-        }
-        
-      function loadProfile() {
-            if (!studentData?.profile) return;
 
-            // Update sidebar
-            const sidebarName = document.getElementById('sidebarName');
-            const sidebarDetails = document.getElementById('sidebarDetails');
-            if (sidebarName) sidebarName.innerText = studentData.profile.name || 'Student';
-            if (sidebarDetails) sidebarDetails.innerText = `Level ${studentData.profile.level || '100'}`;
+            // Build milestones
+            const milestones = [];
+            const levels = ['100', '200', '300', '400'];
+            const currentLevelNum = parseInt(currentLevel) || 100;
 
-            // Update header
-            const studentNameHeader = document.getElementById('studentNameHeader');
-            if (studentNameHeader) studentNameHeader.innerText = studentData.profile.name || '';
+            levels.forEach((lvl, idx) => {
+                const lvlNum = parseInt(lvl);
+                let status = 'upcoming';
+                let icon = 'fa-lock';
+                let color = 'rgba(255,255,255,0.3)';
 
-            // Load all profile sub-sections
-            updateDetailedProfile();
-            updateWelcomeMessage();
-            updateCurrentDate();
-            updateQuickStats();
-            loadRecentActivities();
-            updateAchievements();
+                if (lvlNum < currentLevelNum) {
+                    status = 'completed';
+                    icon = 'fa-check';
+                    color = '#4caf50';
+                } else if (lvlNum === currentLevelNum) {
+                    status = 'current';
+                    icon = 'fa-user-graduate';
+                    color = '#ffd700';
+                }
 
-            // Load photo
-            if (studentData.profile.id) {
-                setProfilePhoto(studentData.profile.id);
-            }
+                milestones.push({
+                    level: lvl,
+                    status: status,
+                    icon: icon,
+                    color: color,
+                    label: status === 'completed' ? 'Completed' : (status === 'current' ? 'In Progress' : 'Upcoming')
+                });
+            });
+
+            // Add graduation milestone
+            const allCompleted = currentLevelNum > 400;
+            milestones.push({
+                level: 'Grad',
+                status: allCompleted ? 'completed' : 'upcoming',
+                icon: allCompleted ? 'fa-certificate' : 'fa-graduation-cap',
+                color: allCompleted ? '#4caf50' : 'rgba(255,255,255,0.3)',
+                label: allCompleted ? 'Graduated' : 'Graduation'
+            });
+
+            // Render milestones
+            milestonesContainer.innerHTML = milestones.map(ms => `
+                <div style="text-align:center; padding:15px; background:rgba(255,255,255,0.08); border-radius:12px; border:2px solid ${ms.color};">
+                    <div style="width:40px; height:40px; background:${ms.color}; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 8px;">
+                        <i class="fas ${ms.icon}" style="color:white; font-size:0.9rem;"></i>
+                    </div>
+                    <div style="color:white; font-weight:bold; font-size:0.9rem;">Level ${ms.level}</div>
+                    <div style="color:rgba(255,255,255,0.6); font-size:0.7rem; margin-top:4px;">${ms.label}</div>
+                </div>
+            `).join('');
         }
 
         // Single initialization - runs once when page loads
@@ -3484,5 +3922,125 @@ function getCurrentAcademicYear() {
             });
         });
         </script>
+
+    <!-- EDIT PROFILE MODAL -->
+    <div id="editProfileModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center; padding:20px;">
+        <div style="background:white; border-radius:20px; max-width:700px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="background:linear-gradient(135deg, #1a472a, #2d6a3d); padding:25px; border-radius:20px 20px 0 0; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="color:white; margin:0;"><i class="fas fa-user-edit"></i> Edit Profile</h3>
+                <button onclick="closeEditProfile()" style="background:rgba(255,255,255,0.2); border:none; color:white; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1.2rem;">&times;</button>
+            </div>
+            <div style="padding:25px;">
+                <form id="editProfileForm" onsubmit="saveProfile(event)">
+                    <!-- Personal Information -->
+                    <div style="margin-bottom:25px;">
+                        <h4 style="color:#1a472a; border-bottom:2px solid #6b8e23; padding-bottom:10px; margin-bottom:15px;"><i class="fas fa-user"></i> Personal Information</h4>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Phone Number</label>
+                                <input type="tel" id="editPhone" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Email Address</label>
+                                <input type="email" id="editEmail" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Date of Birth</label>
+                                <input type="date" id="editDob" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Gender</label>
+                                <select id="editGender" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div style="grid-column:1 / -1;">
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Residential Address</label>
+                                <textarea id="editAddress" rows="2" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;"></textarea>
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Nationality</label>
+                                <input type="text" id="editNationality" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Hometown</label>
+                                <input type="text" id="editHometown" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guardian Information -->
+                    <div style="margin-bottom:25px;">
+                        <h4 style="color:#1a472a; border-bottom:2px solid #6b8e23; padding-bottom:10px; margin-bottom:15px;"><i class="fas fa-users"></i> Guardian Information</h4>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Guardian Name</label>
+                                <input type="text" id="editGuardianName" placeholder="Full name of parent/guardian" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Guardian Phone</label>
+                                <input type="tel" id="editGuardianPhone" placeholder="Emergency contact number" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Relationship</label>
+                                <select id="editGuardianRelation" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                                    <option value="">Select Relationship</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Mother">Mother</option>
+                                    <option value="Spouse">Spouse</option>
+                                    <option value="Sibling">Sibling</option>
+                                    <option value="Uncle">Uncle</option>
+                                    <option value="Aunt">Aunt</option>
+                                    <option value="Grandparent">Grandparent</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Guardian Email</label>
+                                <input type="email" id="editGuardianEmail" placeholder="Guardian email address" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                            <div style="grid-column:1 / -1;">
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Guardian Address</label>
+                                <textarea id="editGuardianAddress" rows="2" placeholder="Guardian's residential address" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Information -->
+                    <div style="margin-bottom:25px;">
+                        <h4 style="color:#1a472a; border-bottom:2px solid #6b8e23; padding-bottom:10px; margin-bottom:15px;"><i class="fas fa-heartbeat"></i> Medical Information</h4>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Blood Group</label>
+                                <select id="editBloodGroup" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                                    <option value="">Select Blood Group</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:5px; color:#555;">Allergies / Medical Conditions</label>
+                                <input type="text" id="editAllergies" placeholder="Any allergies or conditions" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:15px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:15px; justify-content:flex-end; margin-top:20px;">
+                        <button type="button" onclick="closeEditProfile()" style="padding:12px 25px; border:2px solid #ddd; background:white; color:#555; border-radius:10px; cursor:pointer; font-weight:600;">Cancel</button>
+                        <button type="submit" style="padding:12px 30px; background:linear-gradient(135deg, #1a472a, #2d6a3d); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:600; box-shadow:0 4px 15px rgba(26,71,42,0.3);"><i class="fas fa-save"></i> Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
