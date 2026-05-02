@@ -2,13 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#1a472a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CCST Student">
-    <title>System Administrator Dashboard | CCST</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accountant Portal | CCST</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
             --primary: #6b8e23;
@@ -292,8 +288,38 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
-        .menu-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1001; background: var(--primary); color: white; border: none; padding: 10px 12px; border-radius: 8px; cursor: pointer; }
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        .menu-toggle { 
+            display: none; 
+            position: fixed; 
+            top: 15px; 
+            left: 15px; 
+            z-index: 1002; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 12px 14px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+        .menu-toggle:hover { 
+            background: var(--primary-dark); 
+        }
+        .menu-toggle:active {
+            transform: scale(0.95);
+        }
+        .sidebar-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            z-index: 999; 
+        }
         .sidebar-overlay.show { display: block; }
 
         .clearance-checkbox { display: flex; align-items: center; gap: 10px; }
@@ -322,13 +348,36 @@
         .notification-date { font-size: 0.75rem; color: #999; }
 
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
+            .sidebar { 
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+                z-index: 1000;
+                width: 280px;
+            }
             .sidebar.open { transform: translateX(0); }
-            .main-content { margin-left: 0; padding: 15px; }
-            .menu-toggle { display: block; }
+            .main-content { margin-left: 0; padding: 15px; min-width: 100%; }
+            .menu-toggle { 
+                display: block; 
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                z-index: 1002;
+            }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .sidebar-overlay.show { display: block; }
+            body { flex-direction: column; }
         }
 
-        /* Footer */
+        /* Footer - Full width positioning */
         .footer {
             text-align: center;
             padding: 25px;
@@ -337,6 +386,10 @@
             background: linear-gradient(135deg, #f8f9fa, #ffffff);
             border-top: 1px solid rgba(107, 142, 35, 0.2);
             margin-top: 30px;
+            width: 100%;
+            position: relative;
+            left: 0;
+            right: 0;
         }
 
         .footer a {
@@ -404,7 +457,6 @@
         }
 
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
@@ -619,6 +671,7 @@
 </div>
 
 <!-- FOOTER -->
+
 <footer class="footer">
     <div class="footer-links">
         <a href="#" onclick="showSection('search'); return false;"><i class="fas fa-search"></i> Search</a>
@@ -639,8 +692,8 @@
         <p><i class="fas fa-map-marker-alt"></i> Agona Swedru, Ghana | <i class="fas fa-phone"></i> +233 20 445 8182 | <i class="fas fa-envelope"></i> info@ccst.edu.gh</p>
     </div>
 </footer>
-</div>
 
+</div>
 
 <div id="toast" class="toast"></div>
 
@@ -661,7 +714,12 @@ let currentSelectedApplication = null;
 // ============================================
 // UTILITY FUNCTIONS
 // ============================================
-function toggleSidebar() { document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('show'); }
+function toggleSidebar() { 
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    sidebar.classList.toggle('open'); 
+    overlay.classList.toggle('show'); 
+}
 function showToast(msg, type = "info") { const toast = document.getElementById('toast'); toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i> ${msg}`; toast.style.background = type === 'success' ? '#27ae60' : type === 'danger' ? '#e74c3c' : '#3498db'; toast.style.display = 'block'; setTimeout(() => toast.style.display = 'none', 3000); }
 
 function getFullProgramName(code) { const names = { 'RM': 'Registered Midwifery', 'RN': 'Registered General Nursing', 'ML': 'Medical Laboratory Technology' }; return names[code] || code; }
@@ -686,7 +744,15 @@ function updateMenuVisibility() { const menuItems = { search: 'searchMenuItem', 
 // SHOW SECTION
 // ============================================
 function showSection(section) {
-    if (window.innerWidth <= 768) toggleSidebar();
+    // Close sidebar on mobile when navigating
+    if (window.innerWidth <= 768) {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        }
+    }
     const sections = ['search', 'csv_upload', 'bulk_upload', 'courses', 'clearance', 'transcript', 'transcript_requests', 'notifications', 'reports', 'admissions'];
     sections.forEach(s => { const sec = document.getElementById(s + 'Section'); if (sec) sec.style.display = 'none'; });
     const selected = document.getElementById(section + 'Section'); if (selected) selected.style.display = 'block'; else { showToast("Section not found", "danger"); return; }
