@@ -2220,7 +2220,17 @@ function getCurrentAcademicYear() {
     const p = studentData?.profile;
     if (!p) return;
     
-    console.log("Loading personal info for:", p.name);
+    console.log("Loading personal info for:", p.name, p);
+    
+    // Sidebar and header info
+    setElementText('sidebarName', p.name || 'Student');
+    setElementText('sidebarDetails', `Level ${p.level || '100'} | ${getFullProgramName(p.program)}`);
+    setElementText('studentNameHeader', p.name || 'Student');
+    setElementText('profileName', p.name || 'Student');
+    setElementText('welcomeName', p.name ? p.name.split(' ')[0] : 'Student');
+    setElementText('profileIdShort', p.id ? p.id.split('/').pop() : p.id);
+    setElementText('profileBadge', getFullProgramName(p.program));
+    setElementText('levelBadge', `Level ${p.level || '100'}`);
     
     // Personal Information
     setElementText('infoId', p.id || '--');
@@ -2232,10 +2242,13 @@ function getCurrentAcademicYear() {
     setElementText('infoNationality', p.nationality || 'Ghanaian');
     setElementText('infoHometown', p.hometown || 'Not provided');
     
-    // Guardian Information
+    // Guardian Information (from the guardian sheet)
     setElementText('infoGuardian', p.guardianName || 'Not provided');
     setElementText('infoEmergency', p.emergencyPhone ? `${p.emergencyContact || 'Contact'} (${p.emergencyPhone})` : (p.emergencyContact || 'Not provided'));
+    setElementText('infoGuardianEmail', p.guardianEmail || 'Not provided');
+    setElementText('infoGuardianAddress', p.guardianAddress || 'Not provided');
     setElementText('infoBloodGroup', p.bloodGroup || 'Not specified');
+    setElementText('infoAllergies', p.allergies || 'None reported');
     
     // Academic Information
     const programFull = getFullProgramName(p.program);
@@ -2283,6 +2296,8 @@ function getCurrentAcademicYear() {
             clearanceElement.innerHTML = '<span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Not Cleared</span>';
         }
     }
+    
+    console.log("Personal info loaded successfully");
 }
         
         // Photo functions - moved outside loadProfile
@@ -3228,9 +3243,9 @@ function getCurrentAcademicYear() {
         const studentId = studentData.profile.id;
         console.log("Fetching all data for ID:", studentId);
         
-        showToast("Loading your data...", "info");
+        showToast("Loading your data...");
 
-        // Fetch all data in parallel (guardian info is optional - won't break if backend doesn't have it yet)
+        // Fetch all data in parallel
         const [personalRes, academicRes, financeRes, resultsRes, paymentsRes, guardianRes] = await Promise.all([
             fetch(`${SCRIPT_URL}?action=get_personal_info&id=${studentId}`),
             fetch(`${SCRIPT_URL}?action=get_academic_info&id=${studentId}`),
@@ -3246,12 +3261,13 @@ function getCurrentAcademicYear() {
             financeRes.json(),
             resultsRes.json(),
             paymentsRes.json(),
-            guardianRes.json()
+            guardianRes.json().catch(() => ({}))
         ]);
 
         console.log("Personal data:", personalDataRes);
         console.log("Academic data:", academicDataRes);
         console.log("Finance data:", financeDataRes);
+        console.log("Guardian data:", guardianData);
         console.log("Results data:", resultsData);
         console.log("Payments data:", paymentsData);
 
@@ -3261,53 +3277,69 @@ function getCurrentAcademicYear() {
         financeData = financeDataRes;
         
         // Update student profile with fetched data
-        if (personalDataRes) {
-            studentData.profile = {
-                ...studentData.profile,
-                ...personalDataRes,
-                ...academicDataRes,
-                ...financeDataRes,
-                ...guardianData
-            };
-        }
-        
-        if (financeDataRes) {
-            studentData.profile.totalFee = financeDataRes.totalFee || 0;
-            studentData.profile.amountPaid = financeDataRes.amountPaid || 0;
-            studentData.profile.balance = financeDataRes.balance || 0;
-            studentData.profile.previousBalance = financeDataRes.previousBalance || 0;
-            studentData.profile.currentSemesterFees = financeDataRes.currentSemesterFees || 0;
-            studentData.profile.isCleared = financeDataRes.isCleared || false;
-        }
+        studentData.profile = {
+            ...studentData.profile,
+            // Personal info (from Sheet1 columns 11-21)
+            email: personalDataRes.email || studentData.profile.email,
+            phone: personalDataRes.phone || studentData.profile.phone,
+            dob: personalDataRes.dob || studentData.profile.dob,
+            gender: personalDataRes.gender || studentData.profile.gender,
+            address: personalDataRes.address || studentData.profile.address,
+            bloodGroup: personalDataRes.bloodGroup || studentData.profile.bloodGroup,
+            emergencyContact: personalDataRes.emergencyContact || studentData.profile.emergencyContact,
+            emergencyPhone: personalDataRes.emergencyPhone || studentData.profile.emergencyPhone,
+            guardianName: personalDataRes.guardianName || studentData.profile.guardianName,
+            hometown: personalDataRes.hometown || studentData.profile.hometown,
+            nationality: personalDataRes.nationality || studentData.profile.nationality,
+            // Academic info
+            program: academicDataRes.program || studentData.profile.program,
+            level: academicDataRes.level || studentData.profile.level,
+            isCleared: academicDataRes.isCleared || studentData.profile.isCleared || false,
+            // Guardian info (from GuardianInfo sheet)
+            guardianEmail: guardianData.guardianEmail || '',
+            guardianAddress: guardianData.guardianAddress || '',
+            allergies: guardianData.allergies || '',
+            // Finance info
+            totalFee: financeDataRes.totalFee || 0,
+            amountPaid: financeDataRes.amountPaid || 0,
+            balance: financeDataRes.balance || 0,
+            previousBalance: financeDataRes.previousBalance || 0,
+            currentSemesterFees: financeDataRes.currentSemesterFees || 0
+        };
 
         userResults = resultsData.results || [];
-
         userPayments = paymentsData.payments || [];
 
-        // Load all sections with fetched data
+        // Load all sections - ONLY call loadPersonalInfo (not loadProfile)
         loadPersonalInfo();
-        loadProfile();
         loadAcademicResults();
         loadFinance();
         loadNotifications();
         
+        // Update sidebar and profile picture
+        if (studentData.profile.id) {
+            setProfilePhoto(studentData.profile.id);
+        }
+        
+        // Update welcome message and date
+        updateWelcomeMessage();
+        updateCurrentDate();
+        
         // Save updated student data
         localStorage.setItem('userData', JSON.stringify(studentData));
         
-        showToast("Dashboard loaded successfully!", "success");
+        showToast("Dashboard loaded successfully!");
 
     } catch(e) {
         console.error('Error in fetchStudentData:', e);
-        showToast("Error loading data. Using cached data.", "error");
-        
+        showToast("Error loading data. Using cached data.");
         
         // Load only cached profile data
         if (studentData) {
-            loadProfile();
+            loadPersonalInfo();
         }
     }
 }
-
         function updateWelcomeMessage() {
             const welcomeName = document.getElementById('welcomeName');
             const welcomeQuote = document.getElementById('welcomeQuote');
