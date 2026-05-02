@@ -3285,6 +3285,7 @@ function getCurrentAcademicYear() {
         userPayments = paymentsData.payments || [];
 
         // Load all sections with fetched data
+        loadPersonalInfo();
         loadProfile();
         loadAcademicResults();
         loadFinance();
