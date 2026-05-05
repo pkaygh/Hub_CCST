@@ -2071,6 +2071,22 @@ function getCurrentAcademicYear() {
     const currentYear = new Date().getFullYear();
     return `${currentYear}/${currentYear + 1}`;
 }
+
+// Format Date For Display
+function formatDateForDisplay(dateValue) {
+    if (!dateValue) return '--';
+    let dateStr = dateValue.toString();
+    // Remove time component if present (handles ISO format like 2025-03-15T00:00:00.000Z)
+    if (dateStr.includes('T')) {
+        dateStr = dateStr.split('T')[0];
+    }
+    // If it's just the date in YYYY-MM-DD format, format it nicely
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = dateStr.split('-');
+        return `${day}/${month}/${year}`;
+    }
+    return dateStr;
+}
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby0qk0Sa10509rjHqEB6fDkmIcLhTuFiUEPLKBdpzO7En3xm9BiEnmjfUhsTg2u1c8/exec";
         let studentData = null;
         let financeData = null;
@@ -2236,7 +2252,7 @@ function getCurrentAcademicYear() {
     setElementText('infoId', p.id || '--');
     setElementText('infoEmail', p.email || 'student@ccst.edu.gh');
     setElementText('infoPhone', p.phone || 'Not provided');
-    setElementText('infoDob', p.dob || 'Not provided');
+    setElementText('infoDob', formatDateForDisplay(p.dob));
     setElementText('infoGender', p.gender || 'Not provided');
     setElementText('infoAddress', p.address || 'Not provided');
     setElementText('infoNationality', p.nationality || 'Ghanaian');
@@ -3171,61 +3187,72 @@ function getCurrentAcademicYear() {
         }
 
         async function saveProfile(event) {
-            event.preventDefault();
+    event.preventDefault();
 
-            const studentId = studentData?.profile?.id;
-            if (!studentId) {
-                showToast('Error: Student ID not found');
-                return;
-            }
+    const studentId = studentData?.profile?.id;
+    if (!studentId) {
+        showToast('Error: Student ID not found');
+        return;
+    }
 
-            const updateData = {
-                action: 'update_profile',
-                studentId: studentId,
-                phone: document.getElementById('editPhone').value.trim(),
-                email: document.getElementById('editEmail').value.trim(),
-                dob: document.getElementById('editDob').value,
-                gender: document.getElementById('editGender').value,
-                address: document.getElementById('editAddress').value.trim(),
-                nationality: document.getElementById('editNationality').value.trim(),
-                hometown: document.getElementById('editHometown').value.trim(),
-                guardianName: document.getElementById('editGuardianName').value.trim(),
-                emergencyPhone: document.getElementById('editGuardianPhone').value.trim(),
-                emergencyContact: document.getElementById('editGuardianRelation').value,
-                guardianEmail: document.getElementById('editGuardianEmail').value.trim(),
-                guardianAddress: document.getElementById('editGuardianAddress').value.trim(),
-                bloodGroup: document.getElementById('editBloodGroup').value,
-                allergies: document.getElementById('editAllergies').value.trim()
+    const updateData = {
+        action: 'update_profile',
+        studentId: studentId,
+        phone: document.getElementById('editPhone').value.trim(),
+        email: document.getElementById('editEmail').value.trim(),
+        dob: document.getElementById('editDob').value,
+        gender: document.getElementById('editGender').value,
+        address: document.getElementById('editAddress').value.trim(),
+        nationality: document.getElementById('editNationality').value.trim(),
+        hometown: document.getElementById('editHometown').value.trim(),
+        guardianName: document.getElementById('editGuardianName').value.trim(),
+        emergencyPhone: document.getElementById('editGuardianPhone').value.trim(),
+        emergencyContact: document.getElementById('editGuardianRelation').value,
+        guardianEmail: document.getElementById('editGuardianEmail').value.trim(),
+        guardianAddress: document.getElementById('editGuardianAddress').value.trim(),
+        bloodGroup: document.getElementById('editBloodGroup').value,
+        allergies: document.getElementById('editAllergies').value.trim()
+    };
+
+    showToast('Saving profile...');
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updateData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Update local data
+            studentData.profile = { 
+                ...studentData.profile, 
+                ...updateData,
+                // Ensure these fields are properly mapped
+                guardianName: updateData.guardianName,
+                emergencyPhone: updateData.emergencyPhone,
+                emergencyContact: updateData.emergencyContact,
+                guardianEmail: updateData.guardianEmail,
+                guardianAddress: updateData.guardianAddress,
+                allergies: updateData.allergies
             };
+            localStorage.setItem('userData', JSON.stringify(studentData));
 
-            showToast('Saving profile...');
-
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updateData)
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    // Update local data
-                    studentData.profile = { ...studentData.profile, ...updateData };
-                    localStorage.setItem('userData', JSON.stringify(studentData));
-
-                    // Refresh UI
-                    loadProfile();
-                    closeEditProfile();
-                    showToast('Profile updated successfully!');
-                } else {
-                    showToast('Error: ' + (result.error || 'Failed to update'));
-                }
-            } catch (error) {
-                console.error('Save profile error:', error);
-                showToast('Network error. Please try again.');
-            }
+            // Refresh UI
+            loadPersonalInfo();
+            loadGuardianInfo(); // Call this to refresh guardian info display
+            closeEditProfile();
+            showToast('Profile updated successfully!');
+        } else {
+            showToast('Error: ' + (result.error || 'Failed to update'));
         }
+    } catch (error) {
+        console.error('Save profile error:', error);
+        showToast('Network error. Please try again.');
+    }
+}
 
 
         // Fetch all data from Google Sheets backend
