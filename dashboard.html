@@ -3229,7 +3229,8 @@ function getCurrentAcademicYear() {
 
 
         // Fetch all data from Google Sheets backend
-        async function fetchStudentData() {
+        // Fetch all data from Google Sheets backend
+async function fetchStudentData() {
     try {
         const storedData = localStorage.getItem('userData');
         if (!storedData) {
@@ -3285,20 +3286,20 @@ function getCurrentAcademicYear() {
             dob: personalDataRes.dob || studentData.profile.dob,
             gender: personalDataRes.gender || studentData.profile.gender,
             address: personalDataRes.address || studentData.profile.address,
-            bloodGroup: personalDataRes.bloodGroup || studentData.profile.bloodGroup,
-            emergencyContact: personalDataRes.emergencyContact || studentData.profile.emergencyContact,
-            emergencyPhone: personalDataRes.emergencyPhone || studentData.profile.emergencyPhone,
-            guardianName: personalDataRes.guardianName || studentData.profile.guardianName,
-            hometown: personalDataRes.hometown || studentData.profile.hometown,
-            nationality: personalDataRes.nationality || studentData.profile.nationality,
+            bloodGroup: personalDataRes.bloodGroup || studentData.profile.bloodGroup || '--',
+            emergencyContact: personalDataRes.emergencyContact || studentData.profile.emergencyContact || '--',
+            emergencyPhone: personalDataRes.emergencyPhone || studentData.profile.emergencyPhone || '--',
+            guardianName: personalDataRes.guardianName || studentData.profile.guardianName || '--',
+            hometown: personalDataRes.hometown || studentData.profile.hometown || '--',
+            nationality: personalDataRes.nationality || studentData.profile.nationality || '--',
             // Academic info
             program: academicDataRes.program || studentData.profile.program,
             level: academicDataRes.level || studentData.profile.level,
             isCleared: academicDataRes.isCleared || studentData.profile.isCleared || false,
-            // Guardian info (from GuardianInfo sheet)
-            guardianEmail: guardianData.guardianEmail || '',
-            guardianAddress: guardianData.guardianAddress || '',
-            allergies: guardianData.allergies || '',
+            // Guardian info (from GuardianInfo sheet) - CRITICAL FIX
+            guardianEmail: guardianData.guardianEmail || studentData.profile.guardianEmail || '--',
+            guardianAddress: guardianData.guardianAddress || studentData.profile.guardianAddress || '--',
+            allergies: guardianData.allergies || studentData.profile.allergies || 'None reported',
             // Finance info
             totalFee: financeDataRes.totalFee || 0,
             amountPaid: financeDataRes.amountPaid || 0,
@@ -3315,6 +3316,9 @@ function getCurrentAcademicYear() {
         loadAcademicResults();
         loadFinance();
         loadNotifications();
+        
+        // Also load the guardian data separately to ensure it's displayed
+        loadGuardianInfo();
         
         // Update sidebar and profile picture
         if (studentData.profile.id) {
@@ -3339,6 +3343,33 @@ function getCurrentAcademicYear() {
             loadPersonalInfo();
         }
     }
+}
+
+// This function load guardian info separately
+function loadGuardianInfo() {
+    const p = studentData?.profile;
+    if (!p) return;
+    
+    console.log("Loading guardian info:", {
+        guardianEmail: p.guardianEmail,
+        guardianAddress: p.guardianAddress,
+        allergies: p.allergies
+    });
+    
+    // Guardian Information - Explicitly set these values
+    const guardianNameEl = document.getElementById('infoGuardian');
+    const emergencyEl = document.getElementById('infoEmergency');
+    const guardianEmailEl = document.getElementById('infoGuardianEmail');
+    const guardianAddressEl = document.getElementById('infoGuardianAddress');
+    const allergiesEl = document.getElementById('infoAllergies');
+    
+    if (guardianNameEl) guardianNameEl.innerHTML = p.guardianName || '--';
+    if (emergencyEl) emergencyEl.innerHTML = p.emergencyPhone ? `${p.emergencyContact || 'Contact'} (${p.emergencyPhone})` : (p.emergencyContact || '--');
+    if (guardianEmailEl) guardianEmailEl.innerHTML = p.guardianEmail || '--';
+    if (guardianAddressEl) guardianAddressEl.innerHTML = p.guardianAddress || '--';
+    if (allergiesEl) allergiesEl.innerHTML = p.allergies || 'None reported';
+    
+    console.log("Guardian info loaded successfully");
 }
         function updateWelcomeMessage() {
             const welcomeName = document.getElementById('welcomeName');
