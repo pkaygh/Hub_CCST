@@ -842,7 +842,7 @@
 // ============================================
 // GLOBAL VARIABLES
 // ============================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_w7Kd-hHufTDtUvRQ0N4ZV_M7bFL_4Jd8w6UnOZGR3phDPRzdxZaSssvBQyhPRN6y/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7s0-t1urPxPkvqdE34h7PbWrRhwgrFTrvu8aQjhvy-UF7LhkBJSBkn1-4oETbjsIf/exec";
 let currentStudent = null;
 let currentTranscriptStudent = null;
 let allStudents = [];
@@ -1084,12 +1084,26 @@ async function processFinanceCSV() { if (!parsedFinanceData || parsedFinanceData
 // CLEARANCE LIST
 // ============================================
 function loadDemoClearanceList(programFilter, levelFilter, statusFilter) {
-    const demo = [{ id: 'CCST/RM/24/001', name: 'Dorcas Anderson', program: 'RM', level: '100', isCleared: true }, { id: 'CCST/RN/24/002', name: 'Justina Arhin', program: 'RN', level: '100', isCleared: false }, { id: 'CCST/ML/24/001', name: 'Godfred Boadison', program: 'ML', level: '200', isCleared: true }, { id: 'CCST/ML/24/002', name: 'Evelyn Prah', program: 'ML', level: '100', isCleared: false }];
-    let filtered = demo.filter(s => (!programFilter || s.program === programFilter) && (!levelFilter || s.level === levelFilter));
+    // Fetch real students from backend instead of demo data
     const container = document.getElementById('clearanceList');
-    let html = '';
-    filtered.forEach(s => { const matches = !statusFilter || (statusFilter === 'cleared' && s.isCleared) || (statusFilter === 'pending' && !s.isCleared); if (matches) html += `<div class="student-list-item"><div class="student-info"><span class="student-name">${s.name}</span><span class="student-details">${getFullProgramName(s.program)} | Level ${s.level} | ID: ${s.id}</span></div><div class="clearance-checkbox"><span class="${s.isCleared ? 'status-cleared' : 'status-not'}">${s.isCleared ? '<i class="fas fa-check-circle"></i> Cleared' : '<i class="fas fa-times-circle"></i> Pending'}</span><input type="checkbox" data-id="${s.id}" onchange="updateSelectedCount()"></div></div>`; });
-    container.innerHTML = html || '<p style="text-align: center; padding: 40px;">No students found.</p>';
+    container.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading students...</p>';
+
+    fetch(`${SCRIPT_URL}?action=get_all_students`)
+        .then(res => res.json())
+        .then(data => {
+            const students = data.students || [];
+            let filtered = students.filter(s => (!programFilter || s.program === programFilter) && (!levelFilter || s.level === levelFilter));
+            let html = '';
+            filtered.forEach(s => {
+                const matches = !statusFilter || (statusFilter === 'cleared' && s.isCleared) || (statusFilter === 'pending' && !s.isCleared);
+                if (matches) html += `<div class="student-list-item"><div class="student-info"><span class="student-name">${s.name}</span><span class="student-details">${getFullProgramName(s.program)} | Level ${s.level} | ID: ${s.id}</span></div><div class="clearance-checkbox"><span class="${s.isCleared ? 'status-cleared' : 'status-not'}">${s.isCleared ? '<i class="fas fa-check-circle"></i> Cleared' : '<i class="fas fa-times-circle"></i> Pending'}</span><input type="checkbox" data-id="${s.id}" onchange="updateSelectedCount()"></div></div>`;
+            });
+            container.innerHTML = html || '<p style="text-align: center; padding: 40px;">No students found.</p>';
+        })
+        .catch(err => {
+            console.error('Error loading clearance list:', err);
+            container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 40px;">Error loading students. Please try again.</p>';
+        });
 }
 function loadStudentClearanceList() { const prog = document.getElementById('clearanceProgramFilter').value; const lev = document.getElementById('clearanceLevelFilter').value; const stat = document.getElementById('clearanceStatusFilter').value; loadDemoClearanceList(prog, lev, stat); }
 function updateSelectedCount() { const checkboxes = document.querySelectorAll('#clearanceList input[type="checkbox"]'); const selected = Array.from(checkboxes).filter(cb => cb.checked).length; const span = document.getElementById('selectedCount'); if (span) span.innerText = `${selected} selected`; }

@@ -2087,7 +2087,7 @@ function formatDateForDisplay(dateValue) {
     }
     return dateStr;
 }
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_w7Kd-hHufTDtUvRQ0N4ZV_M7bFL_4Jd8w6UnOZGR3phDPRzdxZaSssvBQyhPRN6y/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7s0-t1urPxPkvqdE34h7PbWrRhwgrFTrvu8aQjhvy-UF7LhkBJSBkn1-4oETbjsIf/exec";
         let studentData = null;
         let financeData = null;
         let academicData = null;
@@ -3295,14 +3295,17 @@ async function fetchStudentData() {
         console.log("Personal data:", personalDataRes);
         console.log("Academic data:", academicDataRes);
         console.log("Finance data:", financeDataRes);
-        console.log("Guardian data:", guardianData);
-        console.log("Results data:", resultsData);
-        console.log("Payments data:", paymentsData);
+
+        // Check if finance data is valid
+        if (financeDataRes && Object.keys(financeDataRes).length > 0) {
+            financeData = financeDataRes;
+        } else {
+            console.warn("Finance data empty, falling back to profile data");
+        }
 
         // Store fetched data
         personalData = personalDataRes;
         academicData = academicDataRes;
-        financeData = financeDataRes;
         
         // Update student profile with fetched data
         studentData.profile = {
