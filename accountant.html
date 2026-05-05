@@ -771,51 +771,17 @@
 
             <!-- NOTIFICATIONS -->
             <div id="notificationsSection" class="section" style="display:none;">
-    <div class="card">
-        <div class="card-header">
-            <h3><i class="fas fa-bell"></i> Send Notification to Students</h3>
-        </div>
-
-        <!-- WHO -->
-        <label style="font-weight: bold;">Send To:</label>
-        <select id="targetType" onchange="toggleTargetSelection()">
-            <option value="all">All Students</option>
-            <option value="program">By Program</option>
-            <option value="level">By Level</option>
-            <option value="student">Individual Student</option>
-        </select>
-
-        <!-- TARGET -->
-        <div id="targetSelection" style="display: none; margin-bottom: 15px;">
-            <input id="targetValue" placeholder="Enter Student ID / Program / Level">
-        </div>
-
-        <!-- 🔥 NEW (VERY IMPORTANT) -->
-        <label style="font-weight: bold;">Message Type:</label>
-        <select id="notificationType">
-            <option value="general">General</option>
-            <option value="finance">Finance</option>
-            <option value="academic">Academic</option>
-        </select>
-
-        <!-- TITLE -->
-        <label style="font-weight: bold;">Title:</label>
-        <input id="notifTitle" placeholder="Notification Title">
-
-        <!-- MESSAGE -->
-        <label style="font-weight: bold;">Message:</label>
-        <textarea id="notifMessage" rows="4" placeholder="Enter notification content..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;"></textarea>
-
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button onclick="sendNotification()" class="success-btn" style="flex: 1;">
-                <i class="fas fa-paper-plane"></i> SEND NOTIFICATION
-            </button>
-            <button onclick="scheduleNotification()" class="info-btn" style="flex: 1;">
-                <i class="fas fa-clock"></i> SCHEDULE
-            </button>
-        </div>
-    </div>
-</div>
+                <div class="card">
+                    <div class="card-header"><h3><i class="fas fa-bell"></i> Send Notification to Students</h3></div>
+                    <label style="font-weight: bold;">Notification Type:</label>
+                    <select id="notifType" onchange="toggleTargetSelection()"><option value="all">All Students</option><option value="program">By Program</option><option value="level">By Level</option><option value="individual">Individual Student</option></select>
+                    <div id="targetSelection" style="display: none; margin-bottom: 15px;"><input id="targetValue" placeholder="Enter Program (e.g., RM) or Level (e.g., 100)"></div>
+                    <label style="font-weight: bold;">Title:</label><input id="notifTitle" placeholder="Notification Title">
+                    <label style="font-weight: bold;">Message:</label><textarea id="notifMessage" rows="4" placeholder="Enter notification content..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;"></textarea>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;"><button onclick="sendNotification()" class="success-btn" style="flex: 1;"><i class="fas fa-paper-plane"></i> SEND NOTIFICATION</button><button onclick="scheduleNotification()" class="info-btn" style="flex: 1;"><i class="fas fa-clock"></i> SCHEDULE</button></div>
+                </div>
+                <div class="card"><h3><i class="fas fa-history"></i> Recent Notifications</h3><div id="notificationHistory"><p style="text-align: center; color: #999;">No notifications sent yet.</p></div></div>
+            </div>
 
             <!-- REPORTS -->
             <div id="reportsSection" class="section" style="display:none;">
@@ -1134,116 +1100,11 @@ async function unclearSelectedStudents() { const ids = Array.from(document.query
 // ============================================
 // NOTIFICATIONS
 // ============================================
-function toggleTargetSelection() {
-    const type = document.getElementById('targetType').value;
-    document.getElementById('targetSelection').style.display = type === 'all' ? 'none' : 'block';
-}
-
-async function sendNotification() {
-    const title = document.getElementById('notifTitle').value;
-    const message = document.getElementById('notifMessage').value;
-    const targetType = document.getElementById('targetType').value;
-    const target = document.getElementById('targetValue').value;
-    const notificationType = document.getElementById('notificationType').value;
-
-    if (!title || !message) return showToast("Enter title and message", "warning");
-
-    const btn = event.target.closest('button');
-    const orig = btn.innerHTML;
-
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...';
-
-    try {
-        const res = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'send_notification',
-                title,
-                message,
-                targetType: targetType,
-                target: targetType === 'all' ? 'all' : target,
-                notificationType: notificationType
-            })
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-            showToast("Notification sent!", "success");
-
-            document.getElementById('notifTitle').value = '';
-            document.getElementById('notifMessage').value = '';
-            document.getElementById('targetValue').value = '';
-
-            addToNotificationHistory(title, message, targetType, target, notificationType);
-        } else {
-            throw new Error();
-        }
-
-    } catch (e) {
-        showToast("Failed to send", "danger");
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = orig;
-    }
-}
-
-function scheduleNotification() {
-    showToast("Scheduled notifications coming soon!", "info");
-}
-
-function addToNotificationHistory(title, message, targetType, target, notificationType) {
-    let history = JSON.parse(localStorage.getItem('notificationHistory') || '[]');
-
-    history.unshift({
-        title,
-        message: message.substring(0, 100),
-        targetType,
-        target: target || 'all',
-        type: notificationType,
-        notificationType,
-        date: new Date().toLocaleString()
-    });
-
-    history = history.slice(0, 20);
-    localStorage.setItem('notificationHistory', JSON.stringify(history));
-
-    displayNotificationHistory();
-}
-
-function displayNotificationHistory() {
-    const container = document.getElementById('notificationHistory');
-    const history = JSON.parse(localStorage.getItem('notificationHistory') || '[]');
-
-    if (history.length === 0) {
-        container.innerHTML = '<p style="text-align: center;">No notifications sent yet.</p>';
-        return;
-    }
-
-    let html = '';
-
-    history.forEach(n => {
-        html += `
-        <div class="notification-history-item">
-            <div class="notification-title">${n.title}</div>
-            <div style="font-size:0.85rem;">${n.message}</div>
-
-            <div style="display:flex;justify-content:space-between;margin-top:8px;">
-                <small class="notification-date">${n.date}</small>
-
-                <small style="color:var(--primary);">
-                    ${n.targetType === 'all' ? 'All Students' : 
-                      n.targetType === 'program' ? `Program: ${n.target}` : 
-                      n.targetType === 'level' ? `Level: ${n.target}` : 
-                      `Student: ${n.target}`}
-                </small>
-            </div>
-        </div>`;
-    });
-
-    container.innerHTML = html;
-}
+function toggleTargetSelection() { const type = document.getElementById('notifType').value; document.getElementById('targetSelection').style.display = type === 'all' ? 'none' : 'block'; }
+async function sendNotification() { const title = document.getElementById('notifTitle').value; const message = document.getElementById('notifMessage').value; const type = document.getElementById('notifType').value; const target = document.getElementById('targetValue').value; if (!title || !message) return showToast("Enter title and message", "warning"); const btn = event.target.closest('button'); const orig = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...'; try { const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'send_notification', title, message, type, target: target || 'all' }) }); const data = await res.json(); if (data.success) { showToast("Notification sent!", "success"); document.getElementById('notifTitle').value = ''; document.getElementById('notifMessage').value = ''; document.getElementById('targetValue').value = ''; addToNotificationHistory(title, message, type, target); } else throw new Error(); } catch (e) { showToast("Failed to send", "danger"); } finally { btn.disabled = false; btn.innerHTML = orig; } }
+function scheduleNotification() { showToast("Scheduled notifications coming soon!", "info"); }
+function addToNotificationHistory(title, message, type, target) { let history = JSON.parse(localStorage.getItem('notificationHistory') || '[]'); history.unshift({ title, message: message.substring(0, 100), type, target: target || 'all', date: new Date().toLocaleString() }); history = history.slice(0, 20); localStorage.setItem('notificationHistory', JSON.stringify(history)); displayNotificationHistory(); }
+function displayNotificationHistory() { const container = document.getElementById('notificationHistory'); const history = JSON.parse(localStorage.getItem('notificationHistory') || '[]'); if (history.length === 0) { container.innerHTML = '<p style="text-align: center;">No notifications sent yet.</p>'; return; } let html = ''; history.forEach(n => { html += `<div class="notification-history-item"><div class="notification-title">${n.title}</div><div style="font-size:0.85rem;">${n.message}</div><div style="display:flex;justify-content:space-between;margin-top:8px;"><small class="notification-date">${n.date}</small><small style="color:var(--primary);">${n.target === 'all' ? 'All Students' : n.type === 'program' ? `Program: ${n.target}` : n.type === 'level' ? `Level: ${n.target}` : `Student: ${n.target}`}</small></div></div>`; }); container.innerHTML = html; }
 
 // ============================================
 // REPORTS
