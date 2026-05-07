@@ -676,17 +676,39 @@
             </div>
 
             <!-- CSV UPLOAD SECTION -->
-            <div id="csv_uploadSection" class="section" style="display:none;">
-                <div class="card">
-                    <div class="card-header"><h3><i class="fas fa-file-upload"></i> Upload Results via CSV</h3><button onclick="downloadResultsTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;"><i class="fas fa-download"></i> Download Template</button></div>
-                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFileInput').click()">
-                        <i class="fas fa-cloud-upload-alt"></i><h4>Drop CSV file here or click to browse</h4>
-                        <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVSelect(event)">
-                    </div>
-                    <div id="filePreview" style="display:none;" class="file-preview"><h4><i class="fas fa-file-csv"></i> File Ready for Upload</h4><div class="progress-bar"><div class="progress-fill" id="uploadProgress" style="width: 0%;"></div></div></div>
-                    <button id="processBtn" onclick="processCSV()" class="success-btn" style="margin-top: 20px; display:none;">PROCESS & UPLOAD</button>
-                </div>
+            <!-- CSV UPLOAD SECTION -->
+<div id="csv_uploadSection" class="section" style="display:none;">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-file-upload"></i> Upload Results via CSV</h3>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="downloadResultsTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                    <i class="fas fa-download"></i> Full Template
+                </button>
+                <button onclick="downloadSimpleResultsTemplate()" class="info-btn" style="width: auto; padding: 8px 15px; background: #6b8e23;">
+                    <i class="fas fa-download"></i> Simple Template
+                </button>
             </div>
+        </div>
+        
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFileInput').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <h4>Drop CSV file here or click to browse</h4>
+            <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVSelect(event)">
+        </div>
+        
+        <div id="filePreview" style="display:none;" class="file-preview">
+            <h4><i class="fas fa-file-csv"></i> File Ready for Upload</h4>
+            <div class="progress-bar">
+                <div class="progress-fill" id="uploadProgress" style="width: 0%;"></div>
+            </div>
+        </div>
+        
+        <button id="processBtn" onclick="processCSV()" class="success-btn" style="margin-top: 20px; display:none;">
+            <i class="fas fa-upload"></i> PROCESS & UPLOAD
+        </button>
+    </div>
+</div>
 
             <!-- BULK UPLOAD SECTION -->
             <div id="bulk_uploadSection" class="section" style="display:none;">
@@ -1146,6 +1168,7 @@ function handleCSVSelect(event) {
         }
     });
 }
+
 async function processCSV() {
     if (!parsedResults || parsedResults.length === 0) {
         showToast("No data to process", "danger");
@@ -1165,13 +1188,31 @@ async function processCSV() {
     const headerKeys = Object.keys(parsedResults[0] || {});
     console.log('CSV Headers:', headerKeys);
 
-    // Find column indices
-    const studentIdKey = headerKeys.find(k => k.toLowerCase() === 'studentid' || k === 'StudentID') || headerKeys[0];
-    const nameKey = headerKeys.find(k => k.toLowerCase() === 'name') || headerKeys[1];
-    const semesterKey = headerKeys.find(k => k.toLowerCase() === 'semester') || 'Semester';
-    const gpaKey = headerKeys.find(k => k.toLowerCase() === 'gpa') || 'GPA';
-    const programKey = headerKeys.find(k => k.toLowerCase() === 'program') || 'Program';
-    const levelKey = headerKeys.find(k => k.toLowerCase() === 'level') || 'Level';
+    // Find column indices - be flexible with header names
+    const studentIdKey = headerKeys.find(k => 
+        k.toLowerCase().replace(/[^a-z]/g, '') === 'studentid' || 
+        k.toLowerCase().replace(/[^a-z]/g, '') === 'id'
+    ) || headerKeys[0];
+    
+    const nameKey = headerKeys.find(k => 
+        k.toLowerCase().includes('name')
+    ) || headerKeys[1];
+    
+    const semesterKey = headerKeys.find(k => 
+        k.toLowerCase().includes('semester')
+    ) || 'Semester';
+    
+    const gpaKey = headerKeys.find(k => 
+        k.toLowerCase() === 'gpa'
+    ) || 'GPA';
+    
+    const programKey = headerKeys.find(k => 
+        k.toLowerCase().includes('program')
+    ) || 'Program';
+    
+    const levelKey = headerKeys.find(k => 
+        k.toLowerCase().includes('level')
+    ) || 'Level';
 
     for (let i = 0; i < parsedResults.length; i++) {
         const row = parsedResults[i];
@@ -1192,52 +1233,75 @@ async function processCSV() {
             continue;
         }
 
-        // Collect all course data from remaining columns
+        // ===== FIXED COURSE PARSING =====
         let courseDetails = [];
-
-        // Get all column values and look for course data
-        for (const [key, value] of Object.entries(row)) {
-            if (!value || typeof value !== 'string') continue;
-            const val = value.trim();
-            if (!val) continue;
-
-            // Skip empty columns
-            if (key === studentIdKey || key === nameKey || key === semesterKey ||
-                key === gpaKey || key === programKey || key === levelKey) continue;
-
-            // Skip header-like values
-            if (val.startsWith('StudentID') || val.startsWith('Name') ||
-                val.startsWith('Semester') || val.includes('StudentID')) continue;
-
-            // Look for course data starting with [{ or containing course codes
-            if (val.startsWith('[{') || val.startsWith('[{')) {
-                const courses = parseCourseData(val);
-                if (courses && courses.length > 0) {
-                    courseDetails = courseDetails.concat(courses);
+        
+        // Method 1: Look for CourseDetails column (JSON string)
+        const detailsKey = headerKeys.find(k => 
+            k.toLowerCase().includes('coursedetails') || 
+            k.toLowerCase().includes('course_details') ||
+            k.toLowerCase().includes('details')
+        );
+        
+        if (detailsKey && row[detailsKey]) {
+            courseDetails = parseCourseData(row[detailsKey]);
+        }
+        
+        // Method 2: Look for individual course columns (Course1, Course2, etc.)
+        if (courseDetails.length === 0) {
+            const courseKeys = headerKeys.filter(k => 
+                /^course\d*$/i.test(k.trim()) || 
+                /^course_\d+$/i.test(k.trim())
+            );
+            courseKeys.forEach(key => {
+                if (row[key]) {
+                    const parsed = parseCourseData(row[key]);
+                    if (parsed.length > 0) {
+                        courseDetails = courseDetails.concat(parsed);
+                    }
                 }
-            }
-            // Also check for individual course entries (key might look like "Course1" or similar)
-            else if (val.includes('code') && val.includes('grade')) {
-                const courses = parseCourseData(val);
-                if (courses && courses.length > 0) {
-                    courseDetails = courseDetails.concat(courses);
+            });
+        }
+        
+        // Method 3: Look for structured columns (Code1, Name1, Credits1, Grade1, etc.)
+        if (courseDetails.length === 0) {
+            const codeKeys = headerKeys.filter(k => /^code\d*$/i.test(k.trim()));
+            codeKeys.forEach(codeKey => {
+                const numMatch = codeKey.match(/\d+/);
+                const num = numMatch ? numMatch[0] : '';
+                
+                const nameKey = headerKeys.find(k => k.trim() === `Name${num}` || k.trim() === `CourseName${num}`);
+                const creditsKey = headerKeys.find(k => k.trim() === `Credits${num}` || k.trim() === `Credit${num}`);
+                const gradeKey = headerKeys.find(k => k.trim() === `Grade${num}`);
+                const caKey = headerKeys.find(k => k.trim() === `CA${num}`);
+                const examKey = headerKeys.find(k => k.trim() === `Exam${num}`);
+                
+                if (row[codeKey]) {
+                    courseDetails.push({
+                        code: (row[codeKey] || '').trim(),
+                        name: (row[nameKey] || row[codeKey] || '').trim(),
+                        credits: parseInt(row[creditsKey]) || 3,
+                        grade: (row[gradeKey] || 'E').trim(),
+                        ca: parseFloat(row[caKey]) || 0,
+                        exam: parseFloat(row[examKey]) || 0
+                    });
                 }
-            }
+            });
         }
 
-        console.log('Courses found:', courseDetails.length);
+        console.log('Courses found:', courseDetails.length, courseDetails);
 
         // Calculate GPA from course details if not provided or invalid
         let finalGPA = parseFloat(gpa) || 0;
-        if (courseDetails.length > 0 && finalGPA === 0) {
+        if (courseDetails.length > 0 && (finalGPA === 0 || isNaN(finalGPA))) {
             const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
             let totalPoints = 0, totalCredits = 0;
             courseDetails.forEach(c => {
-                const credits = c.credits || c.Credits || 3;
-                const grade = c.grade || c.Grade || 'E';
+                const credits = parseInt(c.credits) || 3;
+                const grade = (c.grade || 'E').toUpperCase();
                 let points = 0;
                 for (const l of gradingSystem) {
-                    if (l.grade === grade.toUpperCase()) {
+                    if (l.grade === grade) {
                         points = l.points;
                         break;
                     }
@@ -1297,61 +1361,69 @@ async function processCSV() {
     document.getElementById('csvFileInput').value = '';
 }
 
-// Helper function to parse course data
+// Simplified and more robust course data parser
 function parseCourseData(courseStr) {
-    if (!courseStr || typeof courseStr !== 'string') return [];
-
-    let courses = [];
-    const trimmed = courseStr.trim();
-
-    // If it starts with [, it might be a JSON array
+    if (!courseStr) return [];
+    
+    const trimmed = courseStr.toString().trim();
+    if (!trimmed) return [];
+    
+    // If it's already a valid JSON array
     if (trimmed.startsWith('[')) {
         try {
-            // Try standard JSON first
-            const parsed = JSON.parse(trimmed.replace(/'/g, '"'));
-            if (Array.isArray(parsed)) {
-                return parsed;
-            } else if (parsed && typeof parsed === 'object') {
-                return [parsed];
-            }
-        } catch(e1) {
-            // Try fixing malformed JSON
+            return JSON.parse(trimmed);
+        } catch(e) {
+            // Try to fix common JSON issues
             try {
-                // Fix unquoted keys like {code:""BADJ111""...}
-                let fixed = trimmed;
-
-                // Replace double quotes with single quotes pattern
-                fixed = fixed.replace(/([{,]\s*)(\w+)(\s*):(\s*)"/g, '$1"$2"$3:$4"');
-                fixed = fixed.replace(/":""/g, '":"');
-                fixed = fixed.replace(/""/g, '"');
-
-                // Handle specific case: code:""BADJ111"" -> "code":"BADJ111"
-                fixed = fixed.replace(/(\w+):""/g, '"$1":"');
-                fixed = fixed.replace(/""}/g, '"}');
-                fixed = fixed.replace(/"\]/g, '"]');
-
-                const parsed = JSON.parse(fixed);
-                if (Array.isArray(parsed)) {
-                    return parsed;
-                }
+                // Fix double quotes issue: ""text"" -> "text"
+                let fixed = trimmed.replace(/""([^"]*)""/g, '"$1"');
+                // Fix unquoted keys
+                fixed = fixed.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":');
+                return JSON.parse(fixed);
             } catch(e2) {
-                console.log('Failed to parse course data:', trimmed.substring(0, 200));
+                console.log('Failed to parse JSON array:', trimmed.substring(0, 100));
             }
         }
     }
-
-    return courses;
+    
+    // If it's a single JSON object
+    if (trimmed.startsWith('{')) {
+        try {
+            return [JSON.parse(trimmed)];
+        } catch(e) {
+            console.log('Failed to parse JSON object:', trimmed.substring(0, 100));
+        }
+    }
+    
+    return [];
 }
-function downloadResultsTemplate() { 
+
+function downloadResultsTemplate() {
     const template = `StudentID,Name,Semester,GPA,Program,Level,CourseDetails
-CCST/RM/24/001,Justina Arhin,Semester 1 2025/2026,3.25,RM,100,"[{\"code\":\"COSC 101\",\"name\":\"Introduction to Computing\",\"credits\":3,\"ca\":35,\"exam\":55,\"grade\":\"A\"}]"`;
-    const blob = new Blob([template], { type: 'text/csv' }); 
-    const a = document.createElement('a'); 
-    a.href = URL.createObjectURL(blob); 
-    a.download = 'CCST_Results_upload_template.csv'; 
-    a.click(); 
-    URL.revokeObjectURL(URL); 
-    showToast("Template downloaded!", "success"); 
+CCST/RM/24/001,Justina Arhin,Semester 1 2025/2026,3.25,RM,100,"[{""code"":""COSC 101"",""name"":""Introduction to Computing"",""credits"":3,""ca"":35,""exam"":55,""grade"":""A""}]"
+CCST/RM/24/002,John Doe,Semester 1 2025/2026,2.80,RM,100,"[{""code"":""NURS 101"",""name"":""Fundamentals of Nursing"",""credits"":3,""ca"":30,""exam"":50,""grade"":""B""},{""code"":""ANAT 101"",""name"":""Human Anatomy"",""credits"":4,""ca"":25,""exam"":45,""grade"":""C+""}]"`;
+    
+    const blob = new Blob([template], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'CCST_Results_upload_template.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast("Template downloaded!", "success");
+}
+
+function downloadSimpleResultsTemplate() {
+    const template = `StudentID,Name,Semester,GPA,Program,Level,Code1,Name1,Credits1,Grade1,Code2,Name2,Credits2,Grade2
+CCST/RM/24/001,Justina Arhin,Semester 1 2025/2026,3.25,RM,100,COSC 101,Introduction to Computing,3,A,NURS 102,Health Assessment,3,B+
+CCST/RM/24/002,John Doe,Semester 1 2025/2026,2.80,RM,100,NURS 101,Fundamentals of Nursing,3,B,ANAT 101,Human Anatomy,4,C+`;
+    
+    const blob = new Blob([template], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'CCST_Results_simple_template.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast("Simple template downloaded!", "success");
 }
 
 // ============================================
