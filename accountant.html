@@ -872,7 +872,7 @@
 // ============================================
 // GLOBAL VARIABLES
 // ============================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxiLLRUWyZ4zFxmDbN5ovqp7gb4vHojDMoItdTUt39CO-E7x9Gluv8OSJZqIKSqjo_/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoPLOynYDPHYOqw8seC7IYoRQoWmPvbgC7pQAGBC39qZPehw-oN7k3JkxpXZoZTGzv/exec";
 let currentStudent = null;
 let currentTranscriptStudent = null;
 let allStudents = [];
@@ -1426,7 +1426,7 @@ async function processCSV() {
         showToast("No data to process", "danger");
         return;
     }
-//------------This validate CSV files---------
+    //------------This validate CSV files---------
     showToast("Validating CSV data...", "info");
     const validationReport = validateCSVData(parsedResults);
     
@@ -1467,25 +1467,11 @@ async function processCSV() {
         k.toLowerCase().replace(/[^a-z]/g, '') === 'id'
     ) || headerKeys[0];
     
-    const nameKey = headerKeys.find(k => 
-        k.toLowerCase().includes('name')
-    ) || headerKeys[1];
-    
-    const semesterKey = headerKeys.find(k => 
-        k.toLowerCase().includes('semester')
-    ) || 'Semester';
-    
-    const gpaKey = headerKeys.find(k => 
-        k.toLowerCase() === 'gpa'
-    ) || 'GPA';
-    
-    const programKey = headerKeys.find(k => 
-        k.toLowerCase().includes('program')
-    ) || 'Program';
-    
-    const levelKey = headerKeys.find(k => 
-        k.toLowerCase().includes('level')
-    ) || 'Level';
+    const nameKey = headerKeys.find(k => k.toLowerCase().includes('name')) || headerKeys[1];
+    const semesterKey = headerKeys.find(k => k.toLowerCase().includes('semester')) || 'Semester';
+    const gpaKey = headerKeys.find(k => k.toLowerCase() === 'gpa') || 'GPA';
+    const programKey = headerKeys.find(k => k.toLowerCase().includes('program')) || 'Program';
+    const levelKey = headerKeys.find(k => k.toLowerCase().includes('level')) || 'Level';
 
     for (let i = 0; i < parsedResults.length; i++) {
         const row = parsedResults[i];
@@ -1506,72 +1492,69 @@ async function processCSV() {
             continue;
         }
 
-        // ===== FIXED COURSE PARSING =====
+        // ===== COURSE PARSING - SIMPLE TEMPLATE WITH CA/EXAM =====
         let courseDetails = [];
         
-        // Method 1: Look for CourseDetails column (JSON string)
-        const detailsKey = headerKeys.find(k => 
-            k.toLowerCase().includes('coursedetails') || 
-            k.toLowerCase().includes('course_details') ||
-            k.toLowerCase().includes('details')
-        );
+        // Look for structured columns (Code1, Name1, Credits1, CA1, Exam1, Grade1, etc.)
+        const codeKeys = headerKeys.filter(k => /^code\d*$/i.test(k.trim()));
         
-        if (detailsKey && row[detailsKey]) {
-            courseDetails = parseCourseData(row[detailsKey]);
-        }
-        
-        // Method 2: Look for individual course columns (Course1, Course2, etc.)
-        if (courseDetails.length === 0) {
-            const courseKeys = headerKeys.filter(k => 
-                /^course\d*$/i.test(k.trim()) || 
-                /^course_\d+$/i.test(k.trim())
-            );
-            courseKeys.forEach(key => {
-                if (row[key]) {
-                    const parsed = parseCourseData(row[key]);
-                    if (parsed.length > 0) {
-                        courseDetails = courseDetails.concat(parsed);
-                    }
+        for (const codeKey of codeKeys) {
+            const numMatch = codeKey.match(/\d+/);
+            const num = numMatch ? numMatch[0] : '';
+            
+            const nameKey2 = headerKeys.find(k => k.trim() === `Name${num}` || k.trim() === `CourseName${num}`);
+            const creditsKey = headerKeys.find(k => k.trim() === `Credits${num}` || k.trim() === `Credit${num}`);
+            const caKey = headerKeys.find(k => k.trim() === `CA${num}`);
+            const examKey = headerKeys.find(k => k.trim() === `Exam${num}`);
+            
+            const code = ((row[codeKey] || '') + '').trim();
+            if (!code) continue;
+            
+            // Get CA and Exam values
+            const ca = parseFloat(row[caKey]) || 0;
+            const exam = parseFloat(row[examKey]) || 0;
+            const totalScore = ca + exam;
+            
+            // Calculate grade from total score (CA + Exam)
+            let calculatedGrade = 'E';
+            const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
+            for (const level2 of gradingSystem) {
+                if (totalScore >= level2.min && totalScore <= level2.max) {
+                    calculatedGrade = level2.grade;
+                    break;
                 }
-            });
-        }
-        
-        // Method 3: Look for structured columns (Code1, Name1, Credits1, Grade1, etc.)
-        if (courseDetails.length === 0) {
-            const codeKeys = headerKeys.filter(k => /^code\d*$/i.test(k.trim()));
-            codeKeys.forEach(codeKey => {
-                const numMatch = codeKey.match(/\d+/);
-                const num = numMatch ? numMatch[0] : '';
-                
-                const nameKey = headerKeys.find(k => k.trim() === `Name${num}` || k.trim() === `CourseName${num}`);
-                const creditsKey = headerKeys.find(k => k.trim() === `Credits${num}` || k.trim() === `Credit${num}`);
-                const gradeKey = headerKeys.find(k => k.trim() === `Grade${num}`);
-                const caKey = headerKeys.find(k => k.trim() === `CA${num}`);
-                const examKey = headerKeys.find(k => k.trim() === `Exam${num}`);
-                
-                if (row[codeKey]) {
-                    courseDetails.push({
-                        code: (row[codeKey] || '').trim(),
-                        name: (row[nameKey] || row[codeKey] || '').trim(),
-                        credits: parseInt(row[creditsKey]) || 3,
-                        grade: (row[gradeKey] || 'E').trim(),
-    ca: parseFloat(row[caKey]) || 0,
-    exam: parseFloat(row[examKey]) || 0
-                    });
-                }
+            }
+            
+            courseDetails.push({
+                code: code,
+                name: ((row[nameKey2] || code) + '').trim(),
+                credits: parseInt(row[creditsKey]) || 3,
+                ca: ca,
+                exam: exam,
+                grade: calculatedGrade
             });
         }
 
         console.log('Courses found:', courseDetails.length, courseDetails);
 
-        // Calculate GPA from course details if not provided or invalid
+        // ===== GPA CALCULATION (ONCE) =====
         let finalGPA = parseFloat(gpa) || 0;
         if (courseDetails.length > 0 && (finalGPA === 0 || isNaN(finalGPA))) {
             const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
             let totalPoints = 0, totalCredits = 0;
             courseDetails.forEach(c => {
                 const credits = parseInt(c.credits) || 3;
-                const grade = (c.grade || 'E').toUpperCase();
+                // Recalculate total score from CA and Exam
+                const totalScore = (c.ca || 0) + (c.exam || 0);
+                // Find grade
+                let grade = 'E';
+                for (const level2 of gradingSystem) {
+                    if (totalScore >= level2.min && totalScore <= level2.max) {
+                        grade = level2.grade;
+                        break;
+                    }
+                }
+                // Get grade points
                 let points = 0;
                 for (const l of gradingSystem) {
                     if (l.grade === grade) {
@@ -1581,12 +1564,16 @@ async function processCSV() {
                 }
                 totalPoints += points * credits;
                 totalCredits += credits;
+                // Update course grade
+                c.grade = grade;
             });
             if (totalCredits > 0) {
                 finalGPA = parseFloat((totalPoints / totalCredits).toFixed(2));
+                console.log(`Calculated GPA: ${finalGPA}`);
             }
         }
 
+        // ===== UPLOAD TO SERVER =====
         try {
             const response = await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1632,43 +1619,6 @@ async function processCSV() {
     document.getElementById('processBtn').style.display = 'none';
     parsedResults = null;
     document.getElementById('csvFileInput').value = '';
-}
-
-// Simplified and more robust course data parser
-function parseCourseData(courseStr) {
-    if (!courseStr) return [];
-    
-    const trimmed = courseStr.toString().trim();
-    if (!trimmed) return [];
-    
-    // If it's already a valid JSON array
-    if (trimmed.startsWith('[')) {
-        try {
-            return JSON.parse(trimmed);
-        } catch(e) {
-            // Try to fix common JSON issues
-            try {
-                // Fix double quotes issue: ""text"" -> "text"
-                let fixed = trimmed.replace(/""([^"]*)""/g, '"$1"');
-                // Fix unquoted keys
-                fixed = fixed.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":');
-                return JSON.parse(fixed);
-            } catch(e2) {
-                console.log('Failed to parse JSON array:', trimmed.substring(0, 100));
-            }
-        }
-    }
-    
-    // If it's a single JSON object
-    if (trimmed.startsWith('{')) {
-        try {
-            return [JSON.parse(trimmed)];
-        } catch(e) {
-            console.log('Failed to parse JSON object:', trimmed.substring(0, 100));
-        }
-    }
-    
-    return [];
 }
 
 function downloadResultsTemplate() {
@@ -1807,7 +1757,80 @@ async function searchStudentForTranscript() { const id = document.getElementById
 async function loadStudentForTranscript() { const select = document.getElementById('transcriptStudentSelect'); const id = select.value; if (id) { document.getElementById('transcriptStudentId').value = id; await searchStudentForTranscript(); } }
 function displayTranscriptStudentInfo(s) { document.getElementById('transcriptStudentInfo').style.display = 'block'; document.getElementById('transcriptName').innerText = s.name; document.getElementById('transcriptDetails').innerHTML = `ID: ${s.id} | Program: ${getFullProgramName(s.program)} | Level: ${s.level || '200'}`; }
 function displayDemoTranscriptPreview(s) { const demo = [{ semester: "Semester 1 - 2025/2026", gpa: "3.25", details: [{ code: "COSC 101", name: "Computing", credits: 3, ca: 35, exam: 55, total: 90, grade: "A" }] }]; displayTranscriptPreview(demo, s); }
-function displayTranscriptPreview(results, student) { const container = document.getElementById('transcriptContent'); let totalPoints = 0, totalCredits = 0; let html = `<div class="transcript-header"><h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1><h3>OFFICIAL ACADEMIC TRANSCRIPT</h3></div><table class="student-info-table"><tr><td>Name:</td><td><strong>${student.name}</strong></td><td>ID:</td><td><strong>${student.id}</strong></td></tr></table>`; results.forEach(sem => { html += `<h4>${sem.semester}</h4><table class="transcript-table"><tr><th>Code</th><th>Course</th><th>Credits</th><th>Grade</th></tr>`; sem.details.forEach(c => { const pts = getGradePoints(c.grade, student.program); totalPoints += pts * (c.credits||3); totalCredits += (c.credits||3); html += `<tr><td>${c.code}</td><td>${c.name}</td><td>${c.credits||3}</td><td>${c.grade}</td></tr>`; }); html += `</table>`; }); const cgpa = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00'; html += `<div class="cgpa-section"><h3>CGPA: ${cgpa} / 4.00</h3></div>`; container.innerHTML = html; document.getElementById('transcriptPreview').style.display = 'block'; }
+function displayTranscriptPreview(results, student) {
+    const container = document.getElementById('transcriptContent');
+    let totalPoints = 0, totalCredits = 0;
+    
+    let html = `<div class="transcript-header">
+        <h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1>
+        <h3>OFFICIAL ACADEMIC TRANSCRIPT</h3>
+    </div>
+    <table class="student-info-table">
+        <tr><td style="width:30%;">Name:</td><td><strong>${student.name}</strong></td>
+        <td>ID:</td><td><strong>${student.id}</strong></td>
+    </tr>
+    <tr><td>Program:</td><td><strong>${getFullProgramName(student.program)}</strong></td>
+        <td>Level:</td><td><strong>Level ${student.level || '200'}</strong></td>
+    </tr>
+    </table>`;
+    
+    results.forEach(sem => {
+        html += `<h4 style="margin-top:25px; background:#f0f0f0; padding:10px;">${sem.semester}</h4>
+        <table class="transcript-table" style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="background:#1a472a; color:white;">
+                    <th>Code</th>
+                    <th>Course Name</th>
+                    <th>Credits</th>
+                    <th>CA<br><small>(/40)</small></th>
+                    <th>Exam<br><small>(/60)</small></th>
+                    <th>Total</th>
+                    <th>Grade</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        sem.details.forEach(c => {
+            const ca = c.ca || 0;
+            const exam = c.exam || 0;
+            const total = ca + exam;
+            const points = getGradePoints(c.grade, student.program);
+            const weightedPoints = points * (c.credits || 3);
+            
+            totalPoints += weightedPoints;
+            totalCredits += (c.credits || 3);
+            
+            html += `<tr>
+                <td style="text-align:left;">${c.code}</td>
+                <td style="text-align:left;">${c.name}</td>
+                <td style="text-align:center;">${c.credits || 3}</td>
+                <td style="text-align:center;">${ca}</td>
+                <td style="text-align:center;">${exam}</td>
+                <td style="text-align:center;"><strong>${total}</strong></td>
+                <td style="text-align:center;"><strong>${c.grade}</strong></td>
+                <td style="text-align:center;">${points.toFixed(1)}</td>
+            </tr>`;
+        });
+        
+        html += `</tbody>
+        </table>
+        <div style="margin-top:10px; text-align:right; padding:8px; background:#f5f5f5;">
+            <strong>Semester GPA: ${sem.gpa || '--'}</strong>
+        </div>`;
+    });
+    
+    const cgpa = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00';
+    
+    html += `<div class="cgpa-section" style="margin-top:30px; padding:15px; background:linear-gradient(135deg, rgba(107,142,35,0.1), rgba(154,205,50,0.1)); text-align:center;">
+        <h3>CUMULATIVE GPA (CGPA)</h3>
+        <div style="font-size:2rem; font-weight:bold; color:#6b8e23;">${cgpa} / 4.00</div>
+        <p>Total Credits: ${totalCredits} | Total Points: ${totalPoints.toFixed(2)}</p>
+    </div>`;
+    
+    container.innerHTML = html;
+    document.getElementById('transcriptPreview').style.display = 'block';
+}
 function generateOfficialTranscript() { if (!currentTranscriptStudent) return showToast("Select a student", "warning"); const win = window.open('', '_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Transcript</title><style>body{font-family:'Times New Roman';margin:0.5in;}</style></head><body>${document.getElementById('transcriptContent').innerHTML}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},500);};<\/script></body></html>`); win.document.close(); }
 function printTranscriptPreview() { const win = window.open('', '_blank'); win.document.write(`<!DOCTYPE html><html><head><title>Transcript Preview</title><style>body{font-family:'Times New Roman';margin:40px;}</style></head><body>${document.getElementById('transcriptContent').innerHTML}</body></html>`); win.document.close(); win.print(); }
 
