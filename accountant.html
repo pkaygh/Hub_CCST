@@ -922,6 +922,37 @@ const GRADING_SYSTEMS = {
     RN: [{ min: 80, grade: "A", points: 4.0 }, { min: 75, grade: "B+", points: 3.5 }, { min: 70, grade: "B", points: 3.0 }, { min: 65, grade: "C+", points: 2.5 }, { min: 60, grade: "C", points: 2.0 }, { min: 55, grade: "D+", points: 1.5 }, { min: 50, grade: "D", points: 1.0 }, { min: 0, grade: "E", points: 0 }],
     ML: [{ min: 85, grade: "A+", points: 5.0 }, { min: 80, grade: "A", points: 4.5 }, { min: 75, grade: "B+", points: 4.0 }, { min: 70, grade: "B", points: 3.5 }, { min: 65, grade: "C+", points: 3.0 }, { min: 60, grade: "C", points: 2.5 }, { min: 55, grade: "D+", points: 2.0 }, { min: 50, grade: "D", points: 1.5 }, { min: 0, grade: "E", points: 0 }]
 };
+// ===== ADD THIS COURSE DATABASE RIGHT HERE =====
+const COURSE_DATABASE = {
+    // Nursing Courses (RN program)
+    'RN': {
+        'NURS 101': { name: 'Fundamentals of Nursing', credits: 3, maxCA: 40, maxExam: 60 },
+        'NURS 102': { name: 'Health Assessment', credits: 3, maxCA: 40, maxExam: 60 },
+        'NURS 103': { name: 'Medical-Surgical Nursing I', credits: 4, maxCA: 40, maxExam: 60 },
+        'NURS 104': { name: 'Pharmacology', credits: 3, maxCA: 40, maxExam: 60 },
+        'NURS 105': { name: 'Community Health Nursing', credits: 3, maxCA: 40, maxExam: 60 },
+    },
+    // Midwifery Courses (RM program)
+    'RM': {
+        'MIDW 101': { name: 'Introduction to Midwifery', credits: 3, maxCA: 40, maxExam: 60 },
+        'MIDW 102': { name: 'Reproductive Health', credits: 3, maxCA: 40, maxExam: 60 },
+        'MIDW 103': { name: 'Antenatal Care', credits: 4, maxCA: 40, maxExam: 60 },
+        'ANAT 101': { name: 'Human Anatomy', credits: 4, maxCA: 40, maxExam: 60 },
+        'PHYS 101': { name: 'Human Physiology', credits: 4, maxCA: 40, maxExam: 60 },
+        'MIDW 104': { name: 'Intrapartum Care', credits: 4, maxCA: 40, maxExam: 60 },
+        'MIDW 105': { name: 'Postnatal Care', credits: 3, maxCA: 40, maxExam: 60 },
+    },
+    // Medical Laboratory Courses (ML program)
+    'ML': {
+        'MLT 101': { name: 'Introduction to Medical Lab', credits: 3, maxCA: 40, maxExam: 60 },
+        'MLT 102': { name: 'Clinical Chemistry', credits: 4, maxCA: 40, maxExam: 60 },
+        'MLT 103': { name: 'Hematology', credits: 4, maxCA: 40, maxExam: 60 },
+        'MLT 104': { name: 'Microbiology', credits: 4, maxCA: 40, maxExam: 60 },
+        'MLT 105': { name: 'Histopathology', credits: 3, maxCA: 40, maxExam: 60 },
+        'MLT 106': { name: 'Immunology', credits: 3, maxCA: 40, maxExam: 60 },
+    }
+};
+
 function getGradePoints(grade, program) { const sys = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RM; for (const l of sys) if (l.grade === grade) return l.points; return 0; }
 
 // ============================================
@@ -1132,6 +1163,227 @@ async function uploadResults() {
         btn.innerHTML = originalText;
     }
 }
+
+// ============================================
+// CSV VALIDATION FUNCTIONS - ADD THIS ENTIRE BLOCK
+// ============================================
+
+let validationReport = {
+    isValid: true,
+    errors: [],
+    warnings: [],
+    summary: { totalRows: 0, validRows: 0, invalidRows: 0, coursesFound: 0, coursesMissing: 0 }
+};
+
+function calculateGradeFromScore(totalScore, program) {
+    const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
+    for (const level of gradingSystem) {
+        if (totalScore >= level.min && totalScore <= level.max) {
+            return level.grade;
+        }
+    }
+    return 'E';
+}
+
+function validateCSVData(parsedResults) {
+    // Reset validation report
+    validationReport = {
+        isValid: true,
+        errors: [],
+        warnings: [],
+        summary: { totalRows: 0, validRows: 0, invalidRows: 0, coursesFound: 0, coursesMissing: 0 }
+    };
+    
+    if (!parsedResults || parsedResults.length === 0) {
+        validationReport.errors.push("No data found in CSV file");
+        validationReport.isValid = false;
+        return validationReport;
+    }
+    
+    const headerKeys = Object.keys(parsedResults[0] || {});
+    validationReport.summary.totalRows = parsedResults.length;
+    
+    // Find column mappings
+    const studentIdKey = headerKeys.find(k => 
+        k.toLowerCase().replace(/[^a-z]/g, '') === 'studentid' || 
+        k.toLowerCase().replace(/[^a-z]/g, '') === 'id'
+    ) || headerKeys[0];
+    
+    const nameKey = headerKeys.find(k => k.toLowerCase().includes('name')) || headerKeys[1];
+    const semesterKey = headerKeys.find(k => k.toLowerCase().includes('semester')) || 'Semester';
+    const programKey = headerKeys.find(k => k.toLowerCase().includes('program')) || 'Program';
+    const levelKey = headerKeys.find(k => k.toLowerCase().includes('level')) || 'Level';
+    
+    // Check if using simple template with individual course columns
+    const hasCodeColumns = headerKeys.some(k => /^code\d*$/i.test(k.trim()));
+    
+    for (let i = 0; i < parsedResults.length; i++) {
+        const row = parsedResults[i];
+        let rowValid = true;
+        let rowErrors = [];
+        let rowWarnings = [];
+        
+        // Get main fields
+        let studentId = ((row[studentIdKey] || '') + '').trim();
+        let name = ((row[nameKey] || '') + '').trim();
+        let program = ((row[programKey] || 'RM') + '').trim().toUpperCase();
+        let semester = ((row[semesterKey] || '') + '').trim();
+        let level = ((row[levelKey] || '') + '').trim();
+        
+        // Validate Student ID
+        if (!studentId) {
+            rowErrors.push("Missing Student ID");
+            rowValid = false;
+        } else if (!studentId.match(/^CCST\/(RM|RN|ML)\/\d{2}\/\d{3}$/)) {
+            rowWarnings.push(`Student ID format may be incorrect: ${studentId} (Expected: CCST/RM/24/001)`);
+        }
+        
+        // Validate Name
+        if (!name) {
+            rowWarnings.push("Missing student name");
+        }
+        
+        // Validate Program
+        if (!['RM', 'RN', 'ML'].includes(program)) {
+            rowErrors.push(`Invalid program: ${program}. Must be RM, RN, or ML`);
+            rowValid = false;
+        }
+        
+        // Validate Semester
+        if (!semester) {
+            rowErrors.push("Missing semester");
+            rowValid = false;
+        }
+        
+        // Validate Level
+        if (level && !['100', '200', '300', '400'].includes(level)) {
+            rowWarnings.push(`Level should be 100, 200, 300, or 400. Got: ${level}`);
+        }
+        
+        // Parse and validate courses
+        let courses = [];
+        
+        if (hasCodeColumns) {
+            const codeKeys = headerKeys.filter(k => /^code\d*$/i.test(k.trim()));
+            
+            for (const codeKey of codeKeys) {
+                const numMatch = codeKey.match(/\d+/);
+                const num = numMatch ? numMatch[0] : '';
+                const code = ((row[codeKey] || '') + '').trim();
+                
+                if (!code) continue;
+                
+                const courseNameKey = headerKeys.find(k => k.trim() === `Name${num}` || k.trim() === `CourseName${num}`);
+                const creditsKey = headerKeys.find(k => k.trim() === `Credits${num}`);
+                const caKey = headerKeys.find(k => k.trim() === `CA${num}`);
+                const examKey = headerKeys.find(k => k.trim() === `Exam${num}`);
+                
+                let courseName = ((row[courseNameKey] || '') + '').trim();
+                let credits = parseInt(row[creditsKey]) || 3;
+                let ca = parseFloat(row[caKey]) || 0;
+                let exam = parseFloat(row[examKey]) || 0;
+                let total = ca + exam;
+                
+                // Validate against course database
+                const courseDB = COURSE_DATABASE[program];
+                const dbCourse = courseDB ? courseDB[code] : null;
+                
+                if (dbCourse) {
+                    validationReport.summary.coursesFound++;
+                    
+                    if (courseName && dbCourse.name !== courseName) {
+                        rowWarnings.push(`Course ${code}: Name mismatch. Expected "${dbCourse.name}", got "${courseName}"`);
+                    }
+                    
+                    if (credits !== dbCourse.credits) {
+                        rowWarnings.push(`Course ${code}: Credits mismatch. Expected ${dbCourse.credits}, got ${credits}`);
+                    }
+                } else {
+                    validationReport.summary.coursesMissing++;
+                    rowWarnings.push(`Course ${code}: Not found in database. Please verify course code.`);
+                }
+                
+                // Validate CA score (max 40)
+                if (ca < 0 || ca > 40) {
+                    rowErrors.push(`Course ${code}: CA score must be between 0 and 40. Got: ${ca}`);
+                    rowValid = false;
+                }
+                
+                // Validate Exam score (max 60)
+                if (exam < 0 || exam > 60) {
+                    rowErrors.push(`Course ${code}: Exam score must be between 0 and 60. Got: ${exam}`);
+                    rowValid = false;
+                }
+                
+                // Validate total (CA + Exam = max 100)
+                if (total < 0 || total > 100) {
+                    rowErrors.push(`Course ${code}: Total score (CA+Exam) must be between 0 and 100. Got: ${total}`);
+                    rowValid = false;
+                }
+                
+                courses.push({
+                    code: code,
+                    name: courseName || (dbCourse ? dbCourse.name : code),
+                    credits: credits,
+                    ca: ca,
+                    exam: exam,
+                    grade: calculateGradeFromScore(total, program)
+                });
+            }
+        }
+        
+        if (courses.length === 0 && hasCodeColumns) {
+            rowErrors.push("No courses found for this student");
+            rowValid = false;
+        }
+        
+        if (rowValid) {
+            validationReport.summary.validRows++;
+        } else {
+            validationReport.summary.invalidRows++;
+            validationReport.isValid = false;
+            validationReport.errors.push(`Row ${i + 1} (${studentId || 'Unknown'}): ${rowErrors.join(', ')}`);
+        }
+        
+        if (rowWarnings.length > 0) {
+            validationReport.warnings.push(`Row ${i + 1} (${studentId || 'Unknown'}): ${rowWarnings.join(', ')}`);
+        }
+    }
+    
+    return validationReport;
+}
+
+function showValidationReport(report) {
+    let message = '';
+    
+    if (report.errors.length > 0) {
+        message = `❌ VALIDATION FAILED!\n\n`;
+        message += `Summary: ${report.summary.validRows}/${report.summary.totalRows} rows valid\n`;
+        message += `Courses Found in DB: ${report.summary.coursesFound}\n`;
+        message += `Courses Missing from DB: ${report.summary.coursesMissing}\n\n`;
+        message += `ERRORS (${report.errors.length}):\n${report.errors.slice(0, 5).join('\n')}`;
+        if (report.errors.length > 5) message += `\n... and ${report.errors.length - 5} more errors`;
+        message += `\n\nPlease fix these errors and try again.`;
+        alert(message);
+        return false;
+    } else if (report.warnings.length > 0) {
+        message = `⚠️ VALIDATION WARNINGS!\n\n`;
+        message += `Summary: ${report.summary.validRows}/${report.summary.totalRows} rows valid\n`;
+        message += `Courses Found in DB: ${report.summary.coursesFound}\n`;
+        message += `Courses Missing: ${report.summary.coursesMissing}\n\n`;
+        message += `WARNINGS (${report.warnings.length}):\n${report.warnings.slice(0, 3).join('\n')}`;
+        if (report.warnings.length > 3) message += `\n... and ${report.warnings.length - 3} more warnings`;
+        message += `\n\nDo you want to proceed with upload anyway?`;
+        return confirm(message);
+    } else {
+        message = `✅ VALIDATION PASSED!\n\n`;
+        message += `Summary: ${report.summary.validRows}/${report.summary.totalRows} rows are valid\n`;
+        message += `Courses Found in Database: ${report.summary.coursesFound}\n`;
+        message += `Ready to upload ${report.summary.validRows} student result(s).\n\nProceed with upload?`;
+        return confirm(message);
+    }
+}
+
 // ============================================
 // CSV HANDLING
 // ============================================
@@ -1172,6 +1424,27 @@ function handleCSVSelect(event) {
 async function processCSV() {
     if (!parsedResults || parsedResults.length === 0) {
         showToast("No data to process", "danger");
+        return;
+    }
+//------------This validate CSV files---------
+    showToast("Validating CSV data...", "info");
+    const validationReport = validateCSVData(parsedResults);
+    
+    // Show validation report and ask for confirmation
+    const userConfirmed = showValidationReport(validationReport);
+    
+    if (!userConfirmed) {
+        showToast("Upload cancelled", "warning");
+        // Clear the file input and preview
+        document.getElementById('filePreview').style.display = 'none';
+        document.getElementById('processBtn').style.display = 'none';
+        document.getElementById('csvFileInput').value = '';
+        parsedResults = null;
+        return;
+    }
+    
+    if (validationReport.errors.length > 0) {
+        showToast(`Validation failed: ${validationReport.errors.length} errors. Upload cancelled.`, "danger");
         return;
     }
 
@@ -1282,8 +1555,8 @@ async function processCSV() {
                         name: (row[nameKey] || row[codeKey] || '').trim(),
                         credits: parseInt(row[creditsKey]) || 3,
                         grade: (row[gradeKey] || 'E').trim(),
-                        ca: parseFloat(row[caKey]) || 0,
-                        exam: parseFloat(row[examKey]) || 0
+    ca: parseFloat(row[caKey]) || 0,
+    exam: parseFloat(row[examKey]) || 0
                     });
                 }
             });
@@ -1413,9 +1686,9 @@ CCST/RM/24/002,John Doe,Semester 1 2025/2026,2.80,RM,100,"[{""code"":""NURS 101"
 }
 
 function downloadSimpleResultsTemplate() {
-    const template = `StudentID,Name,Semester,GPA,Program,Level,Code1,Name1,Credits1,Grade1,Code2,Name2,Credits2,Grade2
-CCST/RM/24/001,Justina Arhin,Semester 1 2025/2026,3.25,RM,100,COSC 101,Introduction to Computing,3,A,NURS 102,Health Assessment,3,B+
-CCST/RM/24/002,John Doe,Semester 1 2025/2026,2.80,RM,100,NURS 101,Fundamentals of Nursing,3,B,ANAT 101,Human Anatomy,4,C+`;
+    const template = `StudentID,Name,Semester,GPA,Program,Level,Code1,Name1,Credits1,CA1,Exam1,Grade1,Code2,Name2,Credits2,CA2,Exam2,Grade2,Code3,Name3,Credits3,CA3,Exam3,Grade3
+CCST/RM/24/001,Justina Arhin,Semester 1 2025/2026,3.25,RM,100,COSC 101,Introduction to Computing,3,35,55,A,NURS 102,Health Assessment,3,40,50,B+,ANAT 101,Human Anatomy,4,30,45,C+
+CCST/RM/24/002,John Doe,Semester 1 2025/2026,2.80,RM,100,NURS 101,Fundamentals of Nursing,3,30,50,B,ANAT 101,Human Anatomy,4,25,45,C+,,,0,0,0,`;
     
     const blob = new Blob([template], { type: 'text/csv' });
     const a = document.createElement('a');
@@ -1423,7 +1696,7 @@ CCST/RM/24/002,John Doe,Semester 1 2025/2026,2.80,RM,100,NURS 101,Fundamentals o
     a.download = 'CCST_Results_simple_template.csv';
     a.click();
     URL.revokeObjectURL(a.href);
-    showToast("Simple template downloaded!", "success");
+    showToast("Simple template with CA/Exam downloaded!", "success");
 }
 
 // ============================================
