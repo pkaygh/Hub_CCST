@@ -1174,9 +1174,18 @@ let validationReport = {
 };
 
 function calculateGradeFromScore(totalScore, program) {
+    // Ensure totalScore is a number between 0 and 100
+    let score = parseFloat(totalScore);
+    if (isNaN(score)) score = 0;
+    
     const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
-    for (const level of gradingSystem) {
-        if (totalScore >= level.min && totalScore <= level.max) {
+    
+    // Sort by min descending to check highest first
+    const sortedSystem = [...gradingSystem].sort((a, b) => b.min - a.min);
+    
+    for (const level of sortedSystem) {
+        if (score >= level.min) {
+            console.log(`Score ${score} -> Grade ${level.grade}, Points ${level.points}`);
             return level.grade;
         }
     }
@@ -1282,24 +1291,18 @@ function validateCSVData(parsedResults) {
                 let exam = parseFloat(row[examKey]) || 0;
                 let total = ca + exam;
                 
-                // Validate against course database
-                const courseDB = COURSE_DATABASE[program];
-                const dbCourse = courseDB ? courseDB[code] : null;
-                
-                if (dbCourse) {
-                    validationReport.summary.coursesFound++;
-                    
-                    if (courseName && dbCourse.name !== courseName) {
-                        rowWarnings.push(`Course ${code}: Name mismatch. Expected "${dbCourse.name}", got "${courseName}"`);
+                // Calculate grade properly
+                let calculatedGrade = 'E';
+                const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
+                const sortedSystem = [...gradingSystem].sort((a, b) => b.min - a.min);
+                for (const gradeLevel of sortedSystem) {
+                    if (total >= gradeLevel.min) {
+                        calculatedGrade = gradeLevel.grade;
+                        break;
                     }
-                    
-                    if (credits !== dbCourse.credits) {
-                        rowWarnings.push(`Course ${code}: Credits mismatch. Expected ${dbCourse.credits}, got ${credits}`);
-                    }
-                } else {
-                    validationReport.summary.coursesMissing++;
-                    rowWarnings.push(`Course ${code}: Not found in database. Please verify course code.`);
                 }
+                
+                console.log(`Course ${code}: CA=${ca}, Exam=${exam}, Total=${total}, Grade=${calculatedGrade}`);
                 
                 // Validate CA score (max 40)
                 if (ca < 0 || ca > 40) {
@@ -1321,14 +1324,14 @@ function validateCSVData(parsedResults) {
                 
                 courses.push({
                     code: code,
-                    name: courseName || (dbCourse ? dbCourse.name : code),
+                    name: courseName || code,
                     credits: credits,
                     ca: ca,
                     exam: exam,
-                    grade: calculateGradeFromScore(total, program)
+                    grade: calculatedGrade
                 });
             }
-        }
+        } // <-- THIS CLOSES THE if (hasCodeColumns) BLOCK
         
         if (courses.length === 0 && hasCodeColumns) {
             rowErrors.push("No courses found for this student");
@@ -1486,82 +1489,89 @@ async function processCSV() {
         }
 
         // ===== COURSE PARSING - READ CA AND EXAM =====
-        let courseDetails = [];
-        
-        const codeKeys = headerKeys.filter(k => /^code\d*$/i.test(k.trim()));
-        
-        for (const codeKey of codeKeys) {
-            const numMatch = codeKey.match(/\d+/);
-            const num = numMatch ? numMatch[0] : '';
-            
-            const nameKey2 = headerKeys.find(k => k.trim() === `Name${num}` || k.trim() === `CourseName${num}`);
-            const creditsKey = headerKeys.find(k => k.trim() === `Credits${num}` || k.trim() === `Credit${num}`);
-            const caKey = headerKeys.find(k => k.trim() === `CA${num}`);
-            const examKey = headerKeys.find(k => k.trim() === `Exam${num}`);
-            
-            const code = ((row[codeKey] || '') + '').trim();
-            if (!code) continue;
-            
-            // Get CA and Exam values
-            const ca = parseFloat(row[caKey]) || 0;
-            const exam = parseFloat(row[examKey]) || 0;
-            const totalScore = ca + exam;
-            
-            // Calculate grade from total score (CA + Exam)
-            let calculatedGrade = 'E';
-            const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
-            for (const level2 of gradingSystem) {
-                if (totalScore >= level2.min && totalScore <= level2.max) {
-                    calculatedGrade = level2.grade;
-                    break;
-                }
-            }
-            
-            courseDetails.push({
-                code: code,
-                name: ((row[nameKey2] || code) + '').trim(),
-                credits: parseInt(row[creditsKey]) || 3,
-                ca: ca,
-                exam: exam,
-                grade: calculatedGrade
-            });
+let courseDetails = [];
+
+const codeKeys = headerKeys.filter(k => /^code\d*$/i.test(k.trim()));
+
+for (const codeKey of codeKeys) {
+    const numMatch = codeKey.match(/\d+/);
+    const num = numMatch ? numMatch[0] : '';
+    
+    const nameKey2 = headerKeys.find(k => k.trim() === `Name${num}` || k.trim() === `CourseName${num}`);
+    const creditsKey = headerKeys.find(k => k.trim() === `Credits${num}` || k.trim() === `Credit${num}`);
+    const caKey = headerKeys.find(k => k.trim() === `CA${num}`);
+    const examKey = headerKeys.find(k => k.trim() === `Exam${num}`);
+    
+    const code = ((row[codeKey] || '') + '').trim();
+    if (!code) continue;
+    
+    // Get CA and Exam values
+    const ca = parseFloat(row[caKey]) || 0;
+    const exam = parseFloat(row[examKey]) || 0;
+    const totalScore = ca + exam;
+    
+    // Calculate grade from total score (CA + Exam)
+    let calculatedGrade = 'E';
+    const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
+    const sortedSystem = [...gradingSystem].sort((a, b) => b.min - a.min);
+    
+    for (const level of sortedSystem) {
+        if (totalScore >= level.min) {
+            calculatedGrade = level.grade;
+            break;
         }
+    }
+    
+    console.log(`Course ${code}: CA=${ca}, Exam=${exam}, Total=${totalScore}, Grade=${calculatedGrade}`);
+    
+    courseDetails.push({
+        code: code,
+        name: ((row[nameKey2] || code) + '').trim(),
+        credits: parseInt(row[creditsKey]) || 3,
+        ca: ca,
+        exam: exam,
+        grade: calculatedGrade
+    });
+}
 
-        console.log('Courses found:', courseDetails.length);
+console.log('Courses found:', courseDetails.length);
+console.log('Course details:', JSON.stringify(courseDetails));
 
-        if (courseDetails.length === 0) {
-            failed++;
-            errors.push('Row ' + (i + 1) + ' (' + studentId + '): No courses found');
-            continue;
+if (courseDetails.length === 0) {
+    failed++;
+    errors.push('Row ' + (i + 1) + ' (' + studentId + '): No courses found');
+    continue;
+}
+
+// ===== GPA CALCULATION FROM COURSES =====
+const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
+const sortedSystem = [...gradingSystem].sort((a, b) => b.min - a.min);
+let totalPoints = 0, totalCredits = 0;
+
+courseDetails.forEach(c => {
+    const credits = parseInt(c.credits) || 3;
+    const totalScore = (c.ca || 0) + (c.exam || 0);
+    
+    // Find grade and points
+    let grade = 'E';
+    let points = 0;
+    for (const level of sortedSystem) {
+        if (totalScore >= level.min) {
+            grade = level.grade;
+            points = level.points;
+            break;
         }
+    }
+    
+    c.grade = grade;
+    totalPoints += points * credits;
+    totalCredits += credits;
+    
+    console.log(`Course ${c.code}: Score=${totalScore}, Grade=${grade}, Points=${points}, Credits=${credits}`);
+});
 
-        // ===== GPA CALCULATION FROM COURSES =====
-        const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
-        let totalPoints = 0, totalCredits = 0;
-        courseDetails.forEach(c => {
-            const credits = parseInt(c.credits) || 3;
-            const totalScore = (c.ca || 0) + (c.exam || 0);
-            let grade = 'E';
-            for (const level2 of gradingSystem) {
-                if (totalScore >= level2.min && totalScore <= level2.max) {
-                    grade = level2.grade;
-                    break;
-                }
-            }
-            let points = 0;
-            for (const l of gradingSystem) {
-                if (l.grade === grade) {
-                    points = l.points;
-                    break;
-                }
-            }
-            totalPoints += points * credits;
-            totalCredits += credits;
-            c.grade = grade;
-        });
-        
-        const finalGPA = totalCredits > 0 ? parseFloat((totalPoints / totalCredits).toFixed(2)) : 0;
-        console.log(`Calculated GPA for ${studentId}: ${finalGPA}`);
+const finalGPA = totalCredits > 0 ? parseFloat((totalPoints / totalCredits).toFixed(2)) : 0;
+console.log(`Calculated GPA for ${studentId}: ${finalGPA} (Total Points: ${totalPoints}, Total Credits: ${totalCredits})`);
 
         // ===== UPLOAD TO SERVER =====
         try {
