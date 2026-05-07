@@ -850,7 +850,7 @@
 // ============================================
 // GLOBAL VARIABLES
 // ============================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoPLOynYDPHYOqw8seC7IYoRQoWmPvbgC7pQAGBC39qZPehw-oN7k3JkxpXZoZTGzv/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxiLLRUWyZ4zFxmDbN5ovqp7gb4vHojDMoItdTUt39CO-E7x9Gluv8OSJZqIKSqjo_/exec";
 let currentStudent = null;
 let currentTranscriptStudent = null;
 let allStudents = [];
@@ -1114,7 +1114,38 @@ async function uploadResults() {
 // CSV HANDLING
 // ============================================
 let csvData = null, parsedResults = [];
-function handleCSVSelect(event) { const file = event.target.files[0]; if (!file) return; Papa.parse(file, { header: true, skipEmptyLines: true, complete: (results) => { csvData = results; parsedResults = results.data; document.getElementById('filePreview').style.display = 'block'; document.getElementById('processBtn').style.display = 'block'; } }); }
+function handleCSVSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: false,
+        transformHeader: function(header, index) {
+            // Clean up header names - remove extra spaces and handle malformed headers
+            return header.trim().replace(/^\s+|\s+$/g, '');
+        },
+        complete: (results) => {
+            csvData = results;
+            parsedResults = results.data;
+
+            // Debug: Show sample of parsed data
+            console.log('CSV Parsed - Total rows:', results.data.length);
+            if (results.data.length > 0) {
+                console.log('First row keys:', Object.keys(results.data[0]));
+                console.log('First row values:', JSON.stringify(results.data[0]).substring(0, 500));
+            }
+
+            document.getElementById('filePreview').style.display = 'block';
+            document.getElementById('processBtn').style.display = 'block';
+        },
+        error: function(error) {
+            showToast('CSV Parse Error: ' + error.message, 'danger');
+            console.error('PapaParse Error:', error);
+        }
+    });
+}
 async function processCSV() {
     if (!parsedResults || parsedResults.length === 0) {
         showToast("No data to process", "danger");
@@ -1130,15 +1161,30 @@ async function processCSV() {
     let failed = 0;
     let errors = [];
 
+    // Get header mapping once
+    const headerKeys = Object.keys(parsedResults[0] || {});
+    console.log('CSV Headers:', headerKeys);
+
+    // Find column indices
+    const studentIdKey = headerKeys.find(k => k.toLowerCase() === 'studentid' || k === 'StudentID') || headerKeys[0];
+    const nameKey = headerKeys.find(k => k.toLowerCase() === 'name') || headerKeys[1];
+    const semesterKey = headerKeys.find(k => k.toLowerCase() === 'semester') || 'Semester';
+    const gpaKey = headerKeys.find(k => k.toLowerCase() === 'gpa') || 'GPA';
+    const programKey = headerKeys.find(k => k.toLowerCase() === 'program') || 'Program';
+    const levelKey = headerKeys.find(k => k.toLowerCase() === 'level') || 'Level';
+
     for (let i = 0; i < parsedResults.length; i++) {
         const row = parsedResults[i];
-        const studentId = (row['StudentID'] || row['id'] || row['INDEX NUMBER'] || '').toString().trim();
-        const semester = row['Semester'] || row['SEMESTER'] || 'Semester 1';
-        const gpa = row['GPA'] || row['gpa'] || '0';
-        const program = row['Program'] || row['PROGRAM'] || row['program'] || 'RM';
-        const level = row['Level'] || row['LEVEL'] || row['level'] || '100';
-        const name = row['Name'] || row['NAME'] || row['name'] || '';
-        let courseDetails = row['CourseDetails'] || row['details'] || row['Courses'] || '[]';
+
+        // Get main fields
+        let studentId = ((row[studentIdKey] || '') + '').trim();
+        let name = ((row[nameKey] || '') + '').trim();
+        let semester = ((row[semesterKey] || 'Semester 1') + '').trim();
+        let gpa = ((row[gpaKey] || '0') + '').trim();
+        let program = ((row[programKey] || 'RM') + '').trim();
+        let level = ((row[levelKey] || '100') + '').trim();
+
+        console.log('Row ' + i + ': ID=' + studentId + ', Name=' + name);
 
         if (!studentId) {
             failed++;
@@ -1146,12 +1192,61 @@ async function processCSV() {
             continue;
         }
 
-        // Try to parse course details if it's a string
-        if (typeof courseDetails === 'string') {
-            try {
-                courseDetails = JSON.parse(courseDetails);
-            } catch(e) {
-                courseDetails = [];
+        // Collect all course data from remaining columns
+        let courseDetails = [];
+
+        // Get all column values and look for course data
+        for (const [key, value] of Object.entries(row)) {
+            if (!value || typeof value !== 'string') continue;
+            const val = value.trim();
+            if (!val) continue;
+
+            // Skip empty columns
+            if (key === studentIdKey || key === nameKey || key === semesterKey ||
+                key === gpaKey || key === programKey || key === levelKey) continue;
+
+            // Skip header-like values
+            if (val.startsWith('StudentID') || val.startsWith('Name') ||
+                val.startsWith('Semester') || val.includes('StudentID')) continue;
+
+            // Look for course data starting with [{ or containing course codes
+            if (val.startsWith('[{') || val.startsWith('[{')) {
+                const courses = parseCourseData(val);
+                if (courses && courses.length > 0) {
+                    courseDetails = courseDetails.concat(courses);
+                }
+            }
+            // Also check for individual course entries (key might look like "Course1" or similar)
+            else if (val.includes('code') && val.includes('grade')) {
+                const courses = parseCourseData(val);
+                if (courses && courses.length > 0) {
+                    courseDetails = courseDetails.concat(courses);
+                }
+            }
+        }
+
+        console.log('Courses found:', courseDetails.length);
+
+        // Calculate GPA from course details if not provided or invalid
+        let finalGPA = parseFloat(gpa) || 0;
+        if (courseDetails.length > 0 && finalGPA === 0) {
+            const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
+            let totalPoints = 0, totalCredits = 0;
+            courseDetails.forEach(c => {
+                const credits = c.credits || c.Credits || 3;
+                const grade = c.grade || c.Grade || 'E';
+                let points = 0;
+                for (const l of gradingSystem) {
+                    if (l.grade === grade.toUpperCase()) {
+                        points = l.points;
+                        break;
+                    }
+                }
+                totalPoints += points * credits;
+                totalCredits += credits;
+            });
+            if (totalCredits > 0) {
+                finalGPA = parseFloat((totalPoints / totalCredits).toFixed(2));
             }
         }
 
@@ -1163,16 +1258,17 @@ async function processCSV() {
                     id: studentId,
                     name: name,
                     semester: semester,
-                    gpa: parseFloat(gpa) || 0,
+                    gpa: finalGPA,
                     program: program,
                     level: level,
-                    details: JSON.stringify(Array.isArray(courseDetails) ? courseDetails : [])
+                    details: JSON.stringify(courseDetails)
                 })
             });
 
             const result = await response.json();
             if (result.success) {
                 success++;
+                console.log('SUCCESS: ' + studentId + ' - GPA:' + finalGPA + ' - Courses:' + courseDetails.length);
             } else {
                 failed++;
                 errors.push('Row ' + (i + 1) + ' (' + studentId + '): ' + (result.error || 'Unknown error'));
@@ -1191,12 +1287,60 @@ async function processCSV() {
     btn.disabled = false;
     btn.innerHTML = 'PROCESS & UPLOAD';
     showToast('Uploaded: ' + success + ', Failed: ' + failed, success > 0 ? "success" : "danger");
-    if (errors.length > 0) console.log('CSV Errors:', errors);
+    if (errors.length > 0) {
+        console.log('CSV Errors:', errors);
+    }
 
     document.getElementById('filePreview').style.display = 'none';
     document.getElementById('processBtn').style.display = 'none';
     parsedResults = null;
     document.getElementById('csvFileInput').value = '';
+}
+
+// Helper function to parse course data
+function parseCourseData(courseStr) {
+    if (!courseStr || typeof courseStr !== 'string') return [];
+
+    let courses = [];
+    const trimmed = courseStr.trim();
+
+    // If it starts with [, it might be a JSON array
+    if (trimmed.startsWith('[')) {
+        try {
+            // Try standard JSON first
+            const parsed = JSON.parse(trimmed.replace(/'/g, '"'));
+            if (Array.isArray(parsed)) {
+                return parsed;
+            } else if (parsed && typeof parsed === 'object') {
+                return [parsed];
+            }
+        } catch(e1) {
+            // Try fixing malformed JSON
+            try {
+                // Fix unquoted keys like {code:""BADJ111""...}
+                let fixed = trimmed;
+
+                // Replace double quotes with single quotes pattern
+                fixed = fixed.replace(/([{,]\s*)(\w+)(\s*):(\s*)"/g, '$1"$2"$3:$4"');
+                fixed = fixed.replace(/":""/g, '":"');
+                fixed = fixed.replace(/""/g, '"');
+
+                // Handle specific case: code:""BADJ111"" -> "code":"BADJ111"
+                fixed = fixed.replace(/(\w+):""/g, '"$1":"');
+                fixed = fixed.replace(/""}/g, '"}');
+                fixed = fixed.replace(/"\]/g, '"]');
+
+                const parsed = JSON.parse(fixed);
+                if (Array.isArray(parsed)) {
+                    return parsed;
+                }
+            } catch(e2) {
+                console.log('Failed to parse course data:', trimmed.substring(0, 200));
+            }
+        }
+    }
+
+    return courses;
 }
 function downloadResultsTemplate() { 
     const template = `StudentID,Name,Semester,GPA,Program,Level,CourseDetails
