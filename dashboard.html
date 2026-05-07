@@ -316,6 +316,7 @@
         .notification-icon {
             width: 45px;
             height: 45px;
+            min-width: 45px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
@@ -323,6 +324,32 @@
             align-items: center;
             justify-content: center;
             font-size: 1.2rem;
+        }
+
+        /* Notification type icons */
+        .notification-icon.type-finance { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); }
+        .notification-icon.type-academic { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
+        .notification-icon.type-admin { background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); }
+        .notification-icon.type-src { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+        .notification-icon.type-general { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); }
+
+        /* Responsive notification icons */
+        @media (max-width: 768px) {
+            .notification-icon {
+                width: 38px;
+                height: 38px;
+                min-width: 38px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .notification-icon {
+                width: 34px;
+                height: 34px;
+                min-width: 34px;
+                font-size: 0.9rem;
+            }
         }
 
         /* Transcript Styles */
@@ -2087,7 +2114,7 @@ function formatDateForDisplay(dateValue) {
     }
     return dateStr;
 }
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxiLLRUWyZ4zFxmDbN5ovqp7gb4vHojDMoItdTUt39CO-E7x9Gluv8OSJZqIKSqjo_/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoPLOynYDPHYOqw8seC7IYoRQoWmPvbgC7pQAGBC39qZPehw-oN7k3JkxpXZoZTGzv/exec";
         let studentData = null;
         let financeData = null;
         let academicData = null;
@@ -2318,11 +2345,18 @@ function formatDateForDisplay(dateValue) {
         
         // Photo functions - moved outside loadProfile
         async function setProfilePhoto(studentId) {
+            const p = studentData?.profile;
+            // Try local storage with student ID first
             let savedPhoto = localStorage.getItem(`userPhoto_${studentId}`);
+            // If not found, try phone-based storage (for phone change scenarios)
+            if (!savedPhoto && p?.phone) {
+                savedPhoto = localStorage.getItem(`userPhoto_phone_${p.phone}`);
+            }
             if (savedPhoto) {
                 document.getElementById('profilePic').src = savedPhoto;
                 document.getElementById('sidebarPhoto').src = savedPhoto;
             } else {
+                // Fetch from Google Sheets if not found locally
                 const remotePhoto = await fetchProfilePhoto(studentId);
                 if (remotePhoto) {
                     document.getElementById('profilePic').src = remotePhoto;
@@ -2330,13 +2364,18 @@ function formatDateForDisplay(dateValue) {
                 }
             }
         }
-        
+
         async function fetchProfilePhoto(studentId) {
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=get_student_photo&id=${studentId}`);
                 const data = await response.json();
                 if (data.photoData && data.photoData !== "") {
+                    // Save with both ID and phone-based keys for redundancy
                     localStorage.setItem(`userPhoto_${studentId}`, data.photoData);
+                    const p = studentData?.profile;
+                    if (p?.phone) {
+                        localStorage.setItem(`userPhoto_phone_${p.phone}`, data.photoData);
+                    }
                     return data.photoData;
                 }
             } catch (error) {
@@ -2996,6 +3035,23 @@ function formatDateForDisplay(dateValue) {
             }).join('');
         }
         
+        // Notification type to icon mapping
+        function getNotificationIcon(type) {
+            const icons = {
+                finance: 'fa-dollar-sign',
+                academic: 'fa-graduation-cap',
+                admin: 'fa-user-shield',
+                src: 'fa-crown',
+                general: 'fa-bullhorn'
+            };
+            return icons[type?.toLowerCase()] || icons.general;
+        }
+
+        // Get icon CSS class based on notification type
+        function getNotificationIconClass(type) {
+            return 'type-' + (type?.toLowerCase() || 'general');
+        }
+
         // Update loadNotifications
         async function loadNotifications() {
     const container = document.getElementById('notificationList');
@@ -3004,20 +3060,23 @@ function formatDateForDisplay(dateValue) {
     const level = studentData?.profile?.level;
     const readStorageKey = studentId ? `readNotifications_${studentId}` : 'readNotifications';
     const readNotifIds = JSON.parse(localStorage.getItem(readStorageKey) || '[]');
-    
+
     try {
         const response = await fetch(`${SCRIPT_URL}?action=get_notifications&id=${studentId}&program=${program}&level=${level}`);
         const data = await response.json();
-        
+
         let html = '', unreadCount = 0;
-        
+
         // Check if we have notifications from server
         if (data.notifications && data.notifications.length > 0) {
             data.notifications.forEach(notif => {
                 const isRead = readNotifIds.includes(notif.id);
                 if (!isRead) unreadCount++;
+                const notifType = notif.type || 'general';
+                const iconClass = getNotificationIconClass(notifType);
+                const icon = getNotificationIcon(notifType);
                 html += `<div class="notification-item ${isRead ? '' : 'unread'}" onclick="markRead(${notif.id})">
-                    <div class="notification-icon"><i class="fas fa-bullhorn"></i></div>
+                    <div class="notification-icon ${iconClass}"><i class="fas ${icon}"></i></div>
                     <div>
                         <h4>${notif.title}</h4>
                         <p>${notif.content}</p>
@@ -3091,7 +3150,11 @@ function formatDateForDisplay(dateValue) {
                         const photoData = ev.target.result;
                         document.getElementById('profilePic').src = photoData;
                         document.getElementById('sidebarPhoto').src = photoData;
+                        // Save to local storage using both student ID and phone for redundancy
                         localStorage.setItem(`userPhoto_${studentData.profile.id}`, photoData);
+                        localStorage.setItem(`userPhoto_phone_${studentData.profile.phone}`, photoData);
+                        // ALWAYS upload to Google Sheets
+                        uploadPhotoToSheets(photoData);
                         showToast('Photo updated!');
                     };
                     reader.readAsDataURL(file);
@@ -3126,7 +3189,10 @@ function formatDateForDisplay(dateValue) {
                     const compressedData = canvas.toDataURL('image/jpeg', 0.7);
                     document.getElementById('profilePic').src = compressedData;
                     document.getElementById('sidebarPhoto').src = compressedData;
+                    // Save to local storage using both student ID and phone for redundancy
                     localStorage.setItem(`userPhoto_${studentData.profile.id}`, compressedData);
+                    localStorage.setItem(`userPhoto_phone_${studentData.profile.phone}`, compressedData);
+                    // ALWAYS upload to Google Sheets
                     uploadPhotoToSheets(compressedData);
                     showToast('Photo compressed and updated!');
                 };
@@ -3148,7 +3214,10 @@ function formatDateForDisplay(dateValue) {
                         photoData: base64Data
                     })
                 });
-                console.log('Photo upload response:', await response.json());
+                const result = await response.json();
+                if (result.success) {
+                    console.log('Photo saved to Google Sheets successfully');
+                }
             } catch (err) {
                 console.log('Photo upload to sheets failed, saved locally only');
             }

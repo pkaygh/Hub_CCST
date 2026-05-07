@@ -773,7 +773,15 @@
             <div id="notificationsSection" class="section" style="display:none;">
                 <div class="card">
                     <div class="card-header"><h3><i class="fas fa-bell"></i> Send Notification to Students</h3></div>
-                    <label style="font-weight: bold;">Notification Type:</label>
+                    <label style="font-weight: bold;">Notification Source:</label>
+                    <select id="notifSource" style="margin-bottom: 15px;">
+                        <option value="general">General</option>
+                        <option value="finance">Finance</option>
+                        <option value="academic">Academic</option>
+                        <option value="src">SRC Executives</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <label style="font-weight: bold;">Target Audience:</label>
                     <select id="notifType" onchange="toggleTargetSelection()"><option value="all">All Students</option><option value="program">By Program</option><option value="level">By Level</option><option value="individual">Individual Student</option></select>
                     <div id="targetSelection" style="display: none; margin-bottom: 15px;"><input id="targetValue" placeholder="Enter Program (e.g., RM) or Level (e.g., 100)"></div>
                     <label style="font-weight: bold;">Title:</label><input id="notifTitle" placeholder="Notification Title">
@@ -842,7 +850,7 @@
 // ============================================
 // GLOBAL VARIABLES
 // ============================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxiLLRUWyZ4zFxmDbN5ovqp7gb4vHojDMoItdTUt39CO-E7x9Gluv8OSJZqIKSqjo_/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoPLOynYDPHYOqw8seC7IYoRQoWmPvbgC7pQAGBC39qZPehw-oN7k3JkxpXZoZTGzv/exec";
 let currentStudent = null;
 let currentTranscriptStudent = null;
 let allStudents = [];
@@ -1107,28 +1115,37 @@ async function uploadResults() {
 // ============================================
 let csvData = null, parsedResults = [];
 function handleCSVSelect(event) { const file = event.target.files[0]; if (!file) return; Papa.parse(file, { header: true, skipEmptyLines: true, complete: (results) => { csvData = results; parsedResults = results.data; document.getElementById('filePreview').style.display = 'block'; document.getElementById('processBtn').style.display = 'block'; } }); }
-async function processCSV() { 
+async function processCSV() {
     if (!parsedResults || parsedResults.length === 0) {
         showToast("No data to process", "danger");
         return;
     }
-    
-    showToast("Processing CSV...", "info"); 
+
+    showToast("Processing CSV...", "info");
     const btn = document.getElementById('processBtn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
-    
+
     let success = 0;
     let failed = 0;
-    
-    for (const row of parsedResults) { 
-        const studentId = row['StudentID'] || row['id'] || row['INDEX NUMBER']; 
+    let errors = [];
+
+    for (let i = 0; i < parsedResults.length; i++) {
+        const row = parsedResults[i];
+        const studentId = (row['StudentID'] || row['id'] || row['INDEX NUMBER'] || '').toString().trim();
         const semester = row['Semester'] || row['SEMESTER'] || 'Semester 1';
-        const gpa = row['GPA'] || '0';
-        const program = row['Program'] || row['PROGRAM'] || 'RM';
-        const level = row['Level'] || row['LEVEL'] || '100';
-        let courseDetails = row['CourseDetails'] || row['details'] || '[]';
-        
+        const gpa = row['GPA'] || row['gpa'] || '0';
+        const program = row['Program'] || row['PROGRAM'] || row['program'] || 'RM';
+        const level = row['Level'] || row['LEVEL'] || row['level'] || '100';
+        const name = row['Name'] || row['NAME'] || row['name'] || '';
+        let courseDetails = row['CourseDetails'] || row['details'] || row['Courses'] || '[]';
+
+        if (!studentId) {
+            failed++;
+            errors.push('Row ' + (i + 1) + ': Missing Student ID');
+            continue;
+        }
+
         // Try to parse course details if it's a string
         if (typeof courseDetails === 'string') {
             try {
@@ -1137,33 +1154,45 @@ async function processCSV() {
                 courseDetails = [];
             }
         }
-        if (studentId) { 
-            try {
-                await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ 
-                        action: 'upload_results', 
-                        id: studentId, 
-                        name: row['Name'] || row['NAME'] || '',
-                        semester: semester, 
-                        gpa: parseFloat(gpa), 
-                        program: program, 
-                        level: level, 
-                        details: JSON.stringify(courseDetails) 
-                    }) 
-                });
+
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'upload_results',
+                    id: studentId,
+                    name: name,
+                    semester: semester,
+                    gpa: parseFloat(gpa) || 0,
+                    program: program,
+                    level: level,
+                    details: JSON.stringify(Array.isArray(courseDetails) ? courseDetails : [])
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
                 success++;
-            } catch(e) {
+            } else {
                 failed++;
-                console.error('Failed to upload for student:', studentId, e);
+                errors.push('Row ' + (i + 1) + ' (' + studentId + '): ' + (result.error || 'Unknown error'));
             }
-        } else {
+        } catch(e) {
             failed++;
+            errors.push('Row ' + (i + 1) + ' (' + studentId + '): Network error');
         }
-    } 
+
+        // Update progress
+        const progress = Math.round(((i + 1) / parsedResults.length) * 100);
+        const progressBar = document.getElementById('uploadProgress');
+        if (progressBar) progressBar.style.width = progress + '%';
+    }
+
     btn.disabled = false;
     btn.innerHTML = 'PROCESS & UPLOAD';
-    showToast(`CSV processed! Success: ${success}, Failed: ${failed}`, success > 0 ? "success" : "danger"); 
+    showToast('Uploaded: ' + success + ', Failed: ' + failed, success > 0 ? "success" : "danger");
+    if (errors.length > 0) console.log('CSV Errors:', errors);
+
     document.getElementById('filePreview').style.display = 'none';
     document.getElementById('processBtn').style.display = 'none';
     parsedResults = null;
@@ -1232,9 +1261,43 @@ async function unclearSelectedStudents() { const ids = Array.from(document.query
 // NOTIFICATIONS
 // ============================================
 function toggleTargetSelection() { const type = document.getElementById('notifType').value; document.getElementById('targetSelection').style.display = type === 'all' ? 'none' : 'block'; }
-async function sendNotification() { const title = document.getElementById('notifTitle').value; const message = document.getElementById('notifMessage').value; const type = document.getElementById('notifType').value; const target = document.getElementById('targetValue').value; if (!title || !message) return showToast("Enter title and message", "warning"); const btn = event.target.closest('button'); const orig = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...'; try { const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'send_notification', title, message, type, target: target || 'all' }) }); const data = await res.json(); if (data.success) { showToast("Notification sent!", "success"); document.getElementById('notifTitle').value = ''; document.getElementById('notifMessage').value = ''; document.getElementById('targetValue').value = ''; addToNotificationHistory(title, message, type, target); } else throw new Error(); } catch (e) { showToast("Failed to send", "danger"); } finally { btn.disabled = false; btn.innerHTML = orig; } }
+async function sendNotification() {
+    const title = document.getElementById('notifTitle').value;
+    const message = document.getElementById('notifMessage').value;
+    const targetType = document.getElementById('notifType').value;
+    const target = document.getElementById('targetValue').value;
+    const notificationSource = document.getElementById('notifSource').value;
+
+    if (!title || !message) return showToast("Enter title and message", "warning");
+    const btn = event.target.closest('button');
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...';
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'send_notification',
+                title,
+                message,
+                notificationType: notificationSource,
+                targetType,
+                target: target || 'all'
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast("Notification sent!", "success");
+            document.getElementById('notifTitle').value = '';
+            document.getElementById('notifMessage').value = '';
+            document.getElementById('targetValue').value = '';
+            addToNotificationHistory(title, message, notificationSource, target);
+        } else throw new Error();
+    } catch (e) { showToast("Failed to send", "danger"); }
+    finally { btn.disabled = false; btn.innerHTML = orig; }
+}
 function scheduleNotification() { showToast("Scheduled notifications coming soon!", "info"); }
-function addToNotificationHistory(title, message, type, target) { let history = JSON.parse(localStorage.getItem('notificationHistory') || '[]'); history.unshift({ title, message: message.substring(0, 100), type, target: target || 'all', date: new Date().toLocaleString() }); history = history.slice(0, 20); localStorage.setItem('notificationHistory', JSON.stringify(history)); displayNotificationHistory(); }
+function addToNotificationHistory(title, message, source, target) { let history = JSON.parse(localStorage.getItem('notificationHistory') || '[]'); history.unshift({ title, message: message.substring(0, 100), type: source, target: target || 'all', date: new Date().toLocaleString() }); history = history.slice(0, 20); localStorage.setItem('notificationHistory', JSON.stringify(history)); displayNotificationHistory(); }
 function displayNotificationHistory() { const container = document.getElementById('notificationHistory'); const history = JSON.parse(localStorage.getItem('notificationHistory') || '[]'); if (history.length === 0) { container.innerHTML = '<p style="text-align: center;">No notifications sent yet.</p>'; return; } let html = ''; history.forEach(n => { html += `<div class="notification-history-item"><div class="notification-title">${n.title}</div><div style="font-size:0.85rem;">${n.message}</div><div style="display:flex;justify-content:space-between;margin-top:8px;"><small class="notification-date">${n.date}</small><small style="color:var(--primary);">${n.target === 'all' ? 'All Students' : n.type === 'program' ? `Program: ${n.target}` : n.type === 'level' ? `Level: ${n.target}` : `Student: ${n.target}`}</small></div></div>`; }); container.innerHTML = html; }
 
 // ============================================
