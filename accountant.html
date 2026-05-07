@@ -675,25 +675,23 @@
                 </div>
             </div>
 
-            <!-- CSV UPLOAD SECTION -->
-            <!-- CSV UPLOAD SECTION -->
+            
+           <!-- CSV UPLOAD SECTION -->
 <div id="csv_uploadSection" class="section" style="display:none;">
     <div class="card">
         <div class="card-header">
             <h3><i class="fas fa-file-upload"></i> Upload Results via CSV</h3>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="downloadResultsTemplate()" class="info-btn" style="width: auto; padding: 8px 15px;">
-                    <i class="fas fa-download"></i> Full Template
-                </button>
-                <button onclick="downloadSimpleResultsTemplate()" class="info-btn" style="width: auto; padding: 8px 15px; background: #6b8e23;">
-                    <i class="fas fa-download"></i> Simple Template
-                </button>
-            </div>
+            <button onclick="downloadSimpleResultsTemplate()" class="info-btn" style="width: auto; padding: 8px 15px; background: #6b8e23;">
+                <i class="fas fa-download"></i> Download Template
+            </button>
         </div>
         
         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFileInput').click()">
             <i class="fas fa-cloud-upload-alt"></i>
             <h4>Drop CSV file here or click to browse</h4>
+            <p style="margin-top: 10px; font-size: 0.85rem; color: #666;">
+                <i class="fas fa-info-circle"></i> Grade and GPA will be automatically calculated from CA and Exam scores
+            </p>
             <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVSelect(event)">
         </div>
         
@@ -1426,16 +1424,14 @@ async function processCSV() {
         showToast("No data to process", "danger");
         return;
     }
-    //------------This validate CSV files---------
+    
     showToast("Validating CSV data...", "info");
     const validationReport = validateCSVData(parsedResults);
     
-    // Show validation report and ask for confirmation
     const userConfirmed = showValidationReport(validationReport);
     
     if (!userConfirmed) {
         showToast("Upload cancelled", "warning");
-        // Clear the file input and preview
         document.getElementById('filePreview').style.display = 'none';
         document.getElementById('processBtn').style.display = 'none';
         document.getElementById('csvFileInput').value = '';
@@ -1457,11 +1453,10 @@ async function processCSV() {
     let failed = 0;
     let errors = [];
 
-    // Get header mapping once
     const headerKeys = Object.keys(parsedResults[0] || {});
     console.log('CSV Headers:', headerKeys);
 
-    // Find column indices - be flexible with header names
+    // Find column indices
     const studentIdKey = headerKeys.find(k => 
         k.toLowerCase().replace(/[^a-z]/g, '') === 'studentid' || 
         k.toLowerCase().replace(/[^a-z]/g, '') === 'id'
@@ -1469,7 +1464,6 @@ async function processCSV() {
     
     const nameKey = headerKeys.find(k => k.toLowerCase().includes('name')) || headerKeys[1];
     const semesterKey = headerKeys.find(k => k.toLowerCase().includes('semester')) || 'Semester';
-    const gpaKey = headerKeys.find(k => k.toLowerCase() === 'gpa') || 'GPA';
     const programKey = headerKeys.find(k => k.toLowerCase().includes('program')) || 'Program';
     const levelKey = headerKeys.find(k => k.toLowerCase().includes('level')) || 'Level';
 
@@ -1480,11 +1474,10 @@ async function processCSV() {
         let studentId = ((row[studentIdKey] || '') + '').trim();
         let name = ((row[nameKey] || '') + '').trim();
         let semester = ((row[semesterKey] || 'Semester 1') + '').trim();
-        let gpa = ((row[gpaKey] || '0') + '').trim();
         let program = ((row[programKey] || 'RM') + '').trim();
         let level = ((row[levelKey] || '100') + '').trim();
 
-        console.log('Row ' + i + ': ID=' + studentId + ', Name=' + name);
+        console.log('Row ' + i + ': ID=' + studentId);
 
         if (!studentId) {
             failed++;
@@ -1492,10 +1485,9 @@ async function processCSV() {
             continue;
         }
 
-        // ===== COURSE PARSING - SIMPLE TEMPLATE WITH CA/EXAM =====
+        // ===== COURSE PARSING - READ CA AND EXAM =====
         let courseDetails = [];
         
-        // Look for structured columns (Code1, Name1, Credits1, CA1, Exam1, Grade1, etc.)
         const codeKeys = headerKeys.filter(k => /^code\d*$/i.test(k.trim()));
         
         for (const codeKey of codeKeys) {
@@ -1535,43 +1527,41 @@ async function processCSV() {
             });
         }
 
-        console.log('Courses found:', courseDetails.length, courseDetails);
+        console.log('Courses found:', courseDetails.length);
 
-        // ===== GPA CALCULATION (ONCE) =====
-        let finalGPA = parseFloat(gpa) || 0;
-        if (courseDetails.length > 0 && (finalGPA === 0 || isNaN(finalGPA))) {
-            const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
-            let totalPoints = 0, totalCredits = 0;
-            courseDetails.forEach(c => {
-                const credits = parseInt(c.credits) || 3;
-                // Recalculate total score from CA and Exam
-                const totalScore = (c.ca || 0) + (c.exam || 0);
-                // Find grade
-                let grade = 'E';
-                for (const level2 of gradingSystem) {
-                    if (totalScore >= level2.min && totalScore <= level2.max) {
-                        grade = level2.grade;
-                        break;
-                    }
-                }
-                // Get grade points
-                let points = 0;
-                for (const l of gradingSystem) {
-                    if (l.grade === grade) {
-                        points = l.points;
-                        break;
-                    }
-                }
-                totalPoints += points * credits;
-                totalCredits += credits;
-                // Update course grade
-                c.grade = grade;
-            });
-            if (totalCredits > 0) {
-                finalGPA = parseFloat((totalPoints / totalCredits).toFixed(2));
-                console.log(`Calculated GPA: ${finalGPA}`);
-            }
+        if (courseDetails.length === 0) {
+            failed++;
+            errors.push('Row ' + (i + 1) + ' (' + studentId + '): No courses found');
+            continue;
         }
+
+        // ===== GPA CALCULATION FROM COURSES =====
+        const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
+        let totalPoints = 0, totalCredits = 0;
+        courseDetails.forEach(c => {
+            const credits = parseInt(c.credits) || 3;
+            const totalScore = (c.ca || 0) + (c.exam || 0);
+            let grade = 'E';
+            for (const level2 of gradingSystem) {
+                if (totalScore >= level2.min && totalScore <= level2.max) {
+                    grade = level2.grade;
+                    break;
+                }
+            }
+            let points = 0;
+            for (const l of gradingSystem) {
+                if (l.grade === grade) {
+                    points = l.points;
+                    break;
+                }
+            }
+            totalPoints += points * credits;
+            totalCredits += credits;
+            c.grade = grade;
+        });
+        
+        const finalGPA = totalCredits > 0 ? parseFloat((totalPoints / totalCredits).toFixed(2)) : 0;
+        console.log(`Calculated GPA for ${studentId}: ${finalGPA}`);
 
         // ===== UPLOAD TO SERVER =====
         try {
@@ -1592,7 +1582,7 @@ async function processCSV() {
             const result = await response.json();
             if (result.success) {
                 success++;
-                console.log('SUCCESS: ' + studentId + ' - GPA:' + finalGPA + ' - Courses:' + courseDetails.length);
+                console.log('SUCCESS: ' + studentId + ' - GPA:' + finalGPA);
             } else {
                 failed++;
                 errors.push('Row ' + (i + 1) + ' (' + studentId + '): ' + (result.error || 'Unknown error'));
@@ -1602,7 +1592,6 @@ async function processCSV() {
             errors.push('Row ' + (i + 1) + ' (' + studentId + '): Network error');
         }
 
-        // Update progress
         const progress = Math.round(((i + 1) / parsedResults.length) * 100);
         const progressBar = document.getElementById('uploadProgress');
         if (progressBar) progressBar.style.width = progress + '%';
@@ -1621,32 +1610,19 @@ async function processCSV() {
     document.getElementById('csvFileInput').value = '';
 }
 
-function downloadResultsTemplate() {
-    const template = `StudentID,Name,Semester,GPA,Program,Level,CourseDetails
-CCST/RM/24/001,Justina Arhin,Semester 1 2025/2026,3.25,RM,100,"[{""code"":""COSC 101"",""name"":""Introduction to Computing"",""credits"":3,""ca"":35,""exam"":55,""grade"":""A""}]"
-CCST/RM/24/002,John Doe,Semester 1 2025/2026,2.80,RM,100,"[{""code"":""NURS 101"",""name"":""Fundamentals of Nursing"",""credits"":3,""ca"":30,""exam"":50,""grade"":""B""},{""code"":""ANAT 101"",""name"":""Human Anatomy"",""credits"":4,""ca"":25,""exam"":45,""grade"":""C+""}]"`;
-    
-    const blob = new Blob([template], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'CCST_Results_upload_template.csv';
-    a.click();
-    URL.revokeObjectURL(a.href);
-    showToast("Template downloaded!", "success");
-}
 
 function downloadSimpleResultsTemplate() {
-    const template = `StudentID,Name,Semester,GPA,Program,Level,Code1,Name1,Credits1,CA1,Exam1,Grade1,Code2,Name2,Credits2,CA2,Exam2,Grade2,Code3,Name3,Credits3,CA3,Exam3,Grade3
-CCST/RM/24/001,Justina Arhin,Semester 1 2025/2026,3.25,RM,100,COSC 101,Introduction to Computing,3,35,55,A,NURS 102,Health Assessment,3,40,50,B+,ANAT 101,Human Anatomy,4,30,45,C+
-CCST/RM/24/002,John Doe,Semester 1 2025/2026,2.80,RM,100,NURS 101,Fundamentals of Nursing,3,30,50,B,ANAT 101,Human Anatomy,4,25,45,C+,,,0,0,0,`;
+    const template = `StudentID,Name,Semester,Program,Level,Code1,Name1,Credits1,CA1,Exam1,Code2,Name2,Credits2,CA2,Exam2,Code3,Name3,Credits3,CA3,Exam3
+CCST/RM/24/001,Justina Arhin,Semester 1 2025/2026,RM,100,COSC 101,Introduction to Computing,3,35,55,NURS 102,Health Assessment,3,40,50,ANAT 101,Human Anatomy,4,30,45
+CCST/RM/24/002,John Doe,Semester 1 2025/2026,RM,100,NURS 101,Fundamentals of Nursing,3,30,50,ANAT 101,Human Anatomy,4,25,45,,,0,0,0`;
     
     const blob = new Blob([template], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'CCST_Results_simple_template.csv';
+    a.download = 'CCST_Results_template.csv';
     a.click();
     URL.revokeObjectURL(a.href);
-    showToast("Simple template with CA/Exam downloaded!", "success");
+    showToast("Template downloaded! Grade & GPA will be auto-calculated.", "success");
 }
 
 // ============================================
