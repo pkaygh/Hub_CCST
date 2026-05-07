@@ -842,7 +842,7 @@
 // ============================================
 // GLOBAL VARIABLES
 // ============================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7s0-t1urPxPkvqdE34h7PbWrRhwgrFTrvu8aQjhvy-UF7LhkBJSBkn1-4oETbjsIf/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdPf3KLYogaBWbVNnagRpeONCz8hGd2NKvDcSIUhX0IETfB0oaGofmwXL4hx4W7Gbr/exec";
 let currentStudent = null;
 let currentTranscriptStudent = null;
 let allStudents = [];
@@ -1043,26 +1043,143 @@ async function uploadResults() {
     const sem = document.getElementById('resSemester').value; 
     const gpa = document.getElementById('resGPA').value; 
     if (!sem || !gpa) return showToast("Semester and GPA required", "warning"); 
-    const codes = document.getElementsByClassName('cCode'), names = document.getElementsByClassName('cName'), credits = document.getElementsByClassName('cCredits'), cas = document.getElementsByClassName('cCA'), exams = document.getElementsByClassName('cExam'), grades = document.getElementsByClassName('cGrade'); 
+    
+    const codes = document.getElementsByClassName('cCode'), 
+          names = document.getElementsByClassName('cName'), 
+          credits = document.getElementsByClassName('cCredits'), 
+          grades = document.getElementsByClassName('cGrade'); 
+    
     let courses = []; 
-    for (let i = 0; i < names.length; i++) if (names[i].value.trim()) courses.push({ code: codes[i].value.trim(), name: names[i].value.trim(), credits: parseInt(credits[i].value) || 3, ca: parseFloat(cas[i].value) || 0, exam: parseFloat(exams[i].value) || 0, grade: grades[i].value.trim() }); 
+    for (let i = 0; i < names.length; i++) { 
+        if (names[i].value.trim()) {
+            courses.push({ 
+                code: codes[i].value.trim(), 
+                name: names[i].value.trim(), 
+                credits: parseInt(credits[i].value) || 3, 
+                grade: grades[i].value.trim() 
+            }); 
+        }
+    }
+    
+    if (courses.length === 0) {
+        return showToast("Please add at least one course", "warning");
+    }
+    
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> UPLOADING...';
+    
     try { 
-        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'upload_results', id: currentStudent.id, semester: sem, gpa: gpa, program: document.getElementById('resProgram').value, level: document.getElementById('resLevel').value, details: JSON.stringify(courses) }) }); 
-        showToast("Results uploaded!", "success"); 
-        document.getElementById('studentResult').style.display = 'none'; 
-        document.getElementById('searchId').value = ''; 
+        const response = await fetch(SCRIPT_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ 
+                action: 'upload_results', 
+                id: currentStudent.id, 
+                name: currentStudent.name,
+                semester: sem, 
+                gpa: parseFloat(gpa), 
+                program: document.getElementById('resProgram').value, 
+                level: document.getElementById('resLevel').value, 
+                details: JSON.stringify(courses) 
+            }) 
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast("Results uploaded successfully!", "success"); 
+            document.getElementById('studentResult').style.display = 'none'; 
+            document.getElementById('searchId').value = ''; 
+        } else {
+            showToast("Upload failed: " + (result.error || "Unknown error"), "danger");
+        }
     } catch (e) { 
-        showToast("Upload failed", "danger"); 
-    } 
+        console.error('Upload error:', e);
+        showToast("Network error. Check console for details.", "danger"); 
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
 }
-
 // ============================================
 // CSV HANDLING
 // ============================================
 let csvData = null, parsedResults = [];
 function handleCSVSelect(event) { const file = event.target.files[0]; if (!file) return; Papa.parse(file, { header: true, skipEmptyLines: true, complete: (results) => { csvData = results; parsedResults = results.data; document.getElementById('filePreview').style.display = 'block'; document.getElementById('processBtn').style.display = 'block'; } }); }
-async function processCSV() { showToast("Processing CSV...", "info"); for (const row of parsedResults) { const studentId = row['id'] || row['INDEX NUMBER']; const program = row['PROGRAM'] || 'RM'; if (studentId) await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'upload_results', id: studentId, semester: row['SEMESTER'] || 'Semester 1', gpa: '0', program: program, details: '[]' }) }); } showToast("CSV processed!", "success"); }
-function downloadResultsTemplate() { const template = `id,NAME,PROGRAM,LEVEL,SEMESTER,COURSE_CODE_1,COURSE_NAME_1,CREDITS_1,CA_1,EXAM_1,GRADE_1\nCCST/RM/24/001,Justina Arhin,RM,100,Semester 1 2025/2026,COSC 101,Introduction to Computing,3,35,55,A`; const blob = new Blob([template], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'CCST_Results_upload_template.csv'; a.click(); URL.revokeObjectURL(URL); showToast("Template downloaded!", "success"); }
+async function processCSV() { 
+    if (!parsedResults || parsedResults.length === 0) {
+        showToast("No data to process", "danger");
+        return;
+    }
+    
+    showToast("Processing CSV...", "info"); 
+    const btn = document.getElementById('processBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
+    
+    let success = 0;
+    let failed = 0;
+    
+    for (const row of parsedResults) { 
+        const studentId = row['StudentID'] || row['id'] || row['INDEX NUMBER']; 
+        const semester = row['Semester'] || row['SEMESTER'] || 'Semester 1';
+        const gpa = row['GPA'] || '0';
+        const program = row['Program'] || row['PROGRAM'] || 'RM';
+        const level = row['Level'] || row['LEVEL'] || '100';
+        let courseDetails = row['CourseDetails'] || row['details'] || '[]';
+        
+        // Try to parse course details if it's a string
+        if (typeof courseDetails === 'string') {
+            try {
+                courseDetails = JSON.parse(courseDetails);
+            } catch(e) {
+                courseDetails = [];
+            }
+        }
+        if (studentId) { 
+            try {
+                await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ 
+                        action: 'upload_results', 
+                        id: studentId, 
+                        name: row['Name'] || row['NAME'] || '',
+                        semester: semester, 
+                        gpa: parseFloat(gpa), 
+                        program: program, 
+                        level: level, 
+                        details: JSON.stringify(courseDetails) 
+                    }) 
+                });
+                success++;
+            } catch(e) {
+                failed++;
+                console.error('Failed to upload for student:', studentId, e);
+            }
+        } else {
+            failed++;
+        }
+    } 
+    btn.disabled = false;
+    btn.innerHTML = 'PROCESS & UPLOAD';
+    showToast(`CSV processed! Success: ${success}, Failed: ${failed}`, success > 0 ? "success" : "danger"); 
+    document.getElementById('filePreview').style.display = 'none';
+    document.getElementById('processBtn').style.display = 'none';
+    parsedResults = null;
+    document.getElementById('csvFileInput').value = '';
+}
+function downloadResultsTemplate() { 
+    const template = `StudentID,Name,Semester,GPA,Program,Level,CourseDetails
+CCST/RM/24/001,Justina Arhin,Semester 1 2025/2026,3.25,RM,100,"[{\"code\":\"COSC 101\",\"name\":\"Introduction to Computing\",\"credits\":3,\"ca\":35,\"exam\":55,\"grade\":\"A\"}]"`;
+    const blob = new Blob([template], { type: 'text/csv' }); 
+    const a = document.createElement('a'); 
+    a.href = URL.createObjectURL(blob); 
+    a.download = 'CCST_Results_upload_template.csv'; 
+    a.click(); 
+    URL.revokeObjectURL(URL); 
+    showToast("Template downloaded!", "success"); 
+}
 
 // ============================================
 // BULK CLEARANCE
