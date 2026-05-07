@@ -870,7 +870,7 @@
 // ============================================
 // GLOBAL VARIABLES
 // ============================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoPLOynYDPHYOqw8seC7IYoRQoWmPvbgC7pQAGBC39qZPehw-oN7k3JkxpXZoZTGzv/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKRZuZuypDQvVKUXbj3vT2t8Wb39FrxYNRALvRQC6NNCCpSfEvY360PwwWax_bf1iP/exec";
 let currentStudent = null;
 let currentTranscriptStudent = null;
 let allStudents = [];
@@ -1747,32 +1747,47 @@ function displayTranscriptPreview(results, student) {
     const container = document.getElementById('transcriptContent');
     let totalPoints = 0, totalCredits = 0;
     
+    if (!results || results.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding:40px;">No results available for this student.</p>';
+        document.getElementById('transcriptPreview').style.display = 'block';
+        return;
+    }
+    
     let html = `<div class="transcript-header">
         <h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1>
         <h3>OFFICIAL ACADEMIC TRANSCRIPT</h3>
     </div>
-    <table class="student-info-table">
-        <tr><td style="width:30%;">Name:</td><td><strong>${student.name}</strong></td>
-        <td>ID:</td><td><strong>${student.id}</strong></td>
-    </tr>
-    <tr><td>Program:</td><td><strong>${getFullProgramName(student.program)}</strong></td>
-        <td>Level:</td><td><strong>Level ${student.level || '200'}</strong></td>
-    </tr>
-    </table>`;
+    <table class="student-info-table" style="width:100%; border-collapse:collapse; margin-bottom:25px;">
+        <tr><td style="padding:8px; border:1px solid #ddd; background:#f0f0f0; width:30%;"><strong>Name</strong></td>
+            <td style="padding:8px; border:1px solid #ddd;"><strong>${student.name}</strong></td>
+            <td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>ID</strong></td>
+            <td style="padding:8px; border:1px solid #ddd;"><strong>${student.id}</strong></td>
+        </tr>
+        <tr><td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Program</strong></td>
+            <td style="padding:8px; border:1px solid #ddd;"><strong>${getFullProgramName(student.program)}</strong></td>
+            <td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Level</strong></td>
+            <td style="padding:8px; border:1px solid #ddd;"><strong>Level ${student.level || '200'}</strong></td>
+        </tr>
+     </table>`;
     
-    results.forEach(sem => {
-        html += `<h4 style="margin-top:25px; background:#f0f0f0; padding:10px;">${sem.semester}</h4>
+    // Sort results by semester
+    const sortedResults = [...results].sort((a, b) => a.semester.localeCompare(b.semester));
+    
+    sortedResults.forEach(sem => {
+        let semPoints = 0, semCredits = 0;
+        
+        html += `<h4 style="margin-top:25px; background:#f0f0f0; padding:10px; border-left:4px solid #1a472a;">${sem.semester}</h4>
         <table class="transcript-table" style="width:100%; border-collapse:collapse;">
             <thead>
                 <tr style="background:#1a472a; color:white;">
-                    <th>Code</th>
-                    <th>Course Name</th>
-                    <th>Credits</th>
-                    <th>CA<br><small>(/40)</small></th>
-                    <th>Exam<br><small>(/60)</small></th>
-                    <th>Total</th>
-                    <th>Grade</th>
-                    <th>Points</th>
+                    <th style="padding:8px; border:1px solid #6b8e23;">Code</th>
+                    <th style="padding:8px; border:1px solid #6b8e23;">Course Name</th>
+                    <th style="padding:8px; border:1px solid #6b8e23;">Credits</th>
+                    <th style="padding:8px; border:1px solid #6b8e23;">CA<br><small>(/40)</small></th>
+                    <th style="padding:8px; border:1px solid #6b8e23;">Exam<br><small>(/60)</small></th>
+                    <th style="padding:8px; border:1px solid #6b8e23;">Total</th>
+                    <th style="padding:8px; border:1px solid #6b8e23;">Grade</th>
+                    <th style="padding:8px; border:1px solid #6b8e23;">Points</th>
                 </tr>
             </thead>
             <tbody>`;
@@ -1784,32 +1799,36 @@ function displayTranscriptPreview(results, student) {
             const points = getGradePoints(c.grade, student.program);
             const weightedPoints = points * (c.credits || 3);
             
+            semPoints += weightedPoints;
+            semCredits += (c.credits || 3);
             totalPoints += weightedPoints;
             totalCredits += (c.credits || 3);
             
             html += `<tr>
-                <td style="text-align:left;">${c.code}</td>
-                <td style="text-align:left;">${c.name}</td>
-                <td style="text-align:center;">${c.credits || 3}</td>
-                <td style="text-align:center;">${ca}</td>
-                <td style="text-align:center;">${exam}</td>
-                <td style="text-align:center;"><strong>${total}</strong></td>
-                <td style="text-align:center;"><strong>${c.grade}</strong></td>
-                <td style="text-align:center;">${points.toFixed(1)}</td>
-            </tr>`;
+                <td style="padding:6px; border:1px solid #ddd; text-align:left;">${c.code}</td>
+                <td style="padding:6px; border:1px solid #ddd; text-align:left;">${c.name}</td>
+                <td style="padding:6px; border:1px solid #ddd; text-align:center;">${c.credits || 3}</td>
+                <td style="padding:6px; border:1px solid #ddd; text-align:center;">${ca}</td>
+                <td style="padding:6px; border:1px solid #ddd; text-align:center;">${exam}</td>
+                <td style="padding:6px; border:1px solid #ddd; text-align:center;"><strong>${total}</strong></td>
+                <td style="padding:6px; border:1px solid #ddd; text-align:center;"><strong>${c.grade}</strong></td>
+                <td style="padding:6px; border:1px solid #ddd; text-align:center;">${points.toFixed(1)}</td>
+             </tr>`;
         });
+        
+        const semesterGPA = semCredits > 0 ? (semPoints / semCredits).toFixed(2) : '0.00';
         
         html += `</tbody>
         </table>
         <div style="margin-top:10px; text-align:right; padding:8px; background:#f5f5f5;">
-            <strong>Semester GPA: ${sem.gpa || '--'}</strong>
+            <strong>Semester GPA: ${semesterGPA}</strong>
         </div>`;
     });
     
     const cgpa = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00';
     
-    html += `<div class="cgpa-section" style="margin-top:30px; padding:15px; background:linear-gradient(135deg, rgba(107,142,35,0.1), rgba(154,205,50,0.1)); text-align:center;">
-        <h3>CUMULATIVE GPA (CGPA)</h3>
+    html += `<div class="cgpa-section" style="margin-top:30px; padding:15px; background:linear-gradient(135deg, rgba(107,142,35,0.1), rgba(154,205,50,0.1)); text-align:center; border-radius:8px;">
+        <h3 style="color:#1a472a;">CUMULATIVE GPA (CGPA)</h3>
         <div style="font-size:2rem; font-weight:bold; color:#6b8e23;">${cgpa} / 4.00</div>
         <p>Total Credits: ${totalCredits} | Total Points: ${totalPoints.toFixed(2)}</p>
     </div>`;
