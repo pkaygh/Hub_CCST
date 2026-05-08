@@ -450,7 +450,7 @@
             height: 100%;
             pointer-events: none;
             z-index: 1;
-            opacity: 0.2;
+            overflow: hidden;
         }
 
         .wavy-watermark {
@@ -462,11 +462,20 @@
             transform: rotate(-25deg);
             font-family: Arial, sans-serif;
             letter-spacing: 8px;
+            opacity: 0.12;
         }
 
+        .transcript-container {
+            position: relative;
+            background: white;
+            padding:20px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            overflow: hidden;
+        }
         .transcript-content-wrapper {
             position: relative;
-            z-index: 2;
+            z-index: 1;
             background: transparent;
         }
 
@@ -2514,16 +2523,16 @@ function formatDateForDisplay(dateValue) {
         // ============================================
 
         function generateWavyWatermarks() {
-            let watermarks = '';
-            for (let row = 0; row < 15; row++) {
-                for (let col = 0; col < 5; col++) {
-                    const top = row * 80 + (col % 2) * 25;
-                    const left = col * 160 + (row % 2) * 50;
-                    watermarks += `<div style="position:absolute; top:${top}px; left:${left}px; font-size:26px; font-weight:bold; color:#1a472a; white-space:nowrap; transform:rotate(-25deg); font-family:Arial, sans-serif; letter-spacing:6px; opacity:0.15;">CCST</div>`;
-                }
-            }
-            return watermarks;
+    let watermarks = '';
+    for (let row = 0; row < 20; row++) {
+        for (let col = 0; col < 6; col++) {
+            const top = row * 70 + (col % 2) * 30;
+            const left = col * 150 + (row % 2) * 60;
+            watermarks += `<div class="wavy-watermark" style="position:absolute; top:${top}px; left:${left}px; font-size:28px; font-weight:bold; color:#1a472a; white-space:nowrap; transform:rotate(-25deg); font-family:Arial,sans-serif; letter-spacing:8px; opacity:0.12;">CCST</div>`;
         }
+    }
+    return watermarks;
+}
 
         function generateTranscriptHTML() {
     if (!studentData?.profile) return '<p>Student data not available</p>';
@@ -2553,8 +2562,8 @@ function formatDateForDisplay(dateValue) {
     let html = `<div class="watermark-layer">${generateWavyWatermarks()}</div>
     <div class="transcript-content-wrapper">
         <div class="transcript-header" style="text-align:center; margin-bottom:30px; padding-bottom:20px; border-bottom:2px solid #1a472a;">
-            <h1 style="color:#1a472a;">CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1>
-            <h3 style="color:#555;">OFFICIAL ACADEMIC TRANSCRIPT</h3>
+            <h1 style="color:#1a472a; text-align: center;">CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1>
+            <h3 style="color:#555; text-align: center;">OFFICIAL ACADEMIC TRANSCRIPT</h3>
             <div class="unofficial-stamp">⚡ UNOFFICIAL COPY - STUDENT PORTAL ⚡</div>
         </div>
         
@@ -2578,8 +2587,8 @@ function formatDateForDisplay(dateValue) {
                     <th style="padding:8px; border:1px solid #6b8e23;">Course Code</th>
                     <th style="padding:8px; border:1px solid #6b8e23;">Course Title</th>
                     <th style="padding:8px; border:1px solid #6b8e23;">Credits</th>
-                    <th style="padding:8px; border:1px solid #6b8e23;">CA<br><small>(/40)</small></th>
-                    <th style="padding:8px; border:1px solid #6b8e23;">Exam<br><small>(/60)</small></th>
+                    <th style="padding:8px; border:1px solid #6b8e23;">CA</th>
+                    <th style="padding:8px; border:1px solid #6b8e23;">Exam</th>
                     <th style="padding:8px; border:1px solid #6b8e23;">Total</th>
                     <th style="padding:8px; border:1px solid #6b8e23;">Grade</th>
                     <th style="padding:8px; border:1px solid #6b8e23;">Points</th>
