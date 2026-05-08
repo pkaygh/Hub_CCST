@@ -669,6 +669,9 @@
                                 </div>
                             </div>
                             <button onclick="addCourseRow()" style="background:#555; width:auto; padding:8px 15px; font-size:14px;"><i class="fas fa-plus"></i> Add Course</button>
+                            <button onclick="saveCourse()" style="background:#28a745; width:auto; padding:8px 15px; font-size:14px;">
+                                <i class="fas fa-save"></i> Save Courses
+                        </button>
                             <button onclick="uploadResults()" class="success-btn" style="margin-top:15px;"><i class="fas fa-upload"></i> UPLOAD RESULTS</button>
                         </div>
                     </div>
@@ -870,7 +873,7 @@
 // ============================================
 // GLOBAL VARIABLES
 // ============================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKRZuZuypDQvVKUXbj3vT2t8Wb39FrxYNRALvRQC6NNCCpSfEvY360PwwWax_bf1iP/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEVaVDvWh1jOc9ZO5K4hDb1EmMg0DVLg4c90jOOp8bjRgrDNuOxltqZV_I3TZQMFm8/exec";
 let currentStudent = null;
 let currentTranscriptStudent = null;
 let allStudents = [];
@@ -1733,7 +1736,41 @@ function generateReport(type) { showToast(`Generating ${type} report...`, "info"
 // ============================================
 // COURSES
 // ============================================
-function addNewCourse() { const sem = document.getElementById('courseSemester').value; const name = document.getElementById('newCourseName').value; const code = document.getElementById('newCourseCode').value; const credits = document.getElementById('newCourseCredits').value; if (!sem || !name) return showToast("Enter semester and course name", "warning"); showToast(`Course "${code} - ${name}" added to ${sem}`, "success"); document.getElementById('newCourseName').value = ''; document.getElementById('newCourseCode').value = ''; document.getElementById('newCourseCredits').value = ''; }
+async function addNewCourse() {
+    const sem = document.getElementById('courseSemester').value;
+    const name = document.getElementById('newCourseName').value;
+    const code = document.getElementById('newCourseCode').value;
+    const credits = document.getElementById('newCourseCredits').value;
+    if (!sem || !name || !code || !credits) {
+        return showToast("Fill all fields", "warning");
+    }
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "save_courses",
+                courses: [{
+                    semester: sem,
+                    code: code,
+                    name: name,
+                    credits: credits
+                }]
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast("Course saved successfully", "success");
+            document.getElementById('newCourseName').value = '';
+            document.getElementById('newCourseCode').value = '';
+            document.getElementById('newCourseCredits').value = '';
+        } else {
+            showToast(data.error || "Failed to save", "danger");
+        }
+    } catch (err) {
+        console.error(err);
+        showToast("Server error", "danger");
+    }
+}
 
 // ============================================
 // TRANSCRIPT FUNCTIONS
@@ -1920,6 +1957,54 @@ async function updateApplicationStatus(appId, status) { const idx = allApplicati
 function exportAdmissionsToCSV() { let csv = "ID,Name,Email,Phone,Program,Status,Submitted\n"; allApplications.forEach(a => { csv += `"${a.applicationId}","${a.fullName}","${a.email}","${a.phone}","${a.program}","${a.status}","${new Date(a.submittedAt).toLocaleString()}"\n`; }); const blob = new Blob([csv], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `CCST_Admissions_${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(URL); showToast("Exported!", "success"); }
 function openExecutiveDashboard() { showToast("Executive Dashboard - Coming Soon", "info"); }
 function logout() { if (confirm("Logout?")) { localStorage.removeItem('adminData'); localStorage.removeItem('currentStaff'); window.location.href = 'index.html'; } }
+async function saveCourse() {
+    const semester = document.getElementById("semester").value;
+    const courseCode = document.getElementById("courseCode").value;
+    const courseName = document.getElementById("courseName").value;
+    const credits = document.getElementById("credits").value;
+
+    if (!semester || !courseCode || !courseName || !credits) {
+        alert("Please fill all fields");
+        return;
+    }
+
+    try {
+
+        const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "save_course",
+                semester: semester,
+                courseCode: courseCode,
+                courseName: courseName,
+                credits: credits
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+
+            alert("Course saved successfully");
+
+            document.getElementById("semester").value = "";
+            document.getElementById("courseCode").value = "";
+            document.getElementById("courseName").value = "";
+            document.getElementById("credits").value = "";
+
+        } else {
+
+            alert(result.error || "Failed to save course");
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+        alert("Network error");
+
+    }
+}
 
 // ============================================
 // INITIALIZATION
