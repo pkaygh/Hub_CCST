@@ -742,12 +742,23 @@
             </div>
 
             <!-- MANAGE COURSES -->
-            <div id="coursesSection" class="section" style="display:none;">
-                <div class="card">
-                    <h3><i class="fas fa-book"></i> Manage Courses</h3>
-                    <input id="courseSemester" placeholder="Semester"><input id="newCourseName" placeholder="Course Name"><input id="newCourseCode" placeholder="Course Code"><input id="newCourseCredits" placeholder="Credits" type="number"><button onclick="addNewCourse()" class="success-btn">Add Course</button>
-                </div>
-            </div>
+<div id="coursesSection" class="section" style="display:none;">
+    <div class="card">
+        <h3><i class="fas fa-book"></i> Add New Course</h3>
+        <input id="courseSemester" placeholder="Semester (e.g., Semester 1 2025/2026)">
+        <input id="newCourseCode" placeholder="Course Code (e.g., NURS 101)">
+        <input id="newCourseName" placeholder="Course Name">
+        <input id="newCourseCredits" placeholder="Credits" type="number" value="3">
+        <button onclick="addNewCourse()" class="success-btn">Add Course</button>
+    </div>
+    
+    <div class="card">
+        <h3><i class="fas fa-list"></i> Course List</h3>
+        <div id="coursesList" class="student-list-container">
+            <p style="text-align:center; padding:20px;">Loading courses...</p>
+        </div>
+    </div>
+</div>
 
             <!-- FINANCIAL CLEARANCE -->
             <div id="clearanceSection" class="section" style="display:none;">
@@ -1736,39 +1747,78 @@ function generateReport(type) { showToast(`Generating ${type} report...`, "info"
 // ============================================
 // COURSES
 // ============================================
-async function addNewCourse() {
-    const sem = document.getElementById('courseSemester').value;
-    const name = document.getElementById('newCourseName').value;
-    const code = document.getElementById('newCourseCode').value;
-    const credits = document.getElementById('newCourseCredits').value;
-    if (!sem || !name || !code || !credits) {
-        return showToast("Fill all fields", "warning");
+async function addNewCourse() { 
+    const sem = document.getElementById('courseSemester').value; 
+    const name = document.getElementById('newCourseName').value; 
+    const code = document.getElementById('newCourseCode').value; 
+    const credits = document.getElementById('newCourseCredits').value; 
+    
+    if (!sem || !name) {
+        showToast("Enter semester and course name", "warning");
+        return;
     }
+    
+    showToast("Saving course...", "info");
+    
     try {
-        const res = await fetch(SCRIPT_URL, {
-            method: "POST",
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
             body: JSON.stringify({
-                action: "save_courses",
-                courses: [{
-                    semester: sem,
-                    code: code,
-                    name: name,
-                    credits: credits
-                }]
+                action: 'save_course',  // Make sure this matches backend
+                semester: sem,
+                courseCode: code,
+                courseName: name,
+                credits: parseInt(credits) || 3
             })
         });
-        const data = await res.json();
-        if (data.success) {
-            showToast("Course saved successfully", "success");
-            document.getElementById('newCourseName').value = '';
-            document.getElementById('newCourseCode').value = '';
-            document.getElementById('newCourseCredits').value = '';
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(`Course "${code} - ${name}" added to ${sem}`, "success"); 
+            document.getElementById('courseSemester').value = ''; 
+            document.getElementById('newCourseName').value = ''; 
+            document.getElementById('newCourseCode').value = ''; 
+            document.getElementById('newCourseCredits').value = ''; 
+            
+            // Refresh the course list if you have one
+            if (typeof loadCourses === 'function') loadCourses();
         } else {
-            showToast(data.error || "Failed to save", "danger");
+            showToast("Failed to add course: " + (result.error || "Unknown error"), "danger");
         }
-    } catch (err) {
-        console.error(err);
-        showToast("Server error", "danger");
+    } catch(e) {
+        console.error("Error adding course:", e);
+        showToast("Network error. Please try again.", "danger");
+    }
+}
+
+async function loadCourses() {
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_courses`);
+        const result = await response.json();
+        
+        const container = document.getElementById('coursesList');
+        if (!container) return;
+        
+        if (result.courses && result.courses.length > 0) {
+            let html = '<div style="max-height:300px; overflow-y:auto;">';
+            result.courses.forEach((course, index) => {
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
+                        <div>
+                            <strong>${course.code}</strong> - ${course.name}<br>
+                            <small>Semester: ${course.semester} | Credits: ${course.credits}</small>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">No courses added yet.</p>';
+        }
+    } catch(e) {
+        console.error("Error loading courses:", e);
     }
 }
 
@@ -2028,6 +2078,7 @@ window.onload = () => {
     loadProcessedRequests();
     displayNotificationHistory();
     loadAdmissions();
+    loadCourses();
 };
 </script>
 </body>
