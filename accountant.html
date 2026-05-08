@@ -873,7 +873,7 @@
 // ============================================
 // GLOBAL VARIABLES
 // ============================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEVaVDvWh1jOc9ZO5K4hDb1EmMg0DVLg4c90jOOp8bjRgrDNuOxltqZV_I3TZQMFm8/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRfA0kLLR_osgRy6lOAgfUB7WPz09LQDeW8UC4t6DgF86bkC-IqTaUImCXrjgNKfXN/exec";
 let currentStudent = null;
 let currentTranscriptStudent = null;
 let allStudents = [];
@@ -1958,6 +1958,7 @@ function exportAdmissionsToCSV() { let csv = "ID,Name,Email,Phone,Program,Status
 function openExecutiveDashboard() { showToast("Executive Dashboard - Coming Soon", "info"); }
 function logout() { if (confirm("Logout?")) { localStorage.removeItem('adminData'); localStorage.removeItem('currentStaff'); window.location.href = 'index.html'; } }
 async function saveCourse() {
+
     const semester = document.getElementById("semester").value;
     const courseCode = document.getElementById("courseCode").value;
     const courseName = document.getElementById("courseName").value;
@@ -1972,12 +1973,17 @@ async function saveCourse() {
 
         const response = await fetch(SCRIPT_URL, {
             method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
-                action: "save_course",
-                semester: semester,
-                courseCode: courseCode,
-                courseName: courseName,
-                credits: credits
+                action: "save_courses",
+                courses: [{
+                    semester: semester,
+                    code: courseCode,
+                    name: courseName,
+                    credits: credits
+                }]
             })
         });
 
@@ -2004,6 +2010,7 @@ async function saveCourse() {
         alert("Network error");
 
     }
+
 }
 
 // ============================================
