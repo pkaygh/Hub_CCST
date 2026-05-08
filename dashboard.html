@@ -2340,14 +2340,15 @@ function formatDateForDisplay(dateValue) {
     }
     
     const clearanceElement = document.getElementById('infoClearance');
-    if (clearanceElement) {
-        const isCleared = (p.isCleared === true || p.isCleared === "TRUE" || balance <= 0);
-        if (isCleared) {
-            clearanceElement.innerHTML = '<span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Cleared</span>';
-        } else {
-            clearanceElement.innerHTML = '<span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Not Cleared</span>';
-        }
+if (clearanceElement) {
+    // Only use the isCleared flag from the database, NOT the balance
+    const isCleared = (p.isCleared === true || p.isCleared === "TRUE");
+    if (isCleared) {
+        clearanceElement.innerHTML = '<span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Cleared</span>';
+    } else {
+        clearanceElement.innerHTML = '<span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Not Cleared</span>';
     }
+}
     
     console.log("Personal info loaded successfully");
 }
@@ -2482,18 +2483,19 @@ function formatDateForDisplay(dateValue) {
             }
 
             const statusEl = document.getElementById('clearanceStatusFinance');
-            statusEl.style.display = 'block';
-            const isCleared = (finance.isCleared || profile?.isCleared === true || profile?.isCleared === "TRUE" || balance <= 0);
+statusEl.style.display = 'block';
+// Only check the database isCleared flag, NOT the balance
+const isCleared = (finance.isCleared === true || profile?.isCleared === true || profile?.isCleared === "TRUE");
 
-            if (isCleared) {
-                statusEl.innerHTML = '<i class="fas fa-check-circle"></i> ✅ FINANCIALLY CLEARED - You can register for courses';
-                statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
-                statusEl.style.color = '#2e7d32';
-            } else {
-                statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> ⚠️ NOT CLEARED - Outstanding balance of GH₵' + balance.toLocaleString() + '. Please contact the Accountant.';
-                statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
-                statusEl.style.color = '#c62828';
-            }
+if (isCleared) {
+    statusEl.innerHTML = '<i class="fas fa-check-circle"></i> ✅ FINANCIALLY CLEARED - You can register for courses';
+    statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
+    statusEl.style.color = '#2e7d32';
+} else {
+    statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> ⚠️ NOT CLEARED - Please contact the Accountant to complete your registration.';
+    statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
+    statusEl.style.color = '#c62828';
+}
 
             const historyContainer = document.getElementById('paymentHistory');
             if (userPayments?.length > 0) {
