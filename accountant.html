@@ -669,9 +669,6 @@
                                 </div>
                             </div>
                             <button onclick="addCourseRow()" style="background:#555; width:auto; padding:8px 15px; font-size:14px;"><i class="fas fa-plus"></i> Add Course</button>
-                            <button onclick="saveCourse()" style="background:#28a745; width:auto; padding:8px 15px; font-size:14px;">
-                                <i class="fas fa-save"></i> Save Courses
-                        </button>
                             <button onclick="uploadResults()" class="success-btn" style="margin-top:15px;"><i class="fas fa-upload"></i> UPLOAD RESULTS</button>
                         </div>
                     </div>
@@ -2007,61 +2004,6 @@ async function updateApplicationStatus(appId, status) { const idx = allApplicati
 function exportAdmissionsToCSV() { let csv = "ID,Name,Email,Phone,Program,Status,Submitted\n"; allApplications.forEach(a => { csv += `"${a.applicationId}","${a.fullName}","${a.email}","${a.phone}","${a.program}","${a.status}","${new Date(a.submittedAt).toLocaleString()}"\n`; }); const blob = new Blob([csv], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `CCST_Admissions_${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(URL); showToast("Exported!", "success"); }
 function openExecutiveDashboard() { showToast("Executive Dashboard - Coming Soon", "info"); }
 function logout() { if (confirm("Logout?")) { localStorage.removeItem('adminData'); localStorage.removeItem('currentStaff'); window.location.href = 'index.html'; } }
-async function saveCourse() {
-
-    const semester = document.getElementById("semester").value;
-    const courseCode = document.getElementById("courseCode").value;
-    const courseName = document.getElementById("courseName").value;
-    const credits = document.getElementById("credits").value;
-
-    if (!semester || !courseCode || !courseName || !credits) {
-        alert("Please fill all fields");
-        return;
-    }
-
-    try {
-
-        const response = await fetch(SCRIPT_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                action: "save_courses",
-                courses: [{
-                    semester: semester,
-                    code: courseCode,
-                    name: courseName,
-                    credits: credits
-                }]
-            })
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-
-            alert("Course saved successfully");
-
-            document.getElementById("semester").value = "";
-            document.getElementById("courseCode").value = "";
-            document.getElementById("courseName").value = "";
-            document.getElementById("credits").value = "";
-
-        } else {
-
-            alert(result.error || "Failed to save course");
-
-        }
-
-    } catch (err) {
-
-        console.error(err);
-        alert("Network error");
-
-    }
-
-}
 
 // ============================================
 // INITIALIZATION
