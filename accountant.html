@@ -1994,7 +1994,34 @@ function printTranscriptPreview() { const win = window.open('', '_blank'); win.d
 // ============================================
 function loadTranscriptRequests() { const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); const container = document.getElementById('transcriptRequestsList'); if (reqs.length === 0) { container.innerHTML = '<p style="text-align:center; padding:40px;">No pending requests.</p>'; document.getElementById('requestBadge').style.display = 'none'; return; } let html = ''; reqs.forEach((r, i) => { html += `<div class="request-item"><div class="request-info"><strong>${r.name}</strong><small>ID: ${r.id}</small></div><div class="request-actions"><button onclick="processTranscriptRequest(${i})" class="success-btn">Approve</button><button onclick="rejectTranscriptRequest(${i})" class="danger-btn">Reject</button></div></div>`; }); container.innerHTML = html; document.getElementById('requestBadge').style.display = 'block'; document.getElementById('requestBadge').innerText = reqs.length; }
 function loadProcessedRequests() { const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); const container = document.getElementById('processedRequestsList'); if (processed.length === 0) { container.innerHTML = '<p style="text-align:center; padding:20px;">No processed requests.</p>'; return; } let html = ''; processed.slice(-10).reverse().forEach(r => { html += `<div class="request-item"><div class="request-info"><strong>${r.name}</strong><small>${r.id}</small><small>Processed: ${r.processedDate}</small></div><div class="${r.status === 'Approved' ? 'status-cleared' : 'status-not'}">${r.status}</div></div>`; }); container.innerHTML = html; }
-function processTranscriptRequest(idx) { const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); const req = reqs[idx]; if (!req) return; currentTranscriptStudent = { id: req.id, name: req.name, program: req.program, level: req.level }; displayTranscriptStudentInfo(currentTranscriptStudent); displayDemoTranscriptPreview(currentTranscriptStudent); reqs.splice(idx, 1); localStorage.setItem('transcriptRequests', JSON.stringify(reqs)); const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); processed.push({ ...req, processedDate: new Date().toLocaleString(), status: 'Approved' }); localStorage.setItem('processedTranscripts', JSON.stringify(processed)); loadTranscriptRequests(); loadProcessedRequests(); showToast(`Request for ${req.name} approved`, "success"); setTimeout(() => generateOfficialTranscript(), 500); }
+function processTranscriptRequest(idx) { 
+    const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); 
+    const req = reqs[idx]; 
+    if (!req) return; 
+    currentTranscriptStudent = { id: req.id, name: req.name, program: req.program, level: req.level }; 
+    displayTranscriptStudentInfo(currentTranscriptStudent); 
+    
+    // Fetch real results instead of demo
+    fetchStudentResults(req.id).then(results => {
+        if (results && results.length > 0) { 
+            displayTranscriptPreview(results, currentTranscriptStudent); 
+        } else {
+            const container = document.getElementById('transcriptContent'); 
+            container.innerHTML = '<p style="text-align:center; padding:40px;">No results found for this student.</p>'; 
+            document.getElementById('transcriptPreview').style.display = 'block';
+        }
+    });
+    
+    reqs.splice(idx, 1); 
+    localStorage.setItem('transcriptRequests', JSON.stringify(reqs)); 
+    const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); 
+    processed.push({ ...req, processedDate: new Date().toLocaleString(), status: 'Approved' }); 
+    localStorage.setItem('processedTranscripts', JSON.stringify(processed)); 
+    loadTranscriptRequests(); 
+    loadProcessedRequests(); 
+    showToast(`Request for ${req.name} approved`, "success"); 
+    setTimeout(() => generateOfficialTranscript(), 500); 
+}
 function rejectTranscriptRequest(idx) { const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); const req = reqs[idx]; if (confirm(`Reject request for ${req.name}?`)) { reqs.splice(idx, 1); localStorage.setItem('transcriptRequests', JSON.stringify(reqs)); const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); processed.push({ ...req, processedDate: new Date().toLocaleString(), status: 'Rejected' }); localStorage.setItem('processedTranscripts', JSON.stringify(processed)); loadTranscriptRequests(); loadProcessedRequests(); showToast(`Request for ${req.name} rejected`, "warning"); } }
 function processAllRequests() { const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); if (reqs.length === 0) return showToast("No pending requests", "warning"); if (confirm(`Process all ${reqs.length} requests?`)) { reqs.forEach(r => { const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); processed.push({ ...r, processedDate: new Date().toLocaleString(), status: 'Approved' }); localStorage.setItem('processedTranscripts', JSON.stringify(processed)); }); localStorage.setItem('transcriptRequests', '[]'); loadTranscriptRequests(); loadProcessedRequests(); showToast(`Processed ${reqs.length} requests`, "success"); } }
 
