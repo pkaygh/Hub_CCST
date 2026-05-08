@@ -2534,7 +2534,7 @@ function formatDateForDisplay(dateValue) {
     return watermarks;
 }
 
-        function generateTranscriptHTML() {
+    function generateTranscriptHTML() {
     if (!studentData?.profile) return '<p>Student data not available</p>';
     const profile = studentData.profile;
     const program = profile.program || "RM";
@@ -2562,9 +2562,9 @@ function formatDateForDisplay(dateValue) {
     let html = `<div class="watermark-layer">${generateWavyWatermarks()}</div>
     <div class="transcript-content-wrapper">
         <div class="transcript-header" style="text-align:center; margin-bottom:30px; padding-bottom:20px; border-bottom:2px solid #1a472a;">
-            <h1 style="color:#1a472a; text-align: center;">CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1>
-            <h3 style="color:#555; text-align: center;">OFFICIAL ACADEMIC TRANSCRIPT</h3>
-            <div class="unofficial-stamp">⚡ UNOFFICIAL COPY - STUDENT PORTAL ⚡</div>
+            <h1 style="color:#1a472a; margin:0; text-align:center;">CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1>
+            <h3 style="color:#555; margin:5px 0 0 0; text-align:center;">OFFICIAL ACADEMIC TRANSCRIPT</h3>
+            <div class="unofficial-stamp" style="display:inline-block; margin-top:20px; padding:8px 20px; border:2px solid #8b0000; color:#8b0000; font-weight:bold; font-size:0.8rem; letter-spacing:2px; transform:rotate(-5deg); background:rgba(139,0,0,0.05);">⚡ UNOFFICIAL COPY - STUDENT PORTAL ⚡</div>
         </div>
         
         <table class="student-info-table" style="width:100%; border-collapse:collapse; margin-bottom:25px;">
