@@ -1823,10 +1823,76 @@ async function loadCourses() {
 // TRANSCRIPT FUNCTIONS
 // ============================================
 async function loadAllStudentsForTranscript() { const select = document.getElementById('transcriptStudentSelect'); try { const res = await fetch(`${SCRIPT_URL}?action=get_all_students`); const data = await res.json(); select.innerHTML = '<option value="">-- Select Student --</option>'; if (data.students) data.students.forEach(s => { const opt = document.createElement('option'); opt.value = s.id; opt.textContent = `${s.name} (${s.id})`; select.appendChild(opt); }); } catch(e) { select.innerHTML = '<option value="">-- Select Student --</option><option value="CCST/RM/24/001">John Doe (CCST/RM/24/001)</option>'; } }
-async function searchStudentForTranscript() { const id = document.getElementById('transcriptStudentId').value.trim(); if (!id) return showToast("Enter Student ID", "warning"); try { const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`); const data = await res.json(); if (data.error) { showToast(data.error, "danger"); return; } currentTranscriptStudent = data; displayTranscriptStudentInfo(data); displayDemoTranscriptPreview(data); } catch(e) { currentTranscriptStudent = { id, name: "Demo Student", program: "RM", level: "200" }; displayTranscriptStudentInfo(currentTranscriptStudent); displayDemoTranscriptPreview(currentTranscriptStudent); } }
+async function fetchStudentResults(studentId) {
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`);
+        const data = await response.json();
+        return data.results || [];
+    } catch (error) {
+        console.error('Error fetching results:', error);
+        return [];
+    }
+}
+async function searchStudentForTranscript() { 
+    const id = document.getElementById('transcriptStudentId').value.trim(); 
+    if (!id) return showToast("Enter Student ID", "warning"); 
+    
+    showToast("Loading student data...", "info");
+    
+    try { 
+        // Fetch student info
+        const res = await fetch(`${SCRIPT_URL}?action=accountant_search&id=${id}`); 
+        const data = await res.json(); 
+        
+        if (data.error) { 
+            showToast(data.error, "danger"); 
+            return; 
+        } 
+        
+        currentTranscriptStudent = data; 
+        
+        // Fetch actual results for this student
+        const results = await fetchStudentResults(id);
+        
+        displayTranscriptStudentInfo(data); 
+        
+        if (results && results.length > 0) {
+            // Display REAL results
+            displayTranscriptPreview(results, data);
+            console.log("Displaying real results with CA/Exam:", results);
+        } else {
+            // Show no results message
+            showToast("No results found for this student", "warning");
+            const container = document.getElementById('transcriptContent');
+            container.innerHTML = '<p style="text-align:center; padding:40px;">No academic records available for this student.</p>';
+            document.getElementById('transcriptPreview').style.display = 'block';
+        }
+    } catch(e) { 
+        console.error("Error:", e);
+        showToast("Error loading student data", "danger"); 
+    } 
+}
 async function loadStudentForTranscript() { const select = document.getElementById('transcriptStudentSelect'); const id = select.value; if (id) { document.getElementById('transcriptStudentId').value = id; await searchStudentForTranscript(); } }
 function displayTranscriptStudentInfo(s) { document.getElementById('transcriptStudentInfo').style.display = 'block'; document.getElementById('transcriptName').innerText = s.name; document.getElementById('transcriptDetails').innerHTML = `ID: ${s.id} | Program: ${getFullProgramName(s.program)} | Level: ${s.level || '200'}`; }
-function displayDemoTranscriptPreview(s) { const demo = [{ semester: "Semester 1 - 2025/2026", gpa: "3.25", details: [{ code: "COSC 101", name: "Computing", credits: 3, ca: 35, exam: 55, total: 90, grade: "A" }] }]; displayTranscriptPreview(demo, s); }
+async function loadAllStudentsForTranscript() { 
+    const select = document.getElementById('transcriptStudentSelect'); 
+    try { 
+        const res = await fetch(`${SCRIPT_URL}?action=get_all_students`); 
+        const data = await res.json(); 
+        select.innerHTML = '<option value="">-- Select Student --</option>'; 
+        if (data.students) {
+            data.students.forEach(s => { 
+                const opt = document.createElement('option'); 
+                opt.value = s.id; 
+                opt.textContent = `${s.name} (${s.id})`; 
+                select.appendChild(opt); 
+            }); 
+        }
+    } catch(e) { 
+        console.error("Error loading students:", e);
+        select.innerHTML = '<option value="">-- Select Student --</option><option value="CCST/RM/24/001">Demo Student (CCST/RM/24/001)</option>'; 
+    } 
+}
 function displayTranscriptPreview(results, student) {
     const container = document.getElementById('transcriptContent');
     let totalPoints = 0, totalCredits = 0;
