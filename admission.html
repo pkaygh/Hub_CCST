@@ -478,6 +478,45 @@
                 width: calc(100% - 20px) !important;
             }
         }
+        /* PDF Download Button Styles */
+.download-pdf-btn {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 15px;
+    transition: all 0.3s;
+}
+
+.download-pdf-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+}
+
+.pdf-watermark {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    opacity: 0.3;
+    font-size: 12px;
+    color: #999;
+}
+
+@media print {
+    .no-print, .btn, .download-pdf-btn, .footer, .header, .progress-steps, .btn-group {
+        display: none !important;
+    }
+    body {
+        padding: 0;
+        margin: 0;
+    }
+    .summary-card {
+        page-break-inside: avoid;
+    }
+}
         /* Footer */
         .footer {
             text-align: center;
@@ -1067,6 +1106,235 @@
         const container = document.getElementById(listId);
         container.innerHTML = `<div class="file-item"><span class="file-name"><i class="fas fa-file"></i> ${fileName}</span><span class="file-remove" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></span></div>`;
     }
+    // ================= PDF GENERATION FUNCTIONS =================
+function generateApplicationPDF(application) {
+    // Get program name
+    const programNames = { 
+        'RM': 'Registered Midwifery', 
+        'RN': 'Registered General Nursing', 
+        'ML-BSc': 'BSc. Medical Laboratory Technology',
+        'ML-HND': 'HND Medical Laboratory Technology',
+        'RN-BSc': 'BSc. Registered General Nursing'
+    };
+    
+    const programName = programNames[application.program] || application.program;
+    
+    // Format certificates
+    let certificatesHtml = '';
+    if (application.certificates && application.certificates.length > 0) {
+        certificatesHtml = '<table style="width:100%; border-collapse:collapse; margin-top:10px;">';
+        certificatesHtml += '<tr style="background:#1a472a; color:white;"><th style="padding:8px; border:1px solid #6b8e23;">Type</th><th style="padding:8px; border:1px solid #6b8e23;">Institution</th><th style="padding:8px; border:1px solid #6b8e23;">Year</th><th style="padding:8px; border:1px solid #6b8e23;">Index Number</th><th style="padding:8px; border:1px solid #6b8e23;">Aggregate/GPA</th></tr>';
+        application.certificates.forEach(cert => {
+            certificatesHtml += `<tr>
+                <td style="padding:6px; border:1px solid #ddd;">${cert.type || 'N/A'}</td>
+                <td style="padding:6px; border:1px solid #ddd;">${cert.institution || 'N/A'}</td>
+                <td style="padding:6px; border:1px solid #ddd;">${cert.year || 'N/A'}</td>
+                <td style="padding:6px; border:1px solid #ddd;">${cert.indexNumber || 'N/A'}</td>
+                <td style="padding:6px; border:1px solid #ddd;">${cert.aggregate || 'N/A'}</td>
+            </tr>`;
+        });
+        certificatesHtml += '</table>';
+    } else {
+        certificatesHtml = '<p>No certificates provided</p>';
+    }
+    
+    // Get status color and text
+    const statusConfig = {
+        'pending_review': { text: 'Pending Review', color: '#f39c12', icon: '⏳' },
+        'approved': { text: 'Approved', color: '#27ae60', icon: '✅' },
+        'rejected': { text: 'Rejected', color: '#e74c3c', icon: '❌' },
+        'documents_verified': { text: 'Documents Verified', color: '#3498db', icon: '📄' },
+        'interview_scheduled': { text: 'Interview Scheduled', color: '#9b59b6', icon: '📅' },
+        'admitted': { text: 'Admitted', color: '#27ae60', icon: '🎓' }
+    };
+    const status = statusConfig[application.status] || { text: application.status || 'Pending', color: '#f39c12', icon: '⏳' };
+    
+    const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>CCST Application - ${application.fullName}</title>
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                body {
+                    font-family: 'Times New Roman', Times, serif;
+                    padding: 40px;
+                    color: #333;
+                    line-height: 1.6;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    padding-bottom: 20px;
+                    border-bottom: 3px solid #1a472a;
+                }
+                .header h1 {
+                    color: #1a472a;
+                    font-size: 24px;
+                    margin-bottom: 5px;
+                }
+                .header h3 {
+                    color: #6b8e23;
+                    font-size: 16px;
+                }
+                .application-id {
+                    text-align: center;
+                    background: #f0f0f0;
+                    padding: 10px;
+                    margin-bottom: 20px;
+                    border-radius: 5px;
+                }
+                .section {
+                    margin-bottom: 25px;
+                    page-break-inside: avoid;
+                }
+                .section-title {
+                    background: #1a472a;
+                    color: white;
+                    padding: 8px 15px;
+                    margin-bottom: 15px;
+                    border-radius: 5px;
+                    font-size: 16px;
+                }
+                .info-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                .info-table td {
+                    padding: 8px;
+                    border-bottom: 1px solid #ddd;
+                }
+                .info-table td:first-child {
+                    font-weight: bold;
+                    width: 35%;
+                    background: #f9f9f9;
+                }
+                .status-badge {
+                    display: inline-block;
+                    padding: 5px 15px;
+                    border-radius: 20px;
+                    color: white;
+                    font-weight: bold;
+                    background: ${status.color};
+                }
+                .footer {
+                    margin-top: 40px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #999;
+                    border-top: 1px solid #ddd;
+                    padding-top: 20px;
+                }
+                .watermark {
+                    position: fixed;
+                    bottom: 50px;
+                    right: 50px;
+                    opacity: 0.1;
+                    font-size: 60px;
+                    transform: rotate(-25deg);
+                    pointer-events: none;
+                }
+                @media print {
+                    body {
+                        padding: 20px;
+                    }
+                    .no-print {
+                        display: none;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="watermark">CCST</div>
+            <div class="header">
+                <h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1>
+                <h3>OFFICIAL APPLICATION FORM</h3>
+                <p>Agona Swedru, Ghana</p>
+            </div>
+            
+            <div class="application-id">
+                <strong>Application ID:</strong> ${application.id || application.applicationId} &nbsp;|&nbsp;
+                <strong>Tracking Code:</strong> ${application.trackingCode} &nbsp;|&nbsp;
+                <strong>Status:</strong> <span class="status-badge">${status.icon} ${status.text}</span>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">PERSONAL INFORMATION</div>
+                <table class="info-table">
+                    <tr><td>Full Name</td><td>${application.fullName || ''}</td></tr>
+                    <tr><td>Surname</td><td>${application.surname || ''}</td></tr>
+                    <tr><td>First Name</td><td>${application.firstName || ''}</td></tr>
+                    <tr><td>Other Name</td><td>${application.otherName || 'N/A'}</td></tr>
+                    <tr><td>Date of Birth</td><td>${application.dob ? new Date(application.dob).toLocaleDateString() : 'N/A'}</td></tr>
+                    <tr><td>Gender</td><td>${application.gender || 'N/A'}</td></tr>
+                    <tr><td>Email Address</td><td>${application.email || ''}</td></tr>
+                    <tr><td>Phone Number</td><td>${application.phone || ''}</td></tr>
+                    <tr><td>WhatsApp Number</td><td>${application.altPhone || 'N/A'}</td></tr>
+                    <tr><td>Address</td><td>${application.address || 'N/A'}</td></tr>
+                </table>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">ACADEMIC INFORMATION</div>
+                <table class="info-table">
+                    <tr><td>Program Applied For</td><td>${programName}</td></tr>
+                    <tr><td>Entry Mode</td><td>${application.entryMode || 'N/A'}</td></tr>
+                </table>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">ACADEMIC QUALIFICATIONS</div>
+                ${certificatesHtml}
+            </div>
+            
+            <div class="section">
+                <div class="section-title">PAYMENT INFORMATION</div>
+                <table class="info-table">
+                    <tr><td>Payment Method</td><td>${application.paymentMethod === 'momo' ? 'MTN Mobile Money' : 'Bank Transfer'}</td></tr>
+                    <tr><td>Transaction ID</td><td>${application.transactionId || 'N/A'}</td></tr>
+                    <tr><td>Payment Date</td><td>${application.paymentDate ? new Date(application.paymentDate).toLocaleDateString() : 'N/A'}</td></tr>
+                    <tr><td>Application Fee</td><td>GH₵ 200.00</td></tr>
+                </table>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">SUBMISSION DETAILS</div>
+                <table class="info-table">
+                    <tr><td>Submission Date</td><td>${new Date(application.submittedAt).toLocaleString()}</td></tr>
+                    <tr><td>Application Status</td><td>${status.icon} ${status.text}</td></tr>
+                </table>
+            </div>
+            
+            <div class="footer">
+                <p>This is an official application form from Central College of Science and Technology (CCST).</p>
+                <p>For verification, contact: admissions@ccst.edu.gh | +233 555 152 8184</p>
+                <p>Digitally generated on ${new Date().toLocaleString()}</p>
+            </div>
+        </body>
+        </html>
+    `;
+    
+    return html;
+}
+
+function downloadApplicationPDF(application) {
+    const html = generateApplicationPDF(application);
+    const blob = new Blob([html], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `CCST_Application_${application.trackingCode}_${application.fullName.replace(/ /g, '_')}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("PDF downloaded successfully!", "success");
+}
 
     // ================= TRACKING HELPERS =================
     function generateTrackingCode() {
@@ -1102,19 +1370,121 @@
         document.getElementById('trackingModal').classList.remove('show');
     }
 
-    function displayTrackingResult(app) {
-        const resultDiv = document.getElementById('trackingResult');
-        resultDiv.innerHTML = `
-            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px;">
-                <p><strong>Application ID:</strong> ${app.id || app.applicationId}</p>
-                <p><strong>Tracking Code:</strong> <span style="font-size:1.2rem; font-weight:bold;">${app.trackingCode}</span></p>
-                <p><strong>Full Name:</strong> ${app.fullName || app.name}</p>
-                <p><strong>Program:</strong> ${app.program}</p>
-                <p><strong>Status:</strong> <span style="color: ${app.status === 'approved' ? '#27ae60' : app.status === 'rejected' ? '#e74c3c' : '#f39c12'}">${app.status || 'pending_review'}</span></p>
-                <p><strong>Submitted:</strong> ${new Date(app.submittedAt).toLocaleString()}</p>
-            </div>
-        `;
+    function displayTrackingConfirmation(applicationId, trackingCode, fullName, phone, email, program, googleSheetsSuccess) {
+    let trackingSection = document.getElementById('trackingConfirmationSection');
+    
+    if (!trackingSection) {
+        trackingSection = document.createElement('div');
+        trackingSection.id = 'trackingConfirmationSection';
+        trackingSection.className = 'form-section';
+        document.querySelector('.container').appendChild(trackingSection);
     }
+    
+    // Create application object for PDF
+    const applicationForPDF = {
+        id: applicationId,
+        applicationId: applicationId,
+        trackingCode: trackingCode,
+        fullName: fullName,
+        surname: document.getElementById('surname')?.value || '',
+        firstName: document.getElementById('firstName')?.value || '',
+        otherName: document.getElementById('otherName')?.value || '',
+        dob: document.getElementById('dob')?.value || '',
+        gender: document.getElementById('gender')?.value || '',
+        email: email,
+        phone: phone,
+        altPhone: document.getElementById('altPhone')?.value || '',
+        address: document.getElementById('address')?.value || '',
+        program: program,
+        entryMode: document.getElementById('entryMode')?.value || '',
+        certificates: collectCertificates(),
+        transactionId: document.getElementById('transactionId')?.value || '',
+        paymentDate: document.getElementById('paymentDate')?.value || '',
+        paymentMethod: selectedPaymentMethod,
+        status: 'pending_review',
+        submittedAt: new Date().toISOString()
+    };
+    
+    trackingSection.innerHTML = `
+        <h2 style="color: #1a472a;"><i class="fas fa-check-circle" style="color: #27ae60;"></i> Application Submitted Successfully!</h2>
+        <div style="text-align: center; padding: 20px 0;">
+            <i class="fas fa-envelope-open-text" style="font-size: 4rem; color: #27ae60; margin-bottom: 20px;"></i>
+            <h3 style="color: #1a472a; margin-bottom: 20px;">Thank you for applying to CCST!</h3>
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; text-align: left; max-width: 550px; margin: 0 auto; border: 1px solid #6b8e23;">
+                <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
+                    <strong style="color: #1a472a;">Application ID:</strong> 
+                    <span style="font-family: monospace; color: #2c3e50;">${applicationId}</span>
+                </div>
+                <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
+                    <strong style="color: #1a472a;">Tracking Code:</strong> 
+                    <span style="font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #6b8e23;">${trackingCode}</span>
+                </div>
+                <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
+                    <strong style="color: #1a472a;">Full Name:</strong> <span style="color: #2c3e50;">${fullName}</span>
+                </div>
+                <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
+                    <strong style="color: #1a472a;">Program:</strong> <span style="color: #2c3e50;">${program}</span>
+                </div>
+                <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
+                    <strong style="color: #1a472a;">Status:</strong> <span style="color: #f39c12;">⏳ Pending Review</span>
+                </div>
+                <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;">
+                    <strong style="color: #1a472a;">Submitted:</strong> <span style="color: #2c3e50;">${new Date().toLocaleString()}</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="downloadApplicationPDF(${JSON.stringify(applicationForPDF).replace(/"/g, '&quot;')})" class="download-pdf-btn">
+                    <i class="fas fa-file-pdf"></i> Download Application (PDF)
+                </button>
+                <button onclick="copyTrackingCode('${trackingCode}')" class="btn btn-primary" style="width: auto; background: linear-gradient(135deg, #1a472a, #6b8e23); color: white;">
+                    <i class="fas fa-copy"></i> Copy Tracking Code
+                </button>
+                <button onclick="resetAndStartNewApplication()" class="btn btn-secondary" style="width: auto; background: #6c757d; color: white;">
+                    <i class="fas fa-plus"></i> New Application
+                </button>
+                <button onclick="openTrackingModalWithCode('${trackingCode}')" class="btn btn-success" style="width: auto; background: #27ae60; color: white;">
+                    <i class="fas fa-search"></i> Track Status
+                </button>
+            </div>
+            <div style="margin-top: 15px;">
+                <button onclick="window.location.href='index.html'" class="btn btn-primary" style="background: linear-gradient(135deg, #1a472a, #6b8e23); color: white;">
+                    <i class="fas fa-home"></i> Return to Home
+                </button>
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background: #f4f4f4; border-radius: 10px; border-left: 4px solid #27ae60; color: #333;">
+                <i class="fas fa-info-circle" style="color: #27ae60; font-size: 1.2rem;"></i>
+                <p style="margin-top: 5px; font-size: 0.85rem; color: #555;">Save your Tracking Code and download your application PDF for your records.</p>
+            </div>
+        </div>
+    `;
+
+    // Hide all regular sections
+    for (let i = 1; i <= totalSections; i++) {
+        const sec = document.getElementById(`section${i}`);
+        if (sec) sec.classList.remove('active');
+    }
+    trackingSection.classList.add('active');
+
+    // Mark all steps as completed and add final step
+    for (let i = 1; i <= totalSections; i++) {
+        const step = document.getElementById(`step${i}`);
+        if (step) {
+            step.classList.add('completed');
+            step.classList.remove('active');
+        }
+    }
+    let completeStep = document.getElementById('step6');
+    if (!completeStep) {
+        completeStep = document.createElement('div');
+        completeStep.className = 'step completed';
+        completeStep.id = 'step6';
+        completeStep.innerHTML = '<div class="step-number">✓</div><div class="step-title">Complete</div>';
+        document.querySelector('.progress-steps').appendChild(completeStep);
+    } else {
+        completeStep.classList.add('completed');
+    }
+}
 
     // ================= SUBMIT APPLICATION (ENHANCED WITH FETCH CORS SUPPORT) =================
     async function submitApplication() {
@@ -1313,93 +1683,54 @@
 
 
     // ================= DISPLAY TRACKING CONFIRMATION =================
-    function displayTrackingConfirmation(applicationId, trackingCode, fullName, phone, email, program, googleSheetsSuccess) {
-        let trackingSection = document.getElementById('trackingConfirmationSection');
-        
-        if (!trackingSection) {
-            trackingSection = document.createElement('div');
-            trackingSection.id = 'trackingConfirmationSection';
-            trackingSection.className = 'form-section';
-            document.querySelector('.container').appendChild(trackingSection);
-        }
-        
-        trackingSection.innerHTML = `
-            <h2 style="color: #1a472a;"><i class="fas fa-check-circle" style="color: #27ae60;"></i> Application Submitted Successfully!</h2>
-            <div style="text-align: center; padding: 20px 0;">
-                <i class="fas fa-envelope-open-text" style="font-size: 4rem; color: #27ae60; margin-bottom: 20px;"></i>
-                <h3 style="color: #1a472a; margin-bottom: 20px;">Thank you for applying to CCST!</h3>
-                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; text-align: left; max-width: 500px; margin: 0 auto; border: 1px solid #6b8e23;">
-                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Application ID:</strong> 
-                        <span style="font-family: monospace; color: #2c3e50;">${applicationId}</span>
-                    </div>
-                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Tracking Code:</strong> 
-                        <span style="font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #6b8e23;">${trackingCode}</span>
-                    </div>
-                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Full Name:</strong> <span style="color: #2c3e50;">${fullName}</span>
-                    </div>
-                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Program:</strong> <span style="color: #2c3e50;">${program}</span>
-                    </div>
-                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0;">
-                        <strong style="color: #1a472a;">Status:</strong> <span style="color: #f39c12;">⏳ Pending Review</span>
-                    </div>
-                    <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;">
-                        <strong style="color: #1a472a;">Submitted:</strong> <span style="color: #2c3e50;">${new Date().toLocaleString()}</span>
-                    </div>
-                </div>
-                <div style="margin-top: 20px; padding: 15px; background: #f4f4f4; border-radius: 10px; border-left: 4px solid #27ae60; color: #333;">
-                    <i class="fas fa-info-circle" style="color: #27ae60; font-size: 1.2rem;"></i>
-                    <p style="margin-top: 10px; color: #000; font-weight: bold; margin-bottom: 5px;"><strong>Important:</strong> Save your Tracking Code! You'll need it to check your application status.</p>
-                    <p style="font-size: 0.9rem; color: #555; margin-top: 0;">A confirmation has been saved locally.</p>
-                </div>
-                <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    <button onclick="copyTrackingCode('${trackingCode}')" class="btn btn-primary" style="width: auto; background: linear-gradient(135deg, #1a472a, #6b8e23); color: white;">
-                        <i class="fas fa-copy"></i> Copy Tracking Code
-                    </button>
-                    <button onclick="restAndStartNewApplication()" class="btn btn-secondary" style="width: auto; background: #6c757d; color: white;">
-                        <i class="fas fa-plus"></i> New Application
-                    </button>
-                    <button onclick="openTrackingModalWithCode('${trackingCode}')" class="btn btn-success" style="width: auto; background: #27ae60; color: white;">
-                        <i class="fas fa-search"></i> Track Status
-                    </button>
-                </div>
-                <div style="margin-top: 20px;">
-                    <button onclick="window.location.href='index.html'" class="btn btn-primary" style="background: linear-gradient(135deg, #1a472a, #6b8e23); color: white;">
-                        <i class="fas fa-home"></i> Return to Home
-                    </button>
-                </div>
-            </div>
-        `;
-
-        // Hide all regular sections
-        for (let i = 1; i <= totalSections; i++) {
-            const sec = document.getElementById(`section${i}`);
-            if (sec) sec.classList.remove('active');
-        }
-        trackingSection.classList.add('active');
-
-        // Mark all steps as completed and add final step
-        for (let i = 1; i <= totalSections; i++) {
-            const step = document.getElementById(`step${i}`);
-            if (step) {
-                step.classList.add('completed');
-                step.classList.remove('active');
-            }
-        }
-        let completeStep = document.getElementById('step6');
-        if (!completeStep) {
-            completeStep = document.createElement('div');
-            completeStep.className = 'step completed';
-            completeStep.id = 'step6';
-            completeStep.innerHTML = '<div class="step-number">✓</div><div class="step-title">Complete</div>';
-            document.querySelector('.progress-steps').appendChild(completeStep);
-        } else {
-            completeStep.classList.add('completed');
-        }
+    function displayTrackingResult(app) {
+    const resultDiv = document.getElementById('trackingResult');
+    
+    // Fetch full application data if needed
+    let fullApplication = app;
+    if (!app.certificates) {
+        const allApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+        fullApplication = allApps.find(a => a.id === app.id || a.trackingCode === app.trackingCode) || app;
     }
+    
+    const statusConfig = {
+        'pending_review': { text: 'Pending Review', color: '#f39c12', icon: '⏳', message: 'Your application is being reviewed by the admissions committee.' },
+        'documents_verified': { text: 'Documents Verified', color: '#3498db', icon: '📄', message: 'Your documents have been verified. Awaiting further processing.' },
+        'interview_scheduled': { text: 'Interview Scheduled', color: '#9b59b6', icon: '📅', message: 'An interview has been scheduled. Check your email for details.' },
+        'admitted': { text: 'Admitted', color: '#27ae60', icon: '🎓', message: 'Congratulations! You have been admitted to CCST.' },
+        'rejected': { text: 'Rejected', color: '#e74c3c', icon: '❌', message: 'We regret to inform you that your application was not successful.' }
+    };
+    const status = statusConfig[app.status] || { text: app.status || 'Pending Review', color: '#f39c12', icon: '⏳', message: 'Your application is being processed.' };
+    
+    resultDiv.innerHTML = `
+        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px;">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <span style="display: inline-block; padding: 5px 15px; border-radius: 20px; color: white; font-weight: bold; background: ${status.color};">
+                    ${status.icon} ${status.text}
+                </span>
+            </div>
+            <p><strong>Application ID:</strong> ${app.id || app.applicationId}</p>
+            <p><strong>Tracking Code:</strong> <span style="font-size:1.1rem; font-weight:bold; color:#6b8e23;">${app.trackingCode}</span></p>
+            <p><strong>Full Name:</strong> ${app.fullName || app.name}</p>
+            <p><strong>Program:</strong> ${app.program}</p>
+            <p><strong>Submitted:</strong> ${new Date(app.submittedAt).toLocaleString()}</p>
+            <p><strong>Status Message:</strong> ${status.message}</p>
+            
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="downloadApplicationPDF(${JSON.stringify(fullApplication).replace(/"/g, '&quot;')})" class="download-pdf-btn" style="padding: 8px 16px; font-size: 0.9rem;">
+                    <i class="fas fa-file-pdf"></i> Download Application PDF
+                </button>
+                <button onclick="copyTrackingCode('${app.trackingCode}')" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem; background: linear-gradient(135deg, #1a472a, #6b8e23);">
+                    <i class="fas fa-copy"></i> Copy Code
+                </button>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 8px; font-size: 0.85rem;">
+                <i class="fas fa-print"></i> <strong>Need a physical copy?</strong> Use the Download PDF button above to save or print your application.
+            </div>
+        </div>
+    `;
+}
         // ================= RESET FUNCTION FOR NEW APPLICATION =================
     function resetAndStartNewApplication() {
         // Reset the form
