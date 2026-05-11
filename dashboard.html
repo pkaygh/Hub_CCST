@@ -3819,14 +3819,24 @@ function loadGuardianInfo() {
     const achievements = [];
 
     // Enrollment achievement
-    const enrollmentYear = p?.enrollmentYear || p?.yearAdmitted || new Date().getFullYear();
-    achievements.push({
-        icon: 'fa-calendar-check',
-        color: '#4caf50',
-        title: 'Enrolled',
-        value: enrollmentYear,
-        desc: 'Started academic journey'
-    });
+const currentYear = new Date().getFullYear();
+let level = parseInt(p?.level || 100);
+
+// Calculate start year based on level
+const startYear = currentYear - (level / 100);
+const endYear = startYear + 1;
+
+// Academic year format
+const enrollmentAcademicYear = `${startYear}/${endYear}`;
+
+// Achievement card
+achievements.push({
+    icon: 'fa-calendar-check',
+    color: '#4caf50',
+    title: 'Enrolled',
+    value: enrollmentAcademicYear,
+    desc: 'Started academic journey'
+});
 
     // Credits achievement
     const totalCredits = stats?.totalCredits || 0;
