@@ -2495,76 +2495,104 @@ if (clearanceElement) {
     // Use financeData from API if available, otherwise fall back to profile
     const finance = financeData || {};
     
-    // Priority: finance API data > profile data > defaults
-    const previousBalance = parseFloat(finance.previousBalance) || parseFloat(profile?.previousBalance) || parseFloat(profile?.balance) || 0;
-    const currentSemesterFees = parseFloat(finance.currentSemesterFees) || parseFloat(finance.totalFee) || parseFloat(profile?.currentSemesterFees) || parseFloat(profile?.totalFee) || 0;
-    const amountPayable = previousBalance + currentSemesterFees;
-    const amountPaid = parseFloat(finance.amountPaid) || parseFloat(profile?.amountPaid) || 0;
-    const balance = amountPayable - amountPaid;
-    const arrears = parseFloat(finance.arrears) || parseFloat(profile?.arrears) || (balance > 0 ? balance : 0);
+    // Safely get values with proper defaults and type conversion
+    const previousBalance = parseFloat(finance.previousBalance ?? profile?.previousBalance ?? profile?.balance ?? 0);
+    const currentSemesterFees = parseFloat(finance.currentSemesterFees ?? finance.totalFee ?? profile?.currentSemesterFees ?? profile?.totalFee ?? 0);
+    const amountPayable = (isNaN(previousBalance) ? 0 : previousBalance) + (isNaN(currentSemesterFees) ? 0 : currentSemesterFees);
+    const amountPaid = parseFloat(finance.amountPaid ?? profile?.amountPaid ?? 0);
+    const balance = amountPayable - (isNaN(amountPaid) ? 0 : amountPaid);
+    const arrears = parseFloat(finance.arrears ?? profile?.arrears ?? (balance > 0 ? balance : 0));
 
-    // Update DOM elements
-    document.getElementById('previousBalance').innerHTML = `GH₵${previousBalance.toLocaleString()}`;
-    document.getElementById('currentSemesterFees').innerHTML = `GH₵${currentSemesterFees.toLocaleString()}`;
-    document.getElementById('amountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
-    document.getElementById('amountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
-    document.getElementById('balance').innerHTML = `GH₵${balance.toLocaleString()}`;
-    document.getElementById('arrears').innerHTML = `GH₵${arrears.toLocaleString()}`;
+    // Helper function to safely set element text
+    function setFinanceText(id, value, isCurrency = true) {
+        const element = document.getElementById(id);
+        if (element) {
+            if (isCurrency) {
+                element.innerHTML = `GH₵${value.toLocaleString()}`;
+            } else {
+                element.innerHTML = value;
+            }
+        }
+    }
+
+    // Update DOM elements with safe checks
+    setFinanceText('previousBalance', isNaN(previousBalance) ? 0 : previousBalance);
+    setFinanceText('currentSemesterFees', isNaN(currentSemesterFees) ? 0 : currentSemesterFees);
+    setFinanceText('amountPayable', isNaN(amountPayable) ? 0 : amountPayable);
+    setFinanceText('amountPaid', isNaN(amountPaid) ? 0 : amountPaid);
+    
+    const balanceElement = document.getElementById('balance');
+    if (balanceElement) {
+        const safeBalance = isNaN(balance) ? 0 : balance;
+        balanceElement.innerHTML = `GH₵${safeBalance.toLocaleString()}`;
+    }
+    
+    setFinanceText('arrears', isNaN(arrears) ? 0 : arrears);
 
     // Update calculation breakdown
-    document.getElementById('calcPrevBalance').innerHTML = `GH₵${previousBalance.toLocaleString()}`;
-    document.getElementById('calcCurrentFees').innerHTML = `GH₵${currentSemesterFees.toLocaleString()}`;
-    document.getElementById('calcAmountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
-    document.getElementById('calcAmountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
+    setFinanceText('calcPrevBalance', isNaN(previousBalance) ? 0 : previousBalance);
+    setFinanceText('calcCurrentFees', isNaN(currentSemesterFees) ? 0 : currentSemesterFees);
+    setFinanceText('calcAmountPayable', isNaN(amountPayable) ? 0 : amountPayable);
+    setFinanceText('calcAmountPaid', isNaN(amountPaid) ? 0 : amountPaid);
 
-    const balanceElement = document.getElementById('calcBalance');
-    if (balance > 0) {
-        balanceElement.style.color = '#e74c3c';
-        balanceElement.innerHTML = `GH₵${balance.toLocaleString()} (Outstanding)`;
-    } else if (balance < 0) {
-        balanceElement.style.color = '#27ae60';
-        balanceElement.innerHTML = `GH₵${Math.abs(balance).toLocaleString()} (Credit)`;
-    } else {
-        balanceElement.style.color = '#27ae60';
-        balanceElement.innerHTML = `GH₵0.00 (Fully Paid)`;
+    const calcBalanceElement = document.getElementById('calcBalance');
+    const safeBalance = isNaN(balance) ? 0 : balance;
+    if (calcBalanceElement) {
+        if (safeBalance > 0) {
+            calcBalanceElement.style.color = '#e74c3c';
+            calcBalanceElement.innerHTML = `GH₵${safeBalance.toLocaleString()} (Outstanding)`;
+        } else if (safeBalance < 0) {
+            calcBalanceElement.style.color = '#27ae60';
+            calcBalanceElement.innerHTML = `GH₵${Math.abs(safeBalance).toLocaleString()} (Credit)`;
+        } else {
+            calcBalanceElement.style.color = '#27ae60';
+            calcBalanceElement.innerHTML = `GH₵0.00 (Fully Paid)`;
+        }
     }
 
     // Clearance status - USE ONLY isCleared FLAG, not balance
     const statusEl = document.getElementById('clearanceStatusFinance');
-    statusEl.style.display = 'block';
-    const isCleared = (finance.isCleared === true || profile?.isCleared === true || profile?.isCleared === "TRUE");
+    if (statusEl) {
+        statusEl.style.display = 'block';
+        const isCleared = (finance.isCleared === true || finance.isCleared === "TRUE" || profile?.isCleared === true || profile?.isCleared === "TRUE");
 
-    if (isCleared) {
-        statusEl.innerHTML = '<i class="fas fa-check-circle"></i> ✅ FINANCIALLY CLEARED - You can register for courses';
-        statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
-        statusEl.style.color = '#2e7d32';
-    } else {
-        statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> ⚠️ NOT CLEARED - Please contact the Accountant to complete your registration.';
-        statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
-        statusEl.style.color = '#c62828';
+        if (isCleared) {
+            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> ✅ FINANCIALLY CLEARED - You can register for courses';
+            statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
+            statusEl.style.color = '#2e7d32';
+            statusEl.style.borderLeft = '4px solid #4caf50';
+        } else {
+            statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> ⚠️ NOT CLEARED - Please contact the Accountant to complete your registration.';
+            statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
+            statusEl.style.color = '#c62828';
+            statusEl.style.borderLeft = '4px solid #e74c3c';
+        }
     }
 
     // Payment history
     const historyContainer = document.getElementById('paymentHistory');
-    if (userPayments?.length > 0) {
-        let totalPaid = 0;
-        historyContainer.innerHTML = userPayments.map(pmt => {
-            totalPaid += parseFloat(pmt.amount || 0);
-            return `<div class="payment-history-item">
-                <div>
-                    <strong>${pmt.description || 'Payment'}</strong>
-                    <br><small>${pmt.date || 'Date not specified'}</small>
-                    <br><small>Reference: ${pmt.receiptNo || 'N/A'} | Method: ${pmt.method || 'N/A'}</small>
-                </div>
-                <div class="payment-amount" style="font-weight: bold; color: #27ae60;">GH₵${(pmt.amount || 0).toLocaleString()}</div>
+    if (historyContainer) {
+        if (userPayments?.length > 0) {
+            let totalPaid = 0;
+            historyContainer.innerHTML = userPayments.map(pmt => {
+                const amount = parseFloat(pmt.amount || 0);
+                totalPaid += isNaN(amount) ? 0 : amount;
+                return `<div class="payment-history-item">
+                    <div>
+                        <strong>${pmt.description || 'Payment'}</strong>
+                        <br><small>${pmt.date || 'Date not specified'}</small>
+                        <br><small>Reference: ${pmt.receiptNo || 'N/A'} | Method: ${pmt.method || 'N/A'}</small>
+                    </div>
+                    <div class="payment-amount" style="font-weight: bold; color: #27ae60;">GH₵${(isNaN(amount) ? 0 : amount).toLocaleString()}</div>
+                </div>`;
+            }).join('');
+            historyContainer.innerHTML += `<div class="payment-history-item" style="background: #e8f5e9; border-left-color: #27ae60;">
+                <div><strong>📊 TOTAL PAYMENTS</strong></div>
+                <div class="payment-amount" style="font-weight: bold; font-size: 1.1rem;">GH₵${totalPaid.toLocaleString()}</div>
             </div>`;
-        }).join('');
-        historyContainer.innerHTML += `<div class="payment-history-item" style="background: #e8f5e9; border-left-color: #27ae60;">
-            <div><strong>📊 TOTAL PAYMENTS</strong></div>
-            <div class="payment-amount" style="font-weight: bold; font-size: 1.1rem;">GH₵${totalPaid.toLocaleString()}</div>
-        </div>`;
-    } else {
-        historyContainer.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No payment records found.</p>';
+        } else {
+            historyContainer.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No payment records found.</p>';
+        }
     }
 }
 
@@ -3436,13 +3464,39 @@ async function fetchStudentData() {
 
         // Fetch all data in parallel
         const [personalRes, academicRes, financeRes, resultsRes, paymentsRes, guardianRes] = await Promise.all([
-            fetch(`${SCRIPT_URL}?action=get_personal_info&id=${studentId}`),
-            fetch(`${SCRIPT_URL}?action=get_academic_info&id=${studentId}`),
-            fetch(`${SCRIPT_URL}?action=get_finance_info&id=${studentId}`),
-            fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`),
-            fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`),
-            fetch(`${SCRIPT_URL}?action=get_guardian_info&id=${studentId}`).catch(() => ({ json: async () => ({}) }))
-        ]);
+    fetch(`${SCRIPT_URL}?action=get_personal_info&id=${studentId}`),
+    fetch(`${SCRIPT_URL}?action=get_academic_info&id=${studentId}`),
+    fetch(`${SCRIPT_URL}?action=get_finance_info&id=${studentId}`).catch(() => ({ json: async () => ({}) })),
+    fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`).catch(() => ({ json: async () => ({ results: [] }) })),
+    fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`).catch(() => ({ json: async () => ({ payments: [] }) })),
+    fetch(`${SCRIPT_URL}?action=get_guardian_info&id=${studentId}`).catch(() => ({ json: async () => ({}) }))
+]);
+
+let personalDataRes = {}, academicDataRes = {}, financeDataRes = {}, resultsData = {}, paymentsData = {}, guardianData = {};
+
+try {
+    personalDataRes = await personalRes.json();
+} catch(e) { console.warn('Personal data parse error'); }
+
+try {
+    academicDataRes = await academicRes.json();
+} catch(e) { console.warn('Academic data parse error'); }
+
+try {
+    financeDataRes = await financeRes.json();
+} catch(e) { console.warn('Finance data parse error'); }
+
+try {
+    resultsData = await resultsRes.json();
+} catch(e) { console.warn('Results data parse error'); }
+
+try {
+    paymentsData = await paymentsRes.json();
+} catch(e) { console.warn('Payments data parse error'); }
+
+try {
+    guardianData = await guardianRes.json();
+} catch(e) { console.warn('Guardian data parse error'); }
 
         const [personalDataRes, academicDataRes, financeDataRes, resultsData, paymentsData, guardianData] = await Promise.all([
             personalRes.json(),
