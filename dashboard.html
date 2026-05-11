@@ -3445,8 +3445,7 @@ if (clearanceElement) {
 
 
         // Fetch all data from Google Sheets backend
-        // Fetch all data from Google Sheets backend
-async function fetchStudentData() {
+        async function fetchStudentData() {
     try {
         const storedData = localStorage.getItem('userData');
         if (!storedData) {
@@ -3462,50 +3461,42 @@ async function fetchStudentData() {
         
         showToast("Loading your data...");
 
-        // Fetch all data in parallel
+        // Fetch all data in parallel with error handling
         const [personalRes, academicRes, financeRes, resultsRes, paymentsRes, guardianRes] = await Promise.all([
-    fetch(`${SCRIPT_URL}?action=get_personal_info&id=${studentId}`),
-    fetch(`${SCRIPT_URL}?action=get_academic_info&id=${studentId}`),
-    fetch(`${SCRIPT_URL}?action=get_finance_info&id=${studentId}`).catch(() => ({ json: async () => ({}) })),
-    fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`).catch(() => ({ json: async () => ({ results: [] }) })),
-    fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`).catch(() => ({ json: async () => ({ payments: [] }) })),
-    fetch(`${SCRIPT_URL}?action=get_guardian_info&id=${studentId}`).catch(() => ({ json: async () => ({}) }))
-]);
-
-let personalDataRes = {}, academicDataRes = {}, financeDataRes = {}, resultsData = {}, paymentsData = {}, guardianData = {};
-
-try {
-    personalDataRes = await personalRes.json();
-} catch(e) { console.warn('Personal data parse error'); }
-
-try {
-    academicDataRes = await academicRes.json();
-} catch(e) { console.warn('Academic data parse error'); }
-
-try {
-    financeDataRes = await financeRes.json();
-} catch(e) { console.warn('Finance data parse error'); }
-
-try {
-    resultsData = await resultsRes.json();
-} catch(e) { console.warn('Results data parse error'); }
-
-try {
-    paymentsData = await paymentsRes.json();
-} catch(e) { console.warn('Payments data parse error'); }
-
-try {
-    guardianData = await guardianRes.json();
-} catch(e) { console.warn('Guardian data parse error'); }
-
-        const [personalDataRes, academicDataRes, financeDataRes, resultsData, paymentsData, guardianData] = await Promise.all([
-            personalRes.json(),
-            academicRes.json(),
-            financeRes.json(),
-            resultsRes.json(),
-            paymentsRes.json(),
-            guardianRes.json().catch(() => ({}))
+            fetch(`${SCRIPT_URL}?action=get_personal_info&id=${studentId}`).catch(() => ({ json: async () => ({}) })),
+            fetch(`${SCRIPT_URL}?action=get_academic_info&id=${studentId}`).catch(() => ({ json: async () => ({}) })),
+            fetch(`${SCRIPT_URL}?action=get_finance_info&id=${studentId}`).catch(() => ({ json: async () => ({}) })),
+            fetch(`${SCRIPT_URL}?action=get_results&id=${studentId}`).catch(() => ({ json: async () => ({ results: [] }) })),
+            fetch(`${SCRIPT_URL}?action=get_payments&id=${studentId}`).catch(() => ({ json: async () => ({ payments: [] }) })),
+            fetch(`${SCRIPT_URL}?action=get_guardian_info&id=${studentId}`).catch(() => ({ json: async () => ({}) }))
         ]);
+
+        // Parse responses with error handling
+        let personalDataRes = {}, academicDataRes = {}, financeDataRes = {}, resultsData = {}, paymentsData = {}, guardianData = {};
+
+        try {
+            personalDataRes = await personalRes.json();
+        } catch(e) { console.warn('Personal data parse error:', e); }
+
+        try {
+            academicDataRes = await academicRes.json();
+        } catch(e) { console.warn('Academic data parse error:', e); }
+
+        try {
+            financeDataRes = await financeRes.json();
+        } catch(e) { console.warn('Finance data parse error:', e); }
+
+        try {
+            resultsData = await resultsRes.json();
+        } catch(e) { console.warn('Results data parse error:', e); }
+
+        try {
+            paymentsData = await paymentsRes.json();
+        } catch(e) { console.warn('Payments data parse error:', e); }
+
+        try {
+            guardianData = await guardianRes.json();
+        } catch(e) { console.warn('Guardian data parse error:', e); }
 
         console.log("Personal data:", personalDataRes);
         console.log("Academic data:", academicDataRes);
@@ -3541,7 +3532,7 @@ try {
             program: academicDataRes.program || studentData.profile.program,
             level: academicDataRes.level || studentData.profile.level,
             isCleared: academicDataRes.isCleared || studentData.profile.isCleared || false,
-            // Guardian info (from GuardianInfo sheet) - CRITICAL FIX
+            // Guardian info (from GuardianInfo sheet)
             guardianEmail: guardianData.guardianEmail || studentData.profile.guardianEmail || '--',
             guardianAddress: guardianData.guardianAddress || studentData.profile.guardianAddress || '--',
             allergies: guardianData.allergies || studentData.profile.allergies || 'None reported',
@@ -3556,7 +3547,7 @@ try {
         userResults = resultsData.results || [];
         userPayments = paymentsData.payments || [];
 
-        // Load all sections - ONLY call loadPersonalInfo (not loadProfile)
+        // Load all sections
         loadPersonalInfo();
         loadAcademicResults();
         loadFinance();
@@ -3575,6 +3566,10 @@ try {
         // Update welcome message and date
         updateWelcomeMessage();
         updateCurrentDate();
+        
+        // Load recent activities and achievements
+        loadRecentActivities();
+        updateAchievements();
         
         // Save updated student data
         localStorage.setItem('userData', JSON.stringify(studentData));
