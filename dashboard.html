@@ -3423,25 +3423,34 @@ async function saveProfile(event) {
         return;
     }
 
+    // Collect all form data
     const updateData = {
         action: 'update_profile',
         studentId: studentId,
-        phone: document.getElementById('editPhone').value.trim(),
-        email: document.getElementById('editEmail').value.trim(),
-        dob: document.getElementById('editDob').value,
-        gender: document.getElementById('editGender').value,
-        address: document.getElementById('editAddress').value.trim(),
-        nationality: document.getElementById('editNationality').value.trim(),
-        hometown: document.getElementById('editHometown').value.trim(),
-        guardianName: document.getElementById('editGuardianName').value.trim() || 'Not provided',
-        emergencyPhone: document.getElementById('editGuardianPhone').value.trim(),
-        emergencyContact: document.getElementById('editGuardianRelation').value || 'Not specified',
-        guardianEmail: document.getElementById('editGuardianEmail').value.trim() || 'Not provided',
-        guardianAddress: document.getElementById('editGuardianAddress').value.trim() || 'Not provided',
-        bloodGroup: document.getElementById('editBloodGroup').value || 'Not specified',
-        allergies: document.getElementById('editAllergies').value.trim() || 'None reported'
+        phone: document.getElementById('editPhone')?.value.trim() || '',
+        email: document.getElementById('editEmail')?.value.trim() || '',
+        dob: document.getElementById('editDob')?.value || '',
+        gender: document.getElementById('editGender')?.value || '',
+        address: document.getElementById('editAddress')?.value.trim() || '',
+        nationality: document.getElementById('editNationality')?.value.trim() || '',
+        hometown: document.getElementById('editHometown')?.value.trim() || '',
+        guardianName: document.getElementById('editGuardianName')?.value.trim() || '',
+        emergencyPhone: document.getElementById('editGuardianPhone')?.value.trim() || '',
+        emergencyContact: document.getElementById('editGuardianRelation')?.value || '',
+        guardianEmail: document.getElementById('editGuardianEmail')?.value.trim() || '',
+        guardianAddress: document.getElementById('editGuardianAddress')?.value.trim() || '',
+        bloodGroup: document.getElementById('editBloodGroup')?.value || '',
+        allergies: document.getElementById('editAllergies')?.value.trim() || ''
     };
 
+    // Show loading state
+    const submitBtn = event.target.querySelector('button[type="submit"]') || event.submitter;
+    const originalText = submitBtn ? submitBtn.innerHTML : 'Save Changes';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    }
+    
     showToast('Saving profile...');
 
     try {
@@ -3457,12 +3466,19 @@ async function saveProfile(event) {
             // Update local data
             studentData.profile = { 
                 ...studentData.profile, 
-                ...updateData,
+                phone: updateData.phone,
+                email: updateData.email,
+                dob: updateData.dob,
+                gender: updateData.gender,
+                address: updateData.address,
+                nationality: updateData.nationality,
+                hometown: updateData.hometown,
                 guardianName: updateData.guardianName,
                 emergencyPhone: updateData.emergencyPhone,
                 emergencyContact: updateData.emergencyContact,
                 guardianEmail: updateData.guardianEmail,
                 guardianAddress: updateData.guardianAddress,
+                bloodGroup: updateData.bloodGroup,
                 allergies: updateData.allergies
             };
             localStorage.setItem('userData', JSON.stringify(studentData));
@@ -3471,7 +3487,7 @@ async function saveProfile(event) {
             loadPersonalInfo();
             loadGuardianInfo();
             
-            // CLOSE THE MODAL
+            // Close the modal
             closeEditProfile();
             
             showToast('Profile updated successfully!');
@@ -3480,7 +3496,12 @@ async function saveProfile(event) {
         }
     } catch (error) {
         console.error('Save profile error:', error);
-        showToast('Network error. Please try again.');
+        showToast('Network error. Please check your connection and try again.');
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
     }
 }
         // Fetch all data from Google Sheets backend
