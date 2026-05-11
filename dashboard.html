@@ -3394,13 +3394,13 @@ if (clearanceElement) {
         address: document.getElementById('editAddress').value.trim(),
         nationality: document.getElementById('editNationality').value.trim(),
         hometown: document.getElementById('editHometown').value.trim(),
-        guardianName: document.getElementById('editGuardianName').value.trim(),
+        guardianName: document.getElementById('editGuardianName').value.trim() || 'Not provided',
         emergencyPhone: document.getElementById('editGuardianPhone').value.trim(),
-        emergencyContact: document.getElementById('editGuardianRelation').value,
-        guardianEmail: document.getElementById('editGuardianEmail').value.trim(),
-        guardianAddress: document.getElementById('editGuardianAddress').value.trim(),
-        bloodGroup: document.getElementById('editBloodGroup').value,
-        allergies: document.getElementById('editAllergies').value.trim()
+        emergencyContact: document.getElementById('editGuardianRelation').value || 'Not specified',
+        guardianEmail: document.getElementById('editGuardianEmail').value.trim() || 'Not provided',
+        guardianAddress: document.getElementById('editGuardianAddress').value.trim() || 'Not provided',
+        bloodGroup: document.getElementById('editBloodGroup').value || 'Not specified',
+        allergies: document.getElementById('editAllergies').value.trim() || 'None reported'
     };
 
     showToast('Saving profile...');
@@ -3419,7 +3419,6 @@ if (clearanceElement) {
             studentData.profile = { 
                 ...studentData.profile, 
                 ...updateData,
-                // Ensure these fields are properly mapped
                 guardianName: updateData.guardianName,
                 emergencyPhone: updateData.emergencyPhone,
                 emergencyContact: updateData.emergencyContact,
@@ -3431,7 +3430,7 @@ if (clearanceElement) {
 
             // Refresh UI
             loadPersonalInfo();
-            loadGuardianInfo(); // Call this to refresh guardian info display
+            loadGuardianInfo();
             closeEditProfile();
             showToast('Profile updated successfully!');
         } else {
@@ -3598,18 +3597,18 @@ function loadGuardianInfo() {
         allergies: p.allergies
     });
     
-    // Guardian Information - Explicitly set these values
+    // Guardian Information - Explicitly set these values with fallbacks
     const guardianNameEl = document.getElementById('infoGuardian');
     const emergencyEl = document.getElementById('infoEmergency');
     const guardianEmailEl = document.getElementById('infoGuardianEmail');
     const guardianAddressEl = document.getElementById('infoGuardianAddress');
     const allergiesEl = document.getElementById('infoAllergies');
     
-    if (guardianNameEl) guardianNameEl.innerHTML = p.guardianName || '--';
-    if (emergencyEl) emergencyEl.innerHTML = p.emergencyPhone ? `${p.emergencyContact || 'Contact'} (${p.emergencyPhone})` : (p.emergencyContact || '--');
-    if (guardianEmailEl) guardianEmailEl.innerHTML = p.guardianEmail || '--';
-    if (guardianAddressEl) guardianAddressEl.innerHTML = p.guardianAddress || '--';
-    if (allergiesEl) allergiesEl.innerHTML = p.allergies || 'None reported';
+    if (guardianNameEl) guardianNameEl.innerHTML = (p.guardianName && p.guardianName !== 'Not provided') ? p.guardianName : '--';
+    if (emergencyEl) emergencyEl.innerHTML = p.emergencyPhone ? `${p.emergencyContact || 'Contact'} (${p.emergencyPhone})` : (p.emergencyContact && p.emergencyContact !== 'Not specified' ? p.emergencyContact : '--');
+    if (guardianEmailEl) guardianEmailEl.innerHTML = (p.guardianEmail && p.guardianEmail !== 'Not provided') ? p.guardianEmail : '--';
+    if (guardianAddressEl) guardianAddressEl.innerHTML = (p.guardianAddress && p.guardianAddress !== 'Not provided') ? p.guardianAddress : '--';
+    if (allergiesEl) allergiesEl.innerHTML = (p.allergies && p.allergies !== 'None reported') ? p.allergies : 'None reported';
     
     console.log("Guardian info loaded successfully");
 }
@@ -3749,142 +3748,142 @@ function loadGuardianInfo() {
         }
         
         async function updateAchievements() {
-            const container = document.getElementById('achievementsContainer');
-            const milestonesContainer = document.getElementById('milestonesContainer');
-            const studentId = studentData?.profile?.id;
-            const stats = calculateEnhancedStats();
-            const p = studentData?.profile;
+    const container = document.getElementById('achievementsContainer');
+    const milestonesContainer = document.getElementById('milestonesContainer');
+    const studentId = studentData?.profile?.id;
+    const stats = calculateEnhancedStats();
+    const p = studentData?.profile;
 
-            // Build achievements based on real data
-            const achievements = [];
+    // Build achievements based on real data
+    const achievements = [];
 
-            // Enrollment achievement
-            const enrollmentYear = p?.enrollmentYear || p?.yearAdmitted || new Date().getFullYear();
-            achievements.push({
-                icon: 'fa-calendar-check',
-                color: '#4caf50',
-                title: 'Enrolled',
-                value: enrollmentYear,
-                desc: 'Started academic journey'
-            });
+    // Enrollment achievement
+    const enrollmentYear = p?.enrollmentYear || p?.yearAdmitted || new Date().getFullYear();
+    achievements.push({
+        icon: 'fa-calendar-check',
+        color: '#4caf50',
+        title: 'Enrolled',
+        value: enrollmentYear,
+        desc: 'Started academic journey'
+    });
 
-            // Credits achievement
-            const totalCredits = stats?.totalCredits || 0;
-            if (totalCredits > 0) {
-                achievements.push({
-                    icon: 'fa-book-open',
-                    color: '#2196f3',
-                    title: 'Credits Earned',
-                    value: totalCredits,
-                    desc: 'Total credit hours completed'
-                });
-            }
+    // Credits achievement
+    const totalCredits = stats?.totalCredits || 0;
+    if (totalCredits > 0) {
+        achievements.push({
+            icon: 'fa-book-open',
+            color: '#2196f3',
+            title: 'Credits Earned',
+            value: totalCredits,
+            desc: 'Total credit hours completed'
+        });
+    }
 
-            // CGPA achievement
-            if (stats?.cgpa && stats.cgpa !== '--') {
-                const cgpaNum = parseFloat(stats.cgpa);
-                let cgpaColor = '#ff9800';
-                let cgpaLabel = 'Pass';
-                if (cgpaNum >= 3.6) { cgpaColor = '#4caf50'; cgpaLabel = 'First Class'; }
-                else if (cgpaNum >= 3.0) { cgpaColor = '#8bc34a'; cgpaLabel = '2nd Upper'; }
-                else if (cgpaNum >= 2.5) { cgpaColor = '#ffc107'; cgpaLabel = '2nd Lower'; }
+    // CGPA achievement
+    if (stats?.cgpa && stats.cgpa !== '--') {
+        const cgpaNum = parseFloat(stats.cgpa);
+        let cgpaColor = '#ff9800';
+        let cgpaLabel = 'Pass';
+        if (cgpaNum >= 3.6) { cgpaColor = '#4caf50'; cgpaLabel = 'First Class'; }
+        else if (cgpaNum >= 3.0) { cgpaColor = '#8bc34a'; cgpaLabel = '2nd Upper'; }
+        else if (cgpaNum >= 2.5) { cgpaColor = '#ffc107'; cgpaLabel = '2nd Lower'; }
 
-                achievements.push({
-                    icon: 'fa-graduation-cap',
-                    color: cgpaColor,
-                    title: 'CGPA',
-                    value: stats.cgpa,
-                    desc: cgpaLabel
-                });
-            }
+        achievements.push({
+            icon: 'fa-graduation-cap',
+            color: cgpaColor,
+            title: 'CGPA',
+            value: stats.cgpa,
+            desc: cgpaLabel
+        });
+    }
 
-            // Level achievement
-            const currentLevel = p?.level || '100';
-            achievements.push({
-                icon: 'fa-layer-group',
-                color: '#9c27b0',
-                title: 'Current Level',
-                value: `Level ${currentLevel}`,
-                desc: 'Academic progression'
-            });
+    // Level achievement
+    const currentLevel = p?.level || '100';
+    achievements.push({
+        icon: 'fa-layer-group',
+        color: '#9c27b0',
+        title: 'Current Level',
+        value: `Level ${currentLevel}`,
+        desc: 'Academic progression'
+    });
 
-            // Financial clearance
-            const isCleared = p?.isCleared === true || p?.isCleared === "TRUE";
-            achievements.push({
-                icon: isCleared ? 'fa-check-circle' : 'fa-clock',
-                color: isCleared ? '#4caf50' : '#ff9800',
-                title: 'Financial Status',
-                value: isCleared ? 'Cleared' : 'Pending',
-                desc: isCleared ? 'All fees paid' : 'Outstanding balance'
-            });
+    // Financial clearance
+    const isCleared = p?.isCleared === true || p?.isCleared === "TRUE";
+    achievements.push({
+        icon: isCleared ? 'fa-check-circle' : 'fa-clock',
+        color: isCleared ? '#4caf50' : '#ff9800',
+        title: 'Financial Status',
+        value: isCleared ? 'Cleared' : 'Pending',
+        desc: isCleared ? 'All fees paid' : 'Outstanding balance'
+    });
 
-            // Render achievements
-            container.innerHTML = achievements.map(ach => `
-                <div style="display:flex; align-items:center; gap:15px; padding:15px; background:rgba(255,255,255,0.1); border-radius:12px; margin-bottom:10px; backdrop-filter:blur(10px);">
-                    <div style="width:45px; height:45px; background:${ach.color}; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                        <i class="fas ${ach.icon}" style="color:white; font-size:1.1rem;"></i>
-                    </div>
-                    <div style="flex:1;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="color:rgba(255,255,255,0.7); font-size:0.8rem;">${ach.title}</span>
-                            <span style="color:white; font-weight:bold; font-size:1.1rem;">${ach.value}</span>
-                        </div>
-                        <p style="color:rgba(255,255,255,0.5); font-size:0.75rem; margin:4px 0 0 0;">${ach.desc}</p>
-                    </div>
+    // Render achievements
+    container.innerHTML = achievements.map(ach => `
+        <div style="display:flex; align-items:center; gap:15px; padding:15px; background:rgba(255,255,255,0.1); border-radius:12px; margin-bottom:10px; backdrop-filter:blur(10px);">
+            <div style="width:45px; height:45px; background:${ach.color}; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fas ${ach.icon}" style="color:white; font-size:1.1rem;"></i>
+            </div>
+            <div style="flex:1;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:rgba(255,255,255,0.7); font-size:0.8rem;">${ach.title}</span>
+                    <span style="color:white; font-weight:bold; font-size:1.1rem;">${ach.value}</span>
                 </div>
-            `).join('');
+                <p style="color:rgba(255,255,255,0.5); font-size:0.75rem; margin:4px 0 0 0;">${ach.desc}</p>
+            </div>
+        </div>
+    `).join('');
 
-            // Build milestones
-            const milestones = [];
-            const levels = ['100', '200', '300', '400'];
-            const currentLevelNum = parseInt(currentLevel) || 100;
+    // Build milestones - Level 300 is final graduation level
+    const milestones = [];
+    const levels = ['100', '200', '300'];
+    const currentLevelNum = parseInt(currentLevel) || 100;
 
-            levels.forEach((lvl, idx) => {
-                const lvlNum = parseInt(lvl);
-                let status = 'upcoming';
-                let icon = 'fa-lock';
-                let color = 'rgba(255,255,255,0.3)';
+    levels.forEach((lvl, idx) => {
+        const lvlNum = parseInt(lvl);
+        let status = 'upcoming';
+        let icon = 'fa-lock';
+        let color = 'rgba(255,255,255,0.3)';
 
-                if (lvlNum < currentLevelNum) {
-                    status = 'completed';
-                    icon = 'fa-check';
-                    color = '#4caf50';
-                } else if (lvlNum === currentLevelNum) {
-                    status = 'current';
-                    icon = 'fa-user-graduate';
-                    color = '#ffd700';
-                }
-
-                milestones.push({
-                    level: lvl,
-                    status: status,
-                    icon: icon,
-                    color: color,
-                    label: status === 'completed' ? 'Completed' : (status === 'current' ? 'In Progress' : 'Upcoming')
-                });
-            });
-
-            // Add graduation milestone
-            const allCompleted = currentLevelNum > 400;
-            milestones.push({
-                level: 'Grad',
-                status: allCompleted ? 'completed' : 'upcoming',
-                icon: allCompleted ? 'fa-certificate' : 'fa-graduation-cap',
-                color: allCompleted ? '#4caf50' : 'rgba(255,255,255,0.3)',
-                label: allCompleted ? 'Graduated' : 'Graduation'
-            });
-
-            // Render milestones
-            milestonesContainer.innerHTML = milestones.map(ms => `
-                <div style="text-align:center; padding:15px; background:rgba(255,255,255,0.08); border-radius:12px; border:2px solid ${ms.color};">
-                    <div style="width:40px; height:40px; background:${ms.color}; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 8px;">
-                        <i class="fas ${ms.icon}" style="color:white; font-size:0.9rem;"></i>
-                    </div>
-                    <div style="color:white; font-weight:bold; font-size:0.9rem;">Level ${ms.level}</div>
-                    <div style="color:rgba(255,255,255,0.6); font-size:0.7rem; margin-top:4px;">${ms.label}</div>
-                </div>
-            `).join('');
+        if (lvlNum < currentLevelNum) {
+            status = 'completed';
+            icon = 'fa-check';
+            color = '#4caf50';
+        } else if (lvlNum === currentLevelNum) {
+            status = 'current';
+            icon = 'fa-user-graduate';
+            color = '#ffd700';
         }
+
+        milestones.push({
+            level: lvl,
+            status: status,
+            icon: icon,
+            color: color,
+            label: status === 'completed' ? 'Completed' : (status === 'current' ? 'In Progress' : 'Upcoming')
+        });
+    });
+
+    // Add graduation milestone at Level 300
+    const isGraduated = currentLevelNum > 300;
+    milestones.push({
+        level: 'Graduation',
+        status: isGraduated ? 'completed' : 'upcoming',
+        icon: isGraduated ? 'fa-certificate' : 'fa-graduation-cap',
+        color: isGraduated ? '#4caf50' : '#ff9800',
+        label: isGraduated ? 'Graduated! 🎓' : 'Target: Level 300'
+    });
+
+    // Render milestones
+    milestonesContainer.innerHTML = milestones.map(ms => `
+        <div style="text-align:center; padding:15px; background:rgba(255,255,255,0.08); border-radius:12px; border:2px solid ${ms.color};">
+            <div style="width:40px; height:40px; background:${ms.color}; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 8px;">
+                <i class="fas ${ms.icon}" style="color:white; font-size:0.9rem;"></i>
+            </div>
+            <div style="color:white; font-weight:bold; font-size:0.9rem;">${ms.level}</div>
+            <div style="color:rgba(255,255,255,0.6); font-size:0.7rem; margin-top:4px;">${ms.label}</div>
+        </div>
+    `).join('');
+}
 
         // Single initialization - runs once when page loads
         window.onload = function() {
@@ -4053,32 +4052,40 @@ function loadGuardianInfo() {
         }
         
         function createProgressTimeline(cgpa) {
-            const levels = ['100', '200', '300', '400'];
-            const currentLevel = studentData?.profile?.level || '100';
-            const container = document.getElementById('progressTimeline');
-            if (!container) return;
-            let html = '';
-            levels.forEach(level => {
-                let status = '', completed = false, isCurrent = false;
-                if (parseInt(level) < parseInt(currentLevel)) {
-                    status = 'Completed ✓';
-                    completed = true;
-                } else if (level === currentLevel) {
-                    status = 'In Progress';
-                    isCurrent = true;
-                } else {
-                    status = 'Upcoming';
-                }
-                html += `
-                    <div class="progress-timeline-item ${completed ? 'completed' : (isCurrent ? 'current' : '')}">
-                        <div class="level-number">Level ${level}</div>
-                        <div class="level-status">${status}</div>
-                        ${level === currentLevel ? `<small>CGPA: ${cgpa}</small>` : ''}
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
+    const levels = ['100', '200', '300'];
+    const currentLevel = studentData?.profile?.level || '100';
+    const container = document.getElementById('progressTimeline');
+    if (!container) return;
+    let html = '';
+    levels.forEach(level => {
+        let status = '', completed = false, isCurrent = false;
+        if (parseInt(level) < parseInt(currentLevel)) {
+            status = 'Completed ✓';
+            completed = true;
+        } else if (level === currentLevel) {
+            status = 'In Progress';
+            isCurrent = true;
+        } else {
+            status = 'Upcoming';
         }
+        html += `
+            <div class="progress-timeline-item ${completed ? 'completed' : (isCurrent ? 'current' : '')}">
+                <div class="level-number">Level ${level}</div>
+                <div class="level-status">${status}</div>
+                ${level === currentLevel ? `<small>CGPA: ${cgpa}</small>` : ''}
+            </div>
+        `;
+    });
+    // Add Graduation milestone
+    const isGraduated = parseInt(currentLevel) > 300;
+    html += `
+        <div class="progress-timeline-item ${isGraduated ? 'completed' : ''}" style="${!isGraduated ? 'opacity:0.7;' : ''}">
+            <div class="level-number">🎓 Graduation</div>
+            <div class="level-status">${isGraduated ? 'Completed!' : 'Target'}</div>
+        </div>
+    `;
+    container.innerHTML = html;
+}
         
         function updateGPAChart(semesterGPAs) {
             const ctx = document.getElementById('gpaTrendChart').getContext('2d');
