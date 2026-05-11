@@ -2123,7 +2123,7 @@ function formatDateForDisplay(dateValue) {
     }
     return dateStr;
 }
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz5Yx2a7BuN10M5S4cNcgUqGqaugYzwStD2psuYtEjcVj1co5Xkvr8xHGWqov7wKGub/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHQOIsrZk1pCXJgReWaqimpVlMqHvJ7daRBwjigZsN-doN-tbfihBQTZkbJcYkP5I/exec";
         let studentData = null;
         let financeData = null;
         let academicData = null;
@@ -2395,44 +2395,87 @@ if (clearanceElement) {
         }
 
         function loadAcademicResults() {
-            const container = document.getElementById('resultsContainer');
-            const semesterFilter = document.getElementById('semesterFilter');
-            if (!userResults || userResults.length === 0) {
-                container.innerHTML = '<p style="text-align:center; padding:40px;">No results found.</p>';
-                return;
-            }
-            container.innerHTML = '';
-            semesterFilter.innerHTML = '<option value="all">All Semesters</option>';
-            let totalWeightedPoints = 0, totalCredits = 0;
-            const program = getStudentProgram();
-            
-            userResults.forEach((sem, idx) => {
-                const option = document.createElement('option');
-                option.value = sem.semester;
-                option.textContent = sem.semester;
-                semesterFilter.appendChild(option);
-                
-                let semWeightedPoints = 0, semCredits = 0;
-                sem.details.forEach(c => {
-                    const credits = c.credits || 3;
-                    semWeightedPoints += getGradePoints(c.grade, program) * credits;
-                    semCredits += credits;
-                });
-                totalWeightedPoints += semWeightedPoints;
-                totalCredits += semCredits;
-                
-                let courseRows = '';
-                sem.details.forEach(c => {
-                    const credits = c.credits || 3;
-                    courseRows += `<div class="course-item"><div>${c.name || c.code} (${credits} cr)</div><div style="text-align:center;">${getGradePoints(c.grade, program).toFixed(1)}</div><div style="text-align:center;" class="${getGradeClass(c.grade)}">${c.grade}</div></div>`;
-                });
-                container.innerHTML += `<div class="semester-card" data-semester="${sem.semester}"><div class="semester-header"><h4>${sem.semester}</h4><span class="gpa-badge">GPA: ${sem.gpa || (semCredits > 0 ? (semWeightedPoints / semCredits).toFixed(2) : 0)}</span></div><div class="course-grid"><div class="course-header">Course</div><div class="course-header">Points</div><div class="course-header">Grade</div>${courseRows}</div></div>`;
-            });
-            const cgpa = totalCredits > 0 ? (totalWeightedPoints / totalCredits).toFixed(2) : '--';
-            document.getElementById('cgpaDisplay').innerText = cgpa;
-            document.getElementById('totalCredits').innerText = totalCredits;
-            document.getElementById('academicStatus').innerText = cgpa >= 2.0 ? 'Good' : 'Review';
+    const container = document.getElementById('resultsContainer');
+    const semesterFilter = document.getElementById('semesterFilter');
+    
+    if (!userResults || userResults.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding:40px;">No results found.</p>';
+        // Still update the overview with empty state
+        updateEnhancedAcademicUI();
+        return;
+    }
+    
+    container.innerHTML = '';
+    semesterFilter.innerHTML = '<option value="all">All Semesters</option>';
+    
+    let totalWeightedPoints = 0, totalCredits = 0;
+    const program = getStudentProgram();
+    
+    userResults.forEach((sem, idx) => {
+        // Add to filter dropdown
+        const option = document.createElement('option');
+        option.value = sem.semester;
+        option.textContent = sem.semester;
+        semesterFilter.appendChild(option);
+        
+        let semWeightedPoints = 0, semCredits = 0;
+        
+        // Parse details if it's a string
+        let details = sem.details;
+        if (typeof details === 'string') {
+            try { details = JSON.parse(details); } catch(e) { details = []; }
         }
+        if (!Array.isArray(details)) details = [];
+        
+        details.forEach(c => {
+            const credits = parseInt(c.credits) || 3;
+            const gradePoints = getGradePoints(c.grade, program);
+            semWeightedPoints += gradePoints * credits;
+            semCredits += credits;
+        });
+        
+        totalWeightedPoints += semWeightedPoints;
+        totalCredits += semCredits;
+        
+        // Build course rows HTML
+        let courseRows = '';
+        details.forEach(c => {
+            const credits = parseInt(c.credits) || 3;
+            const points = getGradePoints(c.grade, program);
+            courseRows += `
+                <div class="course-item">
+                    <div>${c.name || c.code} (${credits} cr)</div>
+                    <div style="text-align:center;">${points.toFixed(1)}</div>
+                    <div style="text-align:center;" class="${getGradeClass(c.grade)}">${c.grade}</div>
+                </div>`;
+        });
+        
+        const displayGPA = sem.gpa || (semCredits > 0 ? (semWeightedPoints / semCredits).toFixed(2) : '0.00');
+        
+        container.innerHTML += `
+            <div class="semester-card" data-semester="${sem.semester}">
+                <div class="semester-header">
+                    <h4>${sem.semester}</h4>
+                    <span class="gpa-badge">GPA: ${displayGPA}</span>
+                </div>
+                <div class="course-grid">
+                    <div class="course-header">Course</div>
+                    <div class="course-header">Points</div>
+                    <div class="course-header">Grade</div>
+                    ${courseRows}
+                </div>
+            </div>`;
+    });
+    
+    // Store totals for CGPA calculation
+    window._academicStats = {
+        totalWeightedPoints: totalWeightedPoints,
+        totalCredits: totalCredits
+    };
+    
+    // Update the enhanced UI after loading results
+    updateEnhancedAcademicUI();
+}
 
         function filterResults() {
     const filter = document.getElementById('semesterFilter').value;
@@ -2447,78 +2490,83 @@ if (clearanceElement) {
 }
 
         function loadFinance() {
-            const profile = studentData?.profile;
-            const finance = financeData || {};
+    const profile = studentData?.profile;
+    
+    // Use financeData from API if available, otherwise fall back to profile
+    const finance = financeData || {};
+    
+    // Priority: finance API data > profile data > defaults
+    const previousBalance = parseFloat(finance.previousBalance) || parseFloat(profile?.previousBalance) || parseFloat(profile?.balance) || 0;
+    const currentSemesterFees = parseFloat(finance.currentSemesterFees) || parseFloat(finance.totalFee) || parseFloat(profile?.currentSemesterFees) || parseFloat(profile?.totalFee) || 0;
+    const amountPayable = previousBalance + currentSemesterFees;
+    const amountPaid = parseFloat(finance.amountPaid) || parseFloat(profile?.amountPaid) || 0;
+    const balance = amountPayable - amountPaid;
+    const arrears = parseFloat(finance.arrears) || parseFloat(profile?.arrears) || (balance > 0 ? balance : 0);
 
-            // Use financeData if available from Google Sheets, otherwise fall back to profile
-            const previousBalance = parseFloat(finance.previousBalance) || parseFloat(profile?.previousBalance) || parseFloat(profile?.arrears) || 0;
-            const currentSemesterFees = parseFloat(finance.currentSemesterFees) || parseFloat(profile?.currentSemesterFees) || parseFloat(profile?.totalFee) || 0;
-            const amountPayable = previousBalance + currentSemesterFees;
-            const amountPaid = parseFloat(finance.amountPaid) || parseFloat(profile?.amountPaid) || 0;
-            const balance = amountPayable - amountPaid;
-            const arrears = finance.arrears || profile?.arrears || (balance < 0 ? 0 : (previousBalance > 0 ? previousBalance : 0));
+    // Update DOM elements
+    document.getElementById('previousBalance').innerHTML = `GH₵${previousBalance.toLocaleString()}`;
+    document.getElementById('currentSemesterFees').innerHTML = `GH₵${currentSemesterFees.toLocaleString()}`;
+    document.getElementById('amountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
+    document.getElementById('amountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
+    document.getElementById('balance').innerHTML = `GH₵${balance.toLocaleString()}`;
+    document.getElementById('arrears').innerHTML = `GH₵${arrears.toLocaleString()}`;
 
-            document.getElementById('previousBalance').innerHTML = `GH₵${previousBalance.toLocaleString()}`;
-            document.getElementById('currentSemesterFees').innerHTML = `GH₵${currentSemesterFees.toLocaleString()}`;
-            document.getElementById('amountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
-            document.getElementById('amountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
-            document.getElementById('balance').innerHTML = `GH₵${balance.toLocaleString()}`;
-            document.getElementById('arrears').innerHTML = `GH₵${arrears.toLocaleString()}`;
+    // Update calculation breakdown
+    document.getElementById('calcPrevBalance').innerHTML = `GH₵${previousBalance.toLocaleString()}`;
+    document.getElementById('calcCurrentFees').innerHTML = `GH₵${currentSemesterFees.toLocaleString()}`;
+    document.getElementById('calcAmountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
+    document.getElementById('calcAmountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
 
-            document.getElementById('calcPrevBalance').innerHTML = `GH₵${previousBalance.toLocaleString()}`;
-            document.getElementById('calcCurrentFees').innerHTML = `GH₵${currentSemesterFees.toLocaleString()}`;
-            document.getElementById('calcAmountPayable').innerHTML = `GH₵${amountPayable.toLocaleString()}`;
-            document.getElementById('calcAmountPaid').innerHTML = `GH₵${amountPaid.toLocaleString()}`;
+    const balanceElement = document.getElementById('calcBalance');
+    if (balance > 0) {
+        balanceElement.style.color = '#e74c3c';
+        balanceElement.innerHTML = `GH₵${balance.toLocaleString()} (Outstanding)`;
+    } else if (balance < 0) {
+        balanceElement.style.color = '#27ae60';
+        balanceElement.innerHTML = `GH₵${Math.abs(balance).toLocaleString()} (Credit)`;
+    } else {
+        balanceElement.style.color = '#27ae60';
+        balanceElement.innerHTML = `GH₵0.00 (Fully Paid)`;
+    }
 
-            const balanceElement = document.getElementById('calcBalance');
-            if (balance > 0) {
-                balanceElement.style.color = '#e74c3c';
-                balanceElement.innerHTML = `GH₵${balance.toLocaleString()} (Outstanding)`;
-            } else if (balance < 0) {
-                balanceElement.style.color = '#27ae60';
-                balanceElement.innerHTML = `GH₵${Math.abs(balance).toLocaleString()} (Credit)`;
-            } else {
-                balanceElement.style.color = '#27ae60';
-                balanceElement.innerHTML = `GH₵0.00 (Fully Paid)`;
-            }
+    // Clearance status - USE ONLY isCleared FLAG, not balance
+    const statusEl = document.getElementById('clearanceStatusFinance');
+    statusEl.style.display = 'block';
+    const isCleared = (finance.isCleared === true || profile?.isCleared === true || profile?.isCleared === "TRUE");
 
-            const statusEl = document.getElementById('clearanceStatusFinance');
-statusEl.style.display = 'block';
-// Only check the database isCleared flag, NOT the balance
-const isCleared = (finance.isCleared === true || profile?.isCleared === true || profile?.isCleared === "TRUE");
+    if (isCleared) {
+        statusEl.innerHTML = '<i class="fas fa-check-circle"></i> ✅ FINANCIALLY CLEARED - You can register for courses';
+        statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
+        statusEl.style.color = '#2e7d32';
+    } else {
+        statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> ⚠️ NOT CLEARED - Please contact the Accountant to complete your registration.';
+        statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
+        statusEl.style.color = '#c62828';
+    }
 
-if (isCleared) {
-    statusEl.innerHTML = '<i class="fas fa-check-circle"></i> ✅ FINANCIALLY CLEARED - You can register for courses';
-    statusEl.style.background = 'rgba(85, 107, 47, 0.1)';
-    statusEl.style.color = '#2e7d32';
-} else {
-    statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> ⚠️ NOT CLEARED - Please contact the Accountant to complete your registration.';
-    statusEl.style.background = 'rgba(139, 0, 0, 0.1)';
-    statusEl.style.color = '#c62828';
+    // Payment history
+    const historyContainer = document.getElementById('paymentHistory');
+    if (userPayments?.length > 0) {
+        let totalPaid = 0;
+        historyContainer.innerHTML = userPayments.map(pmt => {
+            totalPaid += parseFloat(pmt.amount || 0);
+            return `<div class="payment-history-item">
+                <div>
+                    <strong>${pmt.description || 'Payment'}</strong>
+                    <br><small>${pmt.date || 'Date not specified'}</small>
+                    <br><small>Reference: ${pmt.receiptNo || 'N/A'} | Method: ${pmt.method || 'N/A'}</small>
+                </div>
+                <div class="payment-amount" style="font-weight: bold; color: #27ae60;">GH₵${(pmt.amount || 0).toLocaleString()}</div>
+            </div>`;
+        }).join('');
+        historyContainer.innerHTML += `<div class="payment-history-item" style="background: #e8f5e9; border-left-color: #27ae60;">
+            <div><strong>📊 TOTAL PAYMENTS</strong></div>
+            <div class="payment-amount" style="font-weight: bold; font-size: 1.1rem;">GH₵${totalPaid.toLocaleString()}</div>
+        </div>`;
+    } else {
+        historyContainer.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No payment records found.</p>';
+    }
 }
-
-            const historyContainer = document.getElementById('paymentHistory');
-            if (userPayments?.length > 0) {
-                let totalPaid = 0;
-                historyContainer.innerHTML = userPayments.map(pmt => {
-                    totalPaid += parseFloat(pmt.amount || 0);
-                    return `<div class="payment-history-item">
-                        <div>
-                            <strong>${pmt.description || 'Payment'}</strong>
-                            <br><small>${pmt.date || 'Date not specified'}</small>
-                            <br><small>Reference: ${pmt.receiptNo || 'N/A'} | Method: ${pmt.method || 'N/A'}</small>
-                        </div>
-                        <div class="payment-amount" style="font-weight: bold; color: #27ae60;">GH₵${(pmt.amount || 0).toLocaleString()}</div>
-                    </div>`;
-                }).join('');
-                historyContainer.innerHTML += `<div class="payment-history-item" style="background: #e8f5e9; border-left-color: #27ae60;">
-                    <div><strong>📊 TOTAL PAYMENTS</strong></div>
-                    <div class="payment-amount" style="font-weight: bold; font-size: 1.1rem;">GH₵${totalPaid.toLocaleString()}</div>
-                </div>`;
-            } else {
-                historyContainer.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No payment records found.</p>';
-            }
-        }
 
         // ============================================
         // TRANSCRIPT FUNCTIONS
@@ -3856,67 +3904,87 @@ function loadGuardianInfo() {
         let gpaChart = null;
         
         function calculateEnhancedStats() {
-            if (!userResults || userResults.length === 0) return null;
-            let totalWeightedPoints = 0;
-            let totalCredits = 0;
-            let semesterGPAs = [];
-            let bestGPA = 0;
-            let bestSemesterName = '';
-            let totalPassedCredits = 0;
-            const program = getStudentProgram();
-            userResults.forEach(sem => {
-                let semWeightedPoints = 0, semCredits = 0;
-                sem.details.forEach(c => {
-                    const credits = c.credits || 3;
-                    const gradePoints = getGradePoints(c.grade, program);
-                    semWeightedPoints += gradePoints * credits;
-                    semCredits += credits;
-                    if (gradePoints >= 1.0) totalPassedCredits += credits;
-                });
-                const semesterGPA = semCredits > 0 ? (semWeightedPoints / semCredits) : 0;
-                semesterGPAs.push({ name: sem.semester, gpa: semesterGPA });
-                if (semesterGPA > bestGPA) {
-                    bestGPA = semesterGPA;
-                    bestSemesterName = sem.semester;
-                }
-                totalWeightedPoints += semWeightedPoints;
-                totalCredits += semCredits;
-            });
-            const overallCGPA = totalCredits > 0 ? (totalWeightedPoints / totalCredits) : 0;
-            let standing = '', standingClass = '', standingMessage = '';
-            if (overallCGPA >= 3.6) {
-                standing = 'First Class Honours';
-                standingClass = 'academic-standing-excellent';
-                standingMessage = 'Excellent Performance! 🎉';
-            } else if (overallCGPA >= 3.0) {
-                standing = 'Second Class (Upper)';
-                standingClass = 'academic-standing-good';
-                standingMessage = 'Good Performance 👍';
-            } else if (overallCGPA >= 2.5) {
-                standing = 'Second Class (Lower)';
-                standingClass = 'academic-standing-good';
-                standingMessage = 'Satisfactory Performance';
-            } else if (overallCGPA >= 2.0) {
-                standing = 'Pass';
-                standingClass = 'academic-standing-warning';
-                standingMessage = 'At Risk - Improve Your Grades ⚠️';
-            } else {
-                standing = 'Academic Probation';
-                standingClass = 'academic-standing-probation';
-                standingMessage = 'Critical - Seek Academic Support ❗';
-            }
-            return {
-                cgpa: overallCGPA.toFixed(2),
-                totalCredits: totalCredits,
-                passedCredits: totalPassedCredits,
-                bestGPA: bestGPA.toFixed(2),
-                bestSemester: bestSemesterName,
-                standing: standing,
-                standingClass: standingClass,
-                standingMessage: standingMessage,
-                semesterGPAs: semesterGPAs
-            };
+    if (!userResults || userResults.length === 0) return null;
+    
+    let totalWeightedPoints = 0;
+    let totalCredits = 0;
+    let semesterGPAs = [];
+    let bestGPA = 0;
+    let bestSemesterName = '';
+    let totalPassedCredits = 0;
+    const program = getStudentProgram();
+    
+    userResults.forEach((sem, idx) => {
+        let semWeightedPoints = 0, semCredits = 0;
+        
+        // Parse details
+        let details = sem.details;
+        if (typeof details === 'string') {
+            try { details = JSON.parse(details); } catch(e) { details = []; }
         }
+        if (!Array.isArray(details)) details = [];
+        
+        details.forEach(c => {
+            const credits = parseInt(c.credits) || 3;
+            const gradePoints = getGradePoints(c.grade, program);
+            semWeightedPoints += gradePoints * credits;
+            semCredits += credits;
+            if (gradePoints >= 1.0) totalPassedCredits += credits;
+        });
+        
+        const semesterGPA = semCredits > 0 ? (semWeightedPoints / semCredits) : 0;
+        
+        semesterGPAs.push({ 
+            name: sem.semester, 
+            gpa: semesterGPA 
+        });
+        
+        if (semesterGPA > bestGPA) {
+            bestGPA = semesterGPA;
+            bestSemesterName = sem.semester;
+        }
+        
+        totalWeightedPoints += semWeightedPoints;
+        totalCredits += semCredits;
+    });
+    
+    const overallCGPA = totalCredits > 0 ? (totalWeightedPoints / totalCredits) : 0;
+    
+    let standing = '', standingClass = '', standingMessage = '';
+    if (overallCGPA >= 3.6) {
+        standing = 'First Class Honours';
+        standingClass = 'academic-standing-excellent';
+        standingMessage = 'Excellent Performance! 🎉';
+    } else if (overallCGPA >= 3.0) {
+        standing = 'Second Class (Upper)';
+        standingClass = 'academic-standing-good';
+        standingMessage = 'Good Performance 👍';
+    } else if (overallCGPA >= 2.5) {
+        standing = 'Second Class (Lower)';
+        standingClass = 'academic-standing-good';
+        standingMessage = 'Satisfactory Performance';
+    } else if (overallCGPA >= 2.0) {
+        standing = 'Pass';
+        standingClass = 'academic-standing-warning';
+        standingMessage = 'At Risk - Improve Your Grades ⚠️';
+    } else {
+        standing = 'Academic Probation';
+        standingClass = 'academic-standing-probation';
+        standingMessage = 'Critical - Seek Academic Support ❗';
+    }
+    
+    return {
+        cgpa: overallCGPA.toFixed(2),
+        totalCredits: totalCredits,
+        passedCredits: totalPassedCredits,
+        bestGPA: bestGPA.toFixed(2),
+        bestSemester: bestSemesterName,
+        standing: standing,
+        standingClass: standingClass,
+        standingMessage: standingMessage,
+        semesterGPAs: semesterGPAs
+    };
+}
         
         function updateEnhancedAcademicUI() {
             const stats = calculateEnhancedStats();
