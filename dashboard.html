@@ -2123,7 +2123,7 @@ function formatDateForDisplay(dateValue) {
     }
     return dateStr;
 }
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4-IEMXoIsuE8h4YvTq8z-VSHlfTIryHzI4zmpr4eNU2ZGzUD_KAc9OlBmPMs5oELe/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxu0s3jbwhxv8qiM5DX014ro11i_dyNOjWIJ14wCE7rTHUoj2QyBMVdMuK2qlkDxPZY/exec";
         let studentData = null;
         let financeData = null;
         let academicData = null;
@@ -2355,44 +2355,68 @@ if (clearanceElement) {
         
         // Photo functions - moved outside loadProfile
         async function setProfilePhoto(studentId) {
-            const p = studentData?.profile;
-            // Try local storage with student ID first
-            let savedPhoto = localStorage.getItem(`userPhoto_${studentId}`);
-            // If not found, try phone-based storage (for phone change scenarios)
-            if (!savedPhoto && p?.phone) {
-                savedPhoto = localStorage.getItem(`userPhoto_phone_${p.phone}`);
-            }
-            if (savedPhoto) {
-                document.getElementById('profilePic').src = savedPhoto;
-                document.getElementById('sidebarPhoto').src = savedPhoto;
-            } else {
-                // Fetch from Google Sheets if not found locally
-                const remotePhoto = await fetchProfilePhoto(studentId);
-                if (remotePhoto) {
-                    document.getElementById('profilePic').src = remotePhoto;
-                    document.getElementById('sidebarPhoto').src = remotePhoto;
-                }
-            }
+    const p = studentData?.profile;
+    const phone = p?.phone || '';
+    
+    // Try local storage with student ID first
+    let savedPhoto = localStorage.getItem(`userPhoto_${studentId}`);
+    
+    // If not found, try phone-based storage
+    if (!savedPhoto && phone) {
+        savedPhoto = localStorage.getItem(`userPhoto_phone_${phone}`);
+    }
+    
+    if (savedPhoto) {
+        document.getElementById('profilePic').src = savedPhoto;
+        document.getElementById('sidebarPhoto').src = savedPhoto;
+        console.log('Photo loaded from local cache');
+    }
+    
+    // ALWAYS fetch from Google Sheets to ensure cross-device sync
+    const remotePhoto = await fetchProfilePhoto(studentId);
+    if (remotePhoto) {
+        document.getElementById('profilePic').src = remotePhoto;
+        document.getElementById('sidebarPhoto').src = remotePhoto;
+        // Cache locally for next time
+        localStorage.setItem(`userPhoto_${studentId}`, remotePhoto);
+        if (phone) {
+            localStorage.setItem(`userPhoto_phone_${phone}`, remotePhoto);
         }
+        console.log('Photo synced from cloud');
+    }
+}
 
         async function fetchProfilePhoto(studentId) {
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=get_student_photo&id=${studentId}`);
-                const data = await response.json();
-                if (data.photoData && data.photoData !== "") {
-                    // Save with both ID and phone-based keys for redundancy
-                    localStorage.setItem(`userPhoto_${studentId}`, data.photoData);
-                    const p = studentData?.profile;
-                    if (p?.phone) {
-                        localStorage.setItem(`userPhoto_phone_${p.phone}`, data.photoData);
-                    }
-                    return data.photoData;
-                }
-            } catch (error) {
-                console.log("Could not fetch photo from server:", error);
+    try {
+        const p = studentData?.profile;
+        const phone = p?.phone || '';
+        
+        // Try to fetch by student ID first, also send phone as backup
+        const response = await fetch(`${SCRIPT_URL}?action=get_student_photo&id=${studentId}&phone=${phone}`);
+        const data = await response.json();
+        
+        if (data.success && data.photoData && data.photoData !== "") {
+            console.log(`Photo retrieved from cloud (matched by: ${data.matchedBy || 'unknown'})`);
+            // Save to local storage with both ID and phone-based keys
+            localStorage.setItem(`userPhoto_${studentId}`, data.photoData);
+            if (phone) {
+                localStorage.setItem(`userPhoto_phone_${phone}`, data.photoData);
             }
-            return null;
+            return data.photoData;
+        } else if (data.photoData && data.photoData !== "") {
+            // Backward compatibility
+            console.log('Photo retrieved from cloud (legacy mode)');
+            localStorage.setItem(`userPhoto_${studentId}`, data.photoData);
+            if (phone) {
+                localStorage.setItem(`userPhoto_phone_${phone}`, data.photoData);
+            }
+            return data.photoData;
         }
+    } catch (error) {
+        console.log("Could not fetch photo from server:", error);
+    }
+    return null;
+}
 
         function loadAcademicResults() {
     const container = document.getElementById('resultsContainer');
@@ -3260,89 +3284,104 @@ if (clearanceElement) {
         }
         
         function uploadPhoto(e) {
-            const file = e.target.files[0];
-            if (file && studentData?.profile) {
-                if (file.size > 500 * 1024) {
-                    compressAndUploadPhoto(file);
-                } else {
-                    const reader = new FileReader();
-                    reader.onload = function(ev) {
-                        const photoData = ev.target.result;
-                        document.getElementById('profilePic').src = photoData;
-                        document.getElementById('sidebarPhoto').src = photoData;
-                        // Save to local storage using both student ID and phone for redundancy
-                        localStorage.setItem(`userPhoto_${studentData.profile.id}`, photoData);
-                        localStorage.setItem(`userPhoto_phone_${studentData.profile.phone}`, photoData);
-                        // ALWAYS upload to Google Sheets
-                        uploadPhotoToSheets(photoData);
-                        showToast('Photo updated!');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            }
-        }
-
-        function compressAndUploadPhoto(file) {
+    const file = e.target.files[0];
+    if (file && studentData?.profile) {
+        if (file.size > 500 * 1024) {
+            compressAndUploadPhoto(file);
+        } else {
             const reader = new FileReader();
             reader.onload = function(ev) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    let width = img.width;
-                    let height = img.height;
-                    const maxSize = 200;
-                    if (width > height) {
-                        if (width > maxSize) {
-                            height *= maxSize / width;
-                            width = maxSize;
-                        }
-                    } else {
-                        if (height > maxSize) {
-                            width *= maxSize / height;
-                            height = maxSize;
-                        }
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const compressedData = canvas.toDataURL('image/jpeg', 0.7);
-                    document.getElementById('profilePic').src = compressedData;
-                    document.getElementById('sidebarPhoto').src = compressedData;
-                    // Save to local storage using both student ID and phone for redundancy
-                    localStorage.setItem(`userPhoto_${studentData.profile.id}`, compressedData);
-                    localStorage.setItem(`userPhoto_phone_${studentData.profile.phone}`, compressedData);
-                    // ALWAYS upload to Google Sheets
-                    uploadPhotoToSheets(compressedData);
-                    showToast('Photo compressed and updated!');
-                };
-                img.src = ev.target.result;
+                const photoData = ev.target.result;
+                document.getElementById('profilePic').src = photoData;
+                document.getElementById('sidebarPhoto').src = photoData;
+                // Save to local storage
+                localStorage.setItem(`userPhoto_${studentData.profile.id}`, photoData);
+                localStorage.setItem(`userPhoto_phone_${studentData.profile.phone}`, photoData);
+                // Upload to Google Sheets for cross-device access
+                uploadPhotoToSheets(photoData);
+                showToast('Photo updated and saved to cloud!');
             };
             reader.readAsDataURL(file);
         }
+    }
+}
 
-        async function uploadPhotoToSheets(base64Data) {
-            try {
-                const studentId = studentData?.profile?.id;
-                if (!studentId) return;
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'store_photo_data',
-                        studentId: studentId,
-                        photoData: base64Data
-                    })
-                });
-                const result = await response.json();
-                if (result.success) {
-                    console.log('Photo saved to Google Sheets successfully');
+        function compressAndUploadPhoto(file) {
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            let width = img.width;
+            let height = img.height;
+            const maxSize = 200;
+            if (width > height) {
+                if (width > maxSize) {
+                    height *= maxSize / width;
+                    width = maxSize;
                 }
-            } catch (err) {
-                console.log('Photo upload to sheets failed, saved locally only');
+            } else {
+                if (height > maxSize) {
+                    width *= maxSize / height;
+                    height = maxSize;
+                }
             }
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedData = canvas.toDataURL('image/jpeg', 0.7);
+            document.getElementById('profilePic').src = compressedData;
+            document.getElementById('sidebarPhoto').src = compressedData;
+            // Save to local storage
+            localStorage.setItem(`userPhoto_${studentData.profile.id}`, compressedData);
+            localStorage.setItem(`userPhoto_phone_${studentData.profile.phone}`, compressedData);
+            // Upload to Google Sheets for cross-device access
+            uploadPhotoToSheets(compressedData);
+            showToast('Photo compressed, updated, and saved to cloud!');
+        };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+async function uploadPhotoToSheets(base64Data) {
+    try {
+        const studentId = studentData?.profile?.id;
+        const studentPhone = studentData?.profile?.phone;
+        
+        if (!studentId) {
+            console.log('No student ID, cannot save photo to cloud');
+            return;
         }
         
+        console.log('Saving photo to cloud for student:', studentId);
+        
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'store_photo_data',
+                studentId: studentId,
+                phone: studentPhone || '',
+                photoData: base64Data
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('Photo saved to Google Sheets successfully');
+            showToast('Photo saved to cloud! Available on any device.');
+        } else {
+            console.log('Photo save to cloud failed:', result.error);
+            showToast('Photo saved locally only. Cloud save failed: ' + (result.error || 'Unknown error'));
+        }
+    } catch (err) {
+        console.log('Photo upload to sheets failed:', err);
+        showToast('Photo saved locally only. Check your internet connection.');
+    }
+}
 
         // ============================================
         // EDIT PROFILE FUNCTIONS
@@ -3375,7 +3414,7 @@ if (clearanceElement) {
             document.getElementById('editProfileModal').style.display = 'none';
         }
 
-        async function saveProfile(event) {
+async function saveProfile(event) {
     event.preventDefault();
 
     const studentId = studentData?.profile?.id;
@@ -3431,7 +3470,10 @@ if (clearanceElement) {
             // Refresh UI
             loadPersonalInfo();
             loadGuardianInfo();
+            
+            // CLOSE THE MODAL
             closeEditProfile();
+            
             showToast('Profile updated successfully!');
         } else {
             showToast('Error: ' + (result.error || 'Failed to update'));
@@ -3441,8 +3483,6 @@ if (clearanceElement) {
         showToast('Network error. Please try again.');
     }
 }
-
-
         // Fetch all data from Google Sheets backend
         async function fetchStudentData() {
     try {
