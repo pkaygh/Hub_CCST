@@ -739,15 +739,62 @@
             </div>
 
             <!-- MANAGE COURSES -->
-<div id="coursesSection" class="section" style="display:none;">
-    <div class="card">
-        <h3><i class="fas fa-book"></i> Add New Course</h3>
-        <input id="courseSemester" placeholder="Semester (e.g., Semester 1 2025/2026)">
-        <input id="newCourseCode" placeholder="Course Code (e.g., NURS 101)">
-        <input id="newCourseName" placeholder="Course Name">
-        <input id="newCourseCredits" placeholder="Credits" type="number" value="3">
-        <button onclick="addNewCourse()" class="success-btn">Add Course</button>
+<div class="card">
+    <h3><i class="fas fa-book"></i> Add New Course</h3>
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Semester</label>
+            <select id="courseSemester" style="width: 100%; padding: 12px;">
+                <option value="">Select Semester</option>
+                <option value="Semester 1, 2025/2026">Semester 1, 2025/2026</option>
+                <option value="Semester 2, 2025/2026">Semester 2, 2025/2026</option>
+                <option value="Semester 1, 2026/2027">Semester 1, 2026/2027</option>
+                <option value="Semester 2, 2026/2027">Semester 2, 2026/2027</option>
+                <option value="All">All Semesters</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Course Code</label>
+            <input type="text" id="newCourseCode" placeholder="e.g., NURS 101">
+        </div>
+        <div class="form-group">
+            <label>Course Name</label>
+            <input type="text" id="newCourseName" placeholder="e.g., Fundamentals of Nursing">
+        </div>
+        <div class="form-group">
+            <label>Credits</label>
+            <input type="number" id="newCourseCredits" value="3" step="1">
+        </div>
+        <div class="form-group">
+            <label>Program (Who can take this course?)</label>
+            <select id="courseProgram" style="width: 100%; padding: 12px;">
+                <option value="All">All Programs</option>
+                <option value="RM">Registered Midwifery (RM)</option>
+                <option value="RN">Registered General Nursing (RN)</option>
+                <option value="ML">Medical Laboratory Technology (ML)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Level</label>
+            <select id="courseLevel" style="width: 100%; padding: 12px;">
+                <option value="All">All Levels</option>
+                <option value="100">Level 100</option>
+                <option value="200">Level 200</option>
+                <option value="300">Level 300</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Course Type</label>
+            <select id="courseType" style="width: 100%; padding: 12px;">
+                <option value="core">Core Course (Required)</option>
+                <option value="elective">Elective Course (Optional)</option>
+            </select>
+        </div>
     </div>
+    <button onclick="addNewCourse()" class="success-btn" style="margin-top: 15px;">
+        <i class="fas fa-save"></i> Add Course
+    </button>
+</div>
     
     <div class="card">
         <h3><i class="fas fa-list"></i> Course List</h3>
@@ -881,7 +928,7 @@
 // ============================================
 // GLOBAL VARIABLES
 // ============================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwl_mpE4mVQg4proxG9GNHCfXsmCXtOoVelPb7ybjbxHK952lxJv9zBWJq7mLLWsQfx/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwhLDhtLYmRvtQGTnM3HgyoOv6Bkw8p2e895sfP_sBNcoD2oIHeTj8gy4XFWZimB4Bo/exec";
 let currentStudent = null;
 let currentTranscriptStudent = null;
 let allStudents = [];
@@ -1744,48 +1791,71 @@ function generateReport(type) { showToast(`Generating ${type} report...`, "info"
 // ============================================
 // COURSES
 // ============================================
-async function addNewCourse() { 
-    const sem = document.getElementById('courseSemester').value; 
-    const name = document.getElementById('newCourseName').value; 
-    const code = document.getElementById('newCourseCode').value; 
-    const credits = document.getElementById('newCourseCredits').value; 
+async function addNewCourse() {
+    const semester = document.getElementById('courseSemester').value;
+    const courseCode = document.getElementById('newCourseCode').value.trim();
+    const courseName = document.getElementById('newCourseName').value.trim();
+    const credits = document.getElementById('newCourseCredits').value;
+    const program = document.getElementById('courseProgram').value;
+    const level = document.getElementById('courseLevel').value;
+    const courseType = document.getElementById('courseType').value;
     
-    if (!sem || !name) {
-        showToast("Enter semester and course name", "warning");
+    if (!semester) {
+        showToast("Please select a semester", "warning");
+        return;
+    }
+    if (!courseCode) {
+        showToast("Please enter course code", "warning");
+        return;
+    }
+    if (!courseName) {
+        showToast("Please enter course name", "warning");
         return;
     }
     
-    showToast("Saving course...", "info");
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
     
     try {
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                action: 'save_course',  // Make sure this matches backend
-                semester: sem,
-                courseCode: code,
-                courseName: name,
-                credits: parseInt(credits) || 3
+                action: 'save_course',
+                semester: semester,
+                courseCode: courseCode,
+                courseName: courseName,
+                credits: parseInt(credits) || 3,
+                program: program,
+                level: level,
+                courseType: courseType
             })
         });
         
         const result = await response.json();
         
         if (result.success) {
-            showToast(`Course "${code} - ${name}" added to ${sem}`, "success"); 
-            document.getElementById('courseSemester').value = ''; 
-            document.getElementById('newCourseName').value = ''; 
-            document.getElementById('newCourseCode').value = ''; 
-            document.getElementById('newCourseCredits').value = ''; 
-            
-            // Refresh the course list if you have one
-            if (typeof loadCourses === 'function') loadCourses();
+            showToast(`Course "${courseCode} - ${courseName}" added successfully!`, "success");
+            // Clear form
+            document.getElementById('newCourseCode').value = '';
+            document.getElementById('newCourseName').value = '';
+            document.getElementById('newCourseCredits').value = '3';
+            document.getElementById('courseProgram').value = 'All';
+            document.getElementById('courseLevel').value = 'All';
+            document.getElementById('courseType').value = 'core';
+            // Refresh course list
+            loadCourses();
         } else {
-            showToast("Failed to add course: " + (result.error || "Unknown error"), "danger");
+            showToast("Error: " + (result.error || "Unknown error"), "danger");
         }
     } catch(e) {
         console.error("Error adding course:", e);
         showToast("Network error. Please try again.", "danger");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
     }
 }
 
@@ -1798,24 +1868,48 @@ async function loadCourses() {
         if (!container) return;
         
         if (result.courses && result.courses.length > 0) {
-            let html = '<div style="max-height:300px; overflow-y:auto;">';
-            result.courses.forEach((course, index) => {
+            let html = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--primary-dark); color: white;">
+                            <th style="padding: 10px;">Semester</th>
+                            <th style="padding: 10px;">Code</th>
+                            <th style="padding: 10px;">Course Name</th>
+                            <th style="padding: 10px;">Credits</th>
+                            <th style="padding: 10px;">Program</th>
+                            <th style="padding: 10px;">Level</th>
+                            <th style="padding: 10px;">Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            result.courses.forEach(course => {
                 html += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
-                        <div>
-                            <strong>${course.code}</strong> - ${course.name}<br>
-                            <small>Semester: ${course.semester} | Credits: ${course.credits}</small>
-                        </div>
-                    </div>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px;">${course.semester || '-'}</td>
+                        <td style="padding: 10px;"><strong>${course.code}</strong></td>
+                        <td style="padding: 10px;">${course.name}</td>
+                        <td style="padding: 10px; text-align: center;">${course.credits}</td>
+                        <td style="padding: 10px;">${course.program || 'All'}</td>
+                        <td style="padding: 10px; text-align: center;">${course.level || 'All'}</td>
+                        <td style="padding: 10px;">
+                            <span style="background: ${course.type === 'core' ? '#3498db' : '#9b59b6'}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">
+                                ${course.type === 'core' ? 'Core' : 'Elective'}
+                            </span>
+                        </td>
+                    </tr>
                 `;
             });
-            html += '</div>';
+            
+            html += `</tbody></table>`;
             container.innerHTML = html;
         } else {
-            container.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">No courses added yet.</p>';
+            container.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">No courses added yet. Use the form above to add courses.</p>';
         }
     } catch(e) {
         console.error("Error loading courses:", e);
+        container.innerHTML = '<p style="text-align:center; color:#e74c3c; padding:20px;">Error loading courses.</p>';
     }
 }
 
