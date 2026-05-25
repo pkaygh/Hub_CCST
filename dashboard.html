@@ -1528,6 +1528,10 @@
     <a href="#" class="menu-item" onclick="showSection('academic'); return false;">
         <i class="fas fa-graduation-cap"></i> Academic
     </a>
+    <a href="#" class="menu-item" onclick="showSection('course_registration'); return false;">
+    <i class="fas fa-book-open"></i> Course Registration
+    <span id="regStatusBadge" class="badge" style="display:none; background: #f39c12;">Open</span>
+</a>
     <a href="#" class="menu-item" onclick="showSection('finance'); return false;">
         <i class="fas fa-money-bill-wave"></i> Finance
     </a>
@@ -2070,6 +2074,94 @@
             </div>
         </div>
 
+<!-- COURSE REGISTRATION SECTION -->
+<div id="course_registrationSection" class="section" style="display:none;">
+    <!-- Registration Status Banner -->
+    <div class="card" id="registrationBanner" style="background: linear-gradient(135deg, #1a472a, #2d6a3d); color: white;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <h3><i class="fas fa-calendar-alt"></i> <span id="regSemester">Semester 2, 2025/2026</span></h3>
+                <p id="regPeriodMessage">Course registration opens: Jan 15 - Feb 15, 2026</p>
+            </div>
+            <div>
+                <span id="regStatusDisplay" style="background: #f39c12; padding: 8px 16px; border-radius: 20px; font-weight: bold;">
+                    <i class="fas fa-clock"></i> Registration Open
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clearance Check Alert -->
+    <div id="clearanceAlert" class="card" style="display: none; background: #fff3cd; border-left: 4px solid #ffc107;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #856404;"></i>
+            <div>
+                <h4 style="color: #856404;">Financial Clearance Required</h4>
+                <p style="color: #856404;">You need to be financially cleared before you can register for courses. Please visit the finance office.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Summary -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-list-check"></i> Your Registered Courses</h3>
+            <div>
+                <span id="totalCreditsDisplay" style="background: var(--primary); color: white; padding: 5px 12px; border-radius: 20px;">
+                    Total Credits: <strong id="totalCreditsValue">0</strong>
+                </span>
+            </div>
+        </div>
+        <div id="registeredCoursesList" class="student-list-container">
+            <p style="text-align: center; color: #999; padding: 40px;">
+                <i class="fas fa-spinner fa-spin"></i> Loading your registered courses...
+            </p>
+        </div>
+    </div>
+
+    <!-- Available Courses for Registration -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-book"></i> Available Courses for Registration</h3>
+            <button onclick="refreshAvailableCourses()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+        
+        <!-- Filter/Search Bar -->
+        <div class="filter-section" style="background: rgba(107, 142, 35, 0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            <div class="filter-row" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="courseSearchInput" placeholder="Search courses..." style="flex: 2;" onkeyup="filterAvailableCourses()">
+                <select id="courseTypeFilter" onchange="filterAvailableCourses()" style="flex: 1;">
+                    <option value="all">All Courses</option>
+                    <option value="core">Core Courses</option>
+                    <option value="elective">Electives</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="availableCoursesList" class="student-list-container">
+            <p style="text-align: center; color: #999; padding: 40px;">
+                <i class="fas fa-spinner fa-spin"></i> Loading available courses...
+            </p>
+        </div>
+        
+        <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: flex-end;">
+            <button onclick="submitRegistration()" id="submitRegBtn" class="success-btn" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                <i class="fas fa-paper-plane"></i> SUBMIT REGISTRATION
+            </button>
+        </div>
+    </div>
+
+    <!-- Registration History -->
+    <div class="card">
+        <h3><i class="fas fa-history"></i> Registration History</h3>
+        <div id="registrationHistoryList" class="student-list-container">
+            <p style="text-align: center; color: #999; padding: 20px;">No previous registrations found.</p>
+        </div>
+    </div>
+</div>
+
         <!-- FOOTER -->
         <footer class="footer">
             <div class="footer-links">
@@ -2244,7 +2336,8 @@ function formatDateForDisplay(dateValue) {
     // Update page title
     const titles = {
         profile: 'My Profile', 
-        academic: 'Academic Results', 
+        academic: 'Academic Results',
+        course_registration: 'Course Registration', 
         finance: 'Financial Summary',
         transcript: 'My Transcript', 
         request_transcript: 'Request Transcript', 
@@ -2256,6 +2349,7 @@ function formatDateForDisplay(dateValue) {
     // Load section-specific data
     if (section === 'transcript') loadTranscript();
     if (section === 'request_transcript') checkExistingRequest();
+    if (section === 'course_registration') loadCourseRegistrationData();
 }
 
         function getFullProgramName(code) {
@@ -4014,6 +4108,447 @@ achievements.push({
                 }
             });
         });
+
+
+// ============================================
+// COURSE REGISTRATION FUNCTIONS
+// ============================================
+
+let availableCourses = [];
+let registeredCourses = [];
+let selectedCourses = new Set(); // Track course IDs selected for registration
+
+async function loadCourseRegistrationData() {
+    const studentId = studentData?.profile?.id;
+    const program = studentData?.profile?.program;
+    const level = studentData?.profile?.level;
+    const isCleared = studentData?.profile?.isCleared === true || studentData?.profile?.isCleared === "TRUE";
+    
+    // Check clearance status
+    const clearanceAlert = document.getElementById('clearanceAlert');
+    const regStatusDisplay = document.getElementById('regStatusDisplay');
+    const submitBtn = document.getElementById('submitRegBtn');
+    
+    if (!isCleared) {
+        if (clearanceAlert) clearanceAlert.style.display = 'block';
+        if (regStatusDisplay) {
+            regStatusDisplay.innerHTML = '<i class="fas fa-lock"></i> Registration Locked';
+            regStatusDisplay.style.background = '#e74c3c';
+        }
+        if (submitBtn) submitBtn.disabled = true;
+    } else {
+        if (clearanceAlert) clearanceAlert.style.display = 'none';
+        if (regStatusDisplay) {
+            regStatusDisplay.innerHTML = '<i class="fas fa-check-circle"></i> Registration Open';
+            regStatusDisplay.style.background = '#27ae60';
+        }
+        if (submitBtn) submitBtn.disabled = false;
+    }
+    
+    // Set semester info
+    const currentYear = new Date().getFullYear();
+    const semester = document.getElementById('regSemester');
+    if (semester) semester.innerText = `Semester 2, ${currentYear}/${currentYear + 1}`;
+    
+    // Load registered courses
+    await loadRegisteredCourses();
+    
+    // Load available courses
+    await loadAvailableCourses(program, level);
+    
+    // Load registration history
+    await loadRegistrationHistory();
+}
+
+async function loadRegisteredCourses() {
+    const studentId = studentData?.profile?.id;
+    const container = document.getElementById('registeredCoursesList');
+    
+    if (!container) return;
+    
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_registered_courses&id=${studentId}`);
+        const data = await response.json();
+        
+        if (data.courses && data.courses.length > 0) {
+            registeredCourses = data.courses;
+            let totalCredits = 0;
+            
+            let html = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--primary-dark); color: white;">
+                            <th style="padding: 12px; text-align: left;">Course Code</th>
+                            <th style="padding: 12px; text-align: left;">Course Name</th>
+                            <th style="padding: 12px; text-align: center;">Credits</th>
+                            <th style="padding: 12px; text-align: center;">Type</th>
+                            <th style="padding: 12px; text-align: center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.courses.forEach(course => {
+                totalCredits += parseInt(course.credits) || 0;
+                html += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px;"><strong>${course.code}</strong></td>
+                        <td style="padding: 12px;">${course.name}</td>
+                        <td style="padding: 12px; text-align: center;">${course.credits}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            <span style="background: ${course.type === 'core' ? '#3498db' : '#9b59b6'}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">
+                                ${course.type === 'core' ? 'Core' : 'Elective'}
+                            </span>
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <span style="background: #27ae60; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">
+                                <i class="fas fa-check"></i> Registered
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+                <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; text-align: right;">
+                    <strong>Total Credits: ${totalCredits}</strong> (Minimum: 12 | Maximum: 21)
+                </div>
+            `;
+            
+            document.getElementById('totalCreditsValue').innerText = totalCredits;
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #999;">
+                    <i class="fas fa-book-open"></i><br>
+                    You haven't registered for any courses yet.
+                </div>
+            `;
+            document.getElementById('totalCreditsValue').innerText = '0';
+        }
+    } catch (error) {
+        console.error('Error loading registered courses:', error);
+        container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 40px;">Error loading registered courses.</p>';
+    }
+}
+
+async function loadAvailableCourses(program, level) {
+    const container = document.getElementById('availableCoursesList');
+    
+    if (!container) return;
+    
+    try {
+        // Fetch courses from backend based on program and level
+        const response = await fetch(`${SCRIPT_URL}?action=get_courses_for_registration&program=${program}&level=${level}`);
+        const data = await response.json();
+        
+        if (data.courses && data.courses.length > 0) {
+            availableCourses = data.courses;
+            displayAvailableCourses(availableCourses);
+        } else {
+            // Demo courses if backend not ready
+            availableCourses = getDemoCourses(program, level);
+            displayAvailableCourses(availableCourses);
+        }
+    } catch (error) {
+        console.error('Error loading available courses:', error);
+        availableCourses = getDemoCourses(program, level);
+        displayAvailableCourses(availableCourses);
+    }
+}
+
+function getDemoCourses(program, level) {
+    const programNames = { 'RM': 'Midwifery', 'RN': 'Nursing', 'ML': 'Medical Lab' };
+    const levelNum = parseInt(level) || 100;
+    
+    const coreCourses = {
+        '100': [
+            { code: `${program} 101`, name: `Introduction to ${programNames[program]}`, credits: 3, type: 'core' },
+            { code: 'ANAT 101', name: 'Human Anatomy', credits: 4, type: 'core' },
+            { code: 'PHYS 101', name: 'Human Physiology', credits: 4, type: 'core' },
+            { code: 'COMM 101', name: 'Communication Skills', credits: 2, type: 'core' },
+        ],
+        '200': [
+            { code: `${program} 201`, name: `${programNames[program]} Theory II`, credits: 3, type: 'core' },
+            { code: `${program} 202`, name: `${programNames[program]} Clinical Practice`, credits: 4, type: 'core' },
+            { code: 'PHAR 201', name: 'Pharmacology', credits: 3, type: 'core' },
+        ],
+        '300': [
+            { code: `${program} 301`, name: `Advanced ${programNames[program]}`, credits: 4, type: 'core' },
+            { code: `${program} 302`, name: 'Research Methods', credits: 3, type: 'core' },
+        ]
+    };
+    
+    const electives = {
+        '100': [
+            { code: 'IT 101', name: 'Introduction to Computing', credits: 2, type: 'elective' },
+            { code: 'PSYC 101', name: 'Psychology', credits: 2, type: 'elective' },
+        ],
+        '200': [
+            { code: 'PUBH 201', name: 'Public Health', credits: 2, type: 'elective' },
+            { code: 'NUTR 201', name: 'Nutrition', credits: 2, type: 'elective' },
+        ],
+        '300': [
+            { code: 'MGMT 301', name: 'Healthcare Management', credits: 2, type: 'elective' },
+            { code: 'ETHC 301', name: 'Health Ethics', credits: 2, type: 'elective' },
+        ]
+    };
+    
+    const levelKey = levelNum <= 100 ? '100' : levelNum <= 200 ? '200' : '300';
+    return [...(coreCourses[levelKey] || coreCourses['100']), ...(electives[levelKey] || electives['100'])];
+}
+
+function displayAvailableCourses(courses) {
+    const container = document.getElementById('availableCoursesList');
+    const registeredCodes = new Set(registeredCourses.map(c => c.code));
+    
+    if (!courses || courses.length === 0) {
+        container.innerHTML = '<p style="text-align: center; padding: 40px;">No courses available for registration.</p>';
+        return;
+    }
+    
+    let html = `
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: var(--primary-dark); color: white;">
+                    <th style="padding: 12px; text-align: center; width: 50px;">Select</th>
+                    <th style="padding: 12px; text-align: left;">Course Code</th>
+                    <th style="padding: 12px; text-align: left;">Course Name</th>
+                    <th style="padding: 12px; text-align: center;">Credits</th>
+                    <th style="padding: 12px; text-align: center;">Type</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    courses.forEach(course => {
+        const isRegistered = registeredCodes.has(course.code);
+        const isSelected = selectedCourses.has(course.code);
+        
+        html += `
+            <tr style="border-bottom: 1px solid #eee; ${isRegistered ? 'opacity: 0.6; background: #f0f0f0;' : ''}">
+                <td style="padding: 12px; text-align: center;">
+                    ${!isRegistered ? `
+                        <input type="checkbox" class="course-checkbox" data-code="${course.code}" 
+                               data-name="${course.name}" data-credits="${course.credits}"
+                               ${isSelected ? 'checked' : ''} onchange="toggleCourseSelection(this)">
+                    ` : '<i class="fas fa-check-circle" style="color: #27ae60;"></i>'}
+                </td>
+                <td style="padding: 12px;"><strong>${course.code}</strong></td>
+                <td style="padding: 12px;">${course.name}</td>
+                <td style="padding: 12px; text-align: center;">${course.credits}</td>
+                <td style="padding: 12px; text-align: center;">
+                    <span style="background: ${course.type === 'core' ? '#3498db' : '#9b59b6'}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">
+                        ${course.type === 'core' ? 'Core' : 'Elective'}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += `
+            </tbody>
+        </table>
+        <div id="selectionSummary" style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+            Selected: <span id="selectedCount">0</span> courses | 
+            Total Credits: <span id="selectedCredits">0</span>
+            <span style="color: #666; margin-left: 10px;">(Min: 12 | Max: 21 credits)</span>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    updateSelectionSummary();
+}
+
+function toggleCourseSelection(checkbox) {
+    const code = checkbox.dataset.code;
+    const name = checkbox.dataset.name;
+    const credits = parseInt(checkbox.dataset.credits);
+    
+    if (checkbox.checked) {
+        selectedCourses.add(code);
+    } else {
+        selectedCourses.delete(code);
+    }
+    
+    updateSelectionSummary();
+}
+
+function updateSelectionSummary() {
+    let totalCredits = 0;
+    let selectedList = [];
+    
+    document.querySelectorAll('.course-checkbox:checked').forEach(cb => {
+        totalCredits += parseInt(cb.dataset.credits);
+        selectedList.push(cb.dataset.code);
+    });
+    
+    document.getElementById('selectedCount').innerText = selectedList.length;
+    document.getElementById('selectedCredits').innerText = totalCredits;
+    
+    // Validate credit limits
+    const submitBtn = document.getElementById('submitRegBtn');
+    if (submitBtn) {
+        if (totalCredits < 12 && selectedList.length > 0) {
+            submitBtn.disabled = true;
+            showToast(`Minimum 12 credits required. Current: ${totalCredits}`, "warning");
+        } else if (totalCredits > 21) {
+            submitBtn.disabled = true;
+            showToast(`Maximum 21 credits allowed. Current: ${totalCredits}`, "warning");
+        } else {
+            submitBtn.disabled = false;
+        }
+    }
+}
+
+function filterAvailableCourses() {
+    const searchTerm = document.getElementById('courseSearchInput').value.toLowerCase();
+    const typeFilter = document.getElementById('courseTypeFilter').value;
+    
+    let filtered = availableCourses;
+    
+    if (searchTerm) {
+        filtered = filtered.filter(c => 
+            c.code.toLowerCase().includes(searchTerm) || 
+            c.name.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    if (typeFilter !== 'all') {
+        filtered = filtered.filter(c => c.type === typeFilter);
+    }
+    
+    displayAvailableCourses(filtered);
+}
+
+function refreshAvailableCourses() {
+    const program = studentData?.profile?.program;
+    const level = studentData?.profile?.level;
+    loadAvailableCourses(program, level);
+    showToast("Course list refreshed!", "success");
+}
+
+async function submitRegistration() {
+    const studentId = studentData?.profile?.id;
+    const isCleared = studentData?.profile?.isCleared === true || studentData?.profile?.isCleared === "TRUE";
+    
+    if (!isCleared) {
+        showToast("Cannot register. Please clear your financial status first.", "danger");
+        return;
+    }
+    
+    const selectedCoursesList = [];
+    let totalCredits = 0;
+    
+    document.querySelectorAll('.course-checkbox:checked').forEach(cb => {
+        selectedCoursesList.push({
+            code: cb.dataset.code,
+            name: cb.dataset.name,
+            credits: parseInt(cb.dataset.credits)
+        });
+        totalCredits += parseInt(cb.dataset.credits);
+    });
+    
+    if (selectedCoursesList.length === 0) {
+        showToast("Please select at least one course to register.", "warning");
+        return;
+    }
+    
+    if (totalCredits < 12) {
+        showToast(`Minimum 12 credits required. Currently selected: ${totalCredits} credits.`, "warning");
+        return;
+    }
+    
+    if (totalCredits > 21) {
+        showToast(`Maximum 21 credits allowed. Currently selected: ${totalCredits} credits.`, "warning");
+        return;
+    }
+    
+    const semester = document.getElementById('regSemester')?.innerText || "Semester 2, 2025/2026";
+    
+    const registrationData = {
+        action: 'submit_course_registration',
+        studentId: studentId,
+        name: studentData?.profile?.name,
+        program: studentData?.profile?.program,
+        level: studentData?.profile?.level,
+        semester: semester,
+        courses: selectedCoursesList,
+        totalCredits: totalCredits,
+        registrationDate: new Date().toISOString()
+    };
+    
+    const submitBtn = document.getElementById('submitRegBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(registrationData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(`Successfully registered for ${selectedCoursesList.length} courses!`, "success");
+            selectedCourses.clear();
+            await loadRegisteredCourses();
+            await loadAvailableCourses(studentData?.profile?.program, studentData?.profile?.level);
+        } else {
+            showToast("Registration failed: " + (result.error || "Unknown error"), "danger");
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        showToast("Network error. Please try again.", "danger");
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+}
+
+async function loadRegistrationHistory() {
+    const studentId = studentData?.profile?.id;
+    const container = document.getElementById('registrationHistoryList');
+    
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_registration_history&id=${studentId}`);
+        const data = await response.json();
+        
+        if (data.history && data.history.length > 0) {
+            let html = '';
+            data.history.forEach(reg => {
+                html += `
+                    <div style="padding: 15px; border-bottom: 1px solid #eee;">
+                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <strong>${reg.semester}</strong><br>
+                                <small>Registered: ${new Date(reg.date).toLocaleDateString()}</small>
+                            </div>
+                            <div>
+                                <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px;">
+                                    ${reg.courses.length} Courses | ${reg.totalCredits} Credits
+                                </span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.85rem; color: #666;">
+                            ${reg.courses.map(c => c.code).join(', ')}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No registration history found.</p>';
+        }
+    } catch (error) {
+        container.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">Unable to load registration history.</p>';
+    }
+}
 
         // ============================================
         // UPGRADED ACADEMIC FUNCTIONS
