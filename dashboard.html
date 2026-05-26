@@ -1760,6 +1760,17 @@
                         </div>
                     </div>
                 </div>
+                <div class="card-header">
+    <h3><i class="fas fa-list-check"></i> Your Registered Courses</h3>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="refreshClearanceStatus()" class="info-btn" style="width: auto; padding: 5px 12px; background: #3498db;">
+            <i class="fas fa-sync-alt"></i> Refresh Status
+        </button>
+        <span id="totalCreditsDisplay" style="background: var(--primary); color: white; padding: 5px 12px; border-radius: 20px;">
+            Total Credits: <strong id="totalCreditsValue">0</strong>
+        </span>
+    </div>
+</div>
 
                 <!-- Financial Information Card -->
                 <div class="detail-card">
@@ -2081,7 +2092,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div>
                 <h3><i class="fas fa-calendar-alt"></i> <span id="regSemester">Semester 2, 2025/2026</span></h3>
-                <p id="regPeriodMessage">Course registration opens: Jan 15 - Feb 15, 2026</p>
+                <p id="regPeriodMessage">Course registration opens: May 04 - May 22, 2026</p>
             </div>
             <div>
                 <span id="regStatusDisplay" style="background: #f39c12; padding: 8px 16px; border-radius: 20px; font-weight: bold;">
@@ -2215,7 +2226,7 @@ function formatDateForDisplay(dateValue) {
     }
     return dateStr;
 }
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwhLDhtLYmRvtQGTnM3HgyoOv6Bkw8p2e895sfP_sBNcoD2oIHeTj8gy4XFWZimB4Bo/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbywwrNO8vWFr1XOPpc4v8ZhWqzh9exAcn9oAVaBrjT1_dOnCrrK9d9KhYxKMEcWvGQO/exec";
         let studentData = null;
         let financeData = null;
         let academicData = null;
@@ -4109,6 +4120,28 @@ achievements.push({
             });
         });
 
+async function refreshClearanceStatus() {
+    showToast("Checking clearance status...", "info");
+    try {
+        const studentId = studentData?.profile?.id;
+        const response = await fetch(`${SCRIPT_URL}?action=get_student_info&id=${studentId}`);
+        const data = await response.json();
+        
+        if (data.profile) {
+            // Update local data
+            studentData.profile.isCleared = data.profile.isCleared;
+            localStorage.setItem('userData', JSON.stringify(studentData));
+            
+            // Reload registration data
+            await loadCourseRegistrationData();
+            
+            showToast(data.profile.isCleared ? "✓ Financial clearance confirmed!" : "✗ Not cleared yet. Please visit finance office.", 
+                     data.profile.isCleared ? "success" : "warning");
+        }
+    } catch(e) {
+        showToast("Error checking clearance", "danger");
+    }
+}
 
 // ============================================
 // COURSE REGISTRATION FUNCTIONS
@@ -4122,9 +4155,17 @@ async function loadCourseRegistrationData() {
     const studentId = studentData?.profile?.id;
     const program = studentData?.profile?.program;
     const level = studentData?.profile?.level;
-    const isCleared = studentData?.profile?.isCleared === true || studentData?.profile?.isCleared === "TRUE";
     
-    // Check clearance status
+    // FIXED: Check isCleared correctly
+    let isCleared = studentData?.profile?.isCleared;
+    if (isCleared === true || isCleared === "TRUE" || isCleared === "true" || isCleared === 1 || isCleared === "1") {
+        isCleared = true;
+    } else {
+        isCleared = false;
+    }
+    
+    console.log("Clearance status:", isCleared, "Raw:", studentData?.profile?.isCleared);
+    
     const clearanceAlert = document.getElementById('clearanceAlert');
     const regStatusDisplay = document.getElementById('regStatusDisplay');
     const submitBtn = document.getElementById('submitRegBtn');
@@ -4150,13 +4191,8 @@ async function loadCourseRegistrationData() {
     const semester = document.getElementById('regSemester');
     if (semester) semester.innerText = `Semester 2, ${currentYear}/${currentYear + 1}`;
     
-    // Load registered courses
     await loadRegisteredCourses();
-    
-    // Load available courses
     await loadAvailableCourses(program, level);
-    
-    // Load registration history
     await loadRegistrationHistory();
 }
 
@@ -4430,9 +4466,53 @@ function refreshAvailableCourses() {
     showToast("Course list refreshed!", "success");
 }
 
+async function refreshClearanceStatus() {
+    showToast("Checking clearance status...", "info");
+    try {
+        const studentId = studentData?.profile?.id;
+        const response = await fetch(`${SCRIPT_URL}?action=get_student_info&id=${studentId}`);
+        const data = await response.json();
+        
+        console.log("Refresh response:", data);
+        
+        if (data.profile) {
+            // Update local data
+            let isCleared = data.profile.isCleared;
+            if (isCleared === true || isCleared === "TRUE" || isCleared === "true" || isCleared === 1 || isCleared === "1") {
+                isCleared = true;
+            } else {
+                isCleared = false;
+            }
+            
+            studentData.profile.isCleared = isCleared;
+            localStorage.setItem('userData', JSON.stringify(studentData));
+            
+            // Reload registration data
+            await loadCourseRegistrationData();
+            
+            showToast(isCleared ? "✓ Financial clearance confirmed!" : "✗ Not cleared yet. Please visit finance office.", 
+                     isCleared ? "success" : "warning");
+        } else {
+            showToast("Error: " + (data.error || "Could not fetch status"), "danger");
+        }
+    } catch(e) {
+        console.error("Refresh error:", e);
+        showToast("Error checking clearance. Please try again.", "danger");
+    }
+}
+
 async function submitRegistration() {
     const studentId = studentData?.profile?.id;
-    const isCleared = studentData?.profile?.isCleared === true || studentData?.profile?.isCleared === "TRUE";
+    
+    // FIXED: Check isCleared correctly
+    let isCleared = studentData?.profile?.isCleared;
+    if (isCleared === true || isCleared === "TRUE" || isCleared === "true" || isCleared === 1 || isCleared === "1") {
+        isCleared = true;
+    } else {
+        isCleared = false;
+    }
+    
+    console.log("Submit - Clearance status:", isCleared);
     
     if (!isCleared) {
         showToast("Cannot register. Please clear your financial status first.", "danger");

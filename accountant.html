@@ -941,7 +941,7 @@
 // ============================================
 // GLOBAL VARIABLES
 // ============================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwhLDhtLYmRvtQGTnM3HgyoOv6Bkw8p2e895sfP_sBNcoD2oIHeTj8gy4XFWZimB4Bo/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbywwrNO8vWFr1XOPpc4v8ZhWqzh9exAcn9oAVaBrjT1_dOnCrrK9d9KhYxKMEcWvGQO/exec";
 let currentStudent = null;
 let currentTranscriptStudent = null;
 let allStudents = [];
@@ -1147,12 +1147,26 @@ async function toggleClearance() {
     if (!currentStudent) return; 
     const newStatus = !(currentStudent.isCleared === true || currentStudent.isCleared === "TRUE"); 
     try { 
-        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_clearance', id: currentStudent.id, cleared: newStatus }) }); 
-        currentStudent.isCleared = newStatus; 
-        updateClearanceButton(newStatus); 
-        showToast(newStatus ? "Student cleared!" : "Clearance removed.", "success"); 
+        const response = await fetch(SCRIPT_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                action: 'toggle_clearance', 
+                id: currentStudent.id, 
+                cleared: newStatus   // Send true/false as boolean
+            }) 
+        });
+        const result = await response.json();
+        if (result.success) {
+            currentStudent.isCleared = newStatus; 
+            updateClearanceButton(newStatus); 
+            showToast(newStatus ? "Student cleared!" : "Clearance removed.", "success"); 
+        } else {
+            showToast("Failed to update clearance", "danger");
+        }
     } catch (e) { 
-        showToast("Failed to update clearance", "danger"); 
+        console.error("Clearance error:", e);
+        showToast("Error connecting to server", "danger"); 
     } 
 }
 
