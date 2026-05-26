@@ -1813,6 +1813,7 @@ async function addNewCourse() {
     const level = document.getElementById('courseLevel').value;
     const courseType = document.getElementById('courseType').value;
     
+    // Validation
     if (!semester) {
         showToast("Please select a semester", "warning");
         return;
@@ -1832,9 +1833,22 @@ async function addNewCourse() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
     
     try {
+        console.log("Sending course data:", {
+            action: 'save_course',
+            semester: semester,
+            courseCode: courseCode,
+            courseName: courseName,
+            credits: parseInt(credits) || 3,
+            program: program,
+            level: level,
+            courseType: courseType
+        });
+        
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
                 action: 'save_course',
                 semester: semester,
@@ -1848,6 +1862,7 @@ async function addNewCourse() {
         });
         
         const result = await response.json();
+        console.log("Server response:", result);
         
         if (result.success) {
             showToast(`Course "${courseCode} - ${courseName}" added successfully!`, "success");
@@ -1859,13 +1874,13 @@ async function addNewCourse() {
             document.getElementById('courseLevel').value = 'All';
             document.getElementById('courseType').value = 'core';
             // Refresh course list
-            loadCourses();
+            await loadCourses();
         } else {
             showToast("Error: " + (result.error || "Unknown error"), "danger");
         }
     } catch(e) {
         console.error("Error adding course:", e);
-        showToast("Network error. Please try again.", "danger");
+        showToast("Network error: " + e.message, "danger");
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;
@@ -1874,8 +1889,12 @@ async function addNewCourse() {
 
 async function loadCourses() {
     try {
+        console.log("Fetching courses from:", SCRIPT_URL + "?action=get_courses");
+        
         const response = await fetch(`${SCRIPT_URL}?action=get_courses`);
         const result = await response.json();
+        
+        console.log("Courses response:", result);
         
         const container = document.getElementById('coursesList');
         if (!container) return;
@@ -1922,10 +1941,9 @@ async function loadCourses() {
         }
     } catch(e) {
         console.error("Error loading courses:", e);
-        container.innerHTML = '<p style="text-align:center; color:#e74c3c; padding:20px;">Error loading courses.</p>';
+        container.innerHTML = '<p style="text-align:center; color:#e74c3c; padding:20px;">Error loading courses: ' + e.message + '</p>';
     }
 }
-
 // ============================================
 // TRANSCRIPT FUNCTIONS
 // ============================================
