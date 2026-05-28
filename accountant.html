@@ -1843,26 +1843,40 @@ async function addNewCourse(event) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
     
     try {
+        console.log("🔄 Sending course data to:", SCRIPT_URL);
+        
+        const payload = {
+            action: 'save_course',
+            semester: semester,
+            courseCode: courseCode,
+            courseName: courseName,
+            credits: parseInt(credits) || 3,
+            program: program,
+            level: level,
+            courseType: courseType
+        };
+        
+        console.log("📦 Payload:", payload);
+
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'save_course',
-                semester: semester,
-                courseCode: courseCode,
-                courseName: courseName,
-                credits: parseInt(credits) || 3,
-                program: program,
-                level: level,
-                courseType: courseType
-            })
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
         });
-        
+
+        console.log("📡 Response status:", response.status);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
         const result = await response.json();
         console.log("✅ Server response:", result);
         
         if (result.success) {
-            showToast(`✅ Course "${courseCode} - ${courseName}" added successfully!`, "success");
+            showToast(`✅ Course "${courseCode}" added successfully!`, "success");
             // Clear form
             document.getElementById('newCourseCode').value = '';
             document.getElementById('newCourseName').value = '';
@@ -1871,12 +1885,12 @@ async function addNewCourse(event) {
             document.getElementById('courseLevel').value = 'All';
             document.getElementById('courseType').value = 'core';
             
-            await loadCourses();   // Refresh the list
+            await loadCourses();
         } else {
             showToast("Error: " + (result.error || "Unknown error"), "danger");
         }
-    } catch(e) {
-        console.error("❌ Add course error:", e);
+    } catch (e) {
+        console.error("❌ Full error:", e);
         showToast("Network error: " + e.message, "danger");
     } finally {
         btn.disabled = false;
