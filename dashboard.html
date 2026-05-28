@@ -4276,17 +4276,20 @@ async function loadAvailableCourses(program, level) {
     if (!container) return;
     
     try {
-        // Fetch courses from backend based on program and level
+        // This calls your Google Apps Script to get courses from the Courses sheet
         const response = await fetch(`${SCRIPT_URL}?action=get_courses_for_registration&program=${program}&level=${level}`);
         const data = await response.json();
+        
+        console.log("Courses from server:", data); // Check browser console
         
         if (data.courses && data.courses.length > 0) {
             availableCourses = data.courses;
             displayAvailableCourses(availableCourses);
         } else {
-            // Demo courses if backend not ready
+            // Only use demo courses if NO courses in sheet
             availableCourses = getDemoCourses(program, level);
             displayAvailableCourses(availableCourses);
+            console.log("No courses found, using demo courses");
         }
     } catch (error) {
         console.error('Error loading available courses:', error);
