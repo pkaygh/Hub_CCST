@@ -813,8 +813,7 @@
                     </div>
                     <div id="coursesList" class="student-list-container">
                         <p style="text-align:center; padding:20px;">Loading courses...</p>
-                        <button onclick="debugCourses()" class="info-btn" style="margin-left:10px;">Debug</button>
-                    </div>
+                        </div>
                 </div>
             </div>
 
@@ -1860,10 +1859,9 @@ async function addNewCourse(event) {
         });
         
         const result = await response.json();
-        console.log("✅ Server response:", result);
         
         if (result.success) {
-            showToast(`✅ Course "${courseCode} - ${courseName}" added successfully!`, "success");
+            showToast(`✅ Course "${courseCode}" added successfully!`, "success");
             // Clear form
             document.getElementById('newCourseCode').value = '';
             document.getElementById('newCourseName').value = '';
@@ -1872,13 +1870,13 @@ async function addNewCourse(event) {
             document.getElementById('courseLevel').value = 'All';
             document.getElementById('courseType').value = 'core';
             
-            await loadCourses();   // Refresh the list
+            await loadCourses();  // Refresh list
         } else {
             showToast("Error: " + (result.error || "Unknown error"), "danger");
         }
     } catch(e) {
-        console.error("❌ Add course error:", e);
-        showToast("Network error: " + e.message, "danger");
+        console.error("Error adding course:", e);
+        showToast("Network error. Please check console.", "danger");
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;
@@ -1894,8 +1892,6 @@ async function loadCourses() {
     try {
         const response = await fetch(`${SCRIPT_URL}?action=get_courses`);
         const result = await response.json();
-
-        console.log("📊 Courses loaded:", result);
 
         if (result.error) throw new Error(result.error);
 
@@ -1917,7 +1913,7 @@ async function loadCourses() {
             `;
 
             result.courses.forEach(course => {
-                const typeBadge = (course.type || 'core') === 'core' 
+                const typeBadge = course.type === 'core' 
                     ? `<span style="background:#3498db;color:white;padding:4px 10px;border-radius:12px;font-size:0.75rem;">Core</span>` 
                     : `<span style="background:#9b59b6;color:white;padding:4px 10px;border-radius:12px;font-size:0.75rem;">Elective</span>`;
 
@@ -1940,33 +1936,18 @@ async function loadCourses() {
             container.innerHTML = `
                 <p style="text-align:center; padding:60px; color:#666;">
                     <i class="fas fa-book" style="font-size:3rem; opacity:0.2; display:block; margin-bottom:15px;"></i>
-                    No courses found yet.<br>
+                    No courses in the database yet.<br>
                     <small>Add your first course using the form above.</small>
                 </p>`;
         }
     } catch (e) {
-        console.error("❌ Load courses failed:", e);
+        console.error("Load courses error:", e);
         container.innerHTML = `
             <p style="text-align:center; padding:40px; color:#e74c3c;">
                 <i class="fas fa-exclamation-triangle"></i><br>
                 Failed to load courses<br>
-                <small>${e.message}</small><br><br>
-                <button onclick="loadCourses()" class="info-btn">Try Again</button>
+                <small>${e.message}</small>
             </p>`;
-    }
-}
-// ============================================
-// Debug Courses FUNCTIONS
-// ============================================
-async function debugCourses() {
-    try {
-        const res = await fetch(`${SCRIPT_URL}?action=get_courses`);
-        const data = await res.json();
-        console.log("=== DEBUG COURSES ===", data);
-        alert(`Found ${data.courses ? data.courses.length : 0} courses. Check console.`);
-    } catch(e) {
-        console.error(e);
-        alert("Error: " + e.message);
     }
 }
 // ============================================
