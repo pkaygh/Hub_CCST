@@ -1822,7 +1822,7 @@ function displayNotificationHistory() { const container = document.getElementByI
 function generateReport(type) { showToast(`Generating ${type} report...`, "info"); const win = window.open('', '_blank'); win.document.write(`<!DOCTYPE html><html><head><title>CCST ${type.toUpperCase()} Report</title><style>body{font-family:Arial;margin:40px;} h1{color:#1a472a;}</style></head><body><h1>CCST - ${type.toUpperCase()} Report</h1><p>Generated: ${new Date().toLocaleString()}</p><button onclick="window.print()">Print</button></body></html>`); win.document.close(); }
 
 // ============================================
-// COURSES
+// COURSES MANAGEMENT
 // ============================================
 async function addNewCourse(event) {
     const semester = document.getElementById('courseSemester').value;
@@ -1833,19 +1833,9 @@ async function addNewCourse(event) {
     const level = document.getElementById('courseLevel').value;
     const courseType = document.getElementById('courseType').value;
     
-    // Validation
-    if (!semester) {
-        showToast("Please select a semester", "warning");
-        return;
-    }
-    if (!courseCode) {
-        showToast("Please enter course code", "warning");
-        return;
-    }
-    if (!courseName) {
-        showToast("Please enter course name", "warning");
-        return;
-    }
+    if (!semester) return showToast("Please select a semester", "warning");
+    if (!courseCode) return showToast("Please enter course code", "warning");
+    if (!courseName) return showToast("Please enter course name", "warning");
     
     const btn = event.target.closest('button');
     const originalText = btn.innerHTML;
@@ -1853,38 +1843,25 @@ async function addNewCourse(event) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
     
     try {
-        console.log("Sending course data:", {
-            action: 'save_course',
-            semester: semester,
-            courseCode: courseCode,
-            courseName: courseName,
-            credits: parseInt(credits) || 3,
-            program: program,
-            level: level,
-            courseType: courseType
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'save_course',
+                semester: semester,
+                courseCode: courseCode,
+                courseName: courseName,
+                credits: parseInt(credits) || 3,
+                program: program,
+                level: level,
+                courseType: courseType
+            })
         });
         
-        const formData = new FormData();
-
-formData.append('action', 'save_course');
-formData.append('semester', semester);
-formData.append('courseCode', courseCode);
-formData.append('courseName', courseName);
-formData.append('credits', parseInt(credits) || 3);
-formData.append('program', program);
-formData.append('level', level);
-formData.append('courseType', courseType);
-
-const response = await fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: formData
-});
-        
         const result = await response.json();
-        console.log("Server response:", result);
         
         if (result.success) {
-            showToast(`Course "${courseCode} - ${courseName}" added successfully!`, "success");
+            showToast(`✅ Course "${courseCode}" added successfully!`, "success");
             // Clear form
             document.getElementById('newCourseCode').value = '';
             document.getElementById('newCourseName').value = '';
@@ -1892,14 +1869,14 @@ const response = await fetch(SCRIPT_URL, {
             document.getElementById('courseProgram').value = 'All';
             document.getElementById('courseLevel').value = 'All';
             document.getElementById('courseType').value = 'core';
-            // Refresh course list
-            await loadCourses();
+            
+            await loadCourses();  // Refresh list
         } else {
             showToast("Error: " + (result.error || "Unknown error"), "danger");
         }
     } catch(e) {
         console.error("Error adding course:", e);
-        showToast("Network error: " + e.message, "danger");
+        showToast("Network error. Please check console.", "danger");
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;
@@ -1907,60 +1884,70 @@ const response = await fetch(SCRIPT_URL, {
 }
 
 async function loadCourses() {
+    const container = document.getElementById('coursesList');
+    if (!container) return;
+
+    container.innerHTML = '<p style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-spin"></i> Loading courses...</p>';
+
     try {
-        console.log("Fetching courses from:", SCRIPT_URL + "?action=get_courses");
-        
         const response = await fetch(`${SCRIPT_URL}?action=get_courses`);
         const result = await response.json();
-        
-        console.log("Courses response:", result);
-        
-        const container = document.getElementById('coursesList');
-        if (!container) return;
-        
+
+        if (result.error) throw new Error(result.error);
+
         if (result.courses && result.courses.length > 0) {
             let html = `
-                <table style="width: 100%; border-collapse: collapse;">
+                <table style="width: 100%; border-collapse: collapse; background: white;">
                     <thead>
                         <tr style="background: var(--primary-dark); color: white;">
-                            <th style="padding: 10px;">Semester</th>
-                            <th style="padding: 10px;">Code</th>
-                            <th style="padding: 10px;">Course Name</th>
-                            <th style="padding: 10px;">Credits</th>
-                            <th style="padding: 10px;">Program</th>
-                            <th style="padding: 10px;">Level</th>
-                            <th style="padding: 10px;">Type</th>
+                            <th style="padding: 12px; text-align: left;">Semester</th>
+                            <th style="padding: 12px; text-align: left;">Code</th>
+                            <th style="padding: 12px; text-align: left;">Course Name</th>
+                            <th style="padding: 12px; text-align: center;">Credits</th>
+                            <th style="padding: 12px; text-align: center;">Program</th>
+                            <th style="padding: 12px; text-align: center;">Level</th>
+                            <th style="padding: 12px; text-align: center;">Type</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
-            
+
             result.courses.forEach(course => {
+                const typeBadge = course.type === 'core' 
+                    ? `<span style="background:#3498db;color:white;padding:4px 10px;border-radius:12px;font-size:0.75rem;">Core</span>` 
+                    : `<span style="background:#9b59b6;color:white;padding:4px 10px;border-radius:12px;font-size:0.75rem;">Elective</span>`;
+
                 html += `
                     <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 10px;">${course.semester || '-'}</td>
-                        <td style="padding: 10px;"><strong>${course.code}</strong></td>
-                        <td style="padding: 10px;">${course.name}</td>
-                        <td style="padding: 10px; text-align: center;">${course.credits}</td>
-                        <td style="padding: 10px;">${course.program || 'All'}</td>
-                        <td style="padding: 10px; text-align: center;">${course.level || 'All'}</td>
-                        <td style="padding: 10px;">
-                            <span style="background: ${course.type === 'core' ? '#3498db' : '#9b59b6'}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">
-                                ${course.type === 'core' ? 'Core' : 'Elective'}
-                            </span>
-                        </td>
+                        <td style="padding: 12px;">${course.semester || '—'}</td>
+                        <td style="padding: 12px;"><strong>${course.code || course.CourseCode || ''}</strong></td>
+                        <td style="padding: 12px;">${course.name || course.CourseName || ''}</td>
+                        <td style="padding: 12px; text-align: center;">${course.credits || course.Credits || 3}</td>
+                        <td style="padding: 12px; text-align: center;">${course.program || course.Program || 'All'}</td>
+                        <td style="padding: 12px; text-align: center;">${course.level || course.Level || 'All'}</td>
+                        <td style="padding: 12px; text-align: center;">${typeBadge}</td>
                     </tr>
                 `;
             });
-            
+
             html += `</tbody></table>`;
             container.innerHTML = html;
         } else {
-            container.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">No courses added yet. Use the form above to add courses.</p>';
+            container.innerHTML = `
+                <p style="text-align:center; padding:60px; color:#666;">
+                    <i class="fas fa-book" style="font-size:3rem; opacity:0.2; display:block; margin-bottom:15px;"></i>
+                    No courses in the database yet.<br>
+                    <small>Add your first course using the form above.</small>
+                </p>`;
         }
-    } catch(e) {
-        console.error("Error loading courses:", e);
-        container.innerHTML = '<p style="text-align:center; color:#e74c3c; padding:20px;">Error loading courses: ' + e.message + '</p>';
+    } catch (e) {
+        console.error("Load courses error:", e);
+        container.innerHTML = `
+            <p style="text-align:center; padding:40px; color:#e74c3c;">
+                <i class="fas fa-exclamation-triangle"></i><br>
+                Failed to load courses<br>
+                <small>${e.message}</small>
+            </p>`;
     }
 }
 // ============================================
