@@ -675,6 +675,8 @@
                 </div>
             </div>
 
+            <button onclick="debugCourses()" class="info-btn" style="margin-left:10px;">Debug</button>
+
             
            <!-- CSV UPLOAD SECTION -->
 <div id="csv_uploadSection" class="section" style="display:none;">
@@ -1890,10 +1892,16 @@ async function loadCourses() {
     container.innerHTML = '<p style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-spin"></i> Loading courses...</p>';
 
     try {
+        console.log("🔄 Fetching courses...");
+        
         const response = await fetch(`${SCRIPT_URL}?action=get_courses`);
         const result = await response.json();
 
-        if (result.error) throw new Error(result.error);
+        console.log("📊 Courses API Response:", result);
+
+        if (result.error) {
+            throw new Error(result.error);
+        }
 
         if (result.courses && result.courses.length > 0) {
             let html = `
@@ -1913,7 +1921,7 @@ async function loadCourses() {
             `;
 
             result.courses.forEach(course => {
-                const typeBadge = course.type === 'core' 
+                const typeBadge = (course.type || 'core') === 'core' 
                     ? `<span style="background:#3498db;color:white;padding:4px 10px;border-radius:12px;font-size:0.75rem;">Core</span>` 
                     : `<span style="background:#9b59b6;color:white;padding:4px 10px;border-radius:12px;font-size:0.75rem;">Elective</span>`;
 
@@ -1932,22 +1940,39 @@ async function loadCourses() {
 
             html += `</tbody></table>`;
             container.innerHTML = html;
+            console.log(`✅ Loaded ${result.courses.length} courses`);
         } else {
             container.innerHTML = `
                 <p style="text-align:center; padding:60px; color:#666;">
                     <i class="fas fa-book" style="font-size:3rem; opacity:0.2; display:block; margin-bottom:15px;"></i>
-                    No courses in the database yet.<br>
-                    <small>Add your first course using the form above.</small>
+                    No courses found yet.<br>
+                    <small>Add courses using the form above.</small>
                 </p>`;
         }
     } catch (e) {
-        console.error("Load courses error:", e);
+        console.error("❌ Load courses failed:", e);
         container.innerHTML = `
             <p style="text-align:center; padding:40px; color:#e74c3c;">
                 <i class="fas fa-exclamation-triangle"></i><br>
-                Failed to load courses<br>
-                <small>${e.message}</small>
+                Could not load courses<br>
+                <small>${e.message}</small><br>
+                <button onclick="loadCourses()" style="margin-top:10px;">Try Again</button>
             </p>`;
+    }
+}
+
+// ============================================
+// Debug Courses FUNCTIONS
+// ============================================
+async function debugCourses() {
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=get_courses`);
+        const data = await res.json();
+        console.log("=== DEBUG COURSES ===", data);
+        alert(`Found ${data.courses ? data.courses.length : 0} courses. Check console.`);
+    } catch(e) {
+        console.error(e);
+        alert("Error: " + e.message);
     }
 }
 // ============================================
