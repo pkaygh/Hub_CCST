@@ -4626,7 +4626,7 @@ async function refreshClearanceStatus() {
 async function submitRegistration() {
     const studentId = studentData?.profile?.id;
     
-    // FIXED: Check isCleared correctly
+    // Check clearance status
     let isCleared = studentData?.profile?.isCleared;
     if (isCleared === true || isCleared === "TRUE" || isCleared === "true" || isCleared === 1 || isCleared === "1") {
         isCleared = true;
@@ -4668,19 +4668,22 @@ async function submitRegistration() {
         return;
     }
     
-    const semester = document.getElementById('regSemester')?.innerText || "Semester 2, 2025/2026";
+    const currentYear = new Date().getFullYear();
+    const semester = `Semester 2, ${currentYear}/${currentYear + 1}`;
     
     const registrationData = {
         action: 'submit_course_registration',
         studentId: studentId,
-        name: studentData?.profile?.name,
-        program: studentData?.profile?.program,
-        level: studentData?.profile?.level,
+        name: studentData?.profile?.name || "",
+        program: studentData?.profile?.program || "",
+        level: studentData?.profile?.level || "100",
         semester: semester,
         courses: selectedCoursesList,
         totalCredits: totalCredits,
         registrationDate: new Date().toISOString()
     };
+    
+    console.log("Sending registration data:", registrationData);
     
     const submitBtn = document.getElementById('submitRegBtn');
     const originalText = submitBtn.innerHTML;
@@ -4688,25 +4691,43 @@ async function submitRegistration() {
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
     
     try {
+        // Create FormData instead of JSON for better compatibility
+        const formData = new FormData();
+        formData.append('action', 'submit_course_registration');
+        formData.append('studentId', studentId);
+        formData.append('name', studentData?.profile?.name || "");
+        formData.append('program', studentData?.profile?.program || "");
+        formData.append('level', studentData?.profile?.level || "100");
+        formData.append('semester', semester);
+        formData.append('courses', JSON.stringify(selectedCoursesList));
+        formData.append('totalCredits', totalCredits);
+        formData.append('registrationDate', new Date().toISOString());
+        
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(registrationData)
+            body: formData  // Use FormData instead of JSON
         });
         
         const result = await response.json();
+        console.log("Server response:", result);
         
         if (result.success) {
             showToast(`Successfully registered for ${selectedCoursesList.length} courses!`, "success");
+            // Clear selections
+            document.querySelectorAll('.course-checkbox:checked').forEach(cb => {
+                cb.checked = false;
+            });
             selectedCourses.clear();
+            updateSelectionSummary();
+            // Reload registered courses
             await loadRegisteredCourses();
-            await loadAvailableCourses(studentData?.profile?.program, studentData?.profile?.level);
+            showToast("Registration submitted successfully! ✅", "success");
         } else {
             showToast("Registration failed: " + (result.error || "Unknown error"), "danger");
         }
     } catch (error) {
         console.error('Registration error:', error);
-        showToast("Network error. Please try again.", "danger");
+        showToast("Network error: " + error.message, "danger");
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
