@@ -2319,7 +2319,7 @@ function formatDateForDisplay(dateValue) {
     }
     return dateStr;
 }
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybi7iYwOEA_j6tCj7M5qF00-56dQ2xYx-GfXbdailjOiwHezPe6tAx6IafjfLzY_9y/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0W1ziRyoWEXO1x6Mrlcd36APy8UVRACGJS6Sg4Cam6C-kW_77sZCYdQQ47M_bNtfK/exec";
         let studentData = null;
         let financeData = null;
         let academicData = null;
@@ -4318,45 +4318,55 @@ async function loadRegisteredCourses() {
     const studentId = studentData?.profile?.id;
     const container = document.getElementById('registeredCoursesList');
     
-    if (!container) return;
+    if (!container) {
+        console.log("Container 'registeredCoursesList' not found");
+        return;
+    }
+    
+    if (!studentId) {
+        console.log("No student ID found");
+        container.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">Please login to view registered courses.</p>';
+        return;
+    }
+    
+    container.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading your registered courses...</p>';
     
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=get_registered_courses&id=${studentId}`);
+        console.log("Fetching registered courses for:", studentId);
+        
+        const response = await fetch(`${SCRIPT_URL}?action=get_registered_courses&id=${encodeURIComponent(studentId)}`);
         const data = await response.json();
+        
+        console.log("Registered courses response:", data);
         
         if (data.courses && data.courses.length > 0) {
             registeredCourses = data.courses;
             let totalCredits = 0;
             
             let html = `
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: var(--primary-dark); color: white;">
-                            <th style="padding: 12px; text-align: left;">Course Code</th>
-                            <th style="padding: 12px; text-align: left;">Course Name</th>
-                            <th style="padding: 12px; text-align: center;">Credits</th>
-                            <th style="padding: 12px; text-align: center;">Type</th>
-                            <th style="padding: 12px; text-align: center;">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="table-responsive">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--primary-dark); color: white;">
+                                <th style="padding: 12px; text-align: left;">Course Code</th>
+                                <th style="padding: 12px; text-align: left;">Course Name</th>
+                                <th style="padding: 12px; text-align: center;">Credits</th>
+                                <th style="padding: 12px; text-align: center;">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
             `;
             
             data.courses.forEach(course => {
                 totalCredits += parseInt(course.credits) || 0;
                 html += `
                     <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px;"><strong>${course.code}</strong></td>
-                        <td style="padding: 12px;">${course.name}</td>
+                        <td style="padding: 12px;"><strong>${escapeHtml(course.code)}</strong></td>
+                        <td style="padding: 12px;">${escapeHtml(course.name)}</td>
                         <td style="padding: 12px; text-align: center;">${course.credits}</td>
                         <td style="padding: 12px; text-align: center;">
                             <span style="background: ${course.type === 'core' ? '#3498db' : '#9b59b6'}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">
                                 ${course.type === 'core' ? 'Core' : 'Elective'}
-                            </span>
-                        </td>
-                        <td style="padding: 12px; text-align: center;">
-                            <span style="background: #27ae60; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">
-                                <i class="fas fa-check"></i> Registered
                             </span>
                         </td>
                     </tr>
@@ -4364,8 +4374,9 @@ async function loadRegisteredCourses() {
             });
             
             html += `
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
                 <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; text-align: right;">
                     <strong>Total Credits: ${totalCredits}</strong> (Minimum: 12 | Maximum: 21)
                 </div>
@@ -4384,8 +4395,25 @@ async function loadRegisteredCourses() {
         }
     } catch (error) {
         console.error('Error loading registered courses:', error);
-        container.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 40px;">Error loading registered courses.</p>';
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #e74c3c;">
+                <i class="fas fa-exclamation-circle"></i><br>
+                Error loading registered courses.<br>
+                <small>${error.message}</small>
+            </div>
+        `;
     }
+}
+
+// Helper function to escape HTML and prevent XSS
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
 }
 
 async function loadAvailableCourses(program, level) {
@@ -4658,8 +4686,8 @@ async function submitRegistration() {
         return;
     }
     
-    if (totalCredits < 18) {
-        showToast(`Minimum 18 credits required. Currently selected: ${totalCredits} credits.`, "warning");
+    if (totalCredits < 12) {
+        showToast(`Minimum 12 credits required. Currently selected: ${totalCredits} credits.`, "warning");
         return;
     }
     
