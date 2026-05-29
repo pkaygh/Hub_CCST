@@ -2208,7 +2208,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div>
                 <h3><i class="fas fa-calendar-alt"></i> Course Registration</h3>
-                <p id="regPeriodMessage">Select semester and register for courses</p>
+                <p id="regPeriodMessage">Select academic year, semester, and register for courses</p>
             </div>
             <div>
                 <span id="regStatusDisplay" style="background: #f39c12; padding: 8px 16px; border-radius: 20px; font-weight: bold;">
@@ -2229,16 +2229,28 @@
         </div>
     </div>
 
-    <!-- Semester Selection Card -->
+    <!-- Semester/Academic Year Selection Card -->
     <div class="card">
         <div class="card-header">
             <h3><i class="fas fa-calendar-week"></i> Select Semester for Registration</h3>
         </div>
         <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
-            <div style="flex: 2; min-width: 200px;">
-                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Select Academic Year & Semester:</label>
-                <select id="registrationSemesterSelect" style="width: 100%; padding: 12px; border-radius: 8px;" onchange="onSemesterChange()">
-                    <option value="">-- Select Semester --</option>
+            <div style="flex: 1; min-width: 180px;">
+                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Academic Year:</label>
+                <select id="academicYearSelect" style="width: 100%; padding: 12px; border-radius: 8px;" onchange="updateSemesterOptions()">
+                    <option value="2022/2023">2022/2023</option>
+                    <option value="2023/2024">2023/2024</option>
+                    <option value="2024/2025">2024/2025</option>
+                    <option value="2025/2026" selected>2025/2026</option>
+                    <option value="2026/2027">2026/2027</option>
+                    <option value="2027/2028">2027/2028</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Semester:</label>
+                <select id="semesterSelect" style="width: 100%; padding: 12px; border-radius: 8px;" onchange="onSemesterChange()">
+                    <option value="Semester 1">Semester 1</option>
+                    <option value="Semester 2" selected>Semester 2</option>
                 </select>
             </div>
             <div style="flex: 1;">
@@ -2292,7 +2304,7 @@
         
         <div id="availableCoursesList" class="student-list-container">
             <p style="text-align: center; color: #999; padding: 40px;">
-                Select a semester above to see available courses.
+                Select academic year and semester above to see available courses.
             </p>
         </div>
         
@@ -2307,7 +2319,7 @@
     <div class="card">
         <h3><i class="fas fa-history"></i> Registration History</h3>
         <div id="registrationHistoryList" class="student-list-container">
-            <p style="text-align: center; color: #999; padding: 20px;">No previous registrations found.</p>
+            <p style="text-align: center; color: #999; padding: 20px;">No registration history found.</p>
         </div>
     </div>
 </div>
@@ -4405,15 +4417,22 @@ async function loadAllRegisteredSemesters() {
 // ============================================
 // ON SEMESTER CHANGE
 // ============================================
+let currentSelectedAcademicYear = "2025/2026";
+let registeredSemesters = new Set(); // Track which semesters already have registrations
+
+function updateSemesterOptions() {
+    // This function can be used to dynamically update semester options if needed
+    onSemesterChange();
+}
+
 function onSemesterChange() {
-    const semester = document.getElementById('registrationSemesterSelect').value;
-    if (!semester) {
-        document.getElementById('availableCoursesCard').style.display = 'none';
-        return;
-    }
+    currentSelectedAcademicYear = document.getElementById('academicYearSelect').value;
+    currentSelectedSemester = document.getElementById('semesterSelect').value;
     
-    // Check if already registered
-    if (allSemesterRegistrations.includes(semester)) {
+    const fullSemester = `${currentSelectedSemester}, ${currentSelectedAcademicYear}`;
+    
+    // Check if already registered for this semester
+    if (registeredSemesters.has(fullSemester)) {
         document.getElementById('semesterInfo').style.display = 'block';
         document.getElementById('semesterStatusMessage').innerHTML = '⚠️ You have already registered for this semester. Course registration is locked. Contact IT Admin if you need to make changes.';
         document.getElementById('semesterStatusMessage').style.color = '#e74c3c';
@@ -4424,27 +4443,22 @@ function onSemesterChange() {
     document.getElementById('semesterInfo').style.display = 'block';
     document.getElementById('semesterStatusMessage').innerHTML = '✅ You can register for this semester. Select courses below.';
     document.getElementById('semesterStatusMessage').style.color = '#27ae60';
-    document.getElementById('selectedSemesterDisplay').innerText = semester;
+    document.getElementById('selectedSemesterDisplay').innerText = fullSemester;
     document.getElementById('availableCoursesCard').style.display = 'block';
-    
-    currentSelectedSemester = semester;
 }
-
 // ============================================
 // LOAD AVAILABLE COURSES FOR SELECTED SEMESTER
 // ============================================
 async function loadAvailableCoursesForSemester() {
-    const semester = document.getElementById('registrationSemesterSelect').value;
+    const academicYear = document.getElementById('academicYearSelect').value;
+    const semester = document.getElementById('semesterSelect').value;
+    const fullSemester = `${semester}, ${academicYear}`;
     const program = studentData?.profile?.program;
     const level = studentData?.profile?.level;
     
-    if (!semester) {
-        showToast("Please select a semester first", "warning");
-        return;
-    }
-    
-    if (allSemesterRegistrations.includes(semester)) {
-        showToast("You have already registered for this semester. Contact IT Admin for changes.", "warning");
+    // Check if already registered
+    if (registeredSemesters.has(fullSemester)) {
+        showToast(`You have already registered for ${fullSemester}. Contact IT Admin for changes.`, "warning");
         return;
     }
     
@@ -4452,7 +4466,8 @@ async function loadAvailableCoursesForSemester() {
     container.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading courses...</p>';
     
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=get_courses_for_registration&program=${program}&level=${level}&semester=${encodeURIComponent(semester)}`);
+        // Pass semester parameter to backend
+        const response = await fetch(`${SCRIPT_URL}?action=get_courses_for_registration&program=${program}&level=${level}&semester=${encodeURIComponent(fullSemester)}`);
         const data = await response.json();
         
         console.log("Courses for semester:", data);
@@ -4462,11 +4477,6 @@ async function loadAvailableCoursesForSemester() {
             coursesArray = data.courses;
         } else if (Array.isArray(data)) {
             coursesArray = data;
-        }
-        
-        // Filter courses by semester if they have semester field
-        if (coursesArray.length > 0 && coursesArray[0].semester) {
-            coursesArray = coursesArray.filter(c => c.semester === semester);
         }
         
         availableCourses = coursesArray;
@@ -4642,16 +4652,13 @@ function refreshAvailableCourses() {
 // ============================================
 async function submitRegistration() {
     const studentId = studentData?.profile?.id;
-    const semester = currentSelectedSemester;
-    
-    if (!semester) {
-        showToast("Please select a semester first", "warning");
-        return;
-    }
+    const academicYear = document.getElementById('academicYearSelect').value;
+    const semester = document.getElementById('semesterSelect').value;
+    const fullSemester = `${semester}, ${academicYear}`;
     
     // Check if already registered for this semester
-    if (allSemesterRegistrations.includes(semester)) {
-        showToast("You have already registered for this semester. Contact IT Admin for changes.", "warning");
+    if (registeredSemesters.has(fullSemester)) {
+        showToast(`You have already registered for ${fullSemester}. Contact IT Admin for changes.`, "warning");
         return;
     }
     
@@ -4676,7 +4683,7 @@ async function submitRegistration() {
             code: cb.dataset.code,
             name: cb.dataset.name,
             credits: parseInt(cb.dataset.credits),
-            type: 'core' // You can determine type from course data
+            type: 'core'
         });
         totalCredits += parseInt(cb.dataset.credits);
     });
@@ -4691,8 +4698,8 @@ async function submitRegistration() {
         return;
     }
     
-    if (totalCredits > 21) {
-        showToast(`Maximum 21 credits allowed. Currently selected: ${totalCredits} credits.`, "warning");
+    if (totalCredits > 24) {
+        showToast(`Maximum 24 credits allowed. Currently selected: ${totalCredits} credits.`, "warning");
         return;
     }
     
@@ -4702,7 +4709,7 @@ async function submitRegistration() {
         name: studentData?.profile?.name || "",
         program: studentData?.profile?.program || "",
         level: studentData?.profile?.level || "100",
-        semester: semester,
+        semester: fullSemester,
         courses: selectedCoursesList,
         totalCredits: totalCredits,
         registrationDate: new Date().toISOString()
@@ -4722,7 +4729,7 @@ async function submitRegistration() {
         formData.append('name', studentData?.profile?.name || "");
         formData.append('program', studentData?.profile?.program || "");
         formData.append('level', studentData?.profile?.level || "100");
-        formData.append('semester', semester);
+        formData.append('semester', fullSemester);
         formData.append('courses', JSON.stringify(selectedCoursesList));
         formData.append('totalCredits', totalCredits);
         formData.append('registrationDate', new Date().toISOString());
@@ -4736,7 +4743,7 @@ async function submitRegistration() {
         console.log("Server response:", result);
         
         if (result.success) {
-            showToast(`Successfully registered for ${selectedCoursesList.length} courses in ${semester}!`, "success");
+            showToast(`Successfully registered for ${selectedCoursesList.length} courses in ${fullSemester}!`, "success");
             
             // Clear selections
             document.querySelectorAll('.course-checkbox:checked').forEach(cb => {
@@ -4745,17 +4752,17 @@ async function submitRegistration() {
             selectedCourses.clear();
             updateSelectionSummary();
             
-            // Reload all data
-            await loadAllRegisteredSemesters();
+            // Reload data
+            await loadRegisteredSemesters();
             await loadRegisteredCourses();
-            
-            // Reload semesters to mark this one as registered
-            await loadAvailableSemesters();
             
             // Hide available courses card
             document.getElementById('availableCoursesCard').style.display = 'none';
-            document.getElementById('registrationSemesterSelect').value = "";
-            currentSelectedSemester = "";
+            document.getElementById('semesterInfo').style.display = 'none';
+            
+            // Reset selection
+            document.getElementById('academicYearSelect').value = "2025/2026";
+            document.getElementById('semesterSelect').value = "Semester 2";
             
         } else {
             showToast("Registration failed: " + (result.error || "Unknown error"), "danger");
@@ -4768,10 +4775,31 @@ async function submitRegistration() {
         submitBtn.innerHTML = originalText;
     }
 }
-
 // ============================================
 // LOAD REGISTERED COURSES FOR CURRENT SEMESTER
 // ============================================
+async function loadRegisteredSemesters() {
+    const studentId = studentData?.profile?.id;
+    registeredSemesters.clear();
+    
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_registration_history&id=${encodeURIComponent(studentId)}`);
+        const data = await response.json();
+        
+        if (data.history && Array.isArray(data.history)) {
+            data.history.forEach(reg => {
+                if (reg.status === 'active' && reg.semester) {
+                    registeredSemesters.add(reg.semester);
+                }
+            });
+        }
+        
+        console.log("Registered semesters:", Array.from(registeredSemesters));
+    } catch (error) {
+        console.error("Error loading registered semesters:", error);
+    }
+}
+
 async function loadRegisteredCourses() {
     const studentId = studentData?.profile?.id;
     const container = document.getElementById('registeredCoursesList');
@@ -4948,15 +4976,13 @@ async function loadCourseRegistrationData() {
             regStatusDisplay.innerHTML = '<i class="fas fa-check-circle"></i> Registration Open';
             regStatusDisplay.style.background = '#27ae60';
         }
-        if (submitBtn) submitBtn.disabled = true; // Will be enabled when courses selected
+        if (submitBtn) submitBtn.disabled = true;
     }
     
-    // Load all data
-    await loadAvailableSemesters();
+    // Load registered semesters first
+    await loadRegisteredSemesters();
     await loadRegisteredCourses();
-    await loadAllRegisteredSemesters();
 }
-
         // ============================================
         // UPGRADED ACADEMIC FUNCTIONS
         // ============================================
