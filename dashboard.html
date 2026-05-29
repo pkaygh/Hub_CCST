@@ -4658,13 +4658,13 @@ async function submitRegistration() {
         return;
     }
     
-    if (totalCredits < 12) {
-        showToast(`Minimum 12 credits required. Currently selected: ${totalCredits} credits.`, "warning");
+    if (totalCredits < 18) {
+        showToast(`Minimum 18 credits required. Currently selected: ${totalCredits} credits.`, "warning");
         return;
     }
     
-    if (totalCredits > 21) {
-        showToast(`Maximum 21 credits allowed. Currently selected: ${totalCredits} credits.`, "warning");
+    if (totalCredits > 24) {
+        showToast(`Maximum 24 credits allowed. Currently selected: ${totalCredits} credits.`, "warning");
         return;
     }
     
