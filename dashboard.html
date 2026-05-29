@@ -2207,8 +2207,8 @@
     <div class="card" id="registrationBanner" style="background: linear-gradient(135deg, #1a472a, #2d6a3d); color: white;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div>
-                <h3><i class="fas fa-calendar-alt"></i> Course Registration</h3>
-                <p id="regPeriodMessage">Select academic year, semester, and register for courses</p>
+                <h3><i class="fas fa-calendar-alt"></i> COURSE REGISTRATION FORM</h3>
+                <p id="regPeriodMessage">Central College of Science and Technology</p>
             </div>
             <div>
                 <span id="regStatusDisplay" style="background: #f39c12; padding: 8px 16px; border-radius: 20px; font-weight: bold;">
@@ -2229,12 +2229,12 @@
         </div>
     </div>
 
-    <!-- Semester/Academic Year Selection Card -->
+    <!-- Academic Year and Semester Selection -->
     <div class="card">
         <div class="card-header">
-            <h3><i class="fas fa-calendar-week"></i> Select Semester for Registration</h3>
+            <h3><i class="fas fa-calendar-week"></i> ACADEMIC YEAR & SEMESTER</h3>
         </div>
-        <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 180px;">
                 <label style="font-weight: bold; display: block; margin-bottom: 5px;">Academic Year:</label>
                 <select id="academicYearSelect" style="width: 100%; padding: 12px; border-radius: 8px;" onchange="updateSemesterOptions()">
@@ -2249,13 +2249,14 @@
             <div style="flex: 1; min-width: 150px;">
                 <label style="font-weight: bold; display: block; margin-bottom: 5px;">Semester:</label>
                 <select id="semesterSelect" style="width: 100%; padding: 12px; border-radius: 8px;" onchange="onSemesterChange()">
-                    <option value="Semester 1">Semester 1</option>
-                    <option value="Semester 2" selected>Semester 2</option>
+                    <option value="Semester 1">FIRST SEMESTER</option>
+                    <option value="Semester 2" selected>SECOND SEMESTER</option>
                 </select>
             </div>
             <div style="flex: 1;">
+                <label style="font-weight: bold; display: block; margin-bottom: 5px;">&nbsp;</label>
                 <button onclick="loadAvailableCoursesForSemester()" class="info-btn" style="width: 100%;">
-                    <i class="fas fa-search"></i> Load Courses
+                    <i class="fas fa-search"></i> LOAD COURSES
                 </button>
             </div>
         </div>
@@ -2264,29 +2265,83 @@
         </div>
     </div>
 
-    <!-- Registration Summary -->
+    <!-- Student Information Section -->
     <div class="card">
         <div class="card-header">
-            <h3><i class="fas fa-list-check"></i> Your Registered Courses</h3>
+            <h3><i class="fas fa-user-graduate"></i> STUDENT INFORMATION</h3>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
             <div>
+                <label style="font-weight: bold;">NAME OF STUDENT:</label>
+                <p style="border-bottom: 1px solid #ddd; padding: 8px 0; font-weight: 600;" id="studentFullName">Loading...</p>
+            </div>
+            <div>
+                <label style="font-weight: bold;">INDEX NUMBER:</label>
+                <p style="border-bottom: 1px solid #ddd; padding: 8px 0; font-weight: 600;" id="studentIndexNumber">Loading...</p>
+            </div>
+            <div>
+                <label style="font-weight: bold;">PROGRAM:</label>
+                <p style="border-bottom: 1px solid #ddd; padding: 8px 0; font-weight: 600;" id="studentProgram">Loading...</p>
+            </div>
+            <div>
+                <label style="font-weight: bold;">LEVEL:</label>
+                <p style="border-bottom: 1px solid #ddd; padding: 8px 0; font-weight: 600;" id="studentLevel">Loading...</p>
+            </div>
+            <div>
+                <label style="font-weight: bold;">TEL. NUMBER:</label>
+                <p style="border-bottom: 1px solid #ddd; padding: 8px 0; font-weight: 600;" id="studentPhone">Loading...</p>
+            </div>
+            <div>
+                <label style="font-weight: bold;">DATE:</label>
+                <p style="border-bottom: 1px solid #ddd; padding: 8px 0; font-weight: 600;" id="registrationDate">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Summary - Registered Courses Table -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-list-check"></i> REGISTERED COURSES</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+            <button onclick="downloadRegistrationPDF()" class="info-btn" style="width: auto; padding: 8px 15px; background: #e74c3c;">
+                <i class="fas fa-file-pdf"></i> DOWNLOAD PDF
+            </button>
                 <span id="totalCreditsDisplay" style="background: var(--primary); color: white; padding: 5px 12px; border-radius: 20px;">
-                    Total Credits: <strong id="totalCreditsValue">0</strong>
+                    TOTAL CREDITS: <strong id="totalCreditsValue">0</strong>
                 </span>
             </div>
         </div>
-        <div id="registeredCoursesList" class="student-list-container">
-            <p style="text-align: center; color: #999; padding: 40px;">
-                <i class="fas fa-spinner fa-spin"></i> Loading your registered courses...
-            </p>
+        <div class="table-responsive">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: var(--primary-dark); color: white;">
+                        <th style="padding: 12px; text-align: center; width: 50px;">NO.</th>
+                        <th style="padding: 12px; text-align: left;">CODE</th>
+                        <th style="padding: 12px; text-align: left;">COURSE TITLE</th>
+                        <th style="padding: 12px; text-align: center;">CREDIT HOUR</th>
+                    </tr>
+                </thead>
+                <tbody id="registeredCoursesTableBody">
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px;">No courses registered yet.</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr style="background: #f8f9fa;">
+                        <td colspan="3" style="padding: 12px; text-align: right; font-weight: bold;">TOTAL</td>
+                        <td style="padding: 12px; text-align: center; font-weight: bold;" id="totalCreditsFooter">0</td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
     </div>
 
     <!-- Available Courses for Registration -->
     <div class="card" id="availableCoursesCard" style="display: none;">
         <div class="card-header">
-            <h3><i class="fas fa-book"></i> Available Courses for <span id="selectedSemesterDisplay">Selected Semester</span></h3>
+            <h3><i class="fas fa-book"></i> AVAILABLE COURSES FOR <span id="selectedSemesterDisplay">SELECTED SEMESTER</span></h3>
             <button onclick="refreshAvailableCourses()" class="info-btn" style="width: auto; padding: 8px 15px;">
-                <i class="fas fa-sync-alt"></i> Refresh
+                <i class="fas fa-sync-alt"></i> REFRESH
             </button>
         </div>
         
@@ -2295,32 +2350,92 @@
             <div class="filter-row" style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <input type="text" id="courseSearchInput" placeholder="Search courses..." style="flex: 2;" onkeyup="filterAvailableCourses()">
                 <select id="courseTypeFilter" onchange="filterAvailableCourses()" style="flex: 1;">
-                    <option value="all">All Courses</option>
-                    <option value="core">Core Courses</option>
-                    <option value="elective">Electives</option>
+                    <option value="all">ALL COURSES</option>
+                    <option value="core">CORE COURSES</option>
+                    <option value="elective">ELECTIVES</option>
                 </select>
             </div>
         </div>
         
-        <div id="availableCoursesList" class="student-list-container">
-            <p style="text-align: center; color: #999; padding: 40px;">
-                Select academic year and semester above to see available courses.
-            </p>
+        <div class="table-responsive">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: var(--primary-dark); color: white;">
+                        <th style="padding: 12px; text-align: center; width: 50px;">SELECT</th>
+                        <th style="padding: 12px; text-align: left;">CODE</th>
+                        <th style="padding: 12px; text-align: left;">COURSE TITLE</th>
+                        <th style="padding: 12px; text-align: center;">CREDIT HOUR</th>
+                    </tr>
+                </thead>
+                <tbody id="availableCoursesTableBody">
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px;">Select academic year and semester to load courses.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="selectionSummary" style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+            Selected: <span id="selectedCount">0</span> courses | 
+            Total Credits: <span id="selectedCredits">0</span>
+            <span style="color: #666; margin-left: 10px;">(Minimum: 12 | Maximum: 24 credits)</span>
         </div>
         
         <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: flex-end;">
-            <button onclick="submitRegistration()" id="submitRegBtn" class="success-btn" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+            <button onclick="submitRegistration()" id="submitRegBtn" class="success-btn" style="background: linear-gradient(135deg, #27ae60, #2ecc71); padding: 14px 30px;">
                 <i class="fas fa-paper-plane"></i> SUBMIT REGISTRATION
             </button>
         </div>
     </div>
 
-    <!-- Registration History -->
+    <!-- Declaration / Signature Section -->
     <div class="card">
-        <h3><i class="fas fa-history"></i> Registration History</h3>
-        <div id="registrationHistoryList" class="student-list-container">
-            <p style="text-align: center; color: #999; padding: 20px;">No registration history found.</p>
+        <div class="card-header">
+            <h3><i class="fas fa-file-signature"></i> DECLARATION</h3>
         </div>
+        <div style="padding: 15px; background: #f9f9f9; border-radius: 8px; margin-bottom: 20px;">
+            <p style="line-height: 1.6; margin-bottom: 15px;">
+                <i class="fas fa-check-circle" style="color: var(--primary);"></i> I hereby declare that the courses listed above are my approved registration for the academic year/semester indicated. 
+                I understand that any changes to this registration must be approved by the Academic Affairs Office.
+            </p>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 10px; background: white; border-radius: 8px; border: 1px solid #ddd;">
+                <input type="checkbox" id="declarationCheckbox" onchange="toggleDeclarationCheckbox()">
+                <span id="declarationText" style="font-weight: 500;">I confirm that the information provided is accurate and complete.</span>
+            </label>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div>
+                <label style="font-weight: bold;">STUDENT SIGNATURE:</label>
+                <div style="border-bottom: 1px solid #ddd; padding: 12px 0; margin-top: 5px;">
+                    <span id="signatureStatus" style="color: #999;">(Tick checkbox above to acknowledge)</span>
+                </div>
+            </div>
+            <div>
+                <label style="font-weight: bold;">DATE:</label>
+                <div style="border-bottom: 1px solid #ddd; padding: 12px 0; margin-top: 5px;">
+                    <span id="signatureDate"></span>
+                </div>
+            </div>
+            <div>
+                <label style="font-weight: bold;">TIME:</label>
+                <div style="border-bottom: 1px solid #ddd; padding: 12px 0; margin-top: 5px;">
+                    <span id="signatureTime"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration History -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-history"></i> REGISTRATION HISTORY</h3>
+        <button onclick="downloadRegistrationHistoryPDF()" class="info-btn" style="width: auto; padding: 8px 15px; background: #3498db;">
+            <i class="fas fa-file-pdf"></i> DOWNLOAD HISTORY
+        </button>
+    </div>
+    <div id="registrationHistoryList" class="student-list-container">
+        <p style="text-align: center; color: #999; padding: 20px;">No registration history found.</p>
     </div>
 </div>
 
@@ -4563,6 +4678,124 @@ function displayAvailableCourses(courses) {
     updateSelectionSummary();
 }
 
+// ===========================================
+// STUDENT INFO iN REGISTRATION FORM
+
+// Update student info in the registration form
+function updateStudentInfoInRegistration() {
+    const p = studentData?.profile;
+    if (!p) return;
+    
+    document.getElementById('studentFullName').innerHTML = p.name || 'Not available';
+    document.getElementById('studentIndexNumber').innerHTML = p.id || 'Not available';
+    document.getElementById('studentProgram').innerHTML = getFullProgramName(p.program) || 'Not available';
+    document.getElementById('studentLevel').innerHTML = `LEVEL ${p.level || '100'}`;
+    document.getElementById('studentPhone').innerHTML = p.phone || 'Not available';
+    
+    const now = new Date();
+    document.getElementById('registrationDate').innerHTML = now.toLocaleDateString();
+    document.getElementById('signatureDate').innerHTML = now.toLocaleDateString();
+    document.getElementById('signatureTime').innerHTML = now.toLocaleTimeString();
+}
+
+// ============================================
+// TOGGLE DECLARATION CHECKBOX
+// =============================================
+function toggleDeclarationCheckbox() {
+    const checkbox = document.getElementById('declarationCheckbox');
+    const signatureSpan = document.getElementById('signatureStatus');
+    
+    if (checkbox.checked) {
+        signatureSpan.innerHTML = '✓ Student Acknowledged';
+        signatureSpan.style.color = '#27ae60';
+        signatureSpan.style.fontWeight = 'bold';
+    } else {
+        signatureSpan.innerHTML = '(Tick checkbox above to acknowledge)';
+        signatureSpan.style.color = '#999';
+        signatureSpan.style.fontWeight = 'normal';
+    }
+}
+
+// ========================================
+// Update registered courses table display
+function displayRegisteredCoursesTable(courses) {
+    const tbody = document.getElementById('registeredCoursesTableBody');
+    let totalCredits = 0;
+    
+    if (!courses || courses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">No courses registered yet.</td></tr>';
+        document.getElementById('totalCreditsValue').innerText = '0';
+        document.getElementById('totalCreditsFooter').innerText = '0';
+        return;
+    }
+    
+    let html = '';
+    courses.forEach((course, index) => {
+        const credits = parseInt(course.credits) || 0;
+        totalCredits += credits;
+        html += `
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px; text-align: center;">${index + 1}</td>
+                <td style="padding: 12px;"><strong>${escapeHtml(course.code)}</strong></td>
+                <td style="padding: 12px;">${escapeHtml(course.name)}</td>
+                <td style="padding: 12px; text-align: center;">${credits}</td>
+            </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html;
+    document.getElementById('totalCreditsValue').innerText = totalCredits;
+    document.getElementById('totalCreditsFooter').innerText = totalCredits;
+}
+
+// ============================================
+// Update available courses table display
+function displayAvailableCoursesTable(courses) {
+    const tbody = document.getElementById('availableCoursesTableBody');
+    const registeredCodes = new Set(registeredCourses.map(c => c.code));
+    
+    if (!courses || courses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">No courses available for this semester.</td></tr>';
+        return;
+    }
+    
+    let html = '';
+    courses.forEach(course => {
+        const isRegistered = registeredCodes.has(course.code);
+        const isSelected = selectedCourses.has(course.code);
+        
+        html += `
+            <tr style="border-bottom: 1px solid #eee; ${isRegistered ? 'opacity: 0.6; background: #f0f0f0;' : ''}">
+                <td style="padding: 12px; text-align: center;">
+                    ${!isRegistered ? `
+                        <input type="checkbox" class="course-checkbox" data-code="${escapeHtml(course.code)}" 
+                               data-name="${escapeHtml(course.name)}" data-credits="${course.credits}"
+                               ${isSelected ? 'checked' : ''} onchange="toggleCourseSelection(this)">
+                    ` : '<i class="fas fa-check-circle" style="color: #27ae60;"></i>'}
+                 </td>
+                <td style="padding: 12px;"><strong>${escapeHtml(course.code)}</strong></td>
+                <td style="padding: 12px;">${escapeHtml(course.name)}</td>
+                <td style="padding: 12px; text-align: center;">${course.credits}</td>
+             </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html;
+    updateSelectionSummary();
+}
+
+// Override the old displayAvailableCourses with the new table version
+function displayAvailableCourses(courses) {
+    displayAvailableCoursesTable(courses);
+}
+
+// Override the old loadRegisteredCourses to use the new table
+const originalLoadRegisteredCourses = loadRegisteredCourses;
+loadRegisteredCourses = async function() {
+    await originalLoadRegisteredCourses();
+    displayRegisteredCoursesTable(registeredCourses);
+}
+
 // ============================================
 // TOGGLE COURSE SELECTION
 // ============================================
@@ -4651,6 +4884,12 @@ function refreshAvailableCourses() {
 // SUBMIT REGISTRATION
 // ============================================
 async function submitRegistration() {
+    // Check if declaration checkbox is checked
+const declarationCheckbox = document.getElementById('declarationCheckbox');
+if (!declarationCheckbox || !declarationCheckbox.checked) {
+    showToast("Please acknowledge the declaration by ticking the checkbox.", "warning");
+    return;
+}
     const studentId = studentData?.profile?.id;
     const academicYear = document.getElementById('academicYearSelect').value;
     const semester = document.getElementById('semesterSelect').value;
@@ -4775,6 +5014,393 @@ async function submitRegistration() {
         submitBtn.innerHTML = originalText;
     }
 }
+
+async function downloadRegistrationHistoryPDF() {
+    const studentId = studentData?.profile?.id;
+    
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_registration_history&id=${encodeURIComponent(studentId)}`);
+        const data = await response.json();
+        
+        if (!data.history || data.history.length === 0) {
+            showToast("No registration history found.", "warning");
+            return;
+        }
+        
+        let historyHtml = '';
+        data.history.forEach((reg, idx) => {
+            let coursesHtml = '';
+            let totalCredits = 0;
+            const courses = reg.courses || [];
+            
+            courses.forEach((course, cIdx) => {
+                const credits = parseInt(course.credits) || 0;
+                totalCredits += credits;
+                coursesHtml += `
+                    <tr>
+                        <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">${cIdx + 1}</td>
+                        <td style="padding: 5px; border: 1px solid #ddd;">${course.code}</td>
+                        <td style="padding: 5px; border: 1px solid #ddd;">${course.name}</td>
+                        <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">${credits}</td>
+                    </tr>
+                `;
+            });
+            
+            historyHtml += `
+                <div style="margin-bottom: 30px; page-break-inside: avoid;">
+                    <h3 style="background: #1a472a; color: white; padding: 10px; margin: 0;">${reg.semester}</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f0f0f0;">
+                                <th style="padding: 8px; border: 1px solid #ddd;">NO.</th>
+                                <th style="padding: 8px; border: 1px solid #ddd;">CODE</th>
+                                <th style="padding: 8px; border: 1px solid #ddd;">COURSE TITLE</th>
+                                <th style="padding: 8px; border: 1px solid #ddd;">CREDITS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${coursesHtml}
+                            <tr style="background: #f5f5f5; font-weight: bold;">
+                                <td colspan="3" style="padding: 8px; text-align: right;">TOTAL CREDITS</td>
+                                <td style="padding: 8px; text-align: center;">${totalCredits}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 5px;"><small>Registered on: ${new Date(reg.date).toLocaleString()}</small></p>
+                </div>
+            `;
+        });
+        
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Registration History - ${studentData?.profile?.name}</title>
+                <style>
+                    body {
+                        font-family: 'Times New Roman', Times, serif;
+                        margin: 0.5in;
+                        font-size: 12px;
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 30px;
+                        border-bottom: 2px solid #1a472a;
+                        padding-bottom: 15px;
+                    }
+                    .header h1 {
+                        color: #1a472a;
+                        margin: 0;
+                    }
+                    .footer {
+                        margin-top: 40px;
+                        text-align: center;
+                        font-size: 10px;
+                        color: #666;
+                        border-top: 1px solid #ddd;
+                        padding-top: 15px;
+                    }
+                    @media print {
+                        body {
+                            margin: 0.3in;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1>
+                    <h3>COURSE REGISTRATION HISTORY</h3>
+                    <p><strong>Student:</strong> ${studentData?.profile?.name} (${studentData?.profile?.id})</p>
+                    <p><strong>Program:</strong> ${getFullProgramName(studentData?.profile?.program)} | <strong>Level:</strong> LEVEL ${studentData?.profile?.level}</p>
+                    <p><strong>Generated on:</strong> ${new Date().toLocaleString()}</p>
+                </div>
+                ${historyHtml}
+                <div class="footer">
+                    <p>Central College of Science and Technology (CCST) – Academic Affairs Office</p>
+                    <p>This is an official record of all course registrations.</p>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="window.print()" style="background: #1a472a; color: white; border: none; padding: 10px 20px;">PRINT / SAVE AS PDF</button>
+                </div>
+                <script>
+                    window.onload = function() { setTimeout(function() { window.print(); }, 500); };
+                <\/script>
+            </body>
+            </html>
+        `;
+        
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        
+    } catch (error) {
+        console.error("Error generating history PDF:", error);
+        showToast("Error generating PDF.", "danger");
+    }
+}
+
+// ============================================
+// DOWNLOAD REGISTRATION PDF
+// ============================================
+function downloadRegistrationPDF() {
+    const student = studentData?.profile;
+    const academicYear = document.getElementById('academicYearSelect').value;
+    const semester = document.getElementById('semesterSelect').value;
+    const fullSemester = `${semester}, ${academicYear}`;
+    const declarationChecked = document.getElementById('declarationCheckbox')?.checked || false;
+    
+    if (!registeredCourses || registeredCourses.length === 0) {
+        showToast("No courses registered to download.", "warning");
+        return;
+    }
+    
+    const now = new Date();
+    const dateStr = now.toLocaleDateString();
+    const timeStr = now.toLocaleTimeString();
+    
+    let coursesHtml = '';
+    let totalCredits = 0;
+    
+    registeredCourses.forEach((course, index) => {
+        const credits = parseInt(course.credits) || 0;
+        totalCredits += credits;
+        coursesHtml += `
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${index + 1}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${course.code}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${course.name}</td>
+                <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${credits}</td>
+            </tr>
+        `;
+    });
+    
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Course Registration - ${student?.name || 'Student'}</title>
+            <style>
+                body {
+                    font-family: 'Times New Roman', Times, serif;
+                    margin: 0.5in;
+                    font-size: 12px;
+                    line-height: 1.4;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    border-bottom: 2px solid #1a472a;
+                    padding-bottom: 15px;
+                }
+                .header h1 {
+                    color: #1a472a;
+                    margin: 0;
+                    font-size: 18px;
+                }
+                .header h2 {
+                    color: #1a472a;
+                    margin: 5px 0;
+                    font-size: 14px;
+                }
+                .header p {
+                    margin: 5px 0;
+                    font-size: 12px;
+                }
+                .student-info {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+                .student-info td {
+                    padding: 6px;
+                    border: 1px solid #ddd;
+                }
+                .student-info td:first-child {
+                    font-weight: bold;
+                    width: 30%;
+                    background: #f5f5f5;
+                }
+                .courses-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 20px 0;
+                }
+                .courses-table th {
+                    background: #1a472a;
+                    color: white;
+                    padding: 10px;
+                    border: 1px solid #6b8e23;
+                    text-align: center;
+                }
+                .courses-table td {
+                    padding: 8px;
+                    border: 1px solid #ddd;
+                }
+                .total-row {
+                    font-weight: bold;
+                    background: #f5f5f5;
+                }
+                .declaration {
+                    margin: 25px 0;
+                    padding: 15px;
+                    border: 1px solid #ddd;
+                    background: #f9f9f9;
+                }
+                .signature-section {
+                    margin-top: 30px;
+                    display: flex;
+                    justify-content: space-between;
+                    flex-wrap: wrap;
+                }
+                .signature-box {
+                    width: 45%;
+                }
+                .signature-line {
+                    border-bottom: 1px solid #000;
+                    margin-top: 30px;
+                    width: 100%;
+                }
+                .footer {
+                    margin-top: 40px;
+                    text-align: center;
+                    font-size: 10px;
+                    color: #666;
+                    border-top: 1px solid #ddd;
+                    padding-top: 15px;
+                }
+                .watermark {
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%) rotate(-45deg);
+                    font-size: 60px;
+                    color: rgba(26, 71, 42, 0.05);
+                    white-space: nowrap;
+                    pointer-events: none;
+                    z-index: 999;
+                }
+                @media print {
+                    body {
+                        margin: 0.3in;
+                    }
+                    .no-print {
+                        display: none;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="watermark">CCST STUDENT PORTAL</div>
+            
+            <div class="header">
+                <h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1>
+                <h2>${getFullProgramName(student?.program)} – LEVEL ${student?.level || '100'}</h2>
+                <p><strong>${fullSemester}</strong></p>
+                <p><strong>COURSE REGISTRATION FORM</strong></p>
+            </div>
+            
+            <table class="student-info">
+                <tr>
+                    <td>NAME OF STUDENT:</td>
+                    <td><strong>${student?.name || 'Not specified'}</strong></td>
+                    <td>INDEX NUMBER:</td>
+                    <td><strong>${student?.id || 'Not specified'}</strong></td>
+                </tr>
+                <tr>
+                    <td>PROGRAM:</td>
+                    <td><strong>${getFullProgramName(student?.program)}</strong></td>
+                    <td>LEVEL:</td>
+                    <td><strong>LEVEL ${student?.level || '100'}</strong></td>
+                </tr>
+                <tr>
+                    <td>DATE:</td>
+                    <td><strong>${dateStr}</strong></td>
+                    <td>TIME:</td>
+                    <td><strong>${timeStr}</strong></td>
+                </tr>
+            </table>
+            
+            <table class="courses-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">NO.</th>
+                        <th>CODE</th>
+                        <th>COURSE TITLE</th>
+                        <th style="width: 100px;">CREDIT HOUR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${coursesHtml}
+                    <tr class="total-row">
+                        <td colspan="3" style="text-align: right;"><strong>TOTAL</strong></td>
+                        <td style="text-align: center;"><strong>${totalCredits}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="declaration">
+                <p><strong>DECLARATION</strong></p>
+                <p>I hereby declare that the courses listed above are my approved registration for the academic year/semester indicated. I understand that any changes to this registration must be approved by the Academic Affairs Office.</p>
+                <p><strong>✓ I confirm that the information provided is accurate and complete.</strong></p>
+            </div>
+            
+            <div class="signature-section">
+                <div class="signature-box">
+                    <p><strong>STUDENT SIGNATURE:</strong></p>
+                    <div class="signature-line"></div>
+                    <p style="margin-top: 5px;">${declarationChecked ? '✓ Acknowledged' : '_________________'}</p>
+                </div>
+                <div class="signature-box">
+                    <p><strong>DATE:</strong></p>
+                    <div class="signature-line"></div>
+                    <p style="margin-top: 5px;">${dateStr}</p>
+                </div>
+            </div>
+            
+            <div class="signature-section">
+                <div class="signature-box">
+                    <p><strong>FOR OFFICIAL USE ONLY:</strong></p>
+                    <p>RECEIPT NUMBER: _______________</p>
+                    <p>NAME OF OFFICER: _______________</p>
+                    <p>SIGNATURE: _______________</p>
+                </div>
+                <div class="signature-box">
+                    <p><strong>TEL. NUMBER:</strong></p>
+                    <p>${student?.phone || '_____________'}</p>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>Central College of Science and Technology (CCST) – Academic Affairs Office</p>
+                <p>Agona Swedru, Ghana | info@centralcollegegh.com | +233 20 445 8182</p>
+                <p>Generated on: ${dateStr} at ${timeStr}</p>
+            </div>
+            
+            <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
+                <button onclick="window.print()" style="background: #1a472a; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                    <i class="fas fa-print"></i> PRINT / SAVE AS PDF
+                </button>
+            </div>
+            
+            <script>
+                window.onload = function() {
+                    setTimeout(function() {
+                        window.print();
+                    }, 500);
+                };
+            <\/script>
+        </body>
+        </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+}
+
 // ============================================
 // LOAD REGISTERED COURSES FOR CURRENT SEMESTER
 // ============================================
@@ -4951,6 +5577,9 @@ function escapeHtml(str) {
 async function loadCourseRegistrationData() {
     const studentId = studentData?.profile?.id;
     
+    // Update student info on the form
+    updateStudentInfoInRegistration();
+    
     // Check clearance
     let isCleared = studentData?.profile?.isCleared;
     if (isCleared === true || isCleared === "TRUE" || isCleared === "true" || isCleared === 1 || isCleared === "1") {
@@ -4978,6 +5607,11 @@ async function loadCourseRegistrationData() {
         }
         if (submitBtn) submitBtn.disabled = true;
     }
+    
+    // Reset declaration checkbox
+    const declarationCheckbox = document.getElementById('declarationCheckbox');
+    if (declarationCheckbox) declarationCheckbox.checked = false;
+    toggleDeclarationCheckbox();
     
     // Load registered semesters first
     await loadRegisteredSemesters();
