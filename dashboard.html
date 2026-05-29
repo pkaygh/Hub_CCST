@@ -1210,6 +1210,99 @@
                 font-size: 0.9rem;
             }
         }
+
+        /* Mobile Table Scroll Fix */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 15px 0;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.table-responsive table {
+    min-width: 500px;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* For transcript tables specifically */
+.transcript-table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 15px 0;
+}
+
+.transcript-table {
+    min-width: 600px;
+}
+
+/* For course registration tables */
+.courses-table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.courses-table {
+    min-width: 500px;
+}
+
+/* Mobile specific table fixes */
+@media (max-width: 768px) {
+    .table-responsive {
+        margin: 10px -10px;
+        padding: 0 10px;
+        width: calc(100% + 20px);
+    }
+    
+    .table-responsive table {
+        font-size: 12px;
+    }
+    
+    .table-responsive th,
+    .table-responsive td {
+        padding: 8px 6px !important;
+        white-space: nowrap;
+    }
+    
+    /* For tables that need wrapping instead of scrolling */
+    .table-responsive.wrap-cells table {
+        min-width: auto;
+    }
+    
+    .table-responsive.wrap-cells td,
+    .table-responsive.wrap-cells th {
+        white-space: normal;
+        word-break: break-word;
+    }
+    
+    /* Transcript table on mobile */
+    .transcript-table-responsive {
+        margin: 10px -10px;
+        padding: 0 10px;
+    }
+    
+    .transcript-table {
+        min-width: 550px;
+        font-size: 11px;
+    }
+    
+    .transcript-table th,
+    .transcript-table td {
+        padding: 6px 4px !important;
+    }
+    
+    /* Course tables */
+    .courses-table-responsive {
+        margin: 10px -10px;
+        padding: 0 10px;
+    }
+    
+    .courses-table {
+        min-width: 450px;
+        font-size: 12px;
+    }
+}
         
         /* iOS-style scroll behavior */
         .main-content {
@@ -2741,7 +2834,7 @@ if (clearanceElement) {
     return watermarks;
 }
 
-    function generateTranscriptHTML() {
+function generateTranscriptHTML() {
     if (!studentData?.profile) return '<p>Student data not available</p>';
     const profile = studentData.profile;
     const program = profile.program || "RM";
@@ -2753,11 +2846,19 @@ if (clearanceElement) {
     
     sortedResults.forEach((sem, idx) => {
         let semWeightedPoints = 0, semCredits = 0;
-        sem.details.forEach(c => {
-            const credits = c.credits || 3;
-            semWeightedPoints += getGradePoints(c.grade, program) * credits;
+        let details = sem.details;
+        if (typeof details === 'string') {
+            try { details = JSON.parse(details); } catch(e) { details = []; }
+        }
+        if (!Array.isArray(details)) details = [];
+        
+        details.forEach(c => {
+            const credits = parseInt(c.credits) || 3;
+            const gradePoints = getGradePoints(c.grade, program);
+            semWeightedPoints += gradePoints * credits;
             semCredits += credits;
         });
+        
         totalWeightedPoints += semWeightedPoints;
         totalCredits += semCredits;
         semesterSummaries.push({ name: sem.semester, gpa: sem.gpa || (semCredits > 0 ? (semWeightedPoints / semCredits).toFixed(2) : 0), credits: semCredits });
@@ -2770,40 +2871,55 @@ if (clearanceElement) {
     <div class="transcript-content-wrapper">
         <div class="transcript-header" style="text-align:center; margin-bottom:30px; padding-bottom:20px; border-bottom:2px solid #1a472a;">
             <h1 style="color:#1a472a; margin:0; text-align:center;">CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1>
-<h3 style="color:#555; margin:5px 0 0 0; text-align:center;">OFFICIAL ACADEMIC TRANSCRIPT</h3>
+            <h3 style="color:#555; margin:5px 0 0 0; text-align:center;">OFFICIAL ACADEMIC TRANSCRIPT</h3>
             <div class="unofficial-stamp" style="display:inline-block; margin-top:20px; padding:8px 20px; border:2px solid #8b0000; color:#8b0000; font-weight:bold; font-size:0.8rem; letter-spacing:2px; transform:rotate(-5deg); background:rgba(139,0,0,0.05);">⚡ UNOFFICIAL COPY - STUDENT PORTAL ⚡</div>
         </div>
         
-        <table class="student-info-table" style="width:100%; border-collapse:collapse; margin-bottom:25px;">
-            <tr><td style="padding:8px; border:1px solid #ddd; background:#f0f0f0; width:30%;"><strong>Student Name</strong></td><td style="padding:8px; border:1px solid #ddd;">${profile.name}</td>
-                <td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Student ID</strong></td><td style="padding:8px; border:1px solid #ddd;">${profile.id}</td>
-            </tr>
-            <tr><td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Program</strong></td><td style="padding:8px; border:1px solid #ddd;">${getFullProgramName(program)}</td>
-                <td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Level</strong></td><td style="padding:8px; border:1px solid #ddd;">${profile.level || '200'}</td>
-            </tr>
-            <tr><td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Date of Issue</strong></td><td style="padding:8px; border:1px solid #ddd;">${new Date().toLocaleDateString()}</td>
-                <td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Transcript ID</strong></td><td style="padding:8px; border:1px solid #ddd;">TR-${profile.id}-${Date.now()}</td>
-            </tr>
-        </table>`;
+        <div class="table-responsive">
+            <table class="student-info-table" style="width:100%; border-collapse:collapse; margin-bottom:25px;">
+                <tr><td style="padding:8px; border:1px solid #ddd; background:#f0f0f0; width:30%;"><strong>Student Name</strong></td>
+                    <td style="padding:8px; border:1px solid #ddd;">${profile.name}</td>
+                    <td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Student ID</strong></td>
+                    <td style="padding:8px; border:1px solid #ddd;">${profile.id}</td>
+                </tr>
+                <tr><td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Program</strong></td>
+                    <td style="padding:8px; border:1px solid #ddd;">${getFullProgramName(program)}</td>
+                    <td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Level</strong></td>
+                    <td style="padding:8px; border:1px solid #ddd;">${profile.level || '200'}</td>
+                </tr>
+                <tr><td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Date of Issue</strong></td>
+                    <td style="padding:8px; border:1px solid #ddd;">${new Date().toLocaleDateString()}</td>
+                    <td style="padding:8px; border:1px solid #ddd; background:#f0f0f0;"><strong>Transcript ID</strong></td>
+                    <td style="padding:8px; border:1px solid #ddd;">TR-${profile.id}-${Date.now()}</td>
+                </tr>
+            </table>
+        </div>`;
     
     sortedResults.forEach((sem, idx) => {
         html += `<h4 style="margin-top:25px; color:#1a472a;">${sem.semester} (GPA: ${semesterSummaries[idx]?.gpa})</h4>
-        <table class="transcript-table" style="width:100%; border-collapse:collapse; margin-top:10px;">
-            <thead>
-    <tr style="background:#1a472a; color:white;">
-        <th style="padding:8px; border:1px solid #6b8e23;">Course Code</th>
-        <th style="padding:8px; border:1px solid #6b8e23;">Course Title</th>
-        <th style="padding:8px; border:1px solid #6b8e23;">Credits</th>
-        <th style="padding:8px; border:1px solid #6b8e23;">CA</th>
-        <th style="padding:8px; border:1px solid #6b8e23;">Exam</th>
-        <th style="padding:8px; border:1px solid #6b8e23;">Total</th>
-        <th style="padding:8px; border:1px solid #6b8e23;">Grade</th>
-        <th style="padding:8px; border:1px solid #6b8e23;">Points</th>
-    </tr>
-</thead>
-            <tbody>`;
+        <div class="transcript-table-responsive">
+            <table class="transcript-table" style="width:100%; border-collapse:collapse; margin-top:10px;">
+                <thead>
+                    <tr style="background:#1a472a; color:white;">
+                        <th style="padding:8px; border:1px solid #6b8e23;">Course Code</th>
+                        <th style="padding:8px; border:1px solid #6b8e23;">Course Title</th>
+                        <th style="padding:8px; border:1px solid #6b8e23;">Credits</th>
+                        <th style="padding:8px; border:1px solid #6b8e23;">CA</th>
+                        <th style="padding:8px; border:1px solid #6b8e23;">Exam</th>
+                        <th style="padding:8px; border:1px solid #6b8e23;">Total</th>
+                        <th style="padding:8px; border:1px solid #6b8e23;">Grade</th>
+                        <th style="padding:8px; border:1px solid #6b8e23;">Points</th>
+                    </tr>
+                </thead>
+                <tbody>`;
         
-        sem.details.forEach(c => {
+        let details = sem.details;
+        if (typeof details === 'string') {
+            try { details = JSON.parse(details); } catch(e) { details = []; }
+        }
+        if (!Array.isArray(details)) details = [];
+        
+        details.forEach(c => {
             const ca = c.ca || 0;
             const exam = c.exam || 0;
             const total = ca + exam;
@@ -2817,10 +2933,12 @@ if (clearanceElement) {
                 <td style="padding:6px; border:1px solid #ddd; text-align:center;"><strong>${total}</strong></td>
                 <td style="padding:6px; border:1px solid #ddd; text-align:center; font-weight:bold;">${c.grade}</td>
                 <td style="padding:6px; border:1px solid #ddd; text-align:center;">${points.toFixed(1)}</td>
-            </tr>`;
+             </tr>`;
         });
+        
         html += `</tbody>
-        </table>
+            </table>
+        </div>
         <div class="semester-summary" style="margin-top:10px; padding:8px; background:#f5f5f5; text-align:right; font-weight:bold;">Credits: ${semesterSummaries[idx]?.credits || 0} | GPA: ${semesterSummaries[idx]?.gpa}</div>`;
     });
     
@@ -4348,8 +4466,8 @@ function displayAvailableCourses(courses) {
         return;
     }
     
-    let html = `
-        <table style="width: 100%; border-collapse: collapse;">
+    let html = `<div class="courses-table-responsive">
+        <table class="courses-table" style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr style="background: var(--primary-dark); color: white;">
                     <th style="padding: 12px; text-align: center; width: 50px;">Select</th>
@@ -4390,11 +4508,12 @@ function displayAvailableCourses(courses) {
     html += `
             </tbody>
         </table>
-        <div id="selectionSummary" style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
-            Selected: <span id="selectedCount">0</span> courses | 
-            Total Credits: <span id="selectedCredits">0</span>
-            <span style="color: #666; margin-left: 10px;">(Min: 12 | Max: 21 credits)</span>
-        </div>
+    </div>
+    <div id="selectionSummary" style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+        Selected: <span id="selectedCount">0</span> courses | 
+        Total Credits: <span id="selectedCredits">0</span>
+        <span style="color: #666; margin-left: 10px;">(Min: 12 | Max: 21 credits)</span>
+    </div>
     `;
     
     container.innerHTML = html;

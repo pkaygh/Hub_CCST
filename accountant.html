@@ -315,6 +315,99 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
+        /* Mobile Table Scroll Fix  */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 15px 0;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.table-responsive table {
+    min-width: 500px;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* For transcript tables specifically */
+.transcript-table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 15px 0;
+}
+
+.transcript-table {
+    min-width: 600px;
+}
+
+/* For course registration tables */
+.courses-table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.courses-table {
+    min-width: 500px;
+}
+
+/* Mobile specific table fixes */
+@media (max-width: 768px) {
+    .table-responsive {
+        margin: 10px -10px;
+        padding: 0 10px;
+        width: calc(100% + 20px);
+    }
+    
+    .table-responsive table {
+        font-size: 12px;
+    }
+    
+    .table-responsive th,
+    .table-responsive td {
+        padding: 8px 6px !important;
+        white-space: nowrap;
+    }
+    
+    /* For tables that need wrapping instead of scrolling */
+    .table-responsive.wrap-cells table {
+        min-width: auto;
+    }
+    
+    .table-responsive.wrap-cells td,
+    .table-responsive.wrap-cells th {
+        white-space: normal;
+        word-break: break-word;
+    }
+    
+    /* Transcript table on mobile */
+    .transcript-table-responsive {
+        margin: 10px -10px;
+        padding: 0 10px;
+    }
+    
+    .transcript-table {
+        min-width: 550px;
+        font-size: 11px;
+    }
+    
+    .transcript-table th,
+    .transcript-table td {
+        padding: 6px 4px !important;
+    }
+    
+    /* Course tables */
+    .courses-table-responsive {
+        margin: 10px -10px;
+        padding: 0 10px;
+    }
+    
+    .courses-table {
+        min-width: 450px;
+        font-size: 12px;
+    }
+}
+
         /* Mobile Menu Button */
         .menu-toggle { 
             display: none; 
@@ -1923,7 +2016,7 @@ async function loadCourses() {
         if (!container) return;
         
         if (result.courses && result.courses.length > 0) {
-            let html = `
+            let html = `<div class="table-responsive">
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background: var(--primary-dark); color: white;">
@@ -1957,7 +2050,9 @@ async function loadCourses() {
                 `;
             });
             
-            html += `</tbody></table>`;
+            html += `</tbody>
+                </table>
+            </div>`;
             container.innerHTML = html;
         } else {
             container.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">No courses added yet. Use the form above to add courses.</p>';
@@ -1967,6 +2062,7 @@ async function loadCourses() {
         container.innerHTML = '<p style="text-align:center; color:#e74c3c; padding:20px;">Error loading courses: ' + e.message + '</p>';
     }
 }
+
 // ============================================
 // TRANSCRIPT FUNCTIONS
 // ============================================
