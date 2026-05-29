@@ -4337,29 +4337,10 @@ async function loadRegisteredCourses() {
         const response = await fetch(`${SCRIPT_URL}?action=get_registered_courses&id=${encodeURIComponent(studentId)}`);
         const data = await response.json();
         
-        console.log("Full response from server:", data);
+        console.log("Registered courses response:", data);
         
-        // Handle different response formats
-        let coursesArray = [];
-        
-        if (data.courses && Array.isArray(data.courses)) {
-            coursesArray = data.courses;
-        } else if (data.courses && typeof data.courses === 'object') {
-            // If courses is an object, try to convert
-            coursesArray = Object.values(data.courses);
-        } else if (Array.isArray(data)) {
-            coursesArray = data;
-        } else if (data.data && Array.isArray(data.data)) {
-            coursesArray = data.data;
-        } else {
-            console.log("No courses found in response, using empty array");
-            coursesArray = [];
-        }
-        
-        console.log("Courses array:", coursesArray);
-        
-        if (coursesArray.length > 0) {
-            registeredCourses = coursesArray;
+        if (data.courses && data.courses.length > 0) {
+            registeredCourses = data.courses;
             let totalCredits = 0;
             
             let html = `
@@ -4371,13 +4352,12 @@ async function loadRegisteredCourses() {
                                 <th style="padding: 12px; text-align: left;">Course Name</th>
                                 <th style="padding: 12px; text-align: center;">Credits</th>
                                 <th style="padding: 12px; text-align: center;">Type</th>
-                             </tr>
+                            </tr>
                         </thead>
                         <tbody>
             `;
             
-            for (let i = 0; i < coursesArray.length; i++) {
-                const course = coursesArray[i];
+            data.courses.forEach(course => {
                 totalCredits += parseInt(course.credits) || 0;
                 html += `
                     <tr style="border-bottom: 1px solid #eee;">
@@ -4391,7 +4371,7 @@ async function loadRegisteredCourses() {
                         </td>
                     </tr>
                 `;
-            }
+            });
             
             html += `
                         </tbody>
@@ -4425,16 +4405,17 @@ async function loadRegisteredCourses() {
     }
 }
 
-// Helper function to escape HTML
+// Helper function to escape HTML and prevent XSS
 function escapeHtml(str) {
     if (!str) return '';
-    return String(str).replace(/[&<>]/g, function(m) {
+    return str.replace(/[&<>]/g, function(m) {
         if (m === '&') return '&amp;';
         if (m === '<') return '&lt;';
         if (m === '>') return '&gt;';
         return m;
     });
 }
+
 async function loadAvailableCourses(program, level) {
     const container = document.getElementById('availableCoursesList');
     
