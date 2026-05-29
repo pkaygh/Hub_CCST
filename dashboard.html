@@ -4499,8 +4499,7 @@ function displayAvailableCourses(courses) {
             <thead>
                 <tr style="background: var(--primary-dark); color: white;">
                     <th style="padding: 12px; text-align: center; width: 50px;">Select</th>
-                    <th style="padding: 12px; text-align: left;">Course Code</th>
-                    <th style="padding: 12px; text-align: left;">Course Name</th>
+                    <th style="padding: 12px; text-align: left;">Course Details</th>
                     <th style="padding: 12px; text-align: center;">Credits</th>
                     <th style="padding: 12px; text-align: center;">Type</th>
                  </tr>
@@ -4521,15 +4520,21 @@ function displayAvailableCourses(courses) {
                                ${isSelected ? 'checked' : ''} onchange="toggleCourseSelection(this)">
                     ` : '<i class="fas fa-check-circle" style="color: #27ae60;"></i>'}
                  </td>
-                <td style="padding: 12px;"><strong>${escapeHtml(course.code)}</strong></td>
-                <td style="padding: 12px;">${escapeHtml(course.name)}</td>
-                <td style="padding: 12px; text-align: center;">${course.credits}</td>
+                <td style="padding: 12px;">
+                    <strong>${escapeHtml(course.code)}</strong><br>
+                    <span style="font-size: 0.85rem; color: #666;">${escapeHtml(course.name)}</span>
+                </td>
                 <td style="padding: 12px; text-align: center;">
-                    <span style="background: ${course.type === 'core' ? '#3498db' : '#9b59b6'}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">
+                    <span style="background: #e0e0e0; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem;">
+                        ${course.credits} Credit${course.credits > 1 ? 's' : ''}
+                    </span>
+                </td>
+                <td style="padding: 12px; text-align: center;">
+                    <span style="background: ${course.type === 'core' ? '#3498db' : '#9b59b6'}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem;">
                         ${course.type === 'core' ? 'Core' : 'Elective'}
                     </span>
                 </td>
-             </tr>
+            </tr>
         `;
     });
     
@@ -4771,75 +4776,96 @@ async function loadRegisteredCourses() {
     const studentId = studentData?.profile?.id;
     const container = document.getElementById('registeredCoursesList');
     
-    if (!container) return;
+    if (!container) {
+        console.log("Container 'registeredCoursesList' not found");
+        return;
+    }
+    
     if (!studentId) {
+        console.log("No student ID found");
         container.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">Please login to view registered courses.</p>';
         return;
     }
     
-    container.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading...</p>';
+    container.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading your registered courses...</p>';
     
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=get_registration_history&id=${encodeURIComponent(studentId)}`);
+        console.log("Fetching registered courses for:", studentId);
+        
+        const response = await fetch(`${SCRIPT_URL}?action=get_registered_courses&id=${encodeURIComponent(studentId)}`);
         const data = await response.json();
         
-        console.log("Registration history:", data);
+        console.log("Registered courses response:", data);
         
-        let historyArray = [];
-        if (data.history && Array.isArray(data.history)) {
-            historyArray = data.history;
+        // Handle different response formats
+        let coursesArray = [];
+        
+        if (data.courses && Array.isArray(data.courses)) {
+            coursesArray = data.courses;
+        } else if (data.courses && typeof data.courses === 'object') {
+            coursesArray = Object.values(data.courses);
+        } else if (Array.isArray(data)) {
+            coursesArray = data;
+        } else if (data.data && Array.isArray(data.data)) {
+            coursesArray = data.data;
+        } else {
+            console.log("No courses found in response, using empty array");
+            coursesArray = [];
         }
         
-        if (historyArray.length > 0) {
-            let html = '';
-            let allRegisteredCourses = [];
+        console.log("Courses array:", coursesArray);
+        
+        if (coursesArray.length > 0) {
+            registeredCourses = coursesArray;
+            let totalCredits = 0;
             
-            historyArray.forEach(reg => {
-                let courses = reg.courses;
-                if (typeof courses === 'string') {
-                    try { courses = JSON.parse(courses); } catch(e) { courses = []; }
-                }
-                if (!Array.isArray(courses)) courses = [];
-                
-                allRegisteredCourses.push(...courses);
-                
+            let html = `
+                <div class="table-responsive">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--primary-dark); color: white;">
+                                <th style="padding: 12px; text-align: left;">Course Details</th>
+                                <th style="padding: 12px; text-align: center;">Credits</th>
+                                <th style="padding: 12px; text-align: center;">Type</th>
+                              </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            for (let i = 0; i < coursesArray.length; i++) {
+                const course = coursesArray[i];
+                totalCredits += parseInt(course.credits) || 0;
                 html += `
-                    <div style="padding: 15px; border-bottom: 1px solid #eee; background: ${reg.status === 'active' ? '#f8f9fa' : '#fff'};">
-                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
-                            <div>
-                                <strong style="color: var(--primary-dark);">${reg.semester}</strong>
-                                <br>
-                                <small>Registered: ${new Date(reg.date).toLocaleDateString()}</small>
-                            </div>
-                            <div>
-                                <span style="background: ${reg.status === 'active' ? '#27ae60' : '#e74c3c'}; color: white; padding: 4px 12px; border-radius: 20px;">
-                                    ${reg.status === 'active' ? '✓ Active' : 'Locked'}
-                                </span>
-                            </div>
-                        </div>
-                        <div style="font-size: 0.85rem;">
-                            ${courses.map(c => `<span style="display: inline-block; background: #e0e0e0; padding: 2px 8px; border-radius: 12px; margin: 2px;">${c.code} (${c.credits} cr)</span>`).join('')}
-                        </div>
-                        <div style="margin-top: 8px; font-size: 0.8rem; color: #666;">
-                            Total Credits: ${reg.totalCredits || courses.reduce((sum, c) => sum + (parseInt(c.credits) || 0), 0)}
-                        </div>
-                    </div>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px;">
+                            <strong>${escapeHtml(course.code)}</strong><br>
+                            <span style="font-size: 0.85rem; color: #666;">${escapeHtml(course.name)}</span>
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <span style="background: #e0e0e0; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem;">
+                                ${course.credits} Credit${course.credits > 1 ? 's' : ''}
+                            </span>
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <span style="background: ${course.type === 'core' ? '#3498db' : '#9b59b6'}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem;">
+                                ${course.type === 'core' ? 'Core' : 'Elective'}
+                            </span>
+                        </td>
+                    </tr>
                 `;
-            });
-            
-            container.innerHTML = html;
-            
-            // Calculate total credits for current active semester
-            const activeReg = historyArray.find(r => r.status === 'active');
-            if (activeReg) {
-                let activeCourses = activeReg.courses;
-                if (typeof activeCourses === 'string') {
-                    try { activeCourses = JSON.parse(activeCourses); } catch(e) { activeCourses = []; }
-                }
-                const totalCredits = activeCourses.reduce((sum, c) => sum + (parseInt(c.credits) || 0), 0);
-                document.getElementById('totalCreditsValue').innerText = totalCredits;
-                registeredCourses = activeCourses;
             }
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; text-align: right;">
+                    <strong>Total Credits: ${totalCredits}</strong> (Minimum: 12 | Maximum: 21)
+                </div>
+            `;
+            
+            document.getElementById('totalCreditsValue').innerText = totalCredits;
+            container.innerHTML = html;
         } else {
             container.innerHTML = `
                 <div style="text-align: center; padding: 40px; color: #999;">
