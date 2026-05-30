@@ -4696,8 +4696,9 @@ function displayRegisteredCoursesTable(courses) {
     
     if (!courses || courses.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">No courses registered yet.</td></tr>';
-        // ✅ Update both total credit displays
-        document.getElementById('totalCreditsValue').innerText = '0';
+        // Update BOTH total credit displays
+        const creditElements = document.querySelectorAll('#totalCreditsValue');
+        creditElements.forEach(el => el.innerText = '0');
         document.getElementById('totalCreditsFooter').innerText = '0';
         return;
     }
@@ -4712,14 +4713,15 @@ function displayRegisteredCoursesTable(courses) {
                 <td style="padding: 12px;"><strong>${escapeHtml(course.code)}</strong></td>
                 <td style="padding: 12px;">${escapeHtml(course.name)}</td>
                 <td style="padding: 12px; text-align: center;">${credits}</td>
-            </table>
+            </tr>
         `;
     });
     
     tbody.innerHTML = html;
     
-    // ✅ Update both total credit displays
-    document.getElementById('totalCreditsValue').innerText = totalCredits;
+    // Update BOTH total credit displays
+    const creditElements = document.querySelectorAll('#totalCreditsValue');
+    creditElements.forEach(el => el.innerText = totalCredits);
     document.getElementById('totalCreditsFooter').innerText = totalCredits;
 }
 
