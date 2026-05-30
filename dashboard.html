@@ -2230,40 +2230,45 @@
     </div>
 
     <!-- Academic Year and Semester Selection -->
-    <div class="card">
-        <div class="card-header">
-            <h3><i class="fas fa-calendar-week"></i> ACADEMIC YEAR & SEMESTER</h3>
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-calendar-week"></i> ACADEMIC YEAR & SEMESTER</h3>
+    </div>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
+        <div style="flex: 1; min-width: 180px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Academic Year:</label>
+            <select id="academicYearSelect" style="width: 100%; padding: 12px; border-radius: 8px;" onchange="updateSemesterOptions()">
+                <option value="2022/2023">2022/2023</option>
+                <option value="2023/2024">2023/2024</option>
+                <option value="2024/2025">2024/2025</option>
+                <option value="2025/2026" selected>2025/2026</option>
+                <option value="2026/2027">2026/2027</option>
+                <option value="2027/2028">2027/2028</option>
+            </select>
         </div>
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 180px;">
-                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Academic Year:</label>
-                <select id="academicYearSelect" style="width: 100%; padding: 12px; border-radius: 8px;" onchange="updateSemesterOptions()">
-                    <option value="2022/2023">2022/2023</option>
-                    <option value="2023/2024">2023/2024</option>
-                    <option value="2024/2025">2024/2025</option>
-                    <option value="2025/2026" selected>2025/2026</option>
-                    <option value="2026/2027">2026/2027</option>
-                    <option value="2027/2028">2027/2028</option>
-                </select>
-            </div>
-            <div style="flex: 1; min-width: 150px;">
-                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Semester:</label>
-                <select id="semesterSelect" style="width: 100%; padding: 12px; border-radius: 8px;" onchange="onSemesterChange()">
-                    <option value="Semester 1">FIRST SEMESTER</option>
-                    <option value="Semester 2" selected>SECOND SEMESTER</option>
-                </select>
-            </div>
-            <div style="flex: 1;">
-                <label style="font-weight: bold; display: block; margin-bottom: 5px;">&nbsp;</label>
-                <button onclick="loadAvailableCoursesForSemester()" class="info-btn" style="width: 100%;">
-                    <i class="fas fa-search"></i> LOAD COURSES
-                </button>
-            </div>
-        </div>
-        <div id="semesterInfo" style="margin-top: 15px; padding: 10px; background: #f0f8ff; border-radius: 8px; display: none;">
-            <i class="fas fa-info-circle"></i> <span id="semesterStatusMessage"></span>
+        <div style="flex: 1; min-width: 150px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Semester:</label>
+            <select id="semesterSelect" style="width: 100%; padding: 12px; border-radius: 8px;" onchange="onSemesterChange()">
+                <option value="Semester 1">FIRST SEMESTER</option>
+                <option value="Semester 2" selected>SECOND SEMESTER</option>
+            </select>
         </div>
     </div>
+    
+    <!-- LOAD COURSES BUTTON - SEPARATE ROW FOR VISIBILITY -->
+    <div style="text-align: center; margin: 10px 0;">
+        <button onclick="loadAvailableCoursesForSemester()" style="background: #ff9800; color: white; padding: 14px 35px; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 50px; cursor: pointer; width: auto; min-width: 250px;">
+            <i class="fas fa-download"></i> LOAD COURSES
+        </button>
+        <p style="margin-top: 8px; font-size: 0.75rem; color: #666;">
+            <i class="fas fa-info-circle"></i> Select Academic Year and Semester, then click LOAD COURSES
+        </p>
+    </div>
+    
+    <div id="semesterInfo" style="margin-top: 15px; padding: 10px; background: #f0f8ff; border-radius: 8px; display: none;">
+        <i class="fas fa-info-circle"></i> <span id="semesterStatusMessage"></span>
+    </div>
+</div>
 
     <!-- Student Information Section -->
     <div class="card">
