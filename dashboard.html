@@ -4696,6 +4696,7 @@ function displayRegisteredCoursesTable(courses) {
     
     if (!courses || courses.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">No courses registered yet.</td></tr>';
+        // ✅ Update both total credit displays
         document.getElementById('totalCreditsValue').innerText = '0';
         document.getElementById('totalCreditsFooter').innerText = '0';
         return;
@@ -4711,11 +4712,13 @@ function displayRegisteredCoursesTable(courses) {
                 <td style="padding: 12px;"><strong>${escapeHtml(course.code)}</strong></td>
                 <td style="padding: 12px;">${escapeHtml(course.name)}</td>
                 <td style="padding: 12px; text-align: center;">${credits}</td>
-            </tr>
+            </table>
         `;
     });
     
     tbody.innerHTML = html;
+    
+    // ✅ Update both total credit displays
     document.getElementById('totalCreditsValue').innerText = totalCredits;
     document.getElementById('totalCreditsFooter').innerText = totalCredits;
 }
@@ -5407,7 +5410,7 @@ async function loadRegisteredCourses() {
     
     if (!studentId) {
         console.log("No student ID found");
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">Please login to view registered courses.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">Please login to view registered courses. </td></tr>';
         document.getElementById('totalCreditsValue').innerText = '0';
         document.getElementById('totalCreditsFooter').innerText = '0';
         return;
@@ -5472,45 +5475,23 @@ async function loadRegisteredCourses() {
         // Update global registeredCourses
         registeredCourses = allCourses;
         
-        // Display in table
-        if (allCourses.length > 0) {
-            let html = '';
-            allCourses.forEach((course, index) => {
-                const credits = parseInt(course.credits) || 0;
-                html += `
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px; text-align: center;">${index + 1}</td>
-                        <td style="padding: 12px;"><strong>${escapeHtml(course.code)}</strong></td>
-                        <td style="padding: 12px;">${escapeHtml(course.name)}</td>
-                        <td style="padding: 12px; text-align: center;">${credits}</td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
-            document.getElementById('totalCreditsValue').innerText = totalCredits;
-            document.getElementById('totalCreditsFooter').innerText = totalCredits;
-            
-            // Also show a message with the semester
-            const infoMessage = document.createElement('div');
-            infoMessage.style.cssText = 'margin-top: 10px; padding: 10px; background: #e8f5e9; border-radius: 8px; color: #2e7d32;';
-            infoMessage.innerHTML = `<i class="fas fa-check-circle"></i> Currently registered for: <strong>${latestSemester}</strong>`;
-            
+        // ✅ USE THE DISPLAY FUNCTION to update table AND totals
+        displayRegisteredCoursesTable(registeredCourses);
+        
+        // Show semester info message if courses exist
+        if (allCourses.length > 0 && latestSemester) {
             // Check if info message already exists
             const existingInfo = document.querySelector('.registration-semester-info');
-            if (!existingInfo && latestSemester) {
-                const footer = document.querySelector('#registeredCoursesTableBody').closest('.table-responsive');
-                if (footer && !footer.querySelector('.registration-semester-info')) {
+            if (!existingInfo) {
+                const tableResponsive = document.querySelector('#registeredCoursesTableBody').closest('.table-responsive');
+                if (tableResponsive && !tableResponsive.querySelector('.registration-semester-info')) {
                     const infoDiv = document.createElement('div');
                     infoDiv.className = 'registration-semester-info';
                     infoDiv.style.cssText = 'margin-top: 10px; padding: 10px; background: #e8f5e9; border-radius: 8px; color: #2e7d32;';
                     infoDiv.innerHTML = `<i class="fas fa-check-circle"></i> Currently registered for: <strong>${latestSemester}</strong>`;
-                    footer.parentNode.insertBefore(infoDiv, footer.nextSibling);
+                    tableResponsive.parentNode.insertBefore(infoDiv, tableResponsive.nextSibling);
                 }
             }
-        } else {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;"><i class="fas fa-book-open"></i><br>No courses registered yet.</td></tr>';
-            document.getElementById('totalCreditsValue').innerText = '0';
-            document.getElementById('totalCreditsFooter').innerText = '0';
         }
         
     } catch (error) {
@@ -5521,7 +5502,6 @@ async function loadRegisteredCourses() {
         </td></tr>`;
     }
 }
-
 // ============================================
 // ESCAPE HTML HELPER
 // ============================================
