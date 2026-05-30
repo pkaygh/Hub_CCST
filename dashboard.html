@@ -4538,25 +4538,27 @@ async function loadAllRegisteredSemesters() {
 // ON SEMESTER CHANGE
 // ============================================
 function onSemesterChange() {
-    currentSelectedAcademicYear = document.getElementById('academicYearSelect').value;
-    currentSelectedSemester = document.getElementById('semesterSelect').value;
-    
-    const fullSemester = `${currentSelectedSemester}, ${currentSelectedAcademicYear}`;
+    const academicYear = document.getElementById('academicYearSelect').value;
+    const semester = document.getElementById('semesterSelect').value;
+    const fullSemester = `${semester}, ${academicYear}`;
     
     // Check if already registered for this semester
     if (registeredSemesters.has(fullSemester)) {
         document.getElementById('semesterInfo').style.display = 'block';
-        document.getElementById('semesterStatusMessage').innerHTML = '⚠️ You have already registered for this semester. Course registration is locked. Contact IT Admin if you need to make changes.';
+        document.getElementById('semesterStatusMessage').innerHTML = '⚠️ You have already registered for this semester. Course registration is locked.';
         document.getElementById('semesterStatusMessage').style.color = '#e74c3c';
         document.getElementById('availableCoursesCard').style.display = 'none';
         return;
     }
     
+    // If not registered, show info but DON'T hide the card if it was already showing
     document.getElementById('semesterInfo').style.display = 'block';
-    document.getElementById('semesterStatusMessage').innerHTML = '✅ You can register for this semester. Select courses below.';
+    document.getElementById('semesterStatusMessage').innerHTML = '✅ Click LOAD COURSES to view available courses.';
     document.getElementById('semesterStatusMessage').style.color = '#27ae60';
     document.getElementById('selectedSemesterDisplay').innerText = fullSemester;
-    document.getElementById('availableCoursesCard').style.display = 'block';
+    
+    // IMPORTANT: Don't hide the card - just keep it as is or show it
+    // The user will click LOAD COURSES to refresh the list
 }
 // ============================================
 // LOAD AVAILABLE COURSES FOR SELECTED SEMESTER
