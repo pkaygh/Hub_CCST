@@ -3098,10 +3098,10 @@ function generateTranscriptHTML() {
         if (!Array.isArray(details)) details = [];
         
         details.forEach(c => {
-            const ca = c.ca || 0;
-            const exam = c.exam || 0;
-            const total = ca + exam;
-            const points = getGradePoints(c.grade, program);
+    const ca = Math.round((c.ca || 0) * 10) / 10;
+    const exam = Math.round((c.exam || 0) * 10) / 10;
+    const total = Math.round((ca + exam) * 10) / 10;
+    const points = getGradePoints(c.grade, program);
             html += `<tr>
                 <td style="padding:6px; border:1px solid #ddd;">${c.code || 'N/A'}</td>
                 <td style="padding:6px; border:1px solid #ddd;">${c.name || 'N/A'}</td>
