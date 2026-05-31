@@ -4570,47 +4570,37 @@ async function loadAvailableCoursesForSemester() {
     const program = studentData?.profile?.program;
     const level = studentData?.profile?.level;
     
-    // Check if already registered - IMPORTANT: Refresh registered semesters first
-    await loadRegisteredSemesters();
-    
-    if (registeredSemesters.has(fullSemester)) {
-        showToast(`You have already registered for ${fullSemester}. Contact IT Admin for changes.`, "warning");
-        document.getElementById('availableCoursesCard').style.display = 'none';
-        document.getElementById('semesterInfo').style.display = 'block';
-        document.getElementById('semesterStatusMessage').innerHTML = '⚠️ You have already registered for this semester. Course registration is locked. Contact IT Admin if you need to make changes.';
-        document.getElementById('semesterStatusMessage').style.color = '#e74c3c';
-        return;
-    }
-    
     const tbody = document.getElementById('availableCoursesTableBody');
     tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin"></i> Loading courses...</td></tr>';
     
     try {
+        // Reload registered semesters to get latest data
+        await loadRegisteredSemesters();
+        
+        // Check if already registered
+        if (registeredSemesters.has(fullSemester)) {
+            showToast(`You have already registered for ${fullSemester}.`, "warning");
+            document.getElementById('availableCoursesCard').style.display = 'none';
+            return;
+        }
+        
         const response = await fetch(`${SCRIPT_URL}?action=get_courses_for_registration&program=${program}&level=${level}&semester=${encodeURIComponent(fullSemester)}`);
         const data = await response.json();
         
-        console.log("Courses for semester:", data);
-        
-        let coursesArray = [];
-        if (data.courses && Array.isArray(data.courses)) {
-            coursesArray = data.courses;
-        } else if (Array.isArray(data)) {
-            coursesArray = data;
-        }
-        
+        let coursesArray = data.courses || (Array.isArray(data) ? data : []);
         availableCourses = coursesArray;
-        displayAvailableCoursesTable(availableCourses);
         
         if (coursesArray.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">No courses available for this semester.</td></tr>';
+        } else {
+            displayAvailableCoursesTable(availableCourses);
         }
         
-        // Show the available courses card
         document.getElementById('availableCoursesCard').style.display = 'block';
         document.getElementById('selectedSemesterDisplay').innerText = fullSemester;
         
     } catch (error) {
-        console.error("Error loading courses:", error);
+        console.error("Error:", error);
         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #e74c3c;">Error loading courses. Please try again.</td></tr>';
     }
 }
