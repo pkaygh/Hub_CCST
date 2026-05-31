@@ -1366,11 +1366,19 @@ async function uploadResults(event) {
     }
 }
 
-async function importRegistrationCSV() {
+async function importRegistrationCSV(event) {  // Add event parameter here
     const fileInput = document.getElementById('regCsvFileInput');
+    
     if (!fileInput.files || !fileInput.files[0]) {
         showToast("Please select a CSV file first", "warning");
         return;
+    }
+    
+    // Show loading indicator on the file input area
+    const uploadZone = document.querySelector('.upload-zone');
+    const originalZoneHtml = uploadZone ? uploadZone.innerHTML : '';
+    if (uploadZone) {
+        uploadZone.innerHTML = '<i class="fas fa-spinner fa-spin"></i><h4>Processing... Please wait</h4>';
     }
     
     Papa.parse(fileInput.files[0], {
@@ -1381,7 +1389,6 @@ async function importRegistrationCSV() {
             let success = 0;
             let failed = 0;
             let errors = [];
-            let warningMessages = [];
             
             showToast(`Processing ${data.length} registrations...`, "info");
             
@@ -1397,53 +1404,26 @@ async function importRegistrationCSV() {
                 const regDate = row.RegistrationDate || new Date().toISOString().split('T')[0];
                 
                 let rowErrors = [];
-                let rowWarnings = [];
                 let parsedCourses = [];
                 
-                // Validate Student ID
                 if (!studentId) {
                     rowErrors.push("Missing Student ID");
                 }
                 
-                // Validate Semester
                 if (!semester) {
                     rowErrors.push("Missing Semester");
                 }
                 
-                // Parse and validate courses
                 if (coursesRaw && typeof coursesRaw === 'string') {
                     try {
                         parsedCourses = JSON.parse(coursesRaw);
-                        
-                        for (let idx = 0; idx < parsedCourses.length; idx++) {
-                            const course = parsedCourses[idx];
-                            
-                            // Check course code
-                            if (!course.code || course.code.trim() === "") {
-                                rowErrors.push(`Course ${idx + 1}: Missing course code`);
-                            }
-                            
-                            // Check course name
-                            if (!course.name || course.name.trim() === "") {
-                                rowErrors.push(`Course ${idx + 1}: Missing course name for ${course.code || 'unknown'}`);
-                            }
-                            
-                            // Check credits
-                            if (!course.credits || course.credits <= 0) {
-                                rowErrors.push(`Course ${idx + 1}: Invalid credits (${course.credits}) for ${course.code}`);
-                            }
-                        }
-                        
                     } catch(e) {
                         rowErrors.push(`Invalid JSON format: ${e.message}`);
                     }
-                } else if (coursesRaw) {
-                    rowErrors.push("Courses column must be valid JSON string");
                 } else {
                     rowErrors.push("Missing Courses column");
                 }
                 
-                // If no errors, add to valid list and import
                 if (rowErrors.length === 0 && studentId && semester && parsedCourses.length > 0) {
                     try {
                         const response = await fetch(SCRIPT_URL, {
@@ -1467,43 +1447,41 @@ async function importRegistrationCSV() {
                             success++;
                         } else {
                             failed++;
-                            errors.push(`Row ${rowNum} (${studentId}): ${result.error || 'Server error'}`);
+                            errors.push(`Row ${rowNum}: ${result.error || 'Server error'}`);
                         }
                     } catch(e) {
                         failed++;
-                        errors.push(`Row ${rowNum} (${studentId}): Network error - ${e.message}`);
+                        errors.push(`Row ${rowNum}: Network error - ${e.message}`);
                     }
                 } else {
                     failed++;
-                    errors.push(`Row ${rowNum} (${studentId || 'Unknown'}): ${rowErrors.join('; ')}`);
-                }
-                
-                // Add warnings if any
-                if (rowWarnings.length > 0) {
-                    warningMessages.push(`Row ${rowNum}: ${rowWarnings.join('; ')}`);
+                    errors.push(`Row ${rowNum}: ${rowErrors.join('; ')}`);
                 }
             }
             
-            // Show result
+            // Restore upload zone
+            if (uploadZone) {
+                uploadZone.innerHTML = originalZoneHtml;
+            }
+            
             if (errors.length > 0) {
                 let msg = `📊 IMPORT COMPLETED WITH ERRORS!\n\n`;
                 msg += `✅ Success: ${success}\n`;
                 msg += `❌ Failed: ${failed}\n\n`;
-                msg += `ERRORS (first 10):\n${errors.slice(0, 10).join('\n')}`;
-                if (errors.length > 10) msg += `\n... and ${errors.length - 10} more`;
+                msg += `ERRORS:\n${errors.slice(0, 10).join('\n')}`;
                 alert(msg);
             } else {
                 showToast(`✅ Successfully imported ${success} registration records!`, "success");
-            }
-            
-            if (warningMessages.length > 0) {
-                console.log("Warnings:", warningMessages);
             }
             
             fileInput.value = '';
         },
         error: (error) => {
             showToast("CSV Parse Error: " + error.message, "danger");
+            if (uploadZone) {
+                uploadZone.innerHTML = originalZoneHtml;
+            }
+            fileInput.value = '';
         }
     });
 }
