@@ -2644,7 +2644,7 @@ function formatDateForDisplay(dateValue) {
         }
 
                 
-            function loadPersonalInfo() {
+    function loadPersonalInfo() {
     const p = studentData?.profile;
     if (!p) return;
     
@@ -4424,21 +4424,38 @@ async function refreshClearanceStatus() {
         const data = await response.json();
         
         if (data.profile) {
-            // Update local data
+            // Update the local data with fresh clearance status
             studentData.profile.isCleared = data.profile.isCleared;
             localStorage.setItem('userData', JSON.stringify(studentData));
             
-            // Reload registration data
+            // Just update the display elements directly
+            const clearanceElement = document.getElementById('infoClearance');
+            if (clearanceElement) {
+                const isCleared = (data.profile.isCleared === true || data.profile.isCleared === "TRUE");
+                if (isCleared) {
+                    clearanceElement.innerHTML = '<span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Cleared</span>';
+                } else {
+                    clearanceElement.innerHTML = '<span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Not Cleared</span>';
+                }
+            }
+            
+            // Also update quick stats
+            const quickFinance = document.getElementById('quickFinance');
+            if (quickFinance) {
+                quickFinance.innerHTML = (data.profile.isCleared === true || data.profile.isCleared === "TRUE") ? 'Cleared ✅' : 'Pending ⚠️';
+            }
+            
+            // Reload registration data to unlock registration if cleared
             await loadCourseRegistrationData();
             
             showToast(data.profile.isCleared ? "✓ Financial clearance confirmed!" : "✗ Not cleared yet. Please visit finance office.", 
                      data.profile.isCleared ? "success" : "warning");
         }
     } catch(e) {
-        showToast("Error checking clearance", "danger");
+        console.error("Error checking clearance:", e);
+        showToast("Error checking clearance status", "danger");
     }
 }
-
 // ============================================
 // COURSE REGISTRATION VARIABLES
 // ============================================

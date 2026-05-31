@@ -1694,10 +1694,10 @@ for (const codeKey of codeKeys) {
     if (!code) continue;
     
     // Get CA and Exam values
-    const ca = parseFloat(row[caKey]) || 0;
-    const exam = parseFloat(row[examKey]) || 0;
-    const totalScore = ca + exam;
-    
+    const ca = Math.round(parseFloat(row[caKey]) * 10) / 10 || 0;
+    const exam = Math.round(parseFloat(row[examKey]) * 10) / 10 || 0;
+    const totalScore = Math.round((ca + exam) * 10) / 10;
+
     // Calculate grade from total score (CA + Exam)
     let calculatedGrade = 'E';
     const gradingSystem = GRADING_SYSTEMS[program] || GRADING_SYSTEMS.RN;
@@ -1738,7 +1738,7 @@ let totalPoints = 0, totalCredits = 0;
 
 courseDetails.forEach(c => {
     const credits = parseInt(c.credits) || 3;
-    const totalScore = (c.ca || 0) + (c.exam || 0);
+    const totalScore = Math.round(((c.ca || 0) + (c.exam || 0)) * 10) / 10;
     
     // Find grade and points
     let grade = 'E';
@@ -2186,8 +2186,8 @@ function displayTranscriptPreview(results, student) {
             <tbody>`;
         
         sem.details.forEach(c => {
-            const ca = c.ca || 0;
-            const exam = c.exam || 0;
+            const ca = Math.round((c.ca || 0) * 10) / 10;
+            const exam = Math.round((c.exam || 0) * 10) / 10;
             const total = ca + exam;
             const points = getGradePoints(c.grade, student.program);
             const weightedPoints = points * (c.credits || 3);
