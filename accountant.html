@@ -1391,7 +1391,7 @@ async function importRegistrationCSV() {
                 const studentId = row.StudentID || row.studentId;
                 const name = row.StudentName || row.name;
                 const semester = row.Semester;
-                let coursesRaw = row.Courses || row.courses;
+                let coursesRaw = row.Courses || row.courses || row['Courses(JSON)'];
                 const totalCredits = parseInt(row.TotalCredits) || 0;
                 const status = row.Status || 'active';
                 const regDate = row.RegistrationDate || new Date().toISOString().split('T')[0];
