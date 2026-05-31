@@ -1378,170 +1378,126 @@ async function importRegistrationCSV() {
         skipEmptyLines: true,
         complete: async (results) => {
             const data = results.data;
-            let validRows = [];
+            let success = 0;
+            let failed = 0;
             let errors = [];
-            let warnings = [];
+            let warningMessages = [];
             
-            showToast(`Validating ${data.length} registrations...`, "info");
+            showToast(`Processing ${data.length} registrations...`, "info");
             
-            // First pass: validate all rows
             for (let i = 0; i < data.length; i++) {
                 const row = data[i];
                 const rowNum = i + 2;
                 const studentId = row.StudentID || row.studentId;
                 const name = row.StudentName || row.name;
                 const semester = row.Semester;
-                let courses = row.Courses || row.courses;
+                let coursesRaw = row.Courses || row.courses;
                 const totalCredits = parseInt(row.TotalCredits) || 0;
                 const status = row.Status || 'active';
                 const regDate = row.RegistrationDate || new Date().toISOString().split('T')[0];
                 
                 let rowErrors = [];
                 let rowWarnings = [];
+                let parsedCourses = [];
                 
+                // Validate Student ID
                 if (!studentId) {
                     rowErrors.push("Missing Student ID");
-                } else if (!studentId.match(/^CCST\/(RM|RN|ML)\/\d{2}\/\d{3}$/)) {
-                    rowWarnings.push(`Student ID format may be incorrect: ${studentId}`);
                 }
                 
+                // Validate Semester
                 if (!semester) {
                     rowErrors.push("Missing Semester");
                 }
                 
-                let parsedCourses = [];
-                if (courses && typeof courses === 'string') {
+                // Parse and validate courses
+                if (coursesRaw && typeof coursesRaw === 'string') {
                     try {
-                        parsedCourses = JSON.parse(courses);
+                        parsedCourses = JSON.parse(coursesRaw);
                         
-                        parsedCourses.forEach((course, idx) => {
+                        for (let idx = 0; idx < parsedCourses.length; idx++) {
+                            const course = parsedCourses[idx];
+                            
+                            // Check course code
                             if (!course.code || course.code.trim() === "") {
                                 rowErrors.push(`Course ${idx + 1}: Missing course code`);
-                            } else if (course.code.trim().length < 4) {
-                                rowErrors.push(`Course ${idx + 1}: Code "${course.code}" appears incomplete`);
                             }
                             
+                            // Check course name
                             if (!course.name || course.name.trim() === "") {
-                                rowErrors.push(`Course ${idx + 1}: Missing course name`);
+                                rowErrors.push(`Course ${idx + 1}: Missing course name for ${course.code || 'unknown'}`);
                             }
                             
+                            // Check credits
                             if (!course.credits || course.credits <= 0) {
-                                rowErrors.push(`Course ${idx + 1}: Invalid credits (${course.credits})`);
+                                rowErrors.push(`Course ${idx + 1}: Invalid credits (${course.credits}) for ${course.code}`);
                             }
-                        });
+                        }
                         
                     } catch(e) {
                         rowErrors.push(`Invalid JSON format: ${e.message}`);
                     }
+                } else if (coursesRaw) {
+                    rowErrors.push("Courses column must be valid JSON string");
                 } else {
                     rowErrors.push("Missing Courses column");
                 }
                 
-                if (rowErrors.length === 0 && studentId && semester) {
-                    validRows.push({
-                        rowNum, studentId, name, semester, courses: parsedCourses, 
-                        totalCredits, status, regDate, warnings: rowWarnings
-                    });
-                } else {
-                    errors.push({ rowNum, studentId, errors: rowErrors, warnings: rowWarnings });
-                }
-            }
-            
-            // Show validation summary
-            let confirmMessage = "";
-            
-            if (errors.length > 0) {
-                confirmMessage = `❌ VALIDATION FAILED!\n\n`;
-                confirmMessage += `✅ Valid rows: ${validRows.length}\n`;
-                confirmMessage += `❌ Invalid rows: ${errors.length}\n\n`;
-                confirmMessage += `ERRORS:\n`;
-                errors.slice(0, 5).forEach(err => {
-                    confirmMessage += `Row ${err.rowNum} (${err.studentId || 'Unknown'}): ${err.errors.join(', ')}\n`;
-                });
-                if (errors.length > 5) confirmMessage += `... and ${errors.length - 5} more errors\n`;
-                confirmMessage += `\nPlease fix these errors and try again.`;
-                alert(confirmMessage);
-                fileInput.value = '';
-                return;
-            }
-            
-            // Build confirmation message for valid rows
-            confirmMessage = `📋 REGISTRATION IMPORT CONFIRMATION\n\n`;
-            confirmMessage += `✅ All ${validRows.length} rows are valid!\n\n`;
-            confirmMessage += `SUMMARY:\n`;
-            confirmMessage += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-            
-            validRows.forEach(row => {
-                confirmMessage += `\nRow ${row.rowNum}: ${row.studentId}\n`;
-                confirmMessage += `  ├─ Student: ${row.name || 'N/A'}\n`;
-                confirmMessage += `  ├─ Semester: ${row.semester}\n`;
-                confirmMessage += `  ├─ Courses: ${row.courses.length}\n`;
-                confirmMessage += `  └─ Total Credits: ${row.totalCredits}\n`;
-            });
-            
-            confirmMessage += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-            confirmMessage += `\n⚠️ WARNINGS (${warnings.length}):\n`;
-            warnings.slice(0, 3).forEach(w => {
-                confirmMessage += `• ${w}\n`;
-            });
-            if (warnings.length > 3) confirmMessage += `... and ${warnings.length - 3} more\n`;
-            
-            confirmMessage += `\n❓ Do you want to proceed with importing ${validRows.length} registration(s)?`;
-            
-            if (!confirm(confirmMessage)) {
-                showToast("Import cancelled", "warning");
-                fileInput.value = '';
-                return;
-            }
-            
-            // Proceed with import
-            showToast(`Importing ${validRows.length} registrations...`, "info");
-            let success = 0;
-            let failed = 0;
-            let importErrors = [];
-            
-            for (const row of validRows) {
-                try {
-                    const response = await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'import_registration',
-                            studentId: row.studentId,
-                            name: row.name,
-                            semester: row.semester,
-                            courses: row.courses,
-                            totalCredits: row.totalCredits,
-                            status: row.status,
-                            registrationDate: row.regDate,
-                            program: row.studentId.split('/')[2] || "ML",
-                            level: "100"
-                        })
-                    });
-                    
-                    const result = await response.json();
-                    if (result.success) {
-                        success++;
-                    } else {
+                // If no errors, add to valid list and import
+                if (rowErrors.length === 0 && studentId && semester && parsedCourses.length > 0) {
+                    try {
+                        const response = await fetch(SCRIPT_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                action: 'import_registration',
+                                studentId: studentId,
+                                name: name || "",
+                                semester: semester,
+                                courses: parsedCourses,
+                                totalCredits: totalCredits,
+                                status: status,
+                                registrationDate: regDate,
+                                program: studentId ? studentId.split('/')[2] : "ML",
+                                level: "100"
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        if (result.success) {
+                            success++;
+                        } else {
+                            failed++;
+                            errors.push(`Row ${rowNum} (${studentId}): ${result.error || 'Server error'}`);
+                        }
+                    } catch(e) {
                         failed++;
-                        importErrors.push(`Row ${row.rowNum} (${row.studentId}): ${result.error || 'Unknown error'}`);
+                        errors.push(`Row ${rowNum} (${studentId}): Network error - ${e.message}`);
                     }
-                } catch(e) {
+                } else {
                     failed++;
-                    importErrors.push(`Row ${row.rowNum} (${row.studentId}): Network error`);
+                    errors.push(`Row ${rowNum} (${studentId || 'Unknown'}): ${rowErrors.join('; ')}`);
+                }
+                
+                // Add warnings if any
+                if (rowWarnings.length > 0) {
+                    warningMessages.push(`Row ${rowNum}: ${rowWarnings.join('; ')}`);
                 }
             }
             
-            // Show final result
-            let finalMessage = `📊 IMPORT COMPLETED!\n\n`;
-            finalMessage += `✅ Successfully imported: ${success}\n`;
-            finalMessage += `❌ Failed: ${failed}\n\n`;
-            
-            if (importErrors.length > 0) {
-                finalMessage += `ERRORS:\n${importErrors.slice(0, 5).join('\n')}`;
-                if (importErrors.length > 5) finalMessage += `\n... and ${importErrors.length - 5} more`;
-                alert(finalMessage);
+            // Show result
+            if (errors.length > 0) {
+                let msg = `📊 IMPORT COMPLETED WITH ERRORS!\n\n`;
+                msg += `✅ Success: ${success}\n`;
+                msg += `❌ Failed: ${failed}\n\n`;
+                msg += `ERRORS (first 10):\n${errors.slice(0, 10).join('\n')}`;
+                if (errors.length > 10) msg += `\n... and ${errors.length - 10} more`;
+                alert(msg);
             } else {
                 showToast(`✅ Successfully imported ${success} registration records!`, "success");
+            }
+            
+            if (warningMessages.length > 0) {
+                console.log("Warnings:", warningMessages);
             }
             
             fileInput.value = '';
