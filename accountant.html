@@ -1022,7 +1022,7 @@
             </div>
         </div>
 
-        <!-- FOOTER - Now inside main-content-wrapper after main-content -->
+        <!-- FOOTER --->
         <footer class="footer">
             <div class="footer-links">
                 <a onclick="showSection('search'); return false;"><i class="fas fa-search"></i> Search</a>
@@ -1380,10 +1380,13 @@ async function importRegistrationCSV() {
             const data = results.data;
             let success = 0;
             let failed = 0;
+            let errors = [];
             
             showToast(`Processing ${data.length} registrations...`, "info");
             
-            for (const row of data) {
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
+                const rowNum = i + 2; // +2 because row 1 is header, row 2 is first data row
                 const studentId = row.StudentID || row.studentId;
                 const name = row.StudentName || row.name;
                 const semester = row.Semester;
@@ -1392,20 +1395,57 @@ async function importRegistrationCSV() {
                 const status = row.Status || 'active';
                 const regDate = row.RegistrationDate || new Date().toISOString().split('T')[0];
                 
-                if (!studentId || !semester || !courses) {
+                // Validation checks
+                let rowErrors = [];
+                
+                if (!studentId) {
+                    rowErrors.push("Missing Student ID");
+                } else if (!studentId.match(/^CCST\/(RM|RN|ML)\/\d{2}\/\d{3}$/)) {
+                    rowErrors.push(`Invalid Student ID format: ${studentId}. Expected format: CCST/ML/23/001`);
+                }
+                
+                if (!semester) {
+                    rowErrors.push("Missing Semester");
+                }
+                
+                if (!courses) {
+                    rowErrors.push("Missing Courses(JSON) column");
+                }
+                
+                // Parse and validate courses JSON
+                let parsedCourses = [];
+                if (courses && typeof courses === 'string') {
+                    try {
+                        parsedCourses = JSON.parse(courses);
+                        
+                        // Validate each course
+                        parsedCourses.forEach((course, idx) => {
+                            if (!course.code || course.code.trim() === "" || course.code === "CCL" || course.code.length < 3) {
+                                rowErrors.push(`Course ${idx + 1}: Invalid or empty course code "${course.code}"`);
+                            }
+                            if (!course.name || course.name.trim() === "") {
+                                rowErrors.push(`Course ${idx + 1}: Missing course name for code ${course.code}`);
+                            }
+                            if (!course.credits || course.credits <= 0) {
+                                rowErrors.push(`Course ${idx + 1}: Invalid credits (${course.credits}) for ${course.code}`);
+                            }
+                        });
+                        
+                    } catch(e) {
+                        rowErrors.push(`Invalid JSON format in Courses column: ${e.message}. First 100 chars: ${courses.substring(0, 100)}`);
+                    }
+                }
+                
+                if (rowErrors.length > 0) {
                     failed++;
+                    errors.push(`Row ${rowNum} (${studentId || 'Unknown'}): ${rowErrors.join('; ')}`);
                     continue;
                 }
                 
-                // Parse courses if it's a string
-                if (typeof courses === 'string') {
-                    try {
-                        courses = JSON.parse(courses);
-                    } catch(e) {
-                        console.error("Failed to parse courses:", courses);
-                        failed++;
-                        continue;
-                    }
+                if (!studentId || !semester || !courses) {
+                    failed++;
+                    errors.push(`Row ${rowNum} (${studentId || 'Unknown'}): Missing required fields (StudentID, Semester, or Courses)`);
+                    continue;
                 }
                 
                 try {
@@ -1416,10 +1456,12 @@ async function importRegistrationCSV() {
                             studentId: studentId,
                             name: name,
                             semester: semester,
-                            courses: courses,
+                            courses: parsedCourses,
                             totalCredits: totalCredits,
                             status: status,
-                            registrationDate: regDate
+                            registrationDate: regDate,
+                            program: studentId.split('/')[2] || "ML",
+                            level: "100"
                         })
                     });
                     
@@ -1428,15 +1470,30 @@ async function importRegistrationCSV() {
                         success++;
                     } else {
                         failed++;
-                        console.error("Failed:", result.error);
+                        errors.push(`Row ${rowNum} (${studentId}): Server error - ${result.error || 'Unknown error'}`);
                     }
                 } catch(e) {
                     failed++;
-                    console.error("Network error:", e);
+                    errors.push(`Row ${rowNum} (${studentId}): Network error - ${e.message}`);
                 }
             }
             
-            showToast(`✅ Imported: ${success}, ❌ Failed: ${failed}`, success > 0 ? "success" : "danger");
+            // Show detailed error report
+            if (errors.length > 0) {
+                let errorMessage = `❌ Import completed with errors!\n\n`;
+                errorMessage += `✅ Successful: ${success}\n`;
+                errorMessage += `❌ Failed: ${failed}\n\n`;
+                errorMessage += `ERRORS (${errors.length}):\n${errors.slice(0, 10).join('\n')}`;
+                if (errors.length > 10) {
+                    errorMessage += `\n... and ${errors.length - 10} more errors`;
+                }
+                errorMessage += `\n\n💡 TIP: Check that all course codes are valid (e.g., "BCML 101", not "CCL")`;
+                alert(errorMessage);
+                console.log("Full error list:", errors);
+            } else {
+                showToast(`✅ All ${success} registrations imported successfully!`, "success");
+            }
+            
             fileInput.value = '';
         },
         error: (error) => {
