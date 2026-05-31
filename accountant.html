@@ -1378,15 +1378,16 @@ async function importRegistrationCSV() {
         skipEmptyLines: true,
         complete: async (results) => {
             const data = results.data;
-            let success = 0;
-            let failed = 0;
+            let validRows = [];
             let errors = [];
+            let warnings = [];
             
-            showToast(`Processing ${data.length} registrations...`, "info");
+            showToast(`Validating ${data.length} registrations...`, "info");
             
+            // First pass: validate all rows
             for (let i = 0; i < data.length; i++) {
                 const row = data[i];
-                const rowNum = i + 2; // +2 because row 1 is header, row 2 is first data row
+                const rowNum = i + 2;
                 const studentId = row.StudentID || row.studentId;
                 const name = row.StudentName || row.name;
                 const semester = row.Semester;
@@ -1395,72 +1396,124 @@ async function importRegistrationCSV() {
                 const status = row.Status || 'active';
                 const regDate = row.RegistrationDate || new Date().toISOString().split('T')[0];
                 
-                // Validation checks
                 let rowErrors = [];
+                let rowWarnings = [];
                 
                 if (!studentId) {
                     rowErrors.push("Missing Student ID");
                 } else if (!studentId.match(/^CCST\/(RM|RN|ML)\/\d{2}\/\d{3}$/)) {
-                    rowErrors.push(`Invalid Student ID format: ${studentId}. Expected format: CCST/ML/23/001`);
+                    rowWarnings.push(`Student ID format may be incorrect: ${studentId}`);
                 }
                 
                 if (!semester) {
                     rowErrors.push("Missing Semester");
                 }
                 
-                if (!courses) {
-                    rowErrors.push("Missing Courses(JSON) column");
-                }
-                
-                // Parse and validate courses JSON
                 let parsedCourses = [];
                 if (courses && typeof courses === 'string') {
                     try {
                         parsedCourses = JSON.parse(courses);
                         
-                        // Validate each course
                         parsedCourses.forEach((course, idx) => {
-                            if (!course.code || course.code.trim() === "" || course.code === "CCL" || course.code.length < 3) {
-                                rowErrors.push(`Course ${idx + 1}: Invalid or empty course code "${course.code}"`);
+                            if (!course.code || course.code.trim() === "") {
+                                rowErrors.push(`Course ${idx + 1}: Missing course code`);
+                            } else if (course.code.trim().length < 4) {
+                                rowErrors.push(`Course ${idx + 1}: Code "${course.code}" appears incomplete`);
                             }
+                            
                             if (!course.name || course.name.trim() === "") {
-                                rowErrors.push(`Course ${idx + 1}: Missing course name for code ${course.code}`);
+                                rowErrors.push(`Course ${idx + 1}: Missing course name`);
                             }
+                            
                             if (!course.credits || course.credits <= 0) {
-                                rowErrors.push(`Course ${idx + 1}: Invalid credits (${course.credits}) for ${course.code}`);
+                                rowErrors.push(`Course ${idx + 1}: Invalid credits (${course.credits})`);
                             }
                         });
                         
                     } catch(e) {
-                        rowErrors.push(`Invalid JSON format in Courses column: ${e.message}. First 100 chars: ${courses.substring(0, 100)}`);
+                        rowErrors.push(`Invalid JSON format: ${e.message}`);
                     }
+                } else {
+                    rowErrors.push("Missing Courses column");
                 }
                 
-                if (rowErrors.length > 0) {
-                    failed++;
-                    errors.push(`Row ${rowNum} (${studentId || 'Unknown'}): ${rowErrors.join('; ')}`);
-                    continue;
+                if (rowErrors.length === 0 && studentId && semester) {
+                    validRows.push({
+                        rowNum, studentId, name, semester, courses: parsedCourses, 
+                        totalCredits, status, regDate, warnings: rowWarnings
+                    });
+                } else {
+                    errors.push({ rowNum, studentId, errors: rowErrors, warnings: rowWarnings });
                 }
-                
-                if (!studentId || !semester || !courses) {
-                    failed++;
-                    errors.push(`Row ${rowNum} (${studentId || 'Unknown'}): Missing required fields (StudentID, Semester, or Courses)`);
-                    continue;
-                }
-                
+            }
+            
+            // Show validation summary
+            let confirmMessage = "";
+            
+            if (errors.length > 0) {
+                confirmMessage = `❌ VALIDATION FAILED!\n\n`;
+                confirmMessage += `✅ Valid rows: ${validRows.length}\n`;
+                confirmMessage += `❌ Invalid rows: ${errors.length}\n\n`;
+                confirmMessage += `ERRORS:\n`;
+                errors.slice(0, 5).forEach(err => {
+                    confirmMessage += `Row ${err.rowNum} (${err.studentId || 'Unknown'}): ${err.errors.join(', ')}\n`;
+                });
+                if (errors.length > 5) confirmMessage += `... and ${errors.length - 5} more errors\n`;
+                confirmMessage += `\nPlease fix these errors and try again.`;
+                alert(confirmMessage);
+                fileInput.value = '';
+                return;
+            }
+            
+            // Build confirmation message for valid rows
+            confirmMessage = `📋 REGISTRATION IMPORT CONFIRMATION\n\n`;
+            confirmMessage += `✅ All ${validRows.length} rows are valid!\n\n`;
+            confirmMessage += `SUMMARY:\n`;
+            confirmMessage += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+            
+            validRows.forEach(row => {
+                confirmMessage += `\nRow ${row.rowNum}: ${row.studentId}\n`;
+                confirmMessage += `  ├─ Student: ${row.name || 'N/A'}\n`;
+                confirmMessage += `  ├─ Semester: ${row.semester}\n`;
+                confirmMessage += `  ├─ Courses: ${row.courses.length}\n`;
+                confirmMessage += `  └─ Total Credits: ${row.totalCredits}\n`;
+            });
+            
+            confirmMessage += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+            confirmMessage += `\n⚠️ WARNINGS (${warnings.length}):\n`;
+            warnings.slice(0, 3).forEach(w => {
+                confirmMessage += `• ${w}\n`;
+            });
+            if (warnings.length > 3) confirmMessage += `... and ${warnings.length - 3} more\n`;
+            
+            confirmMessage += `\n❓ Do you want to proceed with importing ${validRows.length} registration(s)?`;
+            
+            if (!confirm(confirmMessage)) {
+                showToast("Import cancelled", "warning");
+                fileInput.value = '';
+                return;
+            }
+            
+            // Proceed with import
+            showToast(`Importing ${validRows.length} registrations...`, "info");
+            let success = 0;
+            let failed = 0;
+            let importErrors = [];
+            
+            for (const row of validRows) {
                 try {
                     const response = await fetch(SCRIPT_URL, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'import_registration',
-                            studentId: studentId,
-                            name: name,
-                            semester: semester,
-                            courses: parsedCourses,
-                            totalCredits: totalCredits,
-                            status: status,
-                            registrationDate: regDate,
-                            program: studentId.split('/')[2] || "ML",
+                            studentId: row.studentId,
+                            name: row.name,
+                            semester: row.semester,
+                            courses: row.courses,
+                            totalCredits: row.totalCredits,
+                            status: row.status,
+                            registrationDate: row.regDate,
+                            program: row.studentId.split('/')[2] || "ML",
                             level: "100"
                         })
                     });
@@ -1470,28 +1523,25 @@ async function importRegistrationCSV() {
                         success++;
                     } else {
                         failed++;
-                        errors.push(`Row ${rowNum} (${studentId}): Server error - ${result.error || 'Unknown error'}`);
+                        importErrors.push(`Row ${row.rowNum} (${row.studentId}): ${result.error || 'Unknown error'}`);
                     }
                 } catch(e) {
                     failed++;
-                    errors.push(`Row ${rowNum} (${studentId}): Network error - ${e.message}`);
+                    importErrors.push(`Row ${row.rowNum} (${row.studentId}): Network error`);
                 }
             }
             
-            // Show detailed error report
-            if (errors.length > 0) {
-                let errorMessage = `❌ Import completed with errors!\n\n`;
-                errorMessage += `✅ Successful: ${success}\n`;
-                errorMessage += `❌ Failed: ${failed}\n\n`;
-                errorMessage += `ERRORS (${errors.length}):\n${errors.slice(0, 10).join('\n')}`;
-                if (errors.length > 10) {
-                    errorMessage += `\n... and ${errors.length - 10} more errors`;
-                }
-                errorMessage += `\n\n💡 TIP: Check that all course codes are valid (e.g., "BCML 101", not "CCL")`;
-                alert(errorMessage);
-                console.log("Full error list:", errors);
+            // Show final result
+            let finalMessage = `📊 IMPORT COMPLETED!\n\n`;
+            finalMessage += `✅ Successfully imported: ${success}\n`;
+            finalMessage += `❌ Failed: ${failed}\n\n`;
+            
+            if (importErrors.length > 0) {
+                finalMessage += `ERRORS:\n${importErrors.slice(0, 5).join('\n')}`;
+                if (importErrors.length > 5) finalMessage += `\n... and ${importErrors.length - 5} more`;
+                alert(finalMessage);
             } else {
-                showToast(`✅ All ${success} registrations imported successfully!`, "success");
+                showToast(`✅ Successfully imported ${success} registration records!`, "success");
             }
             
             fileInput.value = '';
@@ -1501,7 +1551,6 @@ async function importRegistrationCSV() {
         }
     });
 }
-
 // ============================================
 // CSV VALIDATION FUNCTIONS - ADD THIS ENTIRE BLOCK
 // ============================================
