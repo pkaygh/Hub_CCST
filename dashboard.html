@@ -2062,11 +2062,6 @@
                 
                 <!-- Summary Cards -->
                 <div class="finance-summary">
-                    <div class="finance-card total"><h4>Previous Balance</h4><h2 id="previousBalance">GH₵0.00</h2><small>Outstanding from previous semesters</small></div>
-                    <div class="finance-card paid"><h4>Current Semester Fees</h4><h2 id="currentSemesterFees">GH₵0.00</h2><small>Fees for current semester</small></div>
-                    <div class="finance-card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);"><h4>Amount Payable</h4><h2 id="amountPayable">GH₵0.00</h2><small>Previous + Current Semester</small></div>
-                </div>
-                <div class="finance-summary">
     <div class="finance-card total"><h4>Previous Balance</h4><h2 id="previousBalance">GH₵0.00</h2><small>Outstanding from previous semesters</small></div>
     <div class="finance-card paid"><h4>Current Semester Fees</h4><h2 id="currentSemesterFees">GH₵0.00</h2><small>Fees for current semester</small></div>
     <div class="finance-card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);"><h4>Amount Payable</h4><h2 id="amountPayable">GH₵0.00</h2><small>Previous + Current Semester</small></div>
@@ -2913,7 +2908,7 @@ if (clearanceElement) {
     const amountPayable = (isNaN(previousBalance) ? 0 : previousBalance) + (isNaN(currentSemesterFees) ? 0 : currentSemesterFees);
     const amountPaid = parseFloat(finance.amountPaid ?? profile?.amountPaid ?? 0);
     const balance = amountPayable - (isNaN(amountPaid) ? 0 : amountPaid);
-    
+
     // ADD THIS - Calculate credit (if balance is negative)
     const credit = balance < 0 ? Math.abs(balance) : 0;
     const creditElement = document.getElementById('creditBalance');
