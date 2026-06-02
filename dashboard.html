@@ -1966,10 +1966,7 @@
                 <div class="card-header">
                     <h3><i class="fas fa-calendar-alt"></i> Academic Overview</h3>
                     <select id="academicYearFilter" onchange="filterAcademicYear()" style="padding: 8px 15px; border-radius: 8px;">
-                        <option value="all">All Academic Years</option>
-                        <option value="2025/2026">2025/2026 Academic Year</option>
-                        <option value="2024/2025">2024/2025 Academic Year</option>
-                        <option value="2023/2024">2023/2024 Academic Year</option>
+    <option value="all">All Academic Years</option>
                     </select>
                 </div>
                 
@@ -2489,6 +2486,28 @@ function getCurrentAcademicYear() {
     return `${currentYear}/${currentYear + 1}`;
 }
 
+// NEW: Calculate academic year based on student's level
+function getAcademicYearByLevel(level) {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth(); // 0-11 (Jan=0, Aug=7)
+    
+    // Level 100 students started in current academic year
+    // Level 200 students started 1 year ago
+    // Level 300 students started 2 years ago
+    let startYearOffset = 0;
+    if (level === '100') startYearOffset = 0;
+    else if (level === '200') startYearOffset = 1;
+    else if (level === '300') startYearOffset = 2;
+    else startYearOffset = 0;
+    
+    // If current month is before August (academic year starts in August/September)
+    const academicStartOffset = (currentMonth < 7) ? 1 : 0;
+    
+    const startYear = currentYear - startYearOffset - academicStartOffset;
+    const endYear = startYear + 1;
+    
+    return `${startYear}/${endYear}`;
+}
 // Format Date For Display
 function formatDateForDisplay(dateValue) {
     if (!dateValue) return '--';
@@ -2689,7 +2708,8 @@ function formatDateForDisplay(dateValue) {
     const programFull = getFullProgramName(p.program);
     setElementText('infoProgram', programFull);
     setElementText('infoLevel', `Level ${p.level || '100'}`);
-    setElementText('infoAcademicYear', getCurrentAcademicYear());
+    const studentLevel = p.level || '100';
+setElementText('infoAcademicYear', getAcademicYearByLevel(studentLevel));
     
     // Calculate CGPA
     const stats = calculateEnhancedStats();
@@ -2802,6 +2822,18 @@ if (clearanceElement) {
 }
 
         function loadAcademicResults() {
+    // NEW: Sort results with current academic year first
+    if (userResults && userResults.length > 0) {
+        const currentYear = new Date().getFullYear();
+        userResults.sort((a, b) => {
+            const aContainsCurrent = a.semester.includes(currentYear.toString());
+            const bContainsCurrent = b.semester.includes(currentYear.toString());
+            if (aContainsCurrent && !bContainsCurrent) return -1;
+            if (!aContainsCurrent && bContainsCurrent) return 1;
+            return b.semester.localeCompare(a.semester);
+        });
+    }
+    
     const container = document.getElementById('resultsContainer');
     const semesterFilter = document.getElementById('semesterFilter');
     
@@ -4695,6 +4727,12 @@ function updateStudentInfoInRegistration() {
     
     const now = new Date();
     document.getElementById('registrationDate').innerHTML = now.toLocaleDateString();
+    // Update academic year display in registration
+const academicYearDisplay = document.getElementById('infoAcademicYearReg');
+if (academicYearDisplay) {
+    const studentLevel = studentData?.profile?.level || '100';
+    academicYearDisplay.innerHTML = getAcademicYearByLevel(studentLevel);
+}
     document.getElementById('signatureDate').innerHTML = now.toLocaleDateString();
     document.getElementById('signatureTime').innerHTML = now.toLocaleTimeString();
 }
@@ -5687,8 +5725,26 @@ async function loadCourseRegistrationData() {
         semesterGPAs: semesterGPAs
     };
 }
+            
+function updateEnhancedAcademicUI() {
+    // NEW: Populate academic year dropdown dynamically
+    const yearFilter = document.getElementById('academicYearFilter');
+    if (yearFilter && yearFilter.options.length === 1) { // Only if "All" is present
+        const currentYear = new Date().getFullYear();
+        const studentLevel = studentData?.profile?.level || '100';
+        const startLevelYear = parseInt(studentLevel) / 100;
         
-        function updateEnhancedAcademicUI() {
+        // Generate last 5 academic years
+        for (let i = 0; i < 5; i++) {
+            const year = currentYear - i;
+            const academicYear = `${year}/${year + 1}`;
+            const option = document.createElement('option');
+            option.value = academicYear;
+            option.textContent = `${academicYear} Academic Year`;
+            yearFilter.appendChild(option);
+        }
+    }
+
             const stats = calculateEnhancedStats();
             if (!stats) return;
             document.getElementById('overallCGPA').innerText = stats.cgpa;
