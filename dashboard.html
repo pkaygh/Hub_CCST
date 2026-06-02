@@ -2712,24 +2712,24 @@ function formatDateForDisplay(dateValue) {
     setElementText('infoAmountPaid', `GH₵${amountPaid.toLocaleString()}`);
     
     const balanceElement = document.getElementById('infoBalance');
-    if (balanceElement) {
-        if (balance > 0) {
-            balanceElement.innerHTML = `<span style="color:#e74c3c;">GH₵${balance.toLocaleString()}</span>`;
-        } else if (balance < 0) {
-            balanceElement.innerHTML = `<span style="color:#27ae60;">GH₵${Math.abs(balance).toLocaleString()} (Credit)</span>`;
-        } else {
-            balanceElement.innerHTML = `<span style="color:#27ae60;">GH₵0.00 (Fully Paid)</span>`;
-        }
+if (balanceElement) {
+    if (balance > 0) {
+        balanceElement.innerHTML = `<span style="color:#e74c3c;">GH₵${balance.toLocaleString()}</span>`;
+    } else if (balance < 0) {
+        balanceElement.innerHTML = `<span style="color:#27ae60;">GH₵${Math.abs(balance).toLocaleString()} (Credit)</span>`;
+    } else {
+        balanceElement.innerHTML = `<span style="color:#27ae60;">GH₵0.00 (Fully Paid)</span>`;
     }
-    
-    const clearanceElement = document.getElementById('infoClearance');
+}
+
+// FIXED: Clearance status based ONLY on isCleared flag
+const clearanceElement = document.getElementById('infoClearance');
 if (clearanceElement) {
-    // Only use the isCleared flag from the database, NOT the balance
     const isCleared = (p.isCleared === true || p.isCleared === "TRUE");
     if (isCleared) {
-        clearanceElement.innerHTML = '<span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Cleared</span>';
+        clearanceElement.innerHTML = '<span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Cleared ✅</span>';
     } else {
-        clearanceElement.innerHTML = '<span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Not Cleared</span>';
+        clearanceElement.innerHTML = '<span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Not Cleared ❌</span>';
     }
 }
     
@@ -4115,7 +4115,8 @@ function loadGuardianInfo() {
             }
             const p = studentData?.profile;
             const balance = (parseFloat(p?.previousBalance) + parseFloat(p?.currentSemesterFees) - parseFloat(p?.amountPaid)) || 0;
-            const financeStatus = balance <= 0 ? 'Cleared ✅' : 'Pending ⚠️';
+            const isClearedFinance = (p.isCleared === true || p.isCleared === "TRUE");
+const financeStatus = isClearedFinance ? 'Cleared ✅' : 'Pending ⚠️';
             document.getElementById('quickFinance').innerHTML = financeStatus;
             const notifCount = document.querySelectorAll('.notification-item.unread').length;
             document.getElementById('quickNotifCount').innerHTML = notifCount > 0 ? `${notifCount} Unread` : 'All Read';
@@ -4178,12 +4179,14 @@ function loadGuardianInfo() {
     }
     
     const infoClearance = document.getElementById('infoClearance');
-    if (infoClearance) {
-        const clearanceStatus = (balance <= 0) ? 
-            '<span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Cleared</span>' : 
-            '<span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Not Cleared</span>';
-        infoClearance.innerHTML = clearanceStatus;
+if (infoClearance) {
+    const isCleared = (p.isCleared === true || p.isCleared === "TRUE");
+    if (isCleared) {
+        infoClearance.innerHTML = '<span style="color:#27ae60;"><i class="fas fa-check-circle"></i> Cleared ✅</span>';
+    } else {
+        infoClearance.innerHTML = '<span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Not Cleared ❌</span>';
     }
+}
     
     // CGPA - Auto calculated from grades
     const stats = calculateEnhancedStats();
