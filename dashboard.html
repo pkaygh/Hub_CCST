@@ -2268,6 +2268,58 @@
             <i class="fas fa-info-circle"></i> Select Academic Year and Semester, then click LOAD COURSES
         </p>
     </div>
+    <!-- Available Courses for Registration -->
+    <div class="card" id="availableCoursesCard" style="display: none;">
+        <div class="card-header">
+            <h3><i class="fas fa-book"></i> AVAILABLE COURSES FOR <span id="selectedSemesterDisplay">SELECTED SEMESTER</span></h3>
+            <button onclick="refreshAvailableCourses()" class="info-btn" style="width: auto; padding: 8px 15px;">
+                <i class="fas fa-sync-alt"></i> REFRESH
+            </button>
+        </div>
+        
+        <!-- Filter/Search Bar -->
+        <div class="filter-section" style="background: rgba(107, 142, 35, 0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            <div class="filter-row" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="courseSearchInput" placeholder="Search courses..." style="flex: 2;" onkeyup="filterAvailableCourses()">
+                <select id="courseTypeFilter" onchange="filterAvailableCourses()" style="flex: 1;">
+                    <option value="all">ALL COURSES</option>
+                    <option value="core">CORE COURSES</option>
+                    <option value="elective">ELECTIVES</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: var(--primary-dark); color: white;">
+                        <th style="padding: 12px; text-align: center; width: 50px;">SELECT</th>
+                        <th style="padding: 12px; text-align: left;">CODE</th>
+                        <th style="padding: 12px; text-align: left;">COURSE TITLE</th>
+                        <th style="padding: 12px; text-align: center;">CREDIT HOUR</th>
+                    </tr>
+                </thead>
+                <tbody id="availableCoursesTableBody">
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px;">Select academic year and semester to load courses.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="selectionSummary" style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+            Selected: <span id="selectedCount">0</span> courses | 
+            Total Credits: <span id="selectedCredits">0</span>
+            <span style="color: #666; margin-left: 10px;">(Minimum: 12 | Maximum: 24 credits)</span>
+        </div>
+        
+        <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: flex-end;">
+            <button onclick="submitRegistration()" id="submitRegBtn" class="success-btn" style="background: linear-gradient(135deg, #27ae60, #2ecc71); padding: 14px 30px;">
+                <i class="fas fa-paper-plane"></i> SUBMIT REGISTRATION
+            </button>
+        </div>
+    </div>
+
     
     <div id="semesterInfo" style="margin-top: 15px; padding: 10px; background: #f0f8ff; border-radius: 8px; display: none;">
         <i class="fas fa-info-circle"></i> <span id="semesterStatusMessage"></span>
@@ -2345,58 +2397,7 @@
         </div>
     </div>
 
-    <!-- Available Courses for Registration -->
-    <div class="card" id="availableCoursesCard" style="display: none;">
-        <div class="card-header">
-            <h3><i class="fas fa-book"></i> AVAILABLE COURSES FOR <span id="selectedSemesterDisplay">SELECTED SEMESTER</span></h3>
-            <button onclick="refreshAvailableCourses()" class="info-btn" style="width: auto; padding: 8px 15px;">
-                <i class="fas fa-sync-alt"></i> REFRESH
-            </button>
-        </div>
-        
-        <!-- Filter/Search Bar -->
-        <div class="filter-section" style="background: rgba(107, 142, 35, 0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-            <div class="filter-row" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <input type="text" id="courseSearchInput" placeholder="Search courses..." style="flex: 2;" onkeyup="filterAvailableCourses()">
-                <select id="courseTypeFilter" onchange="filterAvailableCourses()" style="flex: 1;">
-                    <option value="all">ALL COURSES</option>
-                    <option value="core">CORE COURSES</option>
-                    <option value="elective">ELECTIVES</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="table-responsive">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background: var(--primary-dark); color: white;">
-                        <th style="padding: 12px; text-align: center; width: 50px;">SELECT</th>
-                        <th style="padding: 12px; text-align: left;">CODE</th>
-                        <th style="padding: 12px; text-align: left;">COURSE TITLE</th>
-                        <th style="padding: 12px; text-align: center;">CREDIT HOUR</th>
-                    </tr>
-                </thead>
-                <tbody id="availableCoursesTableBody">
-                    <tr>
-                        <td colspan="4" style="text-align: center; padding: 40px;">Select academic year and semester to load courses.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        
-        <div id="selectionSummary" style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; text-align: center;">
-            Selected: <span id="selectedCount">0</span> courses | 
-            Total Credits: <span id="selectedCredits">0</span>
-            <span style="color: #666; margin-left: 10px;">(Minimum: 12 | Maximum: 24 credits)</span>
-        </div>
-        
-        <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: flex-end;">
-            <button onclick="submitRegistration()" id="submitRegBtn" class="success-btn" style="background: linear-gradient(135deg, #27ae60, #2ecc71); padding: 14px 30px;">
-                <i class="fas fa-paper-plane"></i> SUBMIT REGISTRATION
-            </button>
-        </div>
-    </div>
-
+    
     <!-- Declaration / Signature Section -->
     <div class="card">
         <div class="card-header">
@@ -5788,7 +5789,7 @@ function updateEnhancedAcademicUI() {
             borderColor = '#4caf50';
             textColor = '#2e7d32';
         } 
-        else if (levelNum === currentLevelNum) {
+        else if (levelNum <= currentLevelNum) {
             // Current level
             status = 'In Progress';
             isCurrent = true;
