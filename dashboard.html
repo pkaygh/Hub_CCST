@@ -5469,33 +5469,59 @@ async function loadRegisteredSemesters() {
 // ================================================
 async function loadRegisteredCourses() {
     const studentId = studentData?.profile?.id;
+    const studentLevel = studentData?.profile?.level || '100';
     const tbody = document.getElementById('registeredCoursesTableBody');
     
     if (!tbody) return;
-    if (!studentId) return;
+    if (!studentId) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">No student ID found</div></td></tr>';
+        return;
+    }
     
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin"></i> Loading your registered courses...</td></tr>';
     
     try {
+// Calculate current academic year based on student level (NOT current date)
+const currentYear = new Date().getFullYear();
+const currentMonth = new Date().getMonth();
+
+let startYearOffset = 0;
+if (studentLevel === '100') startYearOffset = 0;
+else if (studentLevel === '200') startYearOffset = 1;
+else if (studentLevel === '300') startYearOffset = 2;
+
+const academicStartYear = currentYear - startYearOffset;
+const currentSemester = currentMonth >= 7 ? "Semester 1" : "Semester 2";
+const currentAcademicYear = `${academicStartYear}/${academicStartYear + 1}`;
+const currentSemesterKey = `${currentSemester}, ${currentAcademicYear}`;
+
+console.log("Student Level:", studentLevel);
+console.log("Current semester key:", currentSemesterKey);
+        
+        // Fetch registration history
         const response = await fetch(`${SCRIPT_URL}?action=get_registration_history&id=${encodeURIComponent(studentId)}`);
         const data = await response.json();
         
-        // Get current academic year and semester
-        const currentYear = new Date().getFullYear();
-        const currentMonth = new Date().getMonth();
-        const currentSemester = currentMonth >= 7 ? "Semester 1" : "Semester 2";
-        const currentAcademicYear = `${currentYear}/${currentYear + 1}`;
-        const currentSemesterKey = `${currentSemester}, ${currentAcademicYear}`;
+        console.log("Full API response:", data);
         
         let allRegistrations = [];
         let currentRegistration = null;
         let pastRegistrations = [];
         
-        if (data.history && Array.isArray(data.history)) {
+        if (data.history && Array.isArray(data.history) && data.history.length > 0) {
+            allRegistrations = data.history;
+            console.log("Found registrations:", allRegistrations.length);
+            
+            // Log each registration for debugging
+            allRegistrations.forEach(reg => {
+                console.log("Registration semester:", reg.semester);
+            });
+            
             // Separate current from past
-            data.history.forEach(reg => {
+            allRegistrations.forEach(reg => {
                 if (reg.semester === currentSemesterKey) {
                     currentRegistration = reg;
+                    console.log("Found current registration:", reg.semester);
                 } else {
                     pastRegistrations.push(reg);
                 }
@@ -5503,15 +5529,150 @@ async function loadRegisteredCourses() {
             
             // Sort past registrations (oldest first)
             pastRegistrations.sort((a, b) => a.semester.localeCompare(b.semester));
+        } else {
+            console.log("No history found in response");
+            // Check if data itself is an array
+            if (Array.isArray(data)) {
+                console.log("Data is an array with", data.length, "items");
+                allRegistrations = data;
+            }
         }
         
         // Display the table
-        displayRegistrationTable(currentRegistration, pastRegistrations);
+        displayRegistrationTable(currentRegistration, pastRegistrations, currentSemesterKey);
         
     } catch (error) {
-        console.error('Error:', error);
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 40px; color: #e74c3c;">Error loading courses</td></tr>`;
+        console.error('Error loading registered courses:', error);
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 40px; color: #e74c3c;">
+            <i class="fas fa-exclamation-circle"></i><br>Error loading courses: ${error.message}
+        </td></tr>`;
     }
+}
+
+function displayRegistrationTable(currentReg, pastRegs, currentSemesterKey) {
+    const tbody = document.getElementById('registeredCoursesTableBody');
+    let allCoursesHtml = '';
+    let grandTotalCredits = 0;
+    
+    console.log("Displaying - Current Reg:", currentReg ? "Yes" : "No");
+    console.log("Displaying - Past Regs:", pastRegs.length);
+    
+    // SECTION 1: CURRENT SEMESTER (Highlighted)
+    if (currentReg && currentReg.courses) {
+        let courses = currentReg.courses;
+        if (typeof courses === 'string') {
+            try { courses = JSON.parse(courses); } catch(e) { 
+                console.error("Failed to parse courses JSON:", e);
+                courses = []; 
+            }
+        }
+        if (!Array.isArray(courses)) courses = [];
+        
+        let semesterTotal = 0;
+        courses.forEach(c => semesterTotal += parseInt(c.credits) || 0);
+        grandTotalCredits += semesterTotal;
+        
+        allCoursesHtml += `
+            <tr style="background: linear-gradient(135deg, #1a472a, #2d6a3d); color: white;">
+                <td colspan="4" style="padding: 12px; text-align: left; font-weight: bold;">
+                    <i class="fas fa-star-of-life" style="color: #ffd700;"></i> 
+                    CURRENT REGISTRATION: ${currentReg.semester}
+                    <span style="float: right;">📚 Total Credits: ${semesterTotal}</span>
+                 </td>
+             </tr>
+        `;
+        
+        courses.forEach((course, idx) => {
+            const credits = parseInt(course.credits) || 0;
+            allCoursesHtml += `
+                <tr style="background: #e8f5e9; border-bottom: 1px solid #c8e6c9;">
+                    <td style="padding: 10px; text-align: center; width: 50px;">${idx + 1}</td>
+                    <td style="padding: 10px;"><strong>${escapeHtml(course.code)}</strong></td>
+                    <td style="padding: 10px;">${escapeHtml(course.name)}</td>
+                    <td style="padding: 10px; text-align: center; width: 100px;">${credits}</td>
+                 </tr>
+            `;
+        });
+        allCoursesHtml += `<tr><td colspan="4" style="padding: 5px; background: #f5f5dc;"></td></tr>`;
+    } else {
+        // No current registration - show message with correct semester
+        allCoursesHtml += `
+            <tr style="background: #fff3cd;">
+                <td colspan="4" style="padding: 12px; text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="color: #856404;"></i> 
+                    <span style="color: #856404;">No registration found for ${currentSemesterKey}. Please register for this semester.</span>
+                 </td>
+             </tr>
+             <tr><td colspan="4" style="padding: 5px;"></td></tr>
+        `;
+    }
+    
+    // SECTION 2: PAST SEMESTERS
+    if (pastRegs.length > 0) {
+        allCoursesHtml += `
+            <tr style="background: #6b8e23; color: white;">
+                <td colspan="4" style="padding: 12px; text-align: left; font-weight: bold;">
+                    <i class="fas fa-history"></i> PAST REGISTRATIONS
+                 </td>
+             </tr>
+        `;
+        
+        pastRegs.forEach(reg => {
+            let courses = reg.courses;
+            if (typeof courses === 'string') {
+                try { courses = JSON.parse(courses); } catch(e) { 
+                    console.error("Failed to parse past courses JSON:", e);
+                    courses = []; 
+                }
+            }
+            if (!Array.isArray(courses)) courses = [];
+            
+            let semesterTotal = 0;
+            courses.forEach(c => semesterTotal += parseInt(c.credits) || 0);
+            grandTotalCredits += semesterTotal;
+            
+            allCoursesHtml += `
+                <tr style="background: #f0f0f0;">
+                    <td colspan="4" style="padding: 10px; text-align: left; font-weight: bold;">
+                        <i class="fas fa-calendar-alt"></i> ${reg.semester}
+                        <span style="float: right;">Credits: ${semesterTotal}</span>
+                     </td>
+                 </tr>
+            `;
+            
+            courses.forEach((course, idx) => {
+                const credits = parseInt(course.credits) || 0;
+                allCoursesHtml += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px; text-align: center;">${idx + 1}</td>
+                        <td style="padding: 10px;">${escapeHtml(course.code)}</td>
+                        <td style="padding: 10px;">${escapeHtml(course.name)}</td>
+                        <td style="padding: 10px; text-align: center;">${credits}</td>
+                     </tr>
+                `;
+            });
+            allCoursesHtml += `<tr><td colspan="4" style="padding: 5px;"></td></tr>`;
+        });
+    } else if (!currentReg) {
+        // No past registrations and no current
+        allCoursesHtml += `
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 40px; color: #999;">
+                    <i class="fas fa-inbox"></i><br>No registration history found.
+                 </td>
+             </tr>
+        `;
+    }
+    
+    tbody.innerHTML = allCoursesHtml;
+    
+    // Update total credits display
+    const creditElements = document.querySelectorAll('#totalCreditsValue');
+    creditElements.forEach(el => el.innerText = grandTotalCredits);
+    const footerElement = document.getElementById('totalCreditsFooter');
+    if (footerElement) footerElement.innerText = grandTotalCredits;
+    
+    console.log("Total credits displayed:", grandTotalCredits);
 }
 
 function displayRegistrationTable(currentReg, pastRegs) {
@@ -5617,10 +5778,27 @@ function displayRegistrationTable(currentReg, pastRegs) {
 }
 
 function getCurrentSemesterDisplay() {
+    // Get student's level to determine correct academic year
+    const studentLevel = studentData?.profile?.level || '100';
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
+    
+    // Calculate start year based on student level
+    // Level 100 started this academic year
+    // Level 200 started 1 year ago
+    // Level 300 started 2 years ago
+    let startYearOffset = 0;
+    if (studentLevel === '100') startYearOffset = 0;
+    else if (studentLevel === '200') startYearOffset = 1;
+    else if (studentLevel === '300') startYearOffset = 2;
+    
+    // Calculate the academic start year
+    let academicStartYear = currentYear - startYearOffset;
+    
+    // Determine current semester (Semester 1: Aug-Dec, Semester 2: Jan-July)
     const semester = currentMonth >= 7 ? "FIRST SEMESTER" : "SECOND SEMESTER";
-    return `${semester}, ${currentYear}/${currentYear + 1}`;
+    
+    return `${semester}, ${academicStartYear}/${academicStartYear + 1}`;
 }
 // ============================================
 // ESCAPE HTML HELPER
