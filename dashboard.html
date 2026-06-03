@@ -5481,19 +5481,8 @@ async function loadRegisteredCourses() {
     tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin"></i> Loading your registered courses...</td></tr>';
     
     try {
-// Calculate current academic year based on student level (NOT current date)
-const currentYear = new Date().getFullYear();
-const currentMonth = new Date().getMonth();
-
-let startYearOffset = 0;
-if (studentLevel === '100') startYearOffset = 0;
-else if (studentLevel === '200') startYearOffset = 1;
-else if (studentLevel === '300') startYearOffset = 2;
-
-const academicStartYear = currentYear - startYearOffset;
-const currentSemester = currentMonth >= 7 ? "Semester 1" : "Semester 2";
-const currentAcademicYear = `${academicStartYear}/${academicStartYear + 1}`;
-const currentSemesterKey = `${currentSemester}, ${currentAcademicYear}`;
+// Current semester is the same for all levels
+const currentSemesterKey = "Semester 2, 2025/2026";
 
 console.log("Student Level:", studentLevel);
 console.log("Current semester key:", currentSemesterKey);
@@ -5778,27 +5767,7 @@ function displayRegistrationTable(currentReg, pastRegs) {
 }
 
 function getCurrentSemesterDisplay() {
-    // Get student's level to determine correct academic year
-    const studentLevel = studentData?.profile?.level || '100';
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth();
-    
-    // Calculate start year based on student level
-    // Level 100 started this academic year
-    // Level 200 started 1 year ago
-    // Level 300 started 2 years ago
-    let startYearOffset = 0;
-    if (studentLevel === '100') startYearOffset = 0;
-    else if (studentLevel === '200') startYearOffset = 1;
-    else if (studentLevel === '300') startYearOffset = 2;
-    
-    // Calculate the academic start year
-    let academicStartYear = currentYear - startYearOffset;
-    
-    // Determine current semester (Semester 1: Aug-Dec, Semester 2: Jan-July)
-    const semester = currentMonth >= 7 ? "FIRST SEMESTER" : "SECOND SEMESTER";
-    
-    return `${semester}, ${academicStartYear}/${academicStartYear + 1}`;
+    return "SECOND SEMESTER, 2025/2026";
 }
 // ============================================
 // ESCAPE HTML HELPER
