@@ -3797,43 +3797,46 @@ function generateTranscriptHTML() {
 }
 
 async function uploadPhotoToSheets(base64Data) {
-    try {
-        const studentId = studentData?.profile?.id;
-        const studentPhone = studentData?.profile?.phone;
-        
-        if (!studentId) {
-            console.log('No student ID, cannot save photo to cloud');
-            return;
-        }
-        
-        console.log('Saving photo to cloud for student:', studentId);
-        
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'store_photo_data',
-                studentId: studentId,
-                phone: studentPhone || '',
-                photoData: base64Data
-            })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            console.log('Photo saved to Google Sheets successfully');
-            showToast('Photo saved to cloud! Available on any device.');
-        } else {
-            console.log('Photo save to cloud failed:', result.error);
-            showToast('Photo saved locally only. Cloud save failed: ' + (result.error || 'Unknown error'));
-        }
-    } catch (err) {
-        console.log('Photo upload to sheets failed:', err);
-        showToast('Photo saved locally only. Check your internet connection.');
+    const studentId = studentData?.profile?.id;
+    if (!studentId) return;
+    
+    // Create a form and submit to hidden iframe (bypasses CORS)
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = SCRIPT_URL;
+    form.target = 'hiddenPhotoFrame';
+    form.style.display = 'none';
+    
+    const fields = {
+        action: 'store_photo_data',
+        studentId: studentId,
+        phone: studentData?.profile?.phone || '',
+        photoData: base64Data
+    };
+    
+    for (const [key, value] of Object.entries(fields)) {
+        const input = document.createElement('input');
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
     }
+    
+    document.body.appendChild(form);
+    
+    // Create hidden iframe if not exists
+    if (!document.getElementById('hiddenPhotoFrame')) {
+        const iframe = document.createElement('iframe');
+        iframe.name = 'hiddenPhotoFrame';
+        iframe.id = 'hiddenPhotoFrame';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+    }
+    
+    form.submit();
+    setTimeout(() => form.remove(), 2000);
+    
+    showToast('Photo submitted! Check Google Sheet in a few seconds.');
 }
-
         // ============================================
         // EDIT PROFILE FUNCTIONS
         // ============================================
