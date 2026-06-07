@@ -1954,7 +1954,7 @@
                     <h4 style="color:rgba(255,255,255,0.9); margin-bottom:15px;"><i class="fas fa-flag-checkered"></i> Academic Milestones</h4>
                     <div id="milestonesContainer" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
                         <!-- Dynamic milestones -->
-                    </div>
+                        </div>
                 </div>
             </div>
         </div>
@@ -1976,29 +1976,16 @@
 
         <!-- ACADEMIC SECTION - UPGRADED -->
         <div id="academicSection" class="section" style="display:none;">
-<div class="card">
+<<div class="card">
     <div class="card-header">
         <h3><i class="fas fa-calendar-alt"></i> Academic Calendar</h3>
         <button onclick="viewFullCalendar()" class="info-btn" style="width: auto; padding: 5px 12px; background: #6b8e23;">
             <i class="fas fa-calendar-plus"></i> Full Calendar
         </button>
     </div>
-    <div id="academicCalendar">
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-            <span><i class="fas fa-calendar-check"></i> Registration Deadline</span>
-            <span style="color: #e74c3c;">March 15, 2026</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-            <span><i class="fas fa-pen"></i> Mid-Semester Exams</span>
-            <span>April 10-15, 2026</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-            <span><i class="fas fa-book"></i> End of Semester Exams</span>
-            <span>June 5-20, 2026</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-            <span><i class="fas fa-graduation-cap"></i> Semester Ends</span>
-            <span>June 30, 2026</span>
+    <div id="academicCalendarList">
+        <div style="text-align: center; padding: 20px;">
+            <i class="fas fa-spinner fa-spin"></i> Loading calendar...
         </div>
     </div>
 </div>
@@ -2396,6 +2383,10 @@
             <div>
                 <label style="font-weight: bold;">DATE:</label>
                 <p style="border-bottom: 1px solid #ddd; padding: 8px 0; font-weight: 600;" id="registrationDate">Loading...</p>
+                <div>
+    <label style="font-weight: bold;">ACADEMIC YEAR:</label>
+    <p style="border-bottom: 1px solid #ddd; padding: 8px 0; font-weight: 600;" id="infoAcademicYearReg">Loading...</p>
+</div>
             </div>
         </div>
     </div>
@@ -3849,8 +3840,7 @@ function generateTranscriptHTML() {
     }
 }
 
-function viewFullCalendar() {
-    // Create modal for full calendar
+async function viewFullCalendar() {
     const modal = document.createElement('div');
     modal.id = 'fullCalendarModal';
     modal.style.cssText = `
@@ -3868,60 +3858,16 @@ function viewFullCalendar() {
     `;
     
     modal.innerHTML = `
-        <div style="background: white; max-width: 500px; width: 90%; border-radius: 20px; padding: 25px; max-height: 85vh; overflow-y: auto; position: relative;">
-            <button onclick="closeFullCalendar()" style="position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; z-index: 1;">&times;</button>
+        <div style="background: white; max-width: 550px; width: 90%; border-radius: 20px; padding: 25px; max-height: 85vh; overflow-y: auto; position: relative;">
+            <button onclick="closeFullCalendar()" style="position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">&times;</button>
             
             <h2 style="color: #1a472a; text-align: center; margin-bottom: 20px;">
-                <i class="fas fa-calendar-alt"></i> Academic Calendar 2025/2026
+                <i class="fas fa-calendar-alt"></i> Full Academic Calendar
             </h2>
             
-            <div style="margin-bottom: 25px;">
-                <h3 style="color: #6b8e23; margin-bottom: 10px;">📅 Important Dates</h3>
-                <div style="background: #f8f9fa; border-radius: 10px; padding: 15px;">
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
-                        <span><i class="fas fa-calendar-check" style="color: #e74c3c;"></i> Registration Deadline</span>
-                        <span style="font-weight: bold;">March 15, 2026</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
-                        <span><i class="fas fa-pen" style="color: #3498db;"></i> Mid-Semester Exams</span>
-                        <span style="font-weight: bold;">April 10-15, 2026</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
-                        <span><i class="fas fa-book" style="color: #9b59b6;"></i> End of Semester Exams</span>
-                        <span style="font-weight: bold;">June 5-20, 2026</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0;">
-                        <span><i class="fas fa-graduation-cap" style="color: #27ae60;"></i> Semester Ends</span>
-                        <span style="font-weight: bold;">June 30, 2026</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="margin-bottom: 25px;">
-                <h3 style="color: #6b8e23; margin-bottom: 10px;">📌 Upcoming Events</h3>
-                <div style="background: #f8f9fa; border-radius: 10px; padding: 15px;">
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-                        <span><i class="fas fa-clock"></i> Add/Drop Deadline</span>
-                        <span>March 20, 2026</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-                        <span><i class="fas fa-file-alt"></i> Project Submission</span>
-                        <span>May 25, 2026</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                        <span><i class="fas fa-chart-line"></i> Results Release</span>
-                        <span>July 15, 2026</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div>
-                <h3 style="color: #6b8e23; margin-bottom: 10px;">ℹ️ Important Notes</h3>
-                <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 8px;">
-                    <p style="margin: 0; font-size: 0.85rem;">
-                        <i class="fas fa-info-circle"></i> All dates are subject to change. 
-                        Students are advised to check the portal regularly for updates.
-                    </p>
+            <div id="fullCalendarContent" style="min-height: 300px;">
+                <div style="text-align: center; padding: 20px;">
+                    <i class="fas fa-spinner fa-spin"></i> Loading calendar...
                 </div>
             </div>
             
@@ -3933,8 +3879,54 @@ function viewFullCalendar() {
     
     document.body.appendChild(modal);
     document.body.style.overflow = 'hidden';
+    
+    // Load full calendar data
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_calendar_events`);
+        const data = await response.json();
+        
+        let html = '';
+        
+        // Important Events Section
+        if (data.important && data.important.length > 0) {
+            html += `<h3 style="color: #6b8e23; margin-bottom: 10px;">📅 Important Dates</h3>
+                     <div style="background: #f8f9fa; border-radius: 10px; padding: 15px; margin-bottom: 25px;">`;
+            data.important.forEach(event => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <div><i class="fas ${event.icon}" style="color: ${event.color}; width: 30px;"></i> <strong>${event.title}</strong><br><small style="color:#666;">${event.description || ''}</small></div>
+                        <span style="font-weight: bold; color: ${event.color};">${event.date}</span>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+        
+        // Upcoming Events Section
+        if (data.upcoming && data.upcoming.length > 0) {
+            html += `<h3 style="color: #6b8e23; margin-bottom: 10px;">📌 Upcoming Events</h3>
+                     <div style="background: #f8f9fa; border-radius: 10px; padding: 15px;">`;
+            data.upcoming.forEach(event => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <div><i class="fas ${event.icon}" style="color: ${event.color}; width: 30px;"></i> ${event.title}<br><small style="color:#666;">${event.description || ''}</small></div>
+                        <span style="font-weight: bold; color: ${event.color};">${event.date}</span>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+        
+        if (!data.important?.length && !data.upcoming?.length) {
+            html = '<p style="text-align: center; color: #999;">No calendar events scheduled.</p>';
+        }
+        
+        document.getElementById('fullCalendarContent').innerHTML = html;
+        
+    } catch(error) {
+        document.getElementById('fullCalendarContent').innerHTML = '<p style="text-align: center; color: #e74c3c;">Error loading calendar.</p>';
+    }
 }
-
 function closeFullCalendar() {
     const modal = document.getElementById('fullCalendarModal');
     if (modal) {
@@ -4308,6 +4300,7 @@ async function saveProfile(event) {
         loadNotifications();
         updateEnhancedAcademicUI();
         updateQuickStats();
+        loadAcademicCalendar();
         
         // Also load the guardian data separately to ensure it's displayed
         loadGuardianInfo();
@@ -6012,6 +6005,38 @@ function displayRegistrationTable(currentReg, pastRegs) {
 function getCurrentSemesterDisplay() {
     return "SECOND SEMESTER, 2025/2026";
 }
+
+async function loadAcademicCalendar() {
+    const container = document.getElementById('academicCalendarList');
+    if (!container) return;
+    
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_calendar_events`);
+        const data = await response.json();
+        
+        if (data.important && data.important.length > 0) {
+            let html = '';
+            data.important.forEach(event => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="fas ${event.icon}" style="color: ${event.color}; width: 25px;"></i>
+                            <span><strong>${event.title}</strong>${event.description ? `<br><small style="color:#999;">${event.description}</small>` : ''}</span>
+                        </div>
+                        <span style="font-weight: bold; color: ${event.color};">${event.date}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<p style="text-align: center; color: #999;">No calendar events found.</p>';
+        }
+    } catch(error) {
+        console.error('Error loading calendar:', error);
+        container.innerHTML = '<p style="text-align: center; color: #999;">Unable to load calendar.</p>';
+    }
+}
+
 // ============================================
 // ESCAPE HTML HELPER
 // ============================================

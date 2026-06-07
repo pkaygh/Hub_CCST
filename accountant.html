@@ -705,6 +705,9 @@
         <a href="#" class="menu-item" id="notificationsMenuItem" onclick="showSection('notifications'); return false;"><i class="fas fa-bell"></i> Send Notifications</a>
         <a href="#" class="menu-item" id="reportsMenuItem" onclick="showSection('reports'); return false;"><i class="fas fa-chart-bar"></i> Reports</a>
         <a href="#" class="menu-item" id="admissionsMenuItem" onclick="showSection('admissions'); return false;"><i class="fas fa-users"></i> Admissions Manager<span id="admissionBadge" class="badge" style="display:none;">0</span></a>
+        <a href="#" class="menu-item" id="calendarMenuItem" onclick="showSection('calendar'); return false;">
+    <i class="fas fa-calendar-alt"></i> Manage Calendar
+</a>
         <a href="#" class="menu-item" id="executiveMenuItem" onclick="openExecutiveDashboard(); return false;"><i class="fas fa-chart-line"></i> Executive Dashboard<span class="badge" style="background: var(--warning);">Admin</span></a>
         <hr style="margin: 20px 25px; border-color: rgba(255,255,255,0.1);">
         <a href="#" class="menu-item" onclick="logout(); return false;"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -929,6 +932,81 @@
                     </div>
                 </div>
             </div>
+
+<!-- CALENDAR SECTION -->
+<div id="calendarSection" class="section" style="display:none;">
+            <!-- Manage Academic Calendar -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-calendar-alt"></i> Manage Academic Calendar</h3>
+        <button onclick="loadCalendarEventsForAdmin()" class="info-btn" style="width: auto; padding: 8px 15px;">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    </div>
+    
+    <!-- Add New Event Form -->
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+        <h4 style="margin-bottom: 15px; color: var(--primary-dark);"><i class="fas fa-plus-circle"></i> Add New Event</h4>
+        <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <div class="form-group">
+                <label>Event Type</label>
+                <select id="calEventType" class="form-control">
+                    <option value="important">📅 Important Date</option>
+                    <option value="upcoming">📌 Upcoming Event</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Event Title *</label>
+                <input type="text" id="calTitle" placeholder="e.g., Registration Deadline" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Date *</label>
+                <input type="text" id="calDate" placeholder="e.g., March 15, 2026" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Icon (Font Awesome)</label>
+                <select id="calIcon" class="form-control">
+                    <option value="fa-calendar-check">✅ Calendar Check</option>
+                    <option value="fa-pen">✏️ Pen</option>
+                    <option value="fa-book">📖 Book</option>
+                    <option value="fa-graduation-cap">🎓 Graduation</option>
+                    <option value="fa-clock">⏰ Clock</option>
+                    <option value="fa-file-alt">📄 File</option>
+                    <option value="fa-chart-line">📊 Chart</option>
+                    <option value="fa-bell">🔔 Bell</option>
+                    <option value="fa-calendar-day">📅 Calendar Day</option>
+                    <option value="fa-calendar-week">📆 Calendar Week</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Color</label>
+                <select id="calColor" class="form-control">
+                    <option value="#e74c3c">🔴 Red</option>
+                    <option value="#3498db">🔵 Blue</option>
+                    <option value="#27ae60">🟢 Green</option>
+                    <option value="#f39c12">🟡 Orange</option>
+                    <option value="#9b59b6">🟣 Purple</option>
+                    <option value="#1a472a">🌲 Dark Green</option>
+                    <option value="#6b8e23">🌿 Olive</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Description (Optional)</label>
+                <input type="text" id="calDescription" placeholder="Additional details" class="form-control">
+            </div>
+        </div>
+        <button onclick="addCalendarEvent()" class="success-btn" style="margin-top: 10px; width: auto; padding: 10px 25px;">
+            <i class="fas fa-save"></i> Add Event
+        </button>
+    </div>
+    
+    <!-- Events List -->
+    <h4><i class="fas fa-list"></i> Current Calendar Events</h4>
+    <div id="calendarEventsList" class="student-list-container" style="max-height: 400px; overflow-y: auto;">
+        <p style="text-align: center; padding: 20px;">Loading events...</p>
+        </div>
+    </div>
+</div>
 
             <!-- FINANCIAL CLEARANCE -->
             <div id="clearanceSection" class="section" style="display:none;">
@@ -1187,7 +1265,7 @@ function showSection(section) {
     // Close sidebar on mobile
     closeSidebarOnMobile();
     
-    const sections = ['search', 'csv_upload', 'bulk_upload', 'courses', 'clearance', 'transcript', 'transcript_requests', 'notifications', 'reports', 'admissions'];
+    const sections = ['search', 'csv_upload', 'bulk_upload', 'courses', 'clearance', 'transcript', 'transcript_requests', 'notifications', 'reports', 'admissions', 'calendar'];
     sections.forEach(s => { 
         const sec = document.getElementById(s + 'Section'); 
         if (sec) sec.style.display = 'none'; 
@@ -1209,7 +1287,8 @@ function showSection(section) {
         clearance: 'Financial Clearance', 
         transcript: 'Generate Transcript', 
         transcript_requests: 'Transcript Requests', 
-        admissions: 'Admissions Manager', 
+        admissions: 'Admissions Manager',
+        calendar: 'Manage Calendar', 
         notifications: 'Send Notifications', 
         reports: 'Reports' 
     };
@@ -1218,6 +1297,7 @@ function showSection(section) {
     if (section === 'clearance') loadStudentClearanceList();
     if (section === 'transcript_requests') { loadTranscriptRequests(); loadProcessedRequests(); }
     if (section === 'admissions') loadAdmissions();
+    if (section === 'calendar') loadCalendarEventsForAdmin();
 }
 
 // ============================================
@@ -1990,6 +2070,167 @@ function downloadSimpleFinanceTemplate() { const template = `ID,AmountPaid,IsCle
 let parsedFinanceData = null;
 function handleFinanceCSVSelect(event) { const file = event.target.files[0]; if (!file) return; Papa.parse(file, { header: true, skipEmptyLines: true, complete: (results) => { parsedFinanceData = results.data; const preview = document.getElementById('financeFilePreview'); preview.style.display = 'block'; preview.innerHTML = `<h4><i class="fas fa-file-csv"></i> File Ready</h4><p>${results.data.length} records</p><div class="progress-bar"><div class="progress-fill" id="financeUploadProgress" style="width: 0%;"></div></div>`; document.getElementById('processFinanceBtn').style.display = 'block'; } }); }
 async function processFinanceCSV() { if (!parsedFinanceData || parsedFinanceData.length === 0) { showToast("No data", "danger"); return; } const btn = document.getElementById('processFinanceBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...'; let success = 0; for (let i = 0; i < parsedFinanceData.length; i++) { const row = parsedFinanceData[i]; const studentId = row.ID || row.id; if (studentId) { try { await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_clearance', id: studentId, cleared: row.IsCleared === 'TRUE' }) }); success++; } catch(e) {} } if (document.getElementById('financeUploadProgress')) document.getElementById('financeUploadProgress').style.width = `${((i+1)/parsedFinanceData.length)*100}%`; } showToast(`Processed ${success} records`, "success"); btn.disabled = false; btn.innerHTML = 'PROCESS FINANCIAL DATA'; parsedFinanceData = null; }
+// ============================================
+// ACADEMIC CALENDAR MANAGEMENT
+// ============================================
+
+async function loadCalendarEventsForAdmin() {
+    const container = document.getElementById('calendarEventsList');
+    if (!container) return;
+    
+    container.innerHTML = '<p style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading events...</p>';
+    
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_calendar_events`);
+        const data = await response.json();
+        
+        let html = '';
+        let rowCounter = 2; // Row 1 is headers
+        
+        // Important Events Section
+        if (data.important && data.important.length > 0) {
+            html += `<div style="background: #e8f5e9; padding: 10px; margin: 10px 0; border-radius: 8px;">
+                        <strong><i class="fas fa-star" style="color: #f39c12;"></i> Important Dates</strong>
+                     </div>`;
+            data.important.forEach((event, idx) => {
+                html += `
+                    <div class="student-list-item" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div style="flex: 1;">
+                            <i class="fas ${event.icon}" style="color: ${event.color}; width: 25px;"></i>
+                            <strong>${event.title}</strong><br>
+                            <small style="color: #666;">📅 ${event.date}</small>
+                            ${event.description ? `<br><small style="color: #999;">${event.description}</small>` : ''}
+                        </div>
+                        <button onclick="deleteCalendarEvent(${rowCounter + idx})" class="danger-btn" style="width: auto; padding: 5px 12px; background: #e74c3c;">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                `;
+            });
+            rowCounter += data.important.length;
+        }
+        
+        // Upcoming Events Section
+        if (data.upcoming && data.upcoming.length > 0) {
+            html += `<div style="background: #e3f2fd; padding: 10px; margin: 10px 0; border-radius: 8px;">
+                        <strong><i class="fas fa-calendar-week"></i> Upcoming Events</strong>
+                     </div>`;
+            data.upcoming.forEach((event, idx) => {
+                html += `
+                    <div class="student-list-item" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div style="flex: 1;">
+                            <i class="fas ${event.icon}" style="color: ${event.color}; width: 25px;"></i>
+                            <strong>${event.title}</strong><br>
+                            <small style="color: #666;">📅 ${event.date}</small>
+                            ${event.description ? `<br><small style="color: #999;">${event.description}</small>` : ''}
+                        </div>
+                        <button onclick="deleteCalendarEvent(${rowCounter + idx})" class="danger-btn" style="width: auto; padding: 5px 12px; background: #e74c3c;">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                `;
+            });
+        }
+        
+        if (!data.important?.length && !data.upcoming?.length) {
+            html = '<p style="text-align: center; padding: 40px; color: #999;">No calendar events found. Add your first event above!</p>';
+        }
+        
+        container.innerHTML = html;
+        
+    } catch(error) {
+        console.error('Error loading calendar events:', error);
+        container.innerHTML = '<p style="text-align: center; padding: 20px; color: #e74c3c;">Error loading events. Please refresh.</p>';
+    }
+}
+
+async function addCalendarEvent() {
+    const eventType = document.getElementById('calEventType').value;
+    const title = document.getElementById('calTitle').value.trim();
+    const date = document.getElementById('calDate').value.trim();
+    const icon = document.getElementById('calIcon').value;
+    const color = document.getElementById('calColor').value;
+    const description = document.getElementById('calDescription').value.trim();
+    
+    if (!title) {
+        showToast("Please enter event title", "warning");
+        return;
+    }
+    if (!date) {
+        showToast("Please enter event date", "warning");
+        return;
+    }
+    
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+    
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'add_calendar_event',
+                eventType: eventType,
+                title: title,
+                date: date,
+                icon: icon,
+                color: color,
+                description: description
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast("Event added successfully!", "success");
+            // Clear form
+            document.getElementById('calTitle').value = '';
+            document.getElementById('calDate').value = '';
+            document.getElementById('calDescription').value = '';
+            document.getElementById('calEventType').value = 'important';
+            // Reload list
+            await loadCalendarEventsForAdmin();
+        } else {
+            showToast("Error: " + (result.error || "Failed to add event"), "danger");
+        }
+    } catch(error) {
+        console.error('Error adding event:', error);
+        showToast("Network error. Please try again.", "danger");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+async function deleteCalendarEvent(rowIndex) {
+    if (!confirm("Are you sure you want to delete this event?")) return;
+    
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'delete_calendar_event',
+                rowIndex: rowIndex
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast("Event deleted successfully!", "success");
+            await loadCalendarEventsForAdmin();
+        } else {
+            showToast("Error deleting event", "danger");
+        }
+    } catch(error) {
+        console.error('Error deleting event:', error);
+        showToast("Network error. Please try again.", "danger");
+    }
+}
+
+// Load calendar events when the admin section is shown
+// Add this to your existing showSection function or call it when needed
 
 // ============================================
 // CLEARANCE LIST
@@ -2419,6 +2660,7 @@ function processTranscriptRequest(idx) {
 }
 function rejectTranscriptRequest(idx) { const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); const req = reqs[idx]; if (confirm(`Reject request for ${req.name}?`)) { reqs.splice(idx, 1); localStorage.setItem('transcriptRequests', JSON.stringify(reqs)); const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); processed.push({ ...req, processedDate: new Date().toLocaleString(), status: 'Rejected' }); localStorage.setItem('processedTranscripts', JSON.stringify(processed)); loadTranscriptRequests(); loadProcessedRequests(); showToast(`Request for ${req.name} rejected`, "warning"); } }
 function processAllRequests() { const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); if (reqs.length === 0) return showToast("No pending requests", "warning"); if (confirm(`Process all ${reqs.length} requests?`)) { reqs.forEach(r => { const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); processed.push({ ...r, processedDate: new Date().toLocaleString(), status: 'Approved' }); localStorage.setItem('processedTranscripts', JSON.stringify(processed)); }); localStorage.setItem('transcriptRequests', '[]'); loadTranscriptRequests(); loadProcessedRequests(); showToast(`Processed ${reqs.length} requests`, "success"); } }
+
 
 // ============================================
 // ADMISSIONS MANAGER
