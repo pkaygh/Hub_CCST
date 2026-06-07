@@ -1684,6 +1684,22 @@
             </div>
         </div>
 
+        <!-- Academic Calendar Banner - Shows on ALL sections -->
+<div class="card" style="background: linear-gradient(135deg, #1a472a, #2d6a3d); color: white; padding: 15px 20px; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <i class="fas fa-calendar-alt" style="font-size: 1.8rem;"></i>
+            <div>
+                <h4 style="margin: 0;">📅 Academic Calendar 2025/2026</h4>
+                <p style="margin: 5px 0 0 0; font-size: 0.8rem; opacity: 0.9;">Registration: Mar 15 | Exams: Jun 5-20 | Semester Ends: Jun 30</p>
+            </div>
+        </div>
+        <button onclick="viewFullCalendar()" class="info-btn" style="background: rgba(255,255,255,0.2); width: auto; padding: 8px 15px;">
+            Full Calendar <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">
         <h3><i class="fas fa-calendar-alt"></i> Academic Calendar</h3>
@@ -1982,6 +1998,21 @@
                 </div>
             </div>
         </div>
+        <!-- My Application Card -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-file-alt"></i> My Application Status</h3>
+    </div>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        <button onclick="downloadMyApplicationPDF()" class="success-btn" style="background: #e74c3c; width: auto;">
+            <i class="fas fa-file-pdf"></i> Download Application PDF
+        </button>
+        <button onclick="checkApplicationStatus()" class="info-btn" style="width: auto;">
+            <i class="fas fa-search"></i> Check Status
+        </button>
+    </div>
+    <div id="applicationStatusMessage" style="margin-top: 15px; display: none;"></div>
+</div>
 
         <!-- ACADEMIC SECTION - UPGRADED -->
         <div id="academicSection" class="section" style="display:none;">
@@ -2506,6 +2537,111 @@ function setElementText(elementId, text) {
     if (element) element.innerHTML = text;
 }
 
+function downloadMyApplicationPDF() {
+    const studentPhone = studentData?.profile?.phone;
+    const studentEmail = studentData?.profile?.email;
+    const allApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+    const myApp = allApps.find(app => app.phone === studentPhone || app.email === studentEmail);
+    
+    if (!myApp) {
+        showToast("No application found. Please apply via the Admission Portal.", "warning");
+        return;
+    }
+    
+    // Call the PDF generation function from admission.html
+    const html = generateApplicationPDF(myApp);
+    const blob = new Blob([html], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `CCST_Application_${myApp.trackingCode}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("PDF downloaded!", "success");
+}
+
+function checkApplicationStatus() {
+    const studentPhone = studentData?.profile?.phone;
+    const studentEmail = studentData?.profile?.email;
+    const allApps = JSON.parse(localStorage.getItem('admissionApplications') || '[]');
+    const myApp = allApps.find(app => app.phone === studentPhone || app.email === studentEmail);
+    
+    const statusDiv = document.getElementById('applicationStatusMessage');
+    if (!myApp) {
+        statusDiv.innerHTML = '<p style="color: #e74c3c;">No application found. Please apply via the Admission Portal.</p>';
+        statusDiv.style.display = 'block';
+        return;
+    }
+    
+    const statusConfig = {
+        'pending_review': { text: 'Pending Review', color: '#f39c12', icon: '⏳' },
+        'documents_verified': { text: 'Documents Verified', color: '#3498db', icon: '📄' },
+        'interview_scheduled': { text: 'Interview Scheduled', color: '#9b59b6', icon: '📅' },
+        'admitted': { text: 'Admitted! 🎉', color: '#27ae60', icon: '✅' },
+        'rejected': { text: 'Not Admitted', color: '#e74c3c', icon: '❌' }
+    };
+    const status = statusConfig[myApp.status] || { text: myApp.status || 'Pending', color: '#f39c12', icon: '⏳' };
+    
+    statusDiv.innerHTML = `
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid ${status.color};">
+            <p><strong>Application ID:</strong> ${myApp.id || myApp.applicationId}</p>
+            <p><strong>Tracking Code:</strong> <span style="color: ${status.color};">${myApp.trackingCode}</span></p>
+            <p><strong>Status:</strong> <span style="color: ${status.color};">${status.icon} ${status.text}</span></p>
+            <p><strong>Submitted:</strong> ${new Date(myApp.submittedAt).toLocaleDateString()}</p>
+            <button onclick="downloadMyApplicationPDF()" class="info-btn" style="margin-top: 10px; width: auto;">Download PDF</button>
+        </div>
+    `;
+    statusDiv.style.display = 'block';
+}
+
+// Copy this function from admission.html or add this simplified version
+function generateApplicationPDF(app) {
+    // Get full name from available properties
+    const fullName = app.fullName || `${app.surname || ''} ${app.firstName || ''} ${app.otherName || ''}`.trim() || 'N/A';
+    const applicationId = app.id || app.applicationId || 'N/A';
+    
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>CCST Application - ${fullName}</title>
+            <style>
+                body { font-family: 'Times New Roman', serif; padding: 40px; margin: 0; }
+                h1 { color: #1a472a; text-align: center; font-size: 24px; }
+                h3 { text-align: center; color: #6b8e23; }
+                .info-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                .info-table td { padding: 10px; border-bottom: 1px solid #ddd; }
+                .info-table td:first-child { font-weight: bold; width: 35%; background: #f9f9f9; }
+                .status { display: inline-block; padding: 5px 15px; border-radius: 20px; color: white; background: #f39c12; }
+                .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 20px; }
+                @media print { body { padding: 20px; } button { display: none; } }
+            </style>
+        </head>
+        <body>
+            <h1>CENTRAL COLLEGE OF SCIENCE AND TECHNOLOGY</h1>
+            <h3>OFFICIAL APPLICATION FORM</h3>
+            <p style="text-align:center;">Agona Swedru, Ghana</p>
+            
+            <table class="info-table">
+                <tr><td><strong>Application ID:</strong></td><td>${applicationId}</td></tr>
+                <tr><td><strong>Tracking Code:</strong></td><td><strong style="color:#6b8e23;">${app.trackingCode || 'N/A'}</strong></td></tr>
+                <tr><td><strong>Full Name:</strong></td><td>${fullName}</td></tr>
+                <tr><td><strong>Program:</strong></td><td>${app.program || 'N/A'}</td></tr>
+                <tr><td><strong>Phone:</strong></td><td>${app.phone || 'N/A'}</td></tr>
+                <tr><td><strong>Email:</strong></td><td>${app.email || 'N/A'}</td></tr>
+                <tr><td><strong>Status:</strong></td><td><span class="status">${app.status || 'Pending Review'}</span></td></tr>
+                <tr><td><strong>Submitted:</strong></td><td>${new Date(app.submittedAt).toLocaleString()}</td></tr>
+            </table>
+            
+            <div class="footer">
+                <p>This is an official application form from Central College of Science and Technology (CCST).</p>
+                <p>Generated on: ${new Date().toLocaleString()}</p>
+            </div>
+        </body>
+        </html>
+    `;
+}
 function getCurrentAcademicYear() {
     const currentYear = new Date().getFullYear();
     return `${currentYear}/${currentYear + 1}`;
@@ -3725,6 +3861,10 @@ function generateTranscriptHTML() {
         console.error('Error loading notifications:', error);
         container.innerHTML = '<p style="text-align: center; padding: 40px;">Error loading notifications. Please refresh.</p>';
     }
+}
+
+function viewFullCalendar() {
+    showToast("Full academic calendar will be available soon.", "info");
 }
 
         function markRead(id) {
