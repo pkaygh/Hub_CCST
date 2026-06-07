@@ -3840,7 +3840,7 @@ function generateTranscriptHTML() {
     }
 }
 
-async function viewFullCalendar() {
+function viewFullCalendar() {
     const modal = document.createElement('div');
     modal.id = 'fullCalendarModal';
     modal.style.cssText = `
@@ -3880,52 +3880,75 @@ async function viewFullCalendar() {
     document.body.appendChild(modal);
     document.body.style.overflow = 'hidden';
     
-    // Load full calendar data
-    try {
-        const response = await fetch(`${SCRIPT_URL}?action=get_calendar_events`);
-        const data = await response.json();
-        
-        let html = '';
-        
-        // Important Events Section
-        if (data.important && data.important.length > 0) {
-            html += `<h3 style="color: #6b8e23; margin-bottom: 10px;">📅 Important Dates</h3>
-                     <div style="background: #f8f9fa; border-radius: 10px; padding: 15px; margin-bottom: 25px;">`;
-            data.important.forEach(event => {
+    // Get data from global variable or fetch fresh
+    const loadFullCalendar = async () => {
+        try {
+            let events = window.fullCalendarData;
+            
+            // If not already loaded, fetch fresh
+            if (!events || (!events.important && !events.upcoming)) {
+                const response = await fetch(`${SCRIPT_URL}?action=get_calendar_events`);
+                events = await response.json();
+            }
+            
+            const importantEvents = events.important || [];
+            const upcomingEvents = events.upcoming || [];
+            
+            // Combine both important and upcoming events
+            const allEvents = [
+                ...importantEvents.map(e => ({ ...e, category: '📅 Important', order: 0 })),
+                ...upcomingEvents.map(e => ({ ...e, category: '📌 Upcoming', order: 1 }))
+            ];
+            
+            // Sort by date
+            allEvents.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                return dateA - dateB;
+            });
+            
+            if (allEvents.length === 0) {
+                document.getElementById('fullCalendarContent').innerHTML = '<p style="text-align: center; color: #999;">No calendar events scheduled.</p>';
+                return;
+            }
+            
+            let html = '';
+            let currentCategory = '';
+            
+            allEvents.forEach(event => {
+                // Add category header when it changes
+                if (currentCategory !== event.category) {
+                    currentCategory = event.category;
+                    html += `<h3 style="color: #6b8e23; margin: 20px 0 10px 0; border-bottom: 2px solid #6b8e23; padding-bottom: 5px;">
+                                ${currentCategory}
+                             </h3>`;
+                }
+                
                 html += `
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
-                        <div><i class="fas ${event.icon}" style="color: ${event.color}; width: 30px;"></i> <strong>${event.title}</strong><br><small style="color:#666;">${event.description || ''}</small></div>
-                        <span style="font-weight: bold; color: ${event.color};">${event.date}</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #f8f9fa; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid ${event.color || '#6b8e23'};">
+                        <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                            <i class="fas ${event.icon || 'fa-calendar-day'}" style="color: ${event.color || '#6b8e23'}; width: 30px; font-size: 1.1rem;"></i>
+                            <div>
+                                <strong>${event.title}</strong>
+                                ${event.description ? `<br><small style="color: #666;">${event.description}</small>` : ''}
+                            </div>
+                        </div>
+                        <span style="font-weight: bold; color: ${event.color || '#6b8e23'}; background: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; white-space: nowrap; margin-left: 10px;">
+                            ${event.date}
+                        </span>
                     </div>
                 `;
             });
-            html += `</div>`;
+            
+            document.getElementById('fullCalendarContent').innerHTML = html;
+            
+        } catch(error) {
+            console.error('Error loading full calendar:', error);
+            document.getElementById('fullCalendarContent').innerHTML = '<p style="text-align: center; color: #e74c3c;">Error loading calendar.</p>';
         }
-        
-        // Upcoming Events Section
-        if (data.upcoming && data.upcoming.length > 0) {
-            html += `<h3 style="color: #6b8e23; margin-bottom: 10px;">📌 Upcoming Events</h3>
-                     <div style="background: #f8f9fa; border-radius: 10px; padding: 15px;">`;
-            data.upcoming.forEach(event => {
-                html += `
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
-                        <div><i class="fas ${event.icon}" style="color: ${event.color}; width: 30px;"></i> ${event.title}<br><small style="color:#666;">${event.description || ''}</small></div>
-                        <span style="font-weight: bold; color: ${event.color};">${event.date}</span>
-                    </div>
-                `;
-            });
-            html += `</div>`;
-        }
-        
-        if (!data.important?.length && !data.upcoming?.length) {
-            html = '<p style="text-align: center; color: #999;">No calendar events scheduled.</p>';
-        }
-        
-        document.getElementById('fullCalendarContent').innerHTML = html;
-        
-    } catch(error) {
-        document.getElementById('fullCalendarContent').innerHTML = '<p style="text-align: center; color: #e74c3c;">Error loading calendar.</p>';
-    }
+    };
+    
+    loadFullCalendar();
 }
 function closeFullCalendar() {
     const modal = document.getElementById('fullCalendarModal');
@@ -6010,33 +6033,73 @@ async function loadAcademicCalendar() {
     const container = document.getElementById('academicCalendarList');
     if (!container) return;
     
+    container.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading calendar...</div>';
+    
     try {
         const response = await fetch(`${SCRIPT_URL}?action=get_calendar_events`);
         const data = await response.json();
         
-        if (data.important && data.important.length > 0) {
-            let html = '';
-            data.important.forEach(event => {
-                html += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <i class="fas ${event.icon}" style="color: ${event.color}; width: 25px;"></i>
-                            <span><strong>${event.title}</strong>${event.description ? `<br><small style="color:#999;">${event.description}</small>` : ''}</span>
-                        </div>
-                        <span style="font-weight: bold; color: ${event.color};">${event.date}</span>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        } else {
-            container.innerHTML = '<p style="text-align: center; color: #999;">No calendar events found.</p>';
+        // Store full calendar data globally for the "Full Calendar" button
+        window.fullCalendarData = data;
+        
+        // IMPORTANT: Only show IMPORTANT events (max 4-5) in the preview card
+        let importantEvents = data.important || [];
+        
+        // Sort important events by date (assuming date format like "September 15, 2025")
+        importantEvents.sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return dateA - dateB;
+        });
+        
+        // Take only first 4 important events for the preview
+        const previewEvents = importantEvents.slice(0, 4);
+        
+        if (previewEvents.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No calendar events found.</p>';
+            return;
         }
+        
+        let html = '';
+        previewEvents.forEach(event => {
+            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas ${event.icon || 'fa-calendar-day'}" style="color: ${event.color || '#6b8e23'}; width: 30px;"></i>
+                        <div>
+                            <strong>${event.title}</strong>
+                            ${event.description ? `<br><small style="color: #999;">${event.description}</small>` : ''}
+                        </div>
+                    </div>
+                    <span style="font-weight: bold; color: ${event.color || '#6b8e23'}; background: #f0f0f0; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem;">
+                        ${event.date}
+                    </span>
+                </div>
+            `;
+        });
+        
+        // Add a "View All" link if there are more events
+        const totalImportantCount = importantEvents.length;
+        const totalUpcomingCount = (data.upcoming || []).length;
+        const totalEvents = totalImportantCount + totalUpcomingCount;
+        
+        if (totalEvents > previewEvents.length) {
+            html += `
+                <div style="text-align: center; margin-top: 15px; padding-top: 10px;">
+                    <button onclick="viewFullCalendar()" style="background: transparent; color: #6b8e23; border: 2px solid #6b8e23; padding: 8px 20px; border-radius: 25px; cursor: pointer; font-weight: bold;">
+                        <i class="fas fa-calendar-alt"></i> View Full Calendar (${totalEvents} events)
+                    </button>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = html;
+        
     } catch(error) {
         console.error('Error loading calendar:', error);
         container.innerHTML = '<p style="text-align: center; color: #999;">Unable to load calendar.</p>';
     }
 }
-
 // ============================================
 // ESCAPE HTML HELPER
 // ============================================
