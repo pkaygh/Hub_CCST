@@ -1684,46 +1684,6 @@
             </div>
         </div>
 
-        <!-- Academic Calendar Banner - Shows on ALL sections -->
-<div class="card" style="background: linear-gradient(135deg, #1a472a, #2d6a3d); color: white; padding: 15px 20px; margin-bottom: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <i class="fas fa-calendar-alt" style="font-size: 1.8rem;"></i>
-            <div>
-                <h4 style="margin: 0;">📅 Academic Calendar 2025/2026</h4>
-                <p style="margin: 5px 0 0 0; font-size: 0.8rem; opacity: 0.9;">Registration: Mar 15 | Exams: Jun 5-20 | Semester Ends: Jun 30</p>
-            </div>
-        </div>
-        <button onclick="viewFullCalendar()" class="info-btn" style="background: rgba(255,255,255,0.2); width: auto; padding: 8px 15px;">
-            Full Calendar <i class="fas fa-arrow-right"></i>
-        </button>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <h3><i class="fas fa-calendar-alt"></i> Academic Calendar</h3>
-    </div>
-    <div id="academicCalendar">
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-            <span><i class="fas fa-calendar-check"></i> Registration Deadline</span>
-            <span style="color: #e74c3c;">March 15, 2026</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-            <span><i class="fas fa-pen"></i> Mid-Semester Exams</span>
-            <span>April 10-15, 2026</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-            <span><i class="fas fa-book"></i> End of Semester Exams</span>
-            <span>June 5-20, 2026</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-            <span><i class="fas fa-graduation-cap"></i> Semester Ends</span>
-            <span>June 30, 2026</span>
-        </div>
-    </div>
-</div>
-
         <!-- PROFILE SECTION - UPGRADED -->
         <div id="profileSection" class="section">
             <!-- Welcome Banner -->
@@ -2016,6 +1976,29 @@
 
         <!-- ACADEMIC SECTION - UPGRADED -->
         <div id="academicSection" class="section" style="display:none;">
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-calendar-alt"></i> Academic Calendar</h3>
+    </div>
+    <div id="academicCalendar">
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+            <span><i class="fas fa-calendar-check"></i> Registration Deadline</span>
+            <span style="color: #e74c3c;">March 15, 2026</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+            <span><i class="fas fa-pen"></i> Mid-Semester Exams</span>
+            <span>April 10-15, 2026</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+            <span><i class="fas fa-book"></i> End of Semester Exams</span>
+            <span>June 5-20, 2026</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+            <span><i class="fas fa-graduation-cap"></i> Semester Ends</span>
+            <span>June 30, 2026</span>
+        </div>
+    </div>
+</div>
             <!-- Academic Year Selector -->
             <div class="card" style="margin-bottom: 20px;">
                 <div class="card-header">
@@ -3864,7 +3847,97 @@ function generateTranscriptHTML() {
 }
 
 function viewFullCalendar() {
-    showToast("Full academic calendar will be available soon.", "info");
+    // Create modal for full calendar
+    const modal = document.createElement('div');
+    modal.id = 'fullCalendarModal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 20000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow-y: auto;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: white; max-width: 500px; width: 90%; border-radius: 20px; padding: 25px; max-height: 85vh; overflow-y: auto; position: relative;">
+            <button onclick="closeFullCalendar()" style="position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; z-index: 1;">&times;</button>
+            
+            <h2 style="color: #1a472a; text-align: center; margin-bottom: 20px;">
+                <i class="fas fa-calendar-alt"></i> Academic Calendar 2025/2026
+            </h2>
+            
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #6b8e23; margin-bottom: 10px;">📅 Important Dates</h3>
+                <div style="background: #f8f9fa; border-radius: 10px; padding: 15px;">
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <span><i class="fas fa-calendar-check" style="color: #e74c3c;"></i> Registration Deadline</span>
+                        <span style="font-weight: bold;">March 15, 2026</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <span><i class="fas fa-pen" style="color: #3498db;"></i> Mid-Semester Exams</span>
+                        <span style="font-weight: bold;">April 10-15, 2026</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <span><i class="fas fa-book" style="color: #9b59b6;"></i> End of Semester Exams</span>
+                        <span style="font-weight: bold;">June 5-20, 2026</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                        <span><i class="fas fa-graduation-cap" style="color: #27ae60;"></i> Semester Ends</span>
+                        <span style="font-weight: bold;">June 30, 2026</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #6b8e23; margin-bottom: 10px;">📌 Upcoming Events</h3>
+                <div style="background: #f8f9fa; border-radius: 10px; padding: 15px;">
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                        <span><i class="fas fa-clock"></i> Add/Drop Deadline</span>
+                        <span>March 20, 2026</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                        <span><i class="fas fa-file-alt"></i> Project Submission</span>
+                        <span>May 25, 2026</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span><i class="fas fa-chart-line"></i> Results Release</span>
+                        <span>July 15, 2026</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3 style="color: #6b8e23; margin-bottom: 10px;">ℹ️ Important Notes</h3>
+                <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 8px;">
+                    <p style="margin: 0; font-size: 0.85rem;">
+                        <i class="fas fa-info-circle"></i> All dates are subject to change. 
+                        Students are advised to check the portal regularly for updates.
+                    </p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center;">
+                <button onclick="closeFullCalendar()" class="info-btn" style="background: #1a472a; width: auto; padding: 10px 30px;">Close</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+}
+
+function closeFullCalendar() {
+    const modal = document.getElementById('fullCalendarModal');
+    if (modal) {
+        modal.remove();
+        document.body.style.overflow = '';
+    }
 }
 
         function markRead(id) {
