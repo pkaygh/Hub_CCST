@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1079,26 +1080,193 @@
             </div>
 
             <!-- ADMISSIONS MANAGER -->
-            <div id="admissionsSection" class="section" style="display:none;">
-                <div class="card">
-                    <div class="card-header"><h3><i class="fas fa-users"></i> Student Applications</h3><div><button onclick="exportAdmissionsToCSV()" class="info-btn" style="width: auto;"><i class="fas fa-file-excel"></i> Export CSV</button><button onclick="refreshAdmissions()" class="info-btn" style="width: auto;"><i class="fas fa-sync-alt"></i> Refresh</button></div></div>
-                    <div class="filter-section"><h4 style="margin-bottom: 10px;"><i class="fas fa-filter"></i> Filter Applications</h4>
-                        <div class="filter-row">
-                            <select id="admissionStatusFilter" onchange="filterAdmissions()"><option value="all">All Status</option><option value="pending_review">Pending Review</option><option value="documents_verified">Documents Verified</option><option value="interview_scheduled">Interview Scheduled</option><option value="admitted">Admitted</option><option value="rejected">Rejected</option></select>
-                            <select id="admissionProgramFilter" onchange="filterAdmissions()"><option value="all">All Programs</option><option value="RM">Registered Midwifery (RM)</option><option value="RN">Registered Nursing (RN)</option><option value="ML">Medical Lab Technology (ML)</option></select>
-                            <input type="text" id="admissionSearchInput" placeholder="Search by name, ID, or phone" onkeyup="filterAdmissions()">
-                        </div>
-                    </div>
-                    <div class="stats-grid">
-                        <div class="stat-card"><i class="fas fa-file-alt" style="color: var(--info);"></i><h3 id="totalApplications">0</h3><p>Total Applications</p></div>
-                        <div class="stat-card"><i class="fas fa-clock" style="color: var(--warning);"></i><h3 id="pendingApplications">0</h3><p>Pending Review</p></div>
-                        <div class="stat-card"><i class="fas fa-check-circle" style="color: var(--success);"></i><h3 id="admittedCount">0</h3><p>Admitted</p></div>
-                        <div class="stat-card"><i class="fas fa-times-circle" style="color: var(--danger);"></i><h3 id="rejectedCount">0</h3><p>Rejected</p></div>
-                    </div>
-                    <div id="admissionsList" class="student-list-container"><p style="text-align: center; color: #999; padding: 40px;">Loading applications...</p></div>
-                </div>
+<div id="admissionsSection" class="section" style="display:none;">
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-users"></i> Student Applications</h3>
+            <div>
+                <button onclick="exportAdmissionsToCSV()" class="info-btn" style="width: auto;"><i class="fas fa-file-excel"></i> Export CSV</button>
+                <button onclick="refreshAdmissions()" class="info-btn" style="width: auto;"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
         </div>
+        <div class="filter-section">
+            <h4 style="margin-bottom: 10px;"><i class="fas fa-filter"></i> Filter Applications</h4>
+            <div class="filter-row">
+                <select id="admissionStatusFilter" onchange="filterAdmissions()">
+                    <option value="all">All Status</option>
+                    <option value="pending_review">Pending Review</option>
+                    <option value="documents_verified">Documents Verified</option>
+                    <option value="interview_scheduled">Interview Scheduled</option>
+                    <option value="admitted">Admitted</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="qualification_review">Qualification Review</option>
+                    <option value="qualified">Qualified</option>
+                    <option value="not_qualified">Not Qualified</option>
+                </select>
+                <select id="admissionProgramFilter" onchange="filterAdmissions()">
+                    <option value="all">All Programs</option>
+                    <option value="RM">Registered Midwifery (RM)</option>
+                    <option value="RN">Registered Nursing (RN)</option>
+                    <option value="ML">Medical Lab Technology (ML)</option>
+                    <option value="BSc CS">BSc Computer Science</option>
+                </select>
+                <input type="text" id="admissionSearchInput" placeholder="Search by name, ID, or phone" onkeyup="filterAdmissions()">
+            </div>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card"><i class="fas fa-file-alt" style="color: var(--info);"></i><h3 id="totalApplications">0</h3><p>Total Applications</p></div>
+            <div class="stat-card"><i class="fas fa-clock" style="color: var(--warning);"></i><h3 id="pendingApplications">0</h3><p>Pending Review</p></div>
+            <div class="stat-card"><i class="fas fa-check-circle" style="color: var(--success);"></i><h3 id="admittedCount">0</h3><p>Admitted</p></div>
+            <div class="stat-card"><i class="fas fa-times-circle" style="color: var(--danger);"></i><h3 id="rejectedCount">0</h3><p>Rejected</p></div>
+            <div class="stat-card"><i class="fas fa-graduation-cap" style="color: #9b59b6;"></i><h3 id="qualifiedCount">0</h3><p>Qualified</p></div>
+        </div>
+        <div id="admissionsList" class="student-list-container">
+            <p style="text-align: center; color: #999; padding: 40px;">Loading applications...</p>
+        </div>
+    </div>
+
+    <!-- STUDENT QUALIFICATION RESULTS FORM -->
+    <div class="card" style="background: #f8f9fa; border: 3px solid var(--primary);">
+        <div class="card-header" style="border-bottom: 3px solid var(--warning);">
+            <h3 style="color: var(--primary-dark);"><i class="fas fa-edit"></i> Enter Qualification Results</h3>
+            <span style="font-size:0.8rem; color:#666;">For continuing students - Click a student above to auto-fill</span>
+        </div>
+        
+        <!-- Student Info -->
+        <div style="display: grid; grid-template-columns: 2fr 2fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label><strong>Student ID *</strong></label>
+                <input type="text" id="examStudentId" placeholder="e.g., CCST/RM/24/001" style="width:100%; padding:10px; border:2px solid var(--primary);">
+            </div>
+            <div>
+                <label><strong>Student Name *</strong></label>
+                <input type="text" id="examStudentName" placeholder="Full Name" style="width:100%; padding:10px;">
+            </div>
+            <div>
+                <label><strong>Program</strong></label>
+                <select id="examProgram" style="width:100%; padding:10px;">
+                    <option value="RM">Registered Midwifery (RM)</option>
+                    <option value="RN">Registered Nursing (RN)</option>
+                    <option value="ML">Medical Lab Technology (ML)</option>
+                    <option value="BSc CS">BSc Computer Science</option>
+                </select>
+            </div>
+            <div>
+                <label><strong>Level</strong></label>
+                <select id="examLevel" style="width:100%; padding:10px;">
+                    <option value="100">Level 100</option>
+                    <option value="200" selected>Level 200</option>
+                    <option value="300">Level 300</option>
+                </select>
+            </div>
+        </div>
+
+        <hr style="margin: 15px 0;">
+
+        <!-- Exam Attempt Section -->
+        <div style="background: #e8f0fe; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <h4 style="color: var(--primary-dark);"><i class="fas fa-plus-circle" style="color: var(--primary);"></i> Add Exam Attempt</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div>
+                    <label><strong>Year *</strong></label>
+                    <input type="number" id="examYear" value="2024" style="width:100%; padding:10px;" min="2000" max="2030">
+                </div>
+                <div>
+                    <label><strong>Period *</strong></label>
+                    <select id="examPeriod" style="width:100%; padding:10px;">
+                        <option value="June">June</option>
+                        <option value="January">January</option>
+                        <option value="August">August</option>
+                        <option value="December">December</option>
+                        <option value="March">March</option>
+                        <option value="September">September</option>
+                    </select>
+                </div>
+                <div>
+                    <label><strong>Exam Type</strong></label>
+                    <select id="examType" style="width:100%; padding:10px;">
+                        <option value="Main Examination">Main Examination</option>
+                        <option value="Resit">Resit</option>
+                        <option value="Supplementary">Supplementary</option>
+                        <option value="Special">Special</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Subjects & Grades -->
+            <h5><i class="fas fa-book"></i> Subjects & Grades</h5>
+            <div id="subjectInputs">
+                <div class="subject-row" style="display: flex; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; align-items: center;">
+                    <input class="subName" placeholder="Subject Name (e.g., Mathematics)" style="flex:2; padding:10px; min-width:150px;">
+                    <select class="subGrade" style="flex:0.8; padding:10px; min-width:80px;">
+                        <option value="A+">A+</option>
+                        <option value="A">A</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B">B</option>
+                        <option value="B-">B-</option>
+                        <option value="C+">C+</option>
+                        <option value="C" selected>C</option>
+                        <option value="C-">C-</option>
+                        <option value="D+">D+</option>
+                        <option value="D">D</option>
+                        <option value="E">E</option>
+                    </select>
+                    <button onclick="removeSubjectRow(this)" class="danger-btn" style="width:auto; padding:8px 12px; background:#e74c3c; border-radius:8px;">✕</button>
+                </div>
+            </div>
+            <button onclick="addSubjectRow()" class="info-btn" style="width:auto; padding:8px 20px; background:#3498db; margin-top:5px;">
+                <i class="fas fa-plus"></i> Add Subject
+            </button>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button onclick="addExamAttempt()" class="success-btn" style="flex:1; padding:12px;">
+                    <i class="fas fa-save"></i> Add This Attempt
+                </button>
+            </div>
+        </div>
+
+        <!-- Preview Attempts -->
+        <div style="margin-bottom: 15px;">
+            <h5><i class="fas fa-list"></i> Added Attempts (<span id="attemptCount">0</span>)</h5>
+            <div id="examAttemptsPreview" style="padding: 15px; background: white; border-radius: 8px; border: 1px solid #ddd; max-height: 200px; overflow-y: auto;">
+                <p style="color:#999; text-align:center;">No attempts added yet.</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; border-top: 2px solid var(--primary); padding-top: 15px;">
+            <button onclick="saveAllExamData()" class="success-btn" style="flex:2; padding:14px; font-size:1.1rem; background: linear-gradient(135deg, #6b8e23, #2ecc71);">
+                <i class="fas fa-check-double"></i> SAVE ALL & CHECK QUALIFICATION
+            </button>
+            <button onclick="clearExamForm()" class="danger-btn" style="flex:1; padding:14px;">
+                <i class="fas fa-undo"></i> Clear Form
+            </button>
+            <button onclick="loadStudentFromList()" class="info-btn" style="flex:1; padding:14px; background:#9b59b6;">
+                <i class="fas fa-sync-alt"></i> Load Selected Student
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Application Detail Modal -->
+<div id="applicationModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Application Details</h3>
+            <button class="close-modal" onclick="closeApplicationModal()">&times;</button>
+        </div>
+        <div id="applicationDetailContent" style="padding: 20px;"></div>
+        <div id="qualificationCheckArea" style="padding: 0 20px 20px 20px;"></div>
+        <div class="btn-group" style="display:flex; gap:10px; padding:20px; flex-wrap:wrap; border-top: 2px solid #eee;">
+            <button onclick="runQualificationCheck()" class="warning-btn" style="flex:1;"><i class="fas fa-check-double"></i> Check Qualification</button>
+            <button onclick="loadStudentToForm()" class="info-btn" style="flex:1; background:#9b59b6;"><i class="fas fa-edit"></i> Edit Results</button>
+            <button onclick="approveApplication()" class="success-btn" style="flex:1;"><i class="fas fa-user-check"></i> Admit</button>
+            <button onclick="rejectApplication()" class="danger-btn" style="flex:1;"><i class="fas fa-user-times"></i> Reject</button>
+            <button onclick="scheduleInterview()" class="info-btn" style="flex:1;"><i class="fas fa-calendar-plus"></i> Schedule Interview</button>
+        </div>
+    </div>
+</div>
 
         <!-- FOOTER --->
         <footer class="footer">
@@ -1132,7 +1300,7 @@
 // ============================================
 // GLOBAL VARIABLES
 // ============================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZmEN6angtUqq1IbOBLZ9K_3h-AY10yWGaKpudb-4LhxzGEzhev1c73Y9iwHXTq7pp/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDNPMuu-vR4MiQEhGKR3B_UNytk3a9kEukSdLu8ZjVE1xf9cZRP0Fe3hCKx7MqAHQ/exec";
 let currentStudent = null;
 let currentTranscriptStudent = null;
 let allStudents = [];
@@ -2708,6 +2876,828 @@ function displayAdmissions() {
     let html = ''; 
     filtered.forEach(app => { html += `<div class="student-list-item" onclick="viewApplicationDetails('${app.applicationId}')" style="cursor:pointer;"><div class="student-info"><span class="student-name">${app.fullName}</span><span class="student-details">${app.applicationId} | ${app.program} | ${app.phone}</span><small>Submitted: ${new Date(app.submittedAt).toLocaleDateString()}</small></div><div style="text-align:right;"><span style="background:${statusColors[app.status]}; color:white; padding:4px 12px; border-radius:20px; font-size:0.75rem;">${statusLabels[app.status]}</span></div></div>`; }); 
     container.innerHTML = html; 
+}
+// ============================================
+// QUALIFICATION CHECK SYSTEM
+// ============================================
+
+// Qualification standards
+let qualificationStandards = {
+    minGrade: 'C',
+    maxAttempts: 3,
+    requiredSubjects: ['Mathematics', 'English', 'Science']
+};
+
+// Load standards from localStorage
+function loadQualificationStandards() {
+    const saved = localStorage.getItem('qualificationStandards');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            qualificationStandards = parsed;
+        } catch(e) {
+            console.log('Error loading standards, using defaults');
+        }
+    }
+    // Update UI
+    document.getElementById('stdMinGrade').textContent = qualificationStandards.minGrade;
+    document.getElementById('stdMaxAttempts').textContent = qualificationStandards.maxAttempts;
+    document.getElementById('stdRequiredSubjects').textContent = qualificationStandards.requiredSubjects.join(', ');
+    document.getElementById('setMinGrade').value = qualificationStandards.minGrade;
+    document.getElementById('setMaxAttempts').value = qualificationStandards.maxAttempts;
+    document.getElementById('setRequiredSubjects').value = qualificationStandards.requiredSubjects.join(', ');
+}
+
+function saveQualificationStandards() {
+    const minGrade = document.getElementById('setMinGrade').value;
+    const maxAttempts = parseInt(document.getElementById('setMaxAttempts').value);
+    const subjects = document.getElementById('setRequiredSubjects').value.split(',').map(s => s.trim()).filter(s => s);
+    
+    qualificationStandards = { minGrade, maxAttempts, requiredSubjects: subjects };
+    localStorage.setItem('qualificationStandards', JSON.stringify(qualificationStandards));
+    
+    document.getElementById('stdMinGrade').textContent = minGrade;
+    document.getElementById('stdMaxAttempts').textContent = maxAttempts;
+    document.getElementById('stdRequiredSubjects').textContent = subjects.join(', ');
+    
+    document.getElementById('qualificationModal').classList.remove('show');
+    showToast('Qualification standards updated!', 'success');
+}
+
+function resetQualificationStandards() {
+    qualificationStandards = {
+        minGrade: 'C',
+        maxAttempts: 3,
+        requiredSubjects: ['Mathematics', 'English', 'Science']
+    };
+    localStorage.setItem('qualificationStandards', JSON.stringify(qualificationStandards));
+    loadQualificationStandards();
+    showToast('Standards reset to defaults', 'info');
+}
+
+function openQualificationStandards() {
+    document.getElementById('qualificationModal').classList.add('show');
+}
+
+function getGradeValue(grade) {
+    const gradeMap = {
+        'A+': 12, 'A': 11, 'A-': 10,
+        'B+': 9, 'B': 8, 'B-': 7,
+        'C+': 6, 'C': 5, 'C-': 4,
+        'D+': 3, 'D': 2, 'E': 1
+    };
+    return gradeMap[grade] || 0;
+}
+
+function isGradePassing(grade, minGrade) {
+    return getGradeValue(grade) >= getGradeValue(minGrade);
+}
+
+function runQualificationCheck() {
+    if (!currentSelectedApplication) {
+        showToast('No application selected', 'warning');
+        return;
+    }
+    
+    const app = currentSelectedApplication;
+    const attempts = app.examAttempts || [];
+    const minGrade = qualificationStandards.minGrade;
+    const maxAttempts = qualificationStandards.maxAttempts;
+    const requiredSubjects = qualificationStandards.requiredSubjects;
+    
+    let results = {
+        qualified: false,
+        reason: '',
+        details: [],
+        attemptsAnalyzed: attempts.length
+    };
+    
+    // Check if there are any attempts
+    if (attempts.length === 0) {
+        results.reason = 'No exam attempts recorded';
+        results.details.push({ status: '❌', message: 'No exam attempts found for this student' });
+    } else {
+        // Analyze each attempt
+        attempts.forEach((attempt, idx) => {
+            const attemptResults = {
+                attemptNumber: idx + 1,
+                year: attempt.year || 'N/A',
+                period: attempt.period || 'N/A',
+                subjects: attempt.subjects || [],
+                allPass: true,
+                missingSubjects: [],
+                failedSubjects: []
+            };
+            
+            // Check required subjects
+            requiredSubjects.forEach(req => {
+                const found = attempt.subjects.find(s => s.name === req);
+                if (!found) {
+                    attemptResults.allPass = false;
+                    attemptResults.missingSubjects.push(req);
+                } else {
+                    if (!isGradePassing(found.grade, minGrade)) {
+                        attemptResults.allPass = false;
+                        attemptResults.failedSubjects.push(`${req} (${found.grade})`);
+                    }
+                }
+            });
+            
+            // Check if all subjects meet minimum grade
+            attempt.subjects.forEach(sub => {
+                if (!isGradePassing(sub.grade, minGrade) && !attemptResults.failedSubjects.includes(`${sub.name} (${sub.grade})`)) {
+                    attemptResults.allPass = false;
+                    attemptResults.failedSubjects.push(`${sub.name} (${sub.grade})`);
+                }
+            });
+            
+            results.details.push({
+                attemptNumber: idx + 1,
+                allPass: attemptResults.allPass,
+                missingSubjects: attemptResults.missingSubjects,
+                failedSubjects: attemptResults.failedSubjects,
+                year: attempt.year,
+                period: attempt.period
+            });
+        });
+    }
+    
+    // Determine overall qualification
+    // Check if any attempt meets all requirements
+    const passingAttempt = results.details.find(d => d.allPass === true && d.missingSubjects.length === 0 && d.failedSubjects.length === 0);
+    
+    if (passingAttempt) {
+        results.qualified = true;
+        results.reason = `Passed all requirements in Attempt ${passingAttempt.attemptNumber}`;
+        app.status = 'qualified';
+    } else if (attempts.length >= maxAttempts) {
+        results.qualified = false;
+        results.reason = `Exceeded maximum attempts (${maxAttempts})`;
+        app.status = 'not_qualified';
+    } else {
+        results.qualified = false;
+        results.reason = 'No attempt meets all requirements';
+        app.status = 'not_qualified';
+    }
+    
+    // Store results in application
+    app.qualificationResult = results;
+    app.qualificationChecked = true;
+    
+    // Update application in list
+    const idx = allApplications.findIndex(a => a.applicationId === app.applicationId);
+    if (idx !== -1) {
+        allApplications[idx] = app;
+        localStorage.setItem('cachedAdmissions', JSON.stringify(allApplications));
+    }
+    
+    // Show results
+    showQualificationResults(app);
+    updateAdmissionStats();
+    displayAdmissions();
+}
+
+function showQualificationResults(app) {
+    const area = document.getElementById('qualificationCheckArea');
+    const result = app.qualificationResult;
+    
+    if (!result) {
+        area.innerHTML = '<p style="color: #666;">Click "Check Qualification" to evaluate this student.</p>';
+        return;
+    }
+    
+    let html = `<div style="background: ${result.qualified ? '#e8f5e9' : '#ffebee'}; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid ${result.qualified ? '#27ae60' : '#e74c3c'};">
+        <h4 style="margin: 0; color: ${result.qualified ? '#27ae60' : '#e74c3c'};">
+            <i class="fas ${result.qualified ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+            ${result.qualified ? 'QUALIFIED' : 'NOT QUALIFIED'}
+        </h4>
+        <p style="margin: 5px 0;"><strong>Reason:</strong> ${result.reason}</p>
+        <p style="margin: 5px 0;"><strong>Attempts Analyzed:</strong> ${result.attemptsAnalyzed}</p>
+        <p style="margin: 5px 0;"><strong>Standards:</strong> Min Grade ${qualificationStandards.minGrade} | Max Attempts ${qualificationStandards.maxAttempts}</p>
+    </div>`;
+    
+    // Show attempt details
+    html += `<h5 style="margin: 15px 0 10px 0;">Attempt Details:</h5>`;
+    result.details.forEach(attempt => {
+        const passed = attempt.allPass && attempt.missingSubjects.length === 0 && attempt.failedSubjects.length === 0;
+        html += `<div class="exam-attempt" style="border-left-color: ${passed ? '#27ae60' : '#e74c3c'};">
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Attempt ${attempt.attemptNumber}</strong>
+                <span style="color: ${passed ? '#27ae60' : '#e74c3c'};">
+                    ${passed ? '✅ PASS' : '❌ FAIL'}
+                </span>
+            </div>
+            <small>${attempt.year || 'N/A'} | ${attempt.period || 'N/A'}</small>
+            ${attempt.missingSubjects.length > 0 ? `<div style="color: #e74c3c;">⚠️ Missing: ${attempt.missingSubjects.join(', ')}</div>` : ''}
+            ${attempt.failedSubjects.length > 0 ? `<div style="color: #e74c3c;">❌ Failed: ${attempt.failedSubjects.join(', ')}</div>` : ''}
+        </div>`;
+    });
+    
+    area.innerHTML = html;
+}
+
+// Override viewApplicationDetails to include qualification results
+const originalViewDetails = viewApplicationDetails;
+viewApplicationDetails = function(appId) {
+    originalViewDetails(appId);
+    // Show qualification results if checked
+    if (currentSelectedApplication && currentSelectedApplication.qualificationChecked) {
+        showQualificationResults(currentSelectedApplication);
+    } else {
+        document.getElementById('qualificationCheckArea').innerHTML = '<p style="color: #666;">Click "Check Qualification" to evaluate this student.</p>';
+    }
+};
+
+// Update admissions display to show qualification status
+const originalDisplay = displayAdmissions;
+displayAdmissions = function() {
+    const container = document.getElementById('admissionsList');
+    const statusFilter = document.getElementById('admissionStatusFilter').value;
+    const programFilter = document.getElementById('admissionProgramFilter').value;
+    const search = document.getElementById('admissionSearchInput').value.toLowerCase();
+    
+    let filtered = allApplications.filter(a => 
+        (statusFilter === 'all' || a.status === statusFilter) &&
+        (programFilter === 'all' || a.program === programFilter) &&
+        (!search || a.fullName.toLowerCase().includes(search) || a.applicationId.toLowerCase().includes(search) || a.phone.includes(search))
+    );
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding:40px;">No applications found.</p>';
+        return;
+    }
+    
+    const statusColors = {
+        pending_review: '#f39c12',
+        documents_verified: '#3498db',
+        interview_scheduled: '#9b59b6',
+        admitted: '#27ae60',
+        rejected: '#e74c3c',
+        qualification_review: '#f1c40f',
+        qualified: '#2ecc71',
+        not_qualified: '#e74c3c'
+    };
+    const statusLabels = {
+        pending_review: 'Pending Review',
+        documents_verified: 'Documents Verified',
+        interview_scheduled: 'Interview Scheduled',
+        admitted: 'Admitted',
+        rejected: 'Rejected',
+        qualification_review: 'Qualification Review',
+        qualified: '✅ Qualified',
+        not_qualified: '❌ Not Qualified'
+    };
+    
+    let html = '';
+    filtered.forEach(app => {
+        const qualBadge = app.qualificationChecked && app.qualificationResult ? 
+            (app.qualificationResult.qualified ? '🏅' : '🚫') : '';
+        html += `<div class="student-list-item" onclick="viewApplicationDetails('${app.applicationId}')" style="cursor:pointer;">
+            <div class="student-info">
+                <span class="student-name">${app.fullName} ${qualBadge}</span>
+                <span class="student-details">${app.applicationId} | ${app.program} | ${app.phone}</span>
+                <small>Submitted: ${new Date(app.submittedAt).toLocaleDateString()}</small>
+                ${app.examAttempts ? `<small style="color: #666;">📝 ${app.examAttempts.length} attempt(s)</small>` : ''}
+            </div>
+            <div style="text-align:right;">
+                <span style="background:${statusColors[app.status] || '#95a5a6'}; color:white; padding:4px 12px; border-radius:20px; font-size:0.75rem; display:inline-block; margin-bottom:4px;">
+                    ${statusLabels[app.status] || app.status}
+                </span>
+            </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+    // Update stats
+    document.getElementById('qualifiedCount').innerText = allApplications.filter(a => a.status === 'qualified').length;
+};
+
+// Add sample data with exam attempts
+function loadSampleQualificationData() {
+    const sampleApps = [
+        {
+            applicationId: "STU-2026-0001",
+            fullName: "John Doe",
+            program: "BSc CS",
+            status: "pending_review",
+            phone: "0244123456",
+            email: "john.doe@example.com",
+            submittedAt: new Date().toISOString(),
+            examAttempts: [
+                {
+                    year: 2024,
+                    period: "June",
+                    subjects: [
+                        { name: "Mathematics", grade: "A" },
+                        { name: "English", grade: "B+" },
+                        { name: "Science", grade: "A-" },
+                        { name: "Social Studies", grade: "B" },
+                        { name: "ICT", grade: "A" }
+                    ]
+                },
+                {
+                    year: 2025,
+                    period: "January",
+                    subjects: [
+                        { name: "Mathematics", grade: "A+" },
+                        { name: "English", grade: "A" },
+                        { name: "Science", grade: "A" },
+                        { name: "Economics", grade: "B+" },
+                        { name: "Accounting", grade: "B" }
+                    ]
+                }
+            ]
+        },
+        {
+            applicationId: "STU-2026-0002",
+            fullName: "Jane Smith",
+            program: "RN",
+            status: "pending_review",
+            phone: "0244123457",
+            email: "jane.smith@example.com",
+            submittedAt: new Date().toISOString(),
+            examAttempts: [
+                {
+                    year: 2023,
+                    period: "June",
+                    subjects: [
+                        { name: "Mathematics", grade: "D" },
+                        { name: "English", grade: "C" },
+                        { name: "Science", grade: "D+" }
+                    ]
+                },
+                {
+                    year: 2024,
+                    period: "January",
+                    subjects: [
+                        { name: "Mathematics", grade: "C+" },
+                        { name: "English", grade: "C" },
+                        { name: "Science", grade: "D+" }
+                    ]
+                },
+                {
+                    year: 2024,
+                    period: "June",
+                    subjects: [
+                        { name: "Mathematics", grade: "C" },
+                        { name: "English", grade: "C" },
+                        { name: "Science", grade: "C-" }
+                    ]
+                }
+            ]
+        },
+        {
+            applicationId: "STU-2026-0003",
+            fullName: "Kwame Mensah",
+            program: "ML",
+            status: "pending_review",
+            phone: "0244123458",
+            email: "kwame@example.com",
+            submittedAt: new Date().toISOString(),
+            examAttempts: [
+                {
+                    year: 2024,
+                    period: "June",
+                    subjects: [
+                        { name: "Mathematics", grade: "B+" },
+                        { name: "English", grade: "B" },
+                        { name: "Science", grade: "A-" }
+                    ]
+                }
+            ]
+        }
+    ];
+    
+    // Merge with existing applications
+    sampleApps.forEach(sample => {
+        if (!allApplications.find(a => a.applicationId === sample.applicationId)) {
+            allApplications.push(sample);
+        }
+    });
+    
+    localStorage.setItem('cachedAdmissions', JSON.stringify(allApplications));
+}
+
+// Update loadAdmissions to include sample data if empty
+const originalLoadAdmissions = loadAdmissions;
+loadAdmissions = async function() {
+    const container = document.getElementById('admissionsList');
+    container.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading...</p>';
+    
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=get_admissions`);
+        const data = await res.json();
+        if (data.admissions && data.admissions.length) {
+            allApplications = data.admissions;
+        } else {
+            // Load from localStorage or use sample
+            const cached = localStorage.getItem('cachedAdmissions');
+            if (cached) {
+                allApplications = JSON.parse(cached);
+                if (allApplications.length === 0) {
+                    loadSampleQualificationData();
+                }
+            } else {
+                loadSampleQualificationData();
+            }
+        }
+    } catch(e) {
+        const cached = localStorage.getItem('cachedAdmissions');
+        if (cached) {
+            allApplications = JSON.parse(cached);
+        } else {
+            loadSampleQualificationData();
+        }
+    }
+    
+    updateAdmissionStats();
+    displayAdmissions();
+};
+
+// Initialize qualification standards
+loadQualificationStandards();
+
+// Add menu item for qualification standards (add to sidebar)
+// Add this after the admissions menu item
+document.querySelector('.menu-item#admissionsMenuItem').insertAdjacentHTML('afterend',
+    `<a href="#" class="menu-item" onclick="openQualificationStandards(); return false;"><i class="fas fa-gavel"></i> Qualification Standards</a>`
+);
+
+// Update close modal function
+const originalClose = closeApplicationModal;
+closeApplicationModal = function() {
+    const modal = document.getElementById('applicationModal');
+    if (modal) modal.classList.remove('show');
+    document.getElementById('qualificationCheckArea').innerHTML = '';
+};
+
+// ============================================
+// QUALIFICATION RESULTS FORM FUNCTIONS
+// ============================================
+
+let examAttempts = [];
+let selectedStudentForExam = null;
+
+function addSubjectRow() {
+    const container = document.getElementById('subjectInputs');
+    const div = document.createElement('div');
+    div.className = 'subject-row';
+    div.style.display = 'flex';
+    div.style.gap = '10px';
+    div.style.marginBottom = '8px';
+    div.style.flexWrap = 'wrap';
+    div.style.alignItems = 'center';
+    div.innerHTML = `
+        <input class="subName" placeholder="Subject Name (e.g., Mathematics)" style="flex:2; padding:10px; min-width:150px;">
+        <select class="subGrade" style="flex:0.8; padding:10px; min-width:80px;">
+            <option value="A+">A+</option>
+            <option value="A">A</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B">B</option>
+            <option value="B-">B-</option>
+            <option value="C+">C+</option>
+            <option value="C" selected>C</option>
+            <option value="C-">C-</option>
+            <option value="D+">D+</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+        </select>
+        <button onclick="removeSubjectRow(this)" class="danger-btn" style="width:auto; padding:8px 12px; background:#e74c3c; border-radius:8px;">✕</button>
+    `;
+    container.appendChild(div);
+}
+
+function removeSubjectRow(btn) {
+    const row = btn.closest('.subject-row');
+    if (document.querySelectorAll('.subject-row').length > 1) {
+        row.remove();
+    } else {
+        showToast('At least one subject is required', 'warning');
+    }
+}
+
+function getSubjectsFromForm() {
+    const names = document.querySelectorAll('.subName');
+    const grades = document.querySelectorAll('.subGrade');
+    const subjects = [];
+    for (let i = 0; i < names.length; i++) {
+        const name = names[i].value.trim();
+        const grade = grades[i].value;
+        if (name) {
+            subjects.push({ name: name, grade: grade });
+        }
+    }
+    return subjects;
+}
+
+function addExamAttempt() {
+    const year = document.getElementById('examYear').value;
+    const period = document.getElementById('examPeriod').value;
+    const examType = document.getElementById('examType').value;
+    const subjects = getSubjectsFromForm();
+    
+    if (!year) {
+        showToast('Please enter year', 'warning');
+        return;
+    }
+    if (subjects.length === 0) {
+        showToast('Please add at least one subject', 'warning');
+        return;
+    }
+    
+    const attempt = {
+        year: parseInt(year),
+        period: period,
+        examType: examType,
+        subjects: subjects
+    };
+    
+    examAttempts.push(attempt);
+    displayExamAttempts();
+    
+    // Clear subject inputs but keep one row
+    document.querySelectorAll('.subName').forEach(inp => inp.value = '');
+    document.querySelectorAll('.subGrade').forEach(sel => sel.selectedIndex = 7); // C grade default
+    
+    // Keep only one subject row
+    const rows = document.querySelectorAll('.subject-row');
+    while (rows.length > 1) {
+        rows[rows.length - 1].remove();
+    }
+    
+    document.getElementById('attemptCount').textContent = examAttempts.length;
+    showToast(`Attempt ${examAttempts.length} added!`, 'success');
+}
+
+function displayExamAttempts() {
+    const container = document.getElementById('examAttemptsPreview');
+    if (examAttempts.length === 0) {
+        container.innerHTML = '<p style="color:#999; text-align:center;">No attempts added yet.</p>';
+        document.getElementById('attemptCount').textContent = '0';
+        return;
+    }
+    
+    let html = '<div style="font-size:0.9rem;">';
+    examAttempts.forEach((attempt, idx) => {
+        html += `<div style="background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong>Attempt ${idx + 1}:</strong>
+                <span>${attempt.year} - ${attempt.period} (${attempt.examType})</span>
+                <button onclick="removeExamAttempt(${idx})" class="danger-btn" style="width:auto; padding:2px 10px; font-size:12px; background:#e74c3c; border-radius:4px;">✕</button>
+            </div>
+            <small>${attempt.subjects.map(s => `${s.name}: ${s.grade}`).join(' | ')}</small>
+        </div>`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    document.getElementById('attemptCount').textContent = examAttempts.length;
+}
+
+function removeExamAttempt(idx) {
+    if (confirm('Remove this attempt?')) {
+        examAttempts.splice(idx, 1);
+        displayExamAttempts();
+        showToast('Attempt removed', 'info');
+    }
+}
+
+function clearExamForm() {
+    if (examAttempts.length > 0 && !confirm('Clear all data?')) return;
+    document.getElementById('examStudentId').value = '';
+    document.getElementById('examStudentName').value = '';
+    document.getElementById('examYear').value = '2024';
+    document.getElementById('examPeriod').value = 'June';
+    document.getElementById('examType').value = 'Main Examination';
+    document.querySelectorAll('.subName').forEach(inp => inp.value = '');
+    document.querySelectorAll('.subGrade').forEach(sel => sel.selectedIndex = 7);
+    examAttempts = [];
+    displayExamAttempts();
+    selectedStudentForExam = null;
+    showToast('Form cleared', 'info');
+}
+
+function loadStudentFromList() {
+    if (!currentSelectedApplication) {
+        showToast('Select a student from the list first', 'warning');
+        return;
+    }
+    loadStudentToForm();
+}
+
+function loadStudentToForm() {
+    if (!currentSelectedApplication) {
+        showToast('No student selected', 'warning');
+        return;
+    }
+    const app = currentSelectedApplication;
+    document.getElementById('examStudentId').value = app.applicationId || app.id || '';
+    document.getElementById('examStudentName').value = app.fullName || app.name || '';
+    if (app.program) document.getElementById('examProgram').value = app.program;
+    if (app.level) document.getElementById('examLevel').value = app.level;
+    
+    // Load existing attempts if any
+    if (app.examAttempts && app.examAttempts.length > 0) {
+        examAttempts = JSON.parse(JSON.stringify(app.examAttempts));
+        displayExamAttempts();
+        showToast(`Loaded ${examAttempts.length} attempt(s) for ${app.fullName}`, 'success');
+    } else {
+        examAttempts = [];
+        displayExamAttempts();
+        showToast(`No existing attempts for ${app.fullName}`, 'info');
+    }
+    selectedStudentForExam = app;
+    closeApplicationModal();
+}
+
+async function saveAllExamData() {
+    const studentId = document.getElementById('examStudentId').value.trim();
+    const name = document.getElementById('examStudentName').value.trim();
+    const program = document.getElementById('examProgram').value;
+    const level = document.getElementById('examLevel').value;
+    
+    if (!studentId) {
+        showToast('Please enter Student ID', 'warning');
+        return;
+    }
+    if (!name) {
+        showToast('Please enter Student Name', 'warning');
+        return;
+    }
+    if (examAttempts.length === 0) {
+        showToast('Please add at least one exam attempt', 'warning');
+        return;
+    }
+    
+    if (!confirm(`Save ${examAttempts.length} attempt(s) for ${name} (${studentId}) and run qualification check?`)) {
+        return;
+    }
+    
+    const btn = document.activeElement;
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SAVING...';
+    
+    try {
+        // Save exam attempts to Google Sheet
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'update_qualification',
+                id: studentId,
+                status: 'pending_review',
+                reason: 'Awaiting qualification check',
+                examAttempts: JSON.stringify(examAttempts)
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Update local application
+            const appIndex = allApplications.findIndex(a => 
+                a.applicationId === studentId || 
+                a.id === studentId || 
+                (a.fullName && a.fullName.toLowerCase() === name.toLowerCase())
+            );
+            
+            if (appIndex !== -1) {
+                allApplications[appIndex].examAttempts = JSON.parse(JSON.stringify(examAttempts));
+                allApplications[appIndex].status = 'qualification_review';
+                allApplications[appIndex].qualificationChecked = false;
+                localStorage.setItem('cachedAdmissions', JSON.stringify(allApplications));
+                currentSelectedApplication = allApplications[appIndex];
+            }
+            
+            showToast(`Data saved for ${name}! Running qualification check...`, 'success');
+            
+            // Auto-run qualification check
+            await runQualificationCheckForStudent(studentId, examAttempts, name);
+            
+            // Clear form
+            examAttempts = [];
+            displayExamAttempts();
+            document.getElementById('examStudentId').value = '';
+            document.getElementById('examStudentName').value = '';
+            document.getElementById('attemptCount').textContent = '0';
+            
+            // Refresh admissions list
+            await loadAdmissions();
+        } else {
+            showToast('Error: ' + (result.error || 'Failed to save'), 'danger');
+        }
+    } catch (e) {
+        showToast('Network error: ' + e.message, 'danger');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+async function runQualificationCheckForStudent(studentId, attempts, name) {
+    const minGrade = qualificationStandards.minGrade;
+    const maxAttempts = qualificationStandards.maxAttempts;
+    const requiredSubjects = qualificationStandards.requiredSubjects;
+    
+    let qualified = false;
+    let reason = '';
+    let passingAttempt = null;
+    let allResults = [];
+    
+    for (let idx = 0; idx < attempts.length; idx++) {
+        const attempt = attempts[idx];
+        const subjects = attempt.subjects || [];
+        let allPass = true;
+        let missingSubjects = [];
+        let failedSubjects = [];
+        
+        requiredSubjects.forEach(req => {
+            const found = subjects.find(s => s.name === req);
+            if (!found) {
+                allPass = false;
+                missingSubjects.push(req);
+            } else {
+                if (!isGradePassing(found.grade, minGrade)) {
+                    allPass = false;
+                    failedSubjects.push(`${req} (${found.grade})`);
+                }
+            }
+        });
+        
+        subjects.forEach(sub => {
+            if (!isGradePassing(sub.grade, minGrade) && !failedSubjects.includes(`${sub.name} (${sub.grade})`)) {
+                allPass = false;
+                failedSubjects.push(`${sub.name} (${sub.grade})`);
+            }
+        });
+        
+        allResults.push({
+            attemptNumber: idx + 1,
+            allPass: allPass,
+            missingSubjects: missingSubjects,
+            failedSubjects: failedSubjects,
+            year: attempt.year,
+            period: attempt.period
+        });
+        
+        if (allPass && missingSubjects.length === 0 && failedSubjects.length === 0 && !passingAttempt) {
+            passingAttempt = idx + 1;
+        }
+    }
+    
+    if (passingAttempt) {
+        qualified = true;
+        reason = `Passed all requirements in Attempt ${passingAttempt}`;
+    } else if (attempts.length >= maxAttempts) {
+        qualified = false;
+        reason = `Exceeded maximum attempts (${maxAttempts})`;
+    } else {
+        qualified = false;
+        reason = 'No attempt meets all requirements';
+    }
+    
+    // Update status in Google Sheet
+    await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+            action: 'update_qualification',
+            id: studentId,
+            status: qualified ? 'qualified' : 'not_qualified',
+            reason: reason,
+            examAttempts: JSON.stringify(attempts)
+        })
+    });
+    
+    const resultMsg = `${name}: ${qualified ? '✅ QUALIFIED' : '❌ NOT QUALIFIED'} - ${reason}`;
+    showToast(resultMsg, qualified ? 'success' : 'danger');
+    
+    // Update application in local list
+    const appIndex = allApplications.findIndex(a => 
+        a.applicationId === studentId || 
+        a.id === studentId ||
+        (a.fullName && a.fullName.toLowerCase() === name.toLowerCase())
+    );
+    
+    if (appIndex !== -1) {
+        allApplications[appIndex].qualificationResult = { 
+            qualified, 
+            reason, 
+            details: allResults,
+            attemptsAnalyzed: attempts.length
+        };
+        allApplications[appIndex].qualificationChecked = true;
+        allApplications[appIndex].status = qualified ? 'qualified' : 'not_qualified';
+        allApplications[appIndex].examAttempts = attempts;
+        localStorage.setItem('cachedAdmissions', JSON.stringify(allApplications));
+    }
+    
+    // If modal is open, update it
+    if (currentSelectedApplication && currentSelectedApplication.id === studentId) {
+        currentSelectedApplication = allApplications[appIndex];
+        showQualificationResults(currentSelectedApplication);
+    }
+    
+    displayAdmissions();
+    updateAdmissionStats();
 }
 function filterAdmissions() { displayAdmissions(); }
 function refreshAdmissions() { loadAdmissions(); showToast("Refreshed!", "success"); }
