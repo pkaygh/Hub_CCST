@@ -1151,6 +1151,9 @@
             <div>
                 <button onclick="exportAdmissionsToCSV()" class="info-btn" style="width: auto;"><i class="fas fa-file-excel"></i> Export CSV</button>
                 <button onclick="refreshAdmissions()" class="info-btn" style="width: auto;"><i class="fas fa-sync-alt"></i> Refresh</button>
+                <button onclick="bulkQualificationCheck()" class="warning-btn" style="width: auto; padding: 8px 15px;">
+    <i class="fas fa-check-double"></i> Bulk Check
+</button>
             </div>
         </div>
         <div class="filter-section">
@@ -4061,6 +4064,81 @@ async function loadAdmissions() {
     displayAdmissions();
     populateStudentDropdown();
 }
+
+// ============================================
+// BULK QUALIFICATION CHECK
+// ============================================
+
+async function bulkQualificationCheck() {
+    // Get all student IDs from the displayed list
+    const studentItems = document.querySelectorAll('#admissionsList .student-list-item');
+    const studentIds = [];
+    
+    studentItems.forEach(item => {
+        // Extract ID from the onclick attribute or data attribute
+        const onclick = item.getAttribute('onclick');
+        if (onclick) {
+            const match = onclick.match(/viewApplicationDetails\('([^']+)'\)/);
+            if (match) {
+                studentIds.push(match[1]);
+            }
+        }
+    });
+    
+    if (studentIds.length === 0) {
+        showToast('No students found to check', 'warning');
+        return;
+    }
+    
+    if (!confirm(`Run qualification check for ${studentIds.length} students?`)) {
+        return;
+    }
+    
+    const btn = document.activeElement;
+    const originalText = btn ? btn.innerHTML : 'Checking...';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CHECKING...';
+    }
+    
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'bulk_qualification_check',
+                ids: studentIds
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            let msg = `📊 BULK CHECK COMPLETE!\n\n`;
+            msg += `Total: ${data.totalChecked}\n`;
+            msg += `✅ Qualified: ${data.summary.qualified}\n`;
+            msg += `❌ Not Qualified: ${data.summary.notQualified}\n`;
+            msg += `⏳ Not Checked: ${data.summary.notChecked}\n`;
+            msg += `📝 Has Attempts: ${data.summary.hasAttempts}\n\n`;
+            msg += `Detailed Results:\n`;
+            data.results.forEach(r => {
+                msg += `${r.name} (${r.id}): ${r.isQualified ? '✅' : '❌'} ${r.status} - ${r.attemptCount} attempt(s)\n`;
+            });
+            alert(msg);
+            showToast(`Checked ${data.totalChecked} students`, 'success');
+            await loadAdmissions();
+        } else {
+            showToast('Error: ' + (data.error || 'Unknown error'), 'danger');
+        }
+    } catch (e) {
+        showToast('Network error: ' + e.message, 'danger');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+}
+
 // ============================================
 // INITIALIZATION
 // ============================================
