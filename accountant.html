@@ -685,6 +685,70 @@
                 padding: 10px;
             }
         }
+        /* ===== WAEC AUDIT FORM STYLES - ADD THIS ===== */
+#studentSelectForAudit {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    font-size: 16px;
+    background: white;
+    color: var(--text-dark);
+}
+
+#studentSelectForAudit:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(107, 142, 35, 0.2);
+}
+
+#studentSelectForAudit option {
+    padding: 8px;
+}
+
+#studentInfoDisplay {
+    background: #e8f0fe;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #c5d5e8;
+}
+
+#studentInfoDisplay div strong {
+    color: var(--primary-dark);
+    min-width: 80px;
+    display: inline-block;
+}
+
+#studentInfoDisplay span {
+    font-weight: 500;
+}
+
+#auditStudentStatus {
+    padding: 3px 12px;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.student-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .student-info-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
     </style>
 </head>
 <body>
@@ -1125,12 +1189,136 @@
         </div>
     </div>
 
-    <!-- STUDENT QUALIFICATION RESULTS FORM -->
-    <div class="card" style="background: #f8f9fa; border: 3px solid var(--primary);">
-        <div class="card-header" style="border-bottom: 3px solid var(--warning);">
-            <h3 style="color: var(--primary-dark);"><i class="fas fa-edit"></i> Enter Qualification Results</h3>
-            <span style="font-size:0.8rem; color:#666;">For continuing students - Click a student above to auto-fill</span>
+    <!-- WAEC ENTRY QUALIFICATION AUDIT (For Continuing Students) -->
+<div class="card" style="background: #f8f9fa; border: 3px solid var(--warning);">
+    <div class="card-header" style="border-bottom: 3px solid var(--danger);">
+        <h3 style="color: var(--primary-dark);"><i class="fas fa-graduation-cap"></i> WAEC Entry Qualification Audit</h3>
+        <span style="font-size:0.8rem; color:#666;">Verify if continuing students met admission requirements (Retrospective Check)</span>
+    </div>
+    
+    <div style="background: #fff3cd; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+        <strong><i class="fas fa-info-circle"></i> Purpose:</strong> Retrospective check for continuing students - verify if they met WAEC entry requirements before admission.
+        <br><small>Standards: Min Grade C | Max 3 attempts | Required: Mathematics, English, Integrated Science</small>
+    </div>
+
+    <!-- Student Search/Selection -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+        <div>
+            <label><strong>Select Student (Index Number) *</strong></label>
+            <select id="studentSelectForAudit" onchange="loadStudentForAudit()" style="width:100%; padding:10px; border:2px solid var(--primary);">
+                <option value="">-- Select Student --</option>
+            </select>
+            <small style="color:#666;">Select a continuing student from the dropdown</small>
         </div>
+        <div>
+            <label><strong>Or Enter Index Number</strong></label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="examStudentId" placeholder="e.g., CCST/RM/24/001" style="flex:1; padding:10px;">
+                <button onclick="loadStudentById()" class="info-btn" style="width:auto; padding:10px 20px;">Load</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Info Display -->
+    <div id="studentInfoDisplay" style="display:none; background: #e8f0fe; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">
+            <div><strong>Name:</strong> <span id="auditStudentName">-</span></div>
+            <div><strong>Index:</strong> <span id="auditStudentId">-</span></div>
+            <div><strong>Program:</strong> <span id="auditStudentProgram">-</span></div>
+            <div><strong>Level:</strong> <span id="auditStudentLevel">-</span></div>
+        </div>
+        <div style="margin-top: 5px;">
+            <strong>Current Status:</strong> <span id="auditStudentStatus" style="padding: 2px 10px; border-radius: 12px; background: #95a5a6; color: white;">Not Checked</span>
+        </div>
+    </div>
+
+    <hr style="margin: 15px 0;">
+
+    <!-- WAEC Exam Attempt Section -->
+    <div style="background: #e8f0fe; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <h4 style="color: var(--primary-dark);"><i class="fas fa-plus-circle" style="color: var(--primary);"></i> Enter WAEC Exam Attempt</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <div>
+                <label><strong>Exam Year *</strong></label>
+                <input type="number" id="examYear" value="2023" style="width:100%; padding:10px;" min="2000" max="2030">
+            </div>
+            <div>
+                <label><strong>Exam Period *</strong></label>
+                <select id="examPeriod" style="width:100%; padding:10px;">
+                    <option value="June">June (Main)</option>
+                    <option value="January">January (Resit)</option>
+                    <option value="August">August (Supplementary)</option>
+                    <option value="December">December</option>
+                    <option value="March">March</option>
+                    <option value="September">September</option>
+                </select>
+            </div>
+            <div>
+                <label><strong>Exam Type</strong></label>
+                <select id="examType" style="width:100%; padding:10px;">
+                    <option value="Main Examination">Main Examination</option>
+                    <option value="Resit">Resit</option>
+                    <option value="Supplementary">Supplementary</option>
+                    <option value="Special">Special</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- WAEC Subjects & Grades -->
+        <h5><i class="fas fa-book"></i> WAEC Subjects & Grades</h5>
+        <p style="font-size:0.8rem; color:#666; margin-bottom:8px;">Enter all WAEC subjects the student sat for</p>
+        <div id="subjectInputs">
+            <div class="subject-row" style="display: flex; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; align-items: center;">
+                <input class="subName" placeholder="Subject Name" style="flex:2; padding:10px; min-width:150px;">
+                <select class="subGrade" style="flex:0.8; padding:10px; min-width:80px;">
+                    <option value="A+">A+</option>
+                    <option value="A">A</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B">B</option>
+                    <option value="B-">B-</option>
+                    <option value="C+">C+</option>
+                    <option value="C" selected>C</option>
+                    <option value="C-">C-</option>
+                    <option value="D+">D+</option>
+                    <option value="D">D</option>
+                    <option value="E">E</option>
+                </select>
+                <button onclick="removeSubjectRow(this)" class="danger-btn" style="width:auto; padding:8px 12px; background:#e74c3c; border-radius:8px;">✕</button>
+            </div>
+        </div>
+        <button onclick="addSubjectRow()" class="info-btn" style="width:auto; padding:8px 20px; background:#3498db; margin-top:5px;">
+            <i class="fas fa-plus"></i> Add Subject
+        </button>
+
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button onclick="addExamAttempt()" class="success-btn" style="flex:1; padding:12px;">
+                <i class="fas fa-save"></i> Add This WAEC Attempt
+            </button>
+        </div>
+    </div>
+
+    <!-- Preview Attempts -->
+    <div style="margin-bottom: 15px;">
+        <h5><i class="fas fa-list"></i> WAEC Attempts (<span id="attemptCount">0</span>)</h5>
+        <div id="examAttemptsPreview" style="padding: 15px; background: white; border-radius: 8px; border: 1px solid #ddd; max-height: 200px; overflow-y: auto;">
+            <p style="color:#999; text-align:center;">No WAEC attempts added yet.</p>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; border-top: 2px solid var(--primary); padding-top: 15px;">
+        <button onclick="saveAllExamData()" class="success-btn" style="flex:2; padding:14px; font-size:1.1rem; background: linear-gradient(135deg, #6b8e23, #2ecc71);">
+            <i class="fas fa-check-double"></i> CHECK QUALIFICATION & SAVE
+        </button>
+        <button onclick="clearExamForm()" class="danger-btn" style="flex:1; padding:14px;">
+            <i class="fas fa-undo"></i> Clear Form
+        </button>
+        <button onclick="loadStudentForAudit()" class="info-btn" style="flex:1; padding:14px; background:#9b59b6;">
+            <i class="fas fa-sync-alt"></i> Refresh Selected
+        </button>
+    </div>
+</div>
         
         <!-- Student Info -->
         <div style="display: grid; grid-template-columns: 2fr 2fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
@@ -2831,28 +3019,49 @@ function processAllRequests() { const reqs = JSON.parse(localStorage.getItem('tr
 
 
 // ============================================
-// ADMISSIONS MANAGER
+// ADMISSIONS MANAGER - UPDATED
 // ============================================
 async function loadAdmissions() { 
     const container = document.getElementById('admissionsList'); 
     container.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading...</p>'; 
+    
     try { 
         const res = await fetch(`${SCRIPT_URL}?action=get_admissions`); 
         const data = await res.json(); 
-        if (data.admissions && data.admissions.length) allApplications = data.admissions; 
-        else { allApplications = []; }
+        if (data.admissions && data.admissions.length) {
+            allApplications = data.admissions; 
+        } else { 
+            const cached = localStorage.getItem('cachedAdmissions');
+            if (cached) {
+                allApplications = JSON.parse(cached);
+                if (allApplications.length === 0) {
+                    loadSampleQualificationData();
+                }
+            } else {
+                loadSampleQualificationData();
+            }
+        }
     } catch(e) { 
-        allApplications = []; 
-    } 
-    if (allApplications.length === 0) {
-        allApplications = [
-            { applicationId: "APP-2025-0001", fullName: "Dorcas Anderson", email: "dorcas@example.com", phone: "0241000001", program: "RM", status: "pending_review", submittedAt: new Date().toISOString() },
-            { applicationId: "APP-2025-0002", fullName: "Godfred Boadison", email: "godfred@example.com", phone: "0241000002", program: "ML", status: "pending_review", submittedAt: new Date().toISOString() },
-            { applicationId: "APP-2025-0003", fullName: "Evelyn Prah", email: "evelyn@example.com", phone: "0241000003", program: "RN", status: "documents_verified", submittedAt: new Date().toISOString() }
-        ];
+        const cached = localStorage.getItem('cachedAdmissions');
+        if (cached) {
+            allApplications = JSON.parse(cached);
+        } else {
+            loadSampleQualificationData();
+        }
     }
+    
+    // Also load all students
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=get_all_students`);
+        const data = await res.json();
+        if (data.students) allStudents = data.students;
+    } catch(e) {
+        console.log('Could not load students');
+    }
+    
     updateAdmissionStats(); 
-    displayAdmissions(); 
+    displayAdmissions();
+    populateStudentDropdown();
 }
 function updateAdmissionStats() { 
     document.getElementById('totalApplications').innerText = allApplications.length; 
@@ -3349,18 +3558,16 @@ function addSubjectRow() {
     div.innerHTML = `
         <input class="subName" placeholder="Subject Name (e.g., Mathematics)" style="flex:2; padding:10px; min-width:150px;">
         <select class="subGrade" style="flex:0.8; padding:10px; min-width:80px;">
-            <option value="A+">A+</option>
             <option value="A">A</option>
-            <option value="A-">A-</option>
-            <option value="B+">B+</option>
-            <option value="B">B</option>
-            <option value="B-">B-</option>
-            <option value="C+">C+</option>
-            <option value="C" selected>C</option>
-            <option value="C-">C-</option>
-            <option value="D+">D+</option>
-            <option value="D">D</option>
-            <option value="E">E</option>
+            <option value="B2">B2</option>
+            <option value="B3">B3</option>
+            <option value="C4">C</option>
+            <option value="C4" selected>C4</option>
+            <option value="C5">C5</option>
+            <option value="C6">C6</option>
+            <option value="D7">D7</option>
+            <option value="E8">E8</option>
+            <option value="F9">F9</option>
         </select>
         <button onclick="removeSubjectRow(this)" class="danger-btn" style="width:auto; padding:8px 12px; background:#e74c3c; border-radius:8px;">✕</button>
     `;
@@ -3516,7 +3723,7 @@ async function saveAllExamData() {
     const level = document.getElementById('examLevel').value;
     
     if (!studentId) {
-        showToast('Please enter Student ID', 'warning');
+        showToast('Please select a student', 'warning');
         return;
     }
     if (!name) {
@@ -3524,76 +3731,54 @@ async function saveAllExamData() {
         return;
     }
     if (examAttempts.length === 0) {
-        showToast('Please add at least one exam attempt', 'warning');
+        showToast('Please add at least one WAEC exam attempt', 'warning');
         return;
     }
     
-    if (!confirm(`Save ${examAttempts.length} attempt(s) for ${name} (${studentId}) and run qualification check?`)) {
+    if (!confirm(`Check qualification for ${name} (${studentId}) based on ${examAttempts.length} WAEC attempt(s)?`)) {
         return;
     }
     
     const btn = document.activeElement;
     const originalText = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SAVING...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CHECKING...';
     
     try {
-        // Save exam attempts to Google Sheet
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'update_qualification',
-                id: studentId,
-                status: 'pending_review',
-                reason: 'Awaiting qualification check',
-                examAttempts: JSON.stringify(examAttempts)
-            })
-        });
-        
-        const result = await response.json();
+        const result = await runQualificationCheckForStudent(studentId, examAttempts, name, program, level);
         
         if (result.success) {
-            // Update local application
-            const appIndex = allApplications.findIndex(a => 
-                a.applicationId === studentId || 
-                a.id === studentId || 
-                (a.fullName && a.fullName.toLowerCase() === name.toLowerCase())
-            );
-            
-            if (appIndex !== -1) {
-                allApplications[appIndex].examAttempts = JSON.parse(JSON.stringify(examAttempts));
-                allApplications[appIndex].status = 'qualification_review';
-                allApplications[appIndex].qualificationChecked = false;
-                localStorage.setItem('cachedAdmissions', JSON.stringify(allApplications));
-                currentSelectedApplication = allApplications[appIndex];
+            // Update status display
+            const statusEl = document.getElementById('auditStudentStatus');
+            if (statusEl) {
+                statusEl.textContent = result.qualified ? 'QUALIFIED' : 'NOT QUALIFIED';
+                statusEl.style.background = result.qualified ? '#27ae60' : '#e74c3c';
+                statusEl.style.color = 'white';
             }
             
-            showToast(`Data saved for ${name}! Running qualification check...`, 'success');
+            showToast(`${name}: ${result.qualified ? '✅ QUALIFIED' : '❌ NOT QUALIFIED'}`, result.qualified ? 'success' : 'danger');
             
-            // Auto-run qualification check
-            await runQualificationCheckForStudent(studentId, examAttempts, name);
-            
-            // Clear form
-            examAttempts = [];
-            displayExamAttempts();
-            document.getElementById('examStudentId').value = '';
-            document.getElementById('examStudentName').value = '';
-            document.getElementById('attemptCount').textContent = '0';
+            // Clear form after delay
+            setTimeout(() => {
+                if (confirm('Clear the form and start a new check?')) {
+                    examAttempts = [];
+                    displayExamAttempts();
+                    document.getElementById('attemptCount').textContent = '0';
+                }
+            }, 1000);
             
             // Refresh admissions list
             await loadAdmissions();
-        } else {
-            showToast('Error: ' + (result.error || 'Failed to save'), 'danger');
         }
     } catch (e) {
-        showToast('Network error: ' + e.message, 'danger');
+        showToast('Error: ' + e.message, 'danger');
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;
     }
 }
 
-async function runQualificationCheckForStudent(studentId, attempts, name) {
+async function runQualificationCheckForStudent(studentId, attempts, name, program, level) {
     const minGrade = qualificationStandards.minGrade;
     const maxAttempts = qualificationStandards.maxAttempts;
     const requiredSubjects = qualificationStandards.requiredSubjects;
@@ -3646,16 +3831,16 @@ async function runQualificationCheckForStudent(studentId, attempts, name) {
     
     if (passingAttempt) {
         qualified = true;
-        reason = `Passed all requirements in Attempt ${passingAttempt}`;
+        reason = `✅ QUALIFIED - Passed all requirements in Attempt ${passingAttempt}`;
     } else if (attempts.length >= maxAttempts) {
         qualified = false;
-        reason = `Exceeded maximum attempts (${maxAttempts})`;
+        reason = `❌ NOT QUALIFIED - Exceeded maximum attempts (${maxAttempts})`;
     } else {
         qualified = false;
-        reason = 'No attempt meets all requirements';
+        reason = '❌ NOT QUALIFIED - No attempt meets all requirements';
     }
     
-    // Update status in Google Sheet
+    // Update Google Sheet
     await fetch(SCRIPT_URL, {
         method: 'POST',
         body: JSON.stringify({
@@ -3663,14 +3848,13 @@ async function runQualificationCheckForStudent(studentId, attempts, name) {
             id: studentId,
             status: qualified ? 'qualified' : 'not_qualified',
             reason: reason,
-            examAttempts: JSON.stringify(attempts)
+            examAttempts: JSON.stringify(attempts),
+            program: program || '',
+            level: level || '100'
         })
     });
     
-    const resultMsg = `${name}: ${qualified ? '✅ QUALIFIED' : '❌ NOT QUALIFIED'} - ${reason}`;
-    showToast(resultMsg, qualified ? 'success' : 'danger');
-    
-    // Update application in local list
+    // Update local application
     const appIndex = allApplications.findIndex(a => 
         a.applicationId === studentId || 
         a.id === studentId ||
@@ -3690,14 +3874,18 @@ async function runQualificationCheckForStudent(studentId, attempts, name) {
         localStorage.setItem('cachedAdmissions', JSON.stringify(allApplications));
     }
     
-    // If modal is open, update it
-    if (currentSelectedApplication && currentSelectedApplication.id === studentId) {
-        currentSelectedApplication = allApplications[appIndex];
-        showQualificationResults(currentSelectedApplication);
+    // Update selected student
+    if (selectedStudentForAudit) {
+        selectedStudentForAudit.qualificationResult = { qualified, reason, details: allResults };
+        selectedStudentForAudit.qualificationChecked = true;
+        selectedStudentForAudit.status = qualified ? 'qualified' : 'not_qualified';
+        selectedStudentForAudit.examAttempts = attempts;
     }
     
     displayAdmissions();
     updateAdmissionStats();
+    
+    return { success: true, qualified: qualified };
 }
 function filterAdmissions() { displayAdmissions(); }
 function refreshAdmissions() { loadAdmissions(); showToast("Refreshed!", "success"); }
@@ -3725,6 +3913,114 @@ function exportAdmissionsToCSV() { let csv = "ID,Name,Email,Phone,Program,Status
 function openExecutiveDashboard() { showToast("Executive Dashboard - Coming Soon", "info"); }
 function logout() { if (confirm("Logout?")) { localStorage.removeItem('adminData'); localStorage.removeItem('currentStaff'); window.location.href = 'index.html'; } }
 
+// ============================================
+// STUDENT SELECTION FOR AUDIT - ADD THIS ENTIRE BLOCK
+// ============================================
+
+let selectedStudentForAudit = null;
+
+function loadStudentForAudit() {
+    const select = document.getElementById('studentSelectForAudit');
+    const studentId = select.value;
+    if (!studentId) return;
+    
+    // Find student in allApplications or allStudents
+    const app = allApplications.find(a => a.applicationId === studentId || a.id === studentId);
+    const student = allStudents.find(s => s.id === studentId);
+    
+    const data = app || student;
+    if (!data) {
+        showToast('Student not found', 'warning');
+        return;
+    }
+    
+    selectedStudentForAudit = data;
+    
+    // Populate form
+    document.getElementById('examStudentId').value = data.id || data.applicationId || '';
+    document.getElementById('examStudentName').value = data.name || data.fullName || '';
+    if (data.program) document.getElementById('examProgram').value = data.program;
+    if (data.level) document.getElementById('examLevel').value = data.level;
+    
+    // Show student info
+    document.getElementById('studentInfoDisplay').style.display = 'block';
+    document.getElementById('auditStudentName').textContent = data.name || data.fullName || '-';
+    document.getElementById('auditStudentId').textContent = data.id || data.applicationId || '-';
+    document.getElementById('auditStudentProgram').textContent = data.program || '-';
+    document.getElementById('auditStudentLevel').textContent = data.level || '-';
+    
+    // Check if already has qualification check
+    if (data.qualificationChecked) {
+        const status = data.qualificationResult?.qualified ? 'QUALIFIED' : 'NOT QUALIFIED';
+        document.getElementById('auditStudentStatus').textContent = status;
+        document.getElementById('auditStudentStatus').style.background = data.qualificationResult?.qualified ? '#27ae60' : '#e74c3c';
+        document.getElementById('auditStudentStatus').style.color = 'white';
+        
+        // Load existing attempts
+        if (data.examAttempts && data.examAttempts.length > 0) {
+            examAttempts = JSON.parse(JSON.stringify(data.examAttempts));
+            displayExamAttempts();
+            showToast(`Loaded ${examAttempts.length} existing WAEC attempt(s)`, 'info');
+        }
+    } else {
+        document.getElementById('auditStudentStatus').textContent = 'Not Checked';
+        document.getElementById('auditStudentStatus').style.background = '#95a5a6';
+        document.getElementById('auditStudentStatus').style.color = 'white';
+    }
+    
+    // Close modal if open
+    closeApplicationModal();
+}
+
+function loadStudentById() {
+    const id = document.getElementById('examStudentId').value.trim();
+    if (!id) {
+        showToast('Please enter Student Index Number', 'warning');
+        return;
+    }
+    
+    // Try to find student
+    const app = allApplications.find(a => a.applicationId === id || a.id === id);
+    const student = allStudents.find(s => s.id === id);
+    
+    if (app || student) {
+        const data = app || student;
+        document.getElementById('examStudentName').value = data.name || data.fullName || '';
+        if (data.program) document.getElementById('examProgram').value = data.program;
+        if (data.level) document.getElementById('examLevel').value = data.level;
+        
+        // Set dropdown
+        const select = document.getElementById('studentSelectForAudit');
+        select.value = data.id || data.applicationId || '';
+        loadStudentForAudit();
+    } else {
+        showToast('Student not found. Please check the index number.', 'warning');
+    }
+}
+
+function populateStudentDropdown() {
+    const select = document.getElementById('studentSelectForAudit');
+    if (!select) return;
+    select.innerHTML = '<option value="">-- Select Student --</option>';
+    
+    // Add from allApplications
+    allApplications.forEach(app => {
+        const opt = document.createElement('option');
+        opt.value = app.applicationId || app.id || '';
+        opt.textContent = `${app.fullName || app.name || ''} (${app.applicationId || app.id || ''}) - ${app.program || ''}`;
+        select.appendChild(opt);
+    });
+    
+    // Add from allStudents if not already in applications
+    allStudents.forEach(s => {
+        if (!allApplications.find(a => a.id === s.id || a.applicationId === s.id)) {
+            const opt = document.createElement('option');
+            opt.value = s.id || '';
+            opt.textContent = `${s.name || ''} (${s.id || ''}) - ${s.program || ''}`;
+            select.appendChild(opt);
+        }
+    });
+}
 // ============================================
 // INITIALIZATION
 // ============================================
