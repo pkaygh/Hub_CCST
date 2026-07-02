@@ -2951,52 +2951,6 @@ function processTranscriptRequest(idx) {
 function rejectTranscriptRequest(idx) { const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); const req = reqs[idx]; if (confirm(`Reject request for ${req.name}?`)) { reqs.splice(idx, 1); localStorage.setItem('transcriptRequests', JSON.stringify(reqs)); const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); processed.push({ ...req, processedDate: new Date().toLocaleString(), status: 'Rejected' }); localStorage.setItem('processedTranscripts', JSON.stringify(processed)); loadTranscriptRequests(); loadProcessedRequests(); showToast(`Request for ${req.name} rejected`, "warning"); } }
 function processAllRequests() { const reqs = JSON.parse(localStorage.getItem('transcriptRequests') || '[]'); if (reqs.length === 0) return showToast("No pending requests", "warning"); if (confirm(`Process all ${reqs.length} requests?`)) { reqs.forEach(r => { const processed = JSON.parse(localStorage.getItem('processedTranscripts') || '[]'); processed.push({ ...r, processedDate: new Date().toLocaleString(), status: 'Approved' }); localStorage.setItem('processedTranscripts', JSON.stringify(processed)); }); localStorage.setItem('transcriptRequests', '[]'); loadTranscriptRequests(); loadProcessedRequests(); showToast(`Processed ${reqs.length} requests`, "success"); } }
 
-
-// ============================================
-// ADMISSIONS MANAGER - UPDATED
-// ============================================
-async function loadAdmissions() { 
-    const container = document.getElementById('admissionsList'); 
-    container.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading...</p>'; 
-    
-    try { 
-        const res = await fetch(`${SCRIPT_URL}?action=get_admissions`); 
-        const data = await res.json(); 
-        if (data.admissions && data.admissions.length) {
-            allApplications = data.admissions; 
-        } else { 
-            const cached = localStorage.getItem('cachedAdmissions');
-            if (cached) {
-                allApplications = JSON.parse(cached);
-                if (allApplications.length === 0) {
-                    loadSampleQualificationData();
-                }
-            } else {
-                loadSampleQualificationData();
-            }
-        }
-    } catch(e) { 
-        const cached = localStorage.getItem('cachedAdmissions');
-        if (cached) {
-            allApplications = JSON.parse(cached);
-        } else {
-            loadSampleQualificationData();
-        }
-    }
-    
-    // Also load all students
-    try {
-        const res = await fetch(`${SCRIPT_URL}?action=get_all_students`);
-        const data = await res.json();
-        if (data.students) allStudents = data.students;
-    } catch(e) {
-        console.log('Could not load students');
-    }
-    
-    updateAdmissionStats(); 
-    displayAdmissions();
-    populateStudentDropdown();
-}
 function updateAdmissionStats() { 
     document.getElementById('totalApplications').innerText = allApplications.length; 
     document.getElementById('pendingApplications').innerText = allApplications.filter(a => a.status === 'pending_review').length; 
@@ -3863,7 +3817,6 @@ function logout() { if (confirm("Logout?")) { localStorage.removeItem('adminData
 function populateStudentDropdown() {
     const select = document.getElementById('studentSelectForAudit');
     if (!select) return;
-
     select.innerHTML = '<option value="">-- Select Student --</option>';
     
     // Add from allApplications
@@ -3875,14 +3828,14 @@ function populateStudentDropdown() {
     });
     
     // Add from allStudents if not already in applications
-        allStudents.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.id || '';
-        opt.textContent = `${s.name || ''} (${s.id || ''}) - ${s.program || ''}`;
-        select.appendChild(opt);
+    allStudents.forEach(s => {
+        if (!allApplications.find(a => a.id === s.id || a.applicationId === s.id)) {
+            const opt = document.createElement('option');
+            opt.value = s.id || '';
+            opt.textContent = `${s.name || ''} (${s.id || ''}) - ${s.program || ''}`;
+            select.appendChild(opt);
+        }
     });
-    
-    console.log('Dropdown populated with:', allStudents.length, 'students');
 }
 // ============================================
 // STUDENT SELECTION FOR AUDIT
@@ -3969,29 +3922,6 @@ function loadStudentById() {
     }
 }
 
-function populateStudentDropdown() {
-    const select = document.getElementById('studentSelectForAudit');
-    if (!select) return;
-    select.innerHTML = '<option value="">-- Select Student --</option>';
-    
-    // Add from allApplications
-    allApplications.forEach(app => {
-        const opt = document.createElement('option');
-        opt.value = app.applicationId || app.id || '';
-        opt.textContent = `${app.fullName || app.name || ''} (${app.applicationId || app.id || ''}) - ${app.program || ''}`;
-        select.appendChild(opt);
-    });
-    
-    // Add from allStudents if not already in applications
-    allStudents.forEach(s => {
-        if (!allApplications.find(a => a.id === s.id || a.applicationId === s.id)) {
-            const opt = document.createElement('option');
-            opt.value = s.id || '';
-            opt.textContent = `${s.name || ''} (${s.id || ''}) - ${s.program || ''}`;
-            select.appendChild(opt);
-        }
-    });
-}
 
 // Update loadAdmissions to populate dropdown
 async function loadAdmissions() { 
@@ -4024,7 +3954,7 @@ async function loadAdmissions() {
         }
     }
     
-    // ===== LOAD STUDENTS (FIX: ADD THIS!) =====
+    // ===== LOAD STUDENTS =====
     try {
         const res = await fetch(`${SCRIPT_URL}?action=get_all_students`);
         const data = await res.json();
