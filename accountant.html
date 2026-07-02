@@ -1322,6 +1322,54 @@
         </button>
     </div>
 </div>
+
+<!-- Qualification Standards Modal -->
+<div id="qualificationModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-gavel"></i> Qualification Standards</h3>
+            <button class="close-modal" onclick="document.getElementById('qualificationModal').classList.remove('show')">&times;</button>
+        </div>
+        <div style="padding: 20px;">
+            <div style="background: #f0f7ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3498db;">
+                <h4 style="color: #2c3e50;"><i class="fas fa-info-circle"></i> Current Standards</h4>
+                <p style="margin: 5px 0;"><strong>Minimum Grade Required:</strong> <span id="stdMinGrade">C</span></p>
+                <p style="margin: 5px 0;"><strong>Maximum Attempts Allowed:</strong> <span id="stdMaxAttempts">3</span></p>
+                <p style="margin: 5px 0;"><strong>Required Subjects:</strong> <span id="stdRequiredSubjects">Mathematics, English, Science</span></p>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label><strong>Minimum Grade</strong></label>
+                    <select id="setMinGrade" style="width:100%; padding:10px;">
+                        <option value="A">A</option>
+                        <option value="B2">B2</option>
+                        <option value="B3">B3</option>
+                        <option value="C4" selected>C4</option>
+                        <option value="C5">C5</option>
+                        <option value="C6">C6</option>
+                        <option value="D7">D7</option>
+                        <option value="E8">E8</option>
+                        <option value="F9">F9</option>
+                    </select>
+                </div>
+                <div>
+                    <label><strong>Max Attempts</strong></label>
+                    <input type="number" id="setMaxAttempts" value="3" min="1" max="5" style="width:100%; padding:10px;">
+                </div>
+            </div>
+            <div style="margin-top: 15px;">
+                <label><strong>Required Subjects (comma separated)</strong></label>
+                <input type="text" id="setRequiredSubjects" value="Mathematics, English, Science" style="width:100%; padding:10px;">
+            </div>
+            <button onclick="saveQualificationStandards()" class="success-btn" style="margin-top: 15px; width: auto; padding: 10px 30px;">
+                <i class="fas fa-save"></i> Save Standards
+            </button>
+            <button onclick="resetQualificationStandards()" class="danger-btn" style="margin-top: 15px; width: auto; padding: 10px 30px; margin-left: 10px;">
+                <i class="fas fa-undo"></i> Reset Defaults
+            </button>
+        </div>
+    </div>
+</div>
         
         <!-- Application Detail Modal -->
 <div id="applicationModal" class="modal">
@@ -2994,13 +3042,21 @@ function loadQualificationStandards() {
             console.log('Error loading standards, using defaults');
         }
     }
-    // Update UI
-    document.getElementById('stdMinGrade').textContent = qualificationStandards.minGrade;
-    document.getElementById('stdMaxAttempts').textContent = qualificationStandards.maxAttempts;
-    document.getElementById('stdRequiredSubjects').textContent = qualificationStandards.requiredSubjects.join(', ');
-    document.getElementById('setMinGrade').value = qualificationStandards.minGrade;
-    document.getElementById('setMaxAttempts').value = qualificationStandards.maxAttempts;
-    document.getElementById('setRequiredSubjects').value = qualificationStandards.requiredSubjects.join(', ');
+    
+    // SAFER: Check if elements exist before updating
+    const stdMinGrade = document.getElementById('stdMinGrade');
+    const stdMaxAttempts = document.getElementById('stdMaxAttempts');
+    const stdRequiredSubjects = document.getElementById('stdRequiredSubjects');
+    const setMinGrade = document.getElementById('setMinGrade');
+    const setMaxAttempts = document.getElementById('setMaxAttempts');
+    const setRequiredSubjects = document.getElementById('setRequiredSubjects');
+    
+    if (stdMinGrade) stdMinGrade.textContent = qualificationStandards.minGrade;
+    if (stdMaxAttempts) stdMaxAttempts.textContent = qualificationStandards.maxAttempts;
+    if (stdRequiredSubjects) stdRequiredSubjects.textContent = qualificationStandards.requiredSubjects.join(', ');
+    if (setMinGrade) setMinGrade.value = qualificationStandards.minGrade;
+    if (setMaxAttempts) setMaxAttempts.value = qualificationStandards.maxAttempts;
+    if (setRequiredSubjects) setRequiredSubjects.value = qualificationStandards.requiredSubjects.join(', ');
 }
 
 function saveQualificationStandards() {
@@ -4082,6 +4138,12 @@ window.onload = () => {
     document.getElementById('clearedStudents').innerText = '142';
     document.getElementById('pendingStudents').innerText = '14';
     document.getElementById('pendingResults').innerText = '23';
+    // Only call if the modal elements exist
+    if (document.getElementById('stdMinGrade')) {
+        loadQualificationStandards();
+    }
+
+
     loadAllStudentsForTranscript();
     loadTranscriptRequests();
     loadProcessedRequests();
