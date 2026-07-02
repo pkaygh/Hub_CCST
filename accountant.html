@@ -3807,6 +3807,9 @@ function logout() { if (confirm("Logout?")) { localStorage.removeItem('adminData
 function populateStudentDropdown() {
     const select = document.getElementById('studentSelectForAudit');
     if (!select) return;
+
+    console.log('All Students:', allStudents);
+    console.log('All Applications:', allApplications);
     select.innerHTML = '<option value="">-- Select Student --</option>';
     
     // Add from allApplications
