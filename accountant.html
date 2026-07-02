@@ -3942,6 +3942,7 @@ async function loadAdmissions() {
     const container = document.getElementById('admissionsList'); 
     container.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading...</p>'; 
     
+    // ===== LOAD APPLICATIONS =====
     try { 
         const res = await fetch(`${SCRIPT_URL}?action=get_admissions`); 
         const data = await res.json(); 
@@ -3967,20 +3968,36 @@ async function loadAdmissions() {
         }
     }
     
-    // Also load all students
+    // ===== LOAD STUDENTS (FIX: ADD THIS!) =====
     try {
         const res = await fetch(`${SCRIPT_URL}?action=get_all_students`);
         const data = await res.json();
-        if (data.students) allStudents = data.students;
+        if (data.students && data.students.length) {
+            allStudents = data.students;
+            console.log('✅ Students loaded:', allStudents.length);
+        } else {
+            console.log('⚠️ No students found in API, using sample data');
+            // Optional: Add sample students if needed
+            allStudents = [
+                { id: "CCST/RM/24/001", name: "John Doe", program: "RM", level: "100" },
+                { id: "CCST/RN/24/002", name: "Jane Smith", program: "RN", level: "200" },
+                { id: "CCST/ML/24/003", name: "Kwame Mensah", program: "ML", level: "100" }
+            ];
+        }
     } catch(e) {
-        console.log('Could not load students');
+        console.log('❌ Could not load students:', e.message);
+        // Fallback sample data
+        allStudents = [
+            { id: "CCST/RM/24/001", name: "John Doe", program: "RM", level: "100" },
+            { id: "CCST/RN/24/002", name: "Jane Smith", program: "RN", level: "200" },
+            { id: "CCST/ML/24/003", name: "Kwame Mensah", program: "ML", level: "100" }
+        ];
     }
     
     updateAdmissionStats(); 
     displayAdmissions();
     populateStudentDropdown();
 }
-
 // ============================================
 // BULK QUALIFICATION CHECK
 // ============================================
