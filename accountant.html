@@ -3808,8 +3808,6 @@ function populateStudentDropdown() {
     const select = document.getElementById('studentSelectForAudit');
     if (!select) return;
 
-    console.log('All Students:', allStudents);
-    console.log('All Applications:', allApplications);
     select.innerHTML = '<option value="">-- Select Student --</option>';
     
     // Add from allApplications
@@ -3821,14 +3819,14 @@ function populateStudentDropdown() {
     });
     
     // Add from allStudents if not already in applications
-    allStudents.forEach(s => {
-        if (!allApplications.find(a => a.id === s.id || a.applicationId === s.id)) {
-            const opt = document.createElement('option');
-            opt.value = s.id || '';
-            opt.textContent = `${s.name || ''} (${s.id || ''}) - ${s.program || ''}`;
-            select.appendChild(opt);
-        }
+        allStudents.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id || '';
+        opt.textContent = `${s.name || ''} (${s.id || ''}) - ${s.program || ''}`;
+        select.appendChild(opt);
     });
+    
+    console.log('Dropdown populated with:', allStudents.length, 'students');
 }
 // ============================================
 // STUDENT SELECTION FOR AUDIT
@@ -3939,7 +3937,7 @@ function populateStudentDropdown() {
     });
 }
 
-// Update loadAdmissions to populate dropdown (replace your existing loadAdmissions)
+// Update loadAdmissions to populate dropdown
 async function loadAdmissions() { 
     const container = document.getElementById('admissionsList'); 
     container.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading...</p>'; 
