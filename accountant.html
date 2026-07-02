@@ -3880,34 +3880,6 @@ function openExecutiveDashboard() { showToast("Executive Dashboard - Coming Soon
 function logout() { if (confirm("Logout?")) { localStorage.removeItem('adminData'); localStorage.removeItem('currentStaff'); window.location.href = 'index.html'; } }
 
 // ============================================
-// LOAD STUDENTS ONLY
-// ============================================
-async function loadStudents() {
-    try {
-        const res = await fetch(`${SCRIPT_URL}?action=get_all_students`);
-        const data = await res.json();
-        if (data.students && data.students.length) {
-            allStudents = data.students;
-            console.log('✅ Students loaded:', allStudents.length);
-        } else {
-            console.log('⚠️ No students from API, using sample data');
-            allStudents = [
-                { id: "CCST/RM/24/001", name: "John Doe", program: "RM", level: "100" },
-                { id: "CCST/RN/24/002", name: "Jane Smith", program: "RN", level: "200" },
-                { id: "CCST/ML/24/003", name: "Kwame Mensah", program: "ML", level: "100" }
-            ];
-        }
-    } catch(e) {
-        console.log('❌ Could not load students:', e.message);
-        allStudents = [
-            { id: "CCST/RM/24/001", name: "John Doe", program: "RM", level: "100" },
-            { id: "CCST/RN/24/002", name: "Jane Smith", program: "RN", level: "200" },
-            { id: "CCST/ML/24/003", name: "Kwame Mensah", program: "ML", level: "100" }
-        ];
-    }
-}
-
-// ============================================
 // LOAD APPLICATIONS ONLY
 // ============================================
 async function loadApplications() {
@@ -3936,29 +3908,18 @@ async function loadApplications() {
         }
     }
 }
-
 // ============================================
-// POPULATE DROPDOWN - SIMPLE VERSION
-// ============================================
-function populateStudentDropdown() {
-    const select = document.getElementById('studentSelectForAudit');
-    if (!select) {
-        console.log('❌ Dropdown element not found!');
-        return;
+// CONTINUE STUDENT
+// =====================================
+async function loadContinuingStudents() {
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=get_continuing_students`);
+        const data = await response.json();
+        allStudents = data.students || [];
+        populateStudentDropdown();
+    } catch (error) {
+        console.error("Failed to load continuing students:", error);
     }
-    
-    select.innerHTML = '<option value="">-- Select Student --</option>';
-    
-    // Add from allStudents
-    allStudents.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.id || '';
-        opt.textContent = `${s.name || 'Unknown'} (${s.id || 'No ID'}) - ${s.program || 'No Program'}`;
-        select.appendChild(opt);
-        console.log('Added student:', s.name);
-    });
-    
-    console.log('✅ Dropdown populated with', allStudents.length, 'students');
 }
 
 // ============================================
