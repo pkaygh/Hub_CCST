@@ -1333,7 +1333,7 @@
         <div style="padding: 20px;">
             <div style="background: #f0f7ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3498db;">
                 <h4 style="color: #2c3e50;"><i class="fas fa-info-circle"></i> Current Standards</h4>
-                <p style="margin: 5px 0;"><strong>Minimum Grade Required:</strong> <span id="stdMinGrade">C</span></p>
+                <p style="margin: 5px 0;"><strong>Minimum Grade Required:</strong> <span id="stdMinGrade">C6</span></p>
                 <p style="margin: 5px 0;"><strong>Maximum Attempts Allowed:</strong> <span id="stdMaxAttempts">3</span></p>
                 <p style="margin: 5px 0;"><strong>Required Subjects:</strong> <span id="stdRequiredSubjects">Mathematics, English, Science</span></p>
             </div>
@@ -3816,26 +3816,26 @@ function logout() { if (confirm("Logout?")) { localStorage.removeItem('adminData
 
 function populateStudentDropdown() {
     const select = document.getElementById('studentSelectForAudit');
-    if (!select) return;
+    if (!select) {
+        console.log('❌ Dropdown element not found!');
+        return;
+    }
+    
     select.innerHTML = '<option value="">-- Select Student --</option>';
     
-    // Add from allApplications
-    allApplications.forEach(app => {
+    // Check if we have students
+    console.log('📊 allStudents length:', allStudents.length);
+    console.log('📊 allStudents data:', allStudents);
+    
+    // Simplified: Just use allStudents directly
+    allStudents.forEach(s => {
         const opt = document.createElement('option');
-        opt.value = app.applicationId || app.id || '';
-        opt.textContent = `${app.fullName || app.name || ''} (${app.applicationId || app.id || ''}) - ${app.program || ''}`;
+        opt.value = s.id || '';
+        opt.textContent = `${s.name || 'Unknown'} (${s.id || 'No ID'}) - ${s.program || 'No Program'}`;
         select.appendChild(opt);
     });
     
-    // Add from allStudents if not already in applications
-    allStudents.forEach(s => {
-        if (!allApplications.find(a => a.id === s.id || a.applicationId === s.id)) {
-            const opt = document.createElement('option');
-            opt.value = s.id || '';
-            opt.textContent = `${s.name || ''} (${s.id || ''}) - ${s.program || ''}`;
-            select.appendChild(opt);
-        }
-    });
+    console.log('✅ Dropdown populated with', allStudents.length, 'students');
 }
 // ============================================
 // STUDENT SELECTION FOR AUDIT
