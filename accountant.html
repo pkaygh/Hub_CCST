@@ -4102,9 +4102,8 @@ function clearAdmissionSearch() {
     showToast('Search cleared', 'info');
 }
 
-
 // ============================================
-// WAEC SEARCH FUNCTIONS - SEARCH BOTH SOURCES
+// WAEC SEARCH FUNCTIONS (Inside WAEC Audit)
 // ============================================
 
 function searchStudentInWAEC() {
@@ -4116,67 +4115,38 @@ function searchStudentInWAEC() {
         return;
     }
     
-    // SEARCH BOTH SOURCES
+    // Create a combined list of all students from applications and students
+    const allItems = [...allApplications, ...allStudents];
     const results = [];
-    const seenIds = new Set();
     
-    // Search in allStudents (Sheet1)
-    allStudents.forEach(student => {
+    // Search through all applications and students
+    allItems.forEach(item => {
         const searchFields = [
-            student.name || '',
-            student.id || '',
-            student.phone || '',
-            student.program || '',
-            student.email || ''
+            item.fullName || item.name || '',
+            item.applicationId || item.id || '',
+            item.phone || '',
+            item.program || '',
+            item.email || ''
         ].join(' ').toLowerCase();
         
         if (searchFields.includes(query)) {
-            const id = student.id || '';
-            if (!seenIds.has(id)) {
-                seenIds.add(id);
-                results.push({
-                    ...student,
-                    source: 'Student Database (Sheet1)',
-                    displayName: student.name || 'Unknown',
-                    displayId: student.id || 'N/A',
-                    displayProgram: student.program || 'N/A',
-                    displayPhone: student.phone || 'N/A',
-                    displayLevel: student.level || 'N/A'
-                });
-            }
+            results.push(item);
         }
     });
     
-    // Search in allApplications (Admissions)
-    allApplications.forEach(app => {
-        const searchFields = [
-            app.fullName || app.name || '',
-            app.applicationId || app.id || '',
-            app.phone || '',
-            app.program || '',
-            app.email || ''
-        ].join(' ').toLowerCase();
-        
-        if (searchFields.includes(query)) {
-            const id = app.applicationId || app.id || '';
-            if (!seenIds.has(id)) {
-                seenIds.add(id);
-                results.push({
-                    ...app,
-                    source: 'Admissions',
-                    displayName: app.fullName || app.name || 'Unknown',
-                    displayId: app.applicationId || app.id || 'N/A',
-                    displayProgram: app.program || 'N/A',
-                    displayPhone: app.phone || 'N/A',
-                    displayLevel: app.level || 'N/A',
-                    status: app.status || 'N/A'
-                });
-            }
+    // Remove duplicates by ID
+    const uniqueResults = [];
+    const seenIds = new Set();
+    results.forEach(item => {
+        const id = item.applicationId || item.id || '';
+        if (id && !seenIds.has(id)) {
+            seenIds.add(id);
+            uniqueResults.push(item);
         }
     });
     
     // Display results
-    if (results.length === 0) {
+    if (uniqueResults.length === 0) {
         document.getElementById('waecSearchResultInfo').style.display = 'block';
         document.getElementById('waecSearchResultText').innerHTML = `<span style="color: #e74c3c;">❌ No students found matching "${query}"</span>`;
         document.getElementById('waecSearchResultInfo').style.background = '#ffebee';
@@ -4185,7 +4155,7 @@ function searchStudentInWAEC() {
     }
     
     // Show search results in a modal
-    showWAECSearchResults(results, query);
+    showWAECSearchResults(uniqueResults, query);
 }
 
 function showWAECSearchResults(results, query) {
@@ -4196,42 +4166,38 @@ function showWAECSearchResults(results, query) {
         modal.id = 'searchResultsModal';
         modal.className = 'modal';
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-content" style="max-width: 600px;">
                 <div class="modal-header">
                     <h3><i class="fas fa-search"></i> Search Results</h3>
                     <button class="close-modal" onclick="closeSearchResults()">&times;</button>
                 </div>
-                <div id="searchResultsContent" style="padding: 20px; max-height: 450px; overflow-y: auto;"></div>
+                <div id="searchResultsContent" style="padding: 20px; max-height: 400px; overflow-y: auto;"></div>
             </div>
         `;
         document.body.appendChild(modal);
     }
     
     const content = document.getElementById('searchResultsContent');
-    let html = `<p style="margin-bottom: 15px; color: #666;">Found <strong>${results.length}</strong> result(s) for "<strong>${query}</strong>"</p>
-    <div style="font-size:0.8rem; margin-bottom:10px; color:#888;">Sources: Student Database (Sheet1) & Admissions</div>`;
+    let html = `<p style="margin-bottom: 15px; color: #666;">Found <strong>${results.length}</strong> result(s) for "<strong>${query}</strong>"</p>`;
     
     results.forEach(item => {
-        const isStudent = item.source === 'Student Database (Sheet1)';
-        const color = isStudent ? '#3498db' : '#27ae60';
-        const icon = isStudent ? '📘' : '📋';
-        const statusText = item.status || (isStudent ? 'Active' : 'N/A');
+        const name = item.fullName || item.name || 'Unknown';
+        const id = item.applicationId || item.id || 'N/A';
+        const program = item.program || 'N/A';
+        const phone = item.phone || 'N/A';
+        const status = item.status || 'Student';
+        const isStudent = item.id && !item.applicationId;
         
         html += `
-            <div style="background: #f8f9fa; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; border-left: 4px solid ${color}; cursor: pointer;" onclick="selectStudentFromWAECSearch('${item.displayId}')">
+            <div style="background: #f8f9fa; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; border-left: 4px solid ${isStudent ? '#3498db' : '#27ae60'}; cursor: pointer;" onclick="selectStudentFromWAECSearch('${id}')">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;">
                     <div>
-                        <strong>${item.displayName}</strong>
-                        <div style="font-size: 0.85rem; color: #666;">
-                            ${icon} ${item.displayId} | ${item.displayProgram} ${item.displayLevel ? '| Level '+item.displayLevel : ''} | 📞 ${item.displayPhone}
-                        </div>
+                        <strong>${name}</strong>
+                        <div style="font-size: 0.85rem; color: #666;">${id} | ${program} | ${phone}</div>
                     </div>
-                    <div style="text-align:right;">
-                        <span style="background: ${color}; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; display:inline-block; margin-bottom:3px;">
-                            ${isStudent ? 'Student' : 'Application'}
-                        </span>
-                        ${!isStudent ? `<div style="font-size:0.65rem; color:#888;">Status: ${statusText}</div>` : ''}
-                    </div>
+                    <span style="background: ${isStudent ? '#3498db' : '#27ae60'}; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem;">
+                        ${isStudent ? 'Student' : status}
+                    </span>
                 </div>
             </div>
         `;
@@ -4243,34 +4209,21 @@ function showWAECSearchResults(results, query) {
     // Update search info
     document.getElementById('waecSearchResultInfo').style.display = 'block';
     document.getElementById('waecSearchResultInfo').style.background = '#e8f5e9';
-    document.getElementById('waecSearchResultText').innerHTML = `✅ Found <strong>${results.length}</strong> student(s) matching "<strong>${query}</strong>" (${results.filter(r => r.source === 'Student Database (Sheet1)').length} from Sheet1, ${results.filter(r => r.source === 'Admissions').length} from Admissions)`;
+    document.getElementById('waecSearchResultText').innerHTML = `✅ Found <strong>${results.length}</strong> student(s) matching "<strong>${query}</strong>"`;
+}
+
+function closeSearchResults() {
+    const modal = document.getElementById('searchResultsModal');
+    if (modal) modal.classList.remove('show');
 }
 
 function selectStudentFromWAECSearch(studentId) {
-    // Try to find in allStudents (Sheet1) first
-    let student = allStudents.find(s => s.id === studentId);
-    let source = 'Sheet1';
+    // Find the student in allApplications or allStudents
+    const app = allApplications.find(a => a.applicationId === studentId || a.id === studentId);
+    const student = allStudents.find(s => s.id === studentId);
     
-    // If not found, try allApplications
-    if (!student) {
-        const app = allApplications.find(a => a.applicationId === studentId || a.id === studentId);
-        if (app) {
-            // Convert application to student-like object
-            student = {
-                id: app.applicationId || app.id || '',
-                name: app.fullName || app.name || '',
-                program: app.program || '',
-                level: app.level || '',
-                phone: app.phone || '',
-                email: app.email || '',
-                status: app.status || '',
-                isApplication: true
-            };
-            source = 'Admissions';
-        }
-    }
-    
-    if (!student) {
+    const data = app || student;
+    if (!data) {
         showToast('Student not found', 'warning');
         return;
     }
@@ -4279,69 +4232,52 @@ function selectStudentFromWAECSearch(studentId) {
     closeSearchResults();
     
     // Load student into audit form
-    loadStudentIntoWAECForm(student, source);
+    loadStudentIntoWAECForm(data);
 }
 
-function loadStudentIntoWAECForm(data, source) {
+function loadStudentIntoWAECForm(data) {
     // Populate the audit form
-    document.getElementById('examStudentId').value = data.id || '';
-    document.getElementById('examStudentName').value = data.name || '';
+    document.getElementById('examStudentId').value = data.id || data.applicationId || '';
+    document.getElementById('examStudentName').value = data.name || data.fullName || '';
     if (data.program) document.getElementById('examProgram').value = data.program;
     if (data.level) document.getElementById('examLevel').value = data.level;
     
     // Show student info display
     document.getElementById('studentInfoDisplay').style.display = 'block';
-    document.getElementById('auditStudentName').textContent = data.name || '-';
-    document.getElementById('auditStudentId').textContent = data.id || '-';
+    document.getElementById('auditStudentName').textContent = data.name || data.fullName || '-';
+    document.getElementById('auditStudentId').textContent = data.id || data.applicationId || '-';
     document.getElementById('auditStudentProgram').textContent = data.program || '-';
     document.getElementById('auditStudentLevel').textContent = data.level || '-';
     
-    // Show source in status
-    const sourceLabel = source === 'Admissions' ? '📋 From Admissions' : '📘 From Student Database';
-    document.getElementById('auditStudentStatus').textContent = sourceLabel;
-    document.getElementById('auditStudentStatus').style.background = source === 'Admissions' ? '#27ae60' : '#3498db';
-    document.getElementById('auditStudentStatus').style.color = 'white';
-    
-    // Check if already has qualification check in allApplications
-    const app = allApplications.find(a => a.applicationId === data.id || a.id === data.id);
-    if (app && app.qualificationChecked) {
-        const status = app.qualificationResult?.qualified ? 'QUALIFIED' : 'NOT QUALIFIED';
-        document.getElementById('auditStudentStatus').textContent = status + ' (from Admissions)';
-        document.getElementById('auditStudentStatus').style.background = app.qualificationResult?.qualified ? '#27ae60' : '#e74c3c';
+    // Check if already has qualification check
+    if (data.qualificationChecked) {
+        const status = data.qualificationResult?.qualified ? 'QUALIFIED' : 'NOT QUALIFIED';
+        document.getElementById('auditStudentStatus').textContent = status;
+        document.getElementById('auditStudentStatus').style.background = data.qualificationResult?.qualified ? '#27ae60' : '#e74c3c';
         document.getElementById('auditStudentStatus').style.color = 'white';
         
-        if (app.examAttempts && app.examAttempts.length > 0) {
-            examAttempts = JSON.parse(JSON.stringify(app.examAttempts));
+        if (data.examAttempts && data.examAttempts.length > 0) {
+            examAttempts = JSON.parse(JSON.stringify(data.examAttempts));
             displayExamAttempts();
-            showToast(`Loaded ${examAttempts.length} existing WAEC attempt(s) from Admissions`, 'info');
+            showToast(`Loaded ${examAttempts.length} existing WAEC attempt(s)`, 'info');
         }
     } else {
-        // Check localStorage for saved attempts
-        const savedAttempts = localStorage.getItem('waecAttempts_' + data.id);
-        if (savedAttempts) {
-            try {
-                examAttempts = JSON.parse(savedAttempts);
-                displayExamAttempts();
-                showToast(`Loaded ${examAttempts.length} saved WAEC attempt(s)`, 'info');
-            } catch(e) {
-                examAttempts = [];
-                displayExamAttempts();
-            }
-        } else {
-            examAttempts = [];
-            displayExamAttempts();
-        }
+        document.getElementById('auditStudentStatus').textContent = 'Not Checked';
+        document.getElementById('auditStudentStatus').style.background = '#95a5a6';
+        document.getElementById('auditStudentStatus').style.color = 'white';
+        examAttempts = [];
+        displayExamAttempts();
     }
     
     // Also set dropdown
     const select = document.getElementById('studentSelectForAudit');
     if (select) {
-        select.value = data.id || '';
+        select.value = data.id || data.applicationId || '';
     }
     
     selectedStudentForAudit = data;
     
-    showToast(`Loaded ${data.name || ''} from ${source || 'database'}`, 'success');
+    showToast(`Loaded ${data.name || data.fullName || ''}`, 'success');
 }
 
 function clearWAECSearch() {
@@ -4351,120 +4287,6 @@ function clearWAECSearch() {
     document.getElementById('waecSearchResultText').innerHTML = '';
     closeSearchResults();
     showToast('Search cleared', 'info');
-}
-
-// Update populateStudentDropdown to show both sources
-function populateStudentDropdown() {
-    const select = document.getElementById('studentSelectForAudit');
-    if (!select) {
-        console.log('❌ Dropdown element not found!');
-        return;
-    }
-    
-    select.innerHTML = '<option value="">-- Select Student --</option>';
-    
-    // Add from allStudents (Sheet1) with icon
-    allStudents.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.id || '';
-        opt.textContent = `📘 ${s.name || 'Unknown'} (${s.id || 'No ID'}) - ${s.program || 'No Program'}`;
-        select.appendChild(opt);
-    });
-    
-    // Add from allApplications (Admissions) if not already in dropdown
-    allApplications.forEach(app => {
-        const id = app.applicationId || app.id || '';
-        if (!allStudents.find(s => s.id === id)) {
-            const opt = document.createElement('option');
-            opt.value = id;
-            opt.textContent = `📋 ${app.fullName || app.name || 'Unknown'} (${id}) - ${app.program || 'No Program'}`;
-            select.appendChild(opt);
-        }
-    });
-    
-    console.log('✅ Dropdown populated with', select.options.length - 1, 'students (Sheet1 + Admissions)');
-}
-
-// Update loadStudentById to search both sources
-function loadStudentById() {
-    const id = document.getElementById('examStudentId').value.trim();
-    if (!id) {
-        showToast('Please enter Student Index Number', 'warning');
-        return;
-    }
-    
-    // Search in allStudents (Sheet1) first
-    let student = allStudents.find(s => s.id === id);
-    let source = 'Sheet1';
-    
-    // If not found, search in allApplications
-    if (!student) {
-        const app = allApplications.find(a => a.applicationId === id || a.id === id);
-        if (app) {
-            student = {
-                id: app.applicationId || app.id || '',
-                name: app.fullName || app.name || '',
-                program: app.program || '',
-                level: app.level || '',
-                phone: app.phone || '',
-                email: app.email || '',
-                status: app.status || '',
-                isApplication: true
-            };
-            source = 'Admissions';
-        }
-    }
-    
-    if (student) {
-        document.getElementById('examStudentName').value = student.name || '';
-        if (student.program) document.getElementById('examProgram').value = student.program;
-        if (student.level) document.getElementById('examLevel').value = student.level;
-        
-        // Set dropdown
-        const select = document.getElementById('studentSelectForAudit');
-        if (select) {
-            select.value = student.id || '';
-        }
-        loadStudentIntoWAECForm(student, source);
-    } else {
-        showToast('Student not found. Please check the index number.', 'warning');
-    }
-}
-
-// Update loadStudentForAudit to search both sources
-function loadStudentForAudit() {
-    const select = document.getElementById('studentSelectForAudit');
-    const studentId = select.value;
-    if (!studentId) return;
-    
-    // Search in allStudents (Sheet1) first
-    let student = allStudents.find(s => s.id === studentId);
-    let source = 'Sheet1';
-    
-    // If not found, search in allApplications
-    if (!student) {
-        const app = allApplications.find(a => a.applicationId === studentId || a.id === studentId);
-        if (app) {
-            student = {
-                id: app.applicationId || app.id || '',
-                name: app.fullName || app.name || '',
-                program: app.program || '',
-                level: app.level || '',
-                phone: app.phone || '',
-                email: app.email || '',
-                status: app.status || '',
-                isApplication: true
-            };
-            source = 'Admissions';
-        }
-    }
-    
-    if (!student) {
-        showToast('Student not found', 'warning');
-        return;
-    }
-    
-    loadStudentIntoWAECForm(student, source);
 }
 
 // Update the existing filterAdmissions function (keep this)
