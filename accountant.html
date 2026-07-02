@@ -1143,7 +1143,7 @@
                 <div class="card"><h3><i class="fas fa-chart-bar"></i> Generate Reports</h3><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;"><button onclick="generateReport('clearance')" class="info-btn"><i class="fas fa-check-circle"></i> Clearance Report</button><button onclick="generateReport('results')" class="info-btn"><i class="fas fa-graduation-cap"></i> Academic Results Report</button><button onclick="generateReport('financial')" class="info-btn"><i class="fas fa-money-bill"></i> Financial Report</button><button onclick="generateReport('summary')" class="info-btn"><i class="fas fa-file-alt"></i> Summary Report</button></div></div>
             </div>
 
-            <!-- ADMISSIONS MANAGER -->
+<!-- ADMISSIONS MANAGER -->
 <div id="admissionsSection" class="section" style="display:none;">
     <div class="card">
         <div class="card-header">
@@ -1152,10 +1152,28 @@
                 <button onclick="exportAdmissionsToCSV()" class="info-btn" style="width: auto;"><i class="fas fa-file-excel"></i> Export CSV</button>
                 <button onclick="refreshAdmissions()" class="info-btn" style="width: auto;"><i class="fas fa-sync-alt"></i> Refresh</button>
                 <button onclick="bulkQualificationCheck()" class="warning-btn" style="width: auto; padding: 8px 15px;">
-    <i class="fas fa-check-double"></i> Bulk Check
-</button>
+                    <i class="fas fa-check-double"></i> Bulk Check
+                </button>
             </div>
         </div>
+        
+        <!-- SEARCH BAR - ADDED -->
+        <div style="background: #f0f7ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--primary);">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <i class="fas fa-search" style="color: var(--primary); font-size: 1.2rem;"></i>
+                <input type="text" id="admissionSearchInput" placeholder="Search by Name, Index Number, or Phone..." style="flex: 1; min-width: 200px; padding: 10px; border: 2px solid var(--primary-light); border-radius: 8px;">
+                <button onclick="searchStudentInAdmissions()" class="info-btn" style="width: auto; padding: 10px 25px;">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <button onclick="clearAdmissionSearch()" class="danger-btn" style="width: auto; padding: 10px 20px; background: #95a5a6;">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+            <div id="searchResultInfo" style="margin-top: 8px; font-size: 0.85rem; color: #666; display: none;">
+                <span id="searchResultText"></span>
+            </div>
+        </div>
+
         <div class="filter-section">
             <h4 style="margin-bottom: 10px;"><i class="fas fa-filter"></i> Filter Applications</h4>
             <div class="filter-row">
@@ -1177,9 +1195,9 @@
                     <option value="ML">Medical Lab Technology (ML)</option>
                     <option value="BSc CS">BSc Computer Science</option>
                 </select>
-                <input type="text" id="admissionSearchInput" placeholder="Search by name, ID, or phone" onkeyup="filterAdmissions()">
             </div>
         </div>
+        
         <div class="stats-grid">
             <div class="stat-card"><i class="fas fa-file-alt" style="color: var(--info);"></i><h3 id="totalApplications">0</h3><p>Total Applications</p></div>
             <div class="stat-card"><i class="fas fa-clock" style="color: var(--warning);"></i><h3 id="pendingApplications">0</h3><p>Pending Review</p></div>
@@ -1259,9 +1277,8 @@
             <div>
                 <label><strong>Exam Type</strong></label>
                 <select id="examType" style="width:100%; padding:10px;">
-                    <option value="Main Examination">Main Examination</option>
-                    <option value="Resit">Resit</option>
-                    <option value="Supplementary">Supplementary</option>
+                    <option value="WASSCES SCHOOL"></option>
+                    <option value="WASSCE PRIVATE">Resit</option>
                     <option value="Special">Special</option>
                 </select>
             </div>
@@ -3894,6 +3911,264 @@ function populateStudentDropdown() {
     });
     
     console.log('✅ Dropdown populated with', allStudents.length, 'students');
+}
+
+// ============================================
+// SEARCH STUDENT IN ADMISSIONS MANAGER
+// ============================================
+
+function searchStudentInAdmissions() {
+    const searchInput = document.getElementById('admissionSearchInput');
+    const query = searchInput.value.trim().toLowerCase();
+    
+    if (!query) {
+        showToast('Please enter a search term', 'warning');
+        return;
+    }
+    
+    // Create a combined list of all students from applications and students
+    const allItems = [...allApplications, ...allStudents];
+    const results = [];
+    
+    // Search through all applications and students
+    allItems.forEach(item => {
+        const searchFields = [
+            item.fullName || item.name || '',
+            item.applicationId || item.id || '',
+            item.phone || '',
+            item.program || '',
+            item.email || ''
+        ].join(' ').toLowerCase();
+        
+        if (searchFields.includes(query)) {
+            results.push(item);
+        }
+    });
+    
+    // Remove duplicates by ID
+    const uniqueResults = [];
+    const seenIds = new Set();
+    results.forEach(item => {
+        const id = item.applicationId || item.id || '';
+        if (id && !seenIds.has(id)) {
+            seenIds.add(id);
+            uniqueResults.push(item);
+        }
+    });
+    
+    // Display results
+    if (uniqueResults.length === 0) {
+        document.getElementById('searchResultInfo').style.display = 'block';
+        document.getElementById('searchResultText').innerHTML = `<span style="color: #e74c3c;">❌ No students found matching "${query}"</span>`;
+        document.getElementById('searchResultInfo').style.background = '#ffebee';
+        showToast('No students found', 'warning');
+        return;
+    }
+    
+    // Show search results in a modal or dropdown
+    showSearchResults(uniqueResults, query);
+}
+
+function showSearchResults(results, query) {
+    // Create or get modal for search results
+    let modal = document.getElementById('searchResultsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'searchResultsModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-search"></i> Search Results</h3>
+                    <button class="close-modal" onclick="closeSearchResults()">&times;</button>
+                </div>
+                <div id="searchResultsContent" style="padding: 20px; max-height: 400px; overflow-y: auto;"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    const content = document.getElementById('searchResultsContent');
+    let html = `<p style="margin-bottom: 15px; color: #666;">Found <strong>${results.length}</strong> result(s) for "<strong>${query}</strong>"</p>`;
+    
+    results.forEach(item => {
+        const name = item.fullName || item.name || 'Unknown';
+        const id = item.applicationId || item.id || 'N/A';
+        const program = item.program || 'N/A';
+        const phone = item.phone || 'N/A';
+        const status = item.status || 'Student';
+        const isStudent = item.id && !item.applicationId;
+        
+        html += `
+            <div style="background: #f8f9fa; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; border-left: 4px solid ${isStudent ? '#3498db' : '#27ae60'}; cursor: pointer;" onclick="selectStudentFromSearch('${id}')">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;">
+                    <div>
+                        <strong>${name}</strong>
+                        <div style="font-size: 0.85rem; color: #666;">${id} | ${program} | ${phone}</div>
+                    </div>
+                    <span style="background: ${isStudent ? '#3498db' : '#27ae60'}; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem;">
+                        ${isStudent ? 'Student' : status}
+                    </span>
+                </div>
+            </div>
+        `;
+    });
+    
+    content.innerHTML = html;
+    document.getElementById('searchResultsModal').classList.add('show');
+    
+    // Update search info
+    document.getElementById('searchResultInfo').style.display = 'block';
+    document.getElementById('searchResultInfo').style.background = '#e8f5e9';
+    document.getElementById('searchResultText').innerHTML = `✅ Found <strong>${results.length}</strong> student(s) matching "<strong>${query}</strong>"`;
+}
+
+function closeSearchResults() {
+    const modal = document.getElementById('searchResultsModal');
+    if (modal) modal.classList.remove('show');
+}
+
+function selectStudentFromSearch(studentId) {
+    // Find the student in allApplications or allStudents
+    const app = allApplications.find(a => a.applicationId === studentId || a.id === studentId);
+    const student = allStudents.find(s => s.id === studentId);
+    
+    const data = app || student;
+    if (!data) {
+        showToast('Student not found', 'warning');
+        return;
+    }
+    
+    // Close search results
+    closeSearchResults();
+    
+    // Load student into audit form
+    loadStudentIntoAuditForm(data);
+}
+
+function loadStudentIntoAuditForm(data) {
+    // Populate the audit form
+    document.getElementById('examStudentId').value = data.id || data.applicationId || '';
+    document.getElementById('examStudentName').value = data.name || data.fullName || '';
+    if (data.program) document.getElementById('examProgram').value = data.program;
+    if (data.level) document.getElementById('examLevel').value = data.level;
+    
+    // Show student info display
+    document.getElementById('studentInfoDisplay').style.display = 'block';
+    document.getElementById('auditStudentName').textContent = data.name || data.fullName || '-';
+    document.getElementById('auditStudentId').textContent = data.id || data.applicationId || '-';
+    document.getElementById('auditStudentProgram').textContent = data.program || '-';
+    document.getElementById('auditStudentLevel').textContent = data.level || '-';
+    
+    // Check if already has qualification check
+    if (data.qualificationChecked) {
+        const status = data.qualificationResult?.qualified ? 'QUALIFIED' : 'NOT QUALIFIED';
+        document.getElementById('auditStudentStatus').textContent = status;
+        document.getElementById('auditStudentStatus').style.background = data.qualificationResult?.qualified ? '#27ae60' : '#e74c3c';
+        document.getElementById('auditStudentStatus').style.color = 'white';
+        
+        if (data.examAttempts && data.examAttempts.length > 0) {
+            examAttempts = JSON.parse(JSON.stringify(data.examAttempts));
+            displayExamAttempts();
+            showToast(`Loaded ${examAttempts.length} existing WAEC attempt(s)`, 'info');
+        }
+    } else {
+        document.getElementById('auditStudentStatus').textContent = 'Not Checked';
+        document.getElementById('auditStudentStatus').style.background = '#95a5a6';
+        document.getElementById('auditStudentStatus').style.color = 'white';
+        examAttempts = [];
+        displayExamAttempts();
+    }
+    
+    // Also set dropdown
+    const select = document.getElementById('studentSelectForAudit');
+    if (select) {
+        select.value = data.id || data.applicationId || '';
+    }
+    
+    selectedStudentForAudit = data;
+    
+    showToast(`Loaded ${data.name || data.fullName || ''}`, 'success');
+}
+
+function clearAdmissionSearch() {
+    document.getElementById('admissionSearchInput').value = '';
+    document.getElementById('searchResultInfo').style.display = 'none';
+    document.getElementById('searchResultInfo').style.background = 'transparent';
+    document.getElementById('searchResultText').innerHTML = '';
+    closeSearchResults();
+    
+    // Reset to show all students
+    updateAdmissionStats();
+    displayAdmissions();
+    showToast('Search cleared', 'info');
+}
+
+// Update the existing filterAdmissions function to work with search
+function filterAdmissions() {
+    const searchInput = document.getElementById('admissionSearchInput');
+    const query = searchInput.value.trim().toLowerCase();
+    
+    const container = document.getElementById('admissionsList');
+    const statusFilter = document.getElementById('admissionStatusFilter').value;
+    const programFilter = document.getElementById('admissionProgramFilter').value;
+    
+    let filtered = allApplications.filter(a => {
+        const matchesStatus = statusFilter === 'all' || a.status === statusFilter;
+        const matchesProgram = programFilter === 'all' || a.program === programFilter;
+        const matchesSearch = !query || 
+            (a.fullName || '').toLowerCase().includes(query) ||
+            (a.applicationId || '').toLowerCase().includes(query) ||
+            (a.phone || '').includes(query) ||
+            (a.program || '').toLowerCase().includes(query);
+        return matchesStatus && matchesProgram && matchesSearch;
+    });
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding:40px;">No applications found.</p>';
+        return;
+    }
+    
+    const statusColors = {
+        pending_review: '#f39c12',
+        documents_verified: '#3498db',
+        interview_scheduled: '#9b59b6',
+        admitted: '#27ae60',
+        rejected: '#e74c3c',
+        qualification_review: '#f1c40f',
+        qualified: '#2ecc71',
+        not_qualified: '#e74c3c'
+    };
+    const statusLabels = {
+        pending_review: 'Pending Review',
+        documents_verified: 'Documents Verified',
+        interview_scheduled: 'Interview Scheduled',
+        admitted: 'Admitted',
+        rejected: 'Rejected',
+        qualification_review: 'Qualification Review',
+        qualified: '✅ Qualified',
+        not_qualified: '❌ Not Qualified'
+    };
+    
+    let html = '';
+    filtered.forEach(app => {
+        const qualBadge = app.qualificationChecked && app.qualificationResult ? 
+            (app.qualificationResult.qualified ? '🏅' : '🚫') : '';
+        html += `<div class="student-list-item" onclick="viewApplicationDetails('${app.applicationId}')" style="cursor:pointer;">
+            <div class="student-info">
+                <span class="student-name">${app.fullName} ${qualBadge}</span>
+                <span class="student-details">${app.applicationId} | ${app.program} | ${app.phone}</span>
+                <small>Submitted: ${new Date(app.submittedAt).toLocaleDateString()}</small>
+                ${app.examAttempts ? `<small style="color: #666;">📝 ${app.examAttempts.length} attempt(s)</small>` : ''}
+            </div>
+            <div style="text-align:right;">
+                <span style="background:${statusColors[app.status] || '#95a5a6'}; color:white; padding:4px 12px; border-radius:20px; font-size:0.75rem; display:inline-block; margin-bottom:4px;">
+                    ${statusLabels[app.status] || app.status}
+                </span>
+            </div>
+        </div>`;
+    });
+    container.innerHTML = html;
 }
 
 // ============================================
