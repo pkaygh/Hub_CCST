@@ -2976,15 +2976,67 @@ function updateAdmissionStats() {
 }
 function displayAdmissions() { 
     const container = document.getElementById('admissionsList'); 
-    const statusFilter = document.getElementById('admissionStatusFilter').value; 
-    const programFilter = document.getElementById('admissionProgramFilter').value; 
-    const search = document.getElementById('admissionSearchInput').value.toLowerCase(); 
-    let filtered = allApplications.filter(a => (statusFilter === 'all' || a.status === statusFilter) && (programFilter === 'all' || a.program === programFilter) && (!search || a.fullName.toLowerCase().includes(search) || a.applicationId.toLowerCase().includes(search) || a.phone.includes(search))); 
-    if (filtered.length === 0) { container.innerHTML = '<p style="text-align:center; padding:40px;">No applications found.</p>'; return; } 
-    const statusColors = { pending_review: '#f39c12', documents_verified: '#3498db', interview_scheduled: '#9b59b6', admitted: '#27ae60', rejected: '#e74c3c' }; 
-    const statusLabels = { pending_review: 'Pending Review', documents_verified: 'Documents Verified', interview_scheduled: 'Interview Scheduled', admitted: 'Admitted', rejected: 'Rejected' }; 
+    if (!container) return;
+    
+    const statusFilter = document.getElementById('admissionStatusFilter');
+    const programFilter = document.getElementById('admissionProgramFilter');
+    const searchInput = document.getElementById('admissionSearchInput');
+    
+    const statusValue = statusFilter ? statusFilter.value : 'all';
+    const programValue = programFilter ? programFilter.value : 'all';
+    const search = searchInput ? searchInput.value.toLowerCase() : '';
+    
+    let filtered = allApplications.filter(a => 
+        (statusValue === 'all' || a.status === statusValue) && 
+        (programValue === 'all' || a.program === programValue) &&
+        (!search || a.fullName.toLowerCase().includes(search) || a.applicationId.toLowerCase().includes(search) || a.phone.includes(search))
+    );
+    
+    if (filtered.length === 0) { 
+        container.innerHTML = '<p style="text-align:center; padding:40px;">No applications found.</p>'; 
+        return; 
+    }
+    
+    const statusColors = { 
+        pending_review: '#f39c12', 
+        documents_verified: '#3498db', 
+        interview_scheduled: '#9b59b6', 
+        admitted: '#27ae60', 
+        rejected: '#e74c3c',
+        qualification_review: '#f1c40f',
+        qualified: '#2ecc71',
+        not_qualified: '#e74c3c'
+    }; 
+    
+    const statusLabels = { 
+        pending_review: 'Pending Review', 
+        documents_verified: 'Documents Verified', 
+        interview_scheduled: 'Interview Scheduled', 
+        admitted: 'Admitted', 
+        rejected: 'Rejected',
+        qualification_review: 'Qualification Review',
+        qualified: '✅ Qualified',
+        not_qualified: '❌ Not Qualified'
+    }; 
+    
     let html = ''; 
-    filtered.forEach(app => { html += `<div class="student-list-item" onclick="viewApplicationDetails('${app.applicationId}')" style="cursor:pointer;"><div class="student-info"><span class="student-name">${app.fullName}</span><span class="student-details">${app.applicationId} | ${app.program} | ${app.phone}</span><small>Submitted: ${new Date(app.submittedAt).toLocaleDateString()}</small></div><div style="text-align:right;"><span style="background:${statusColors[app.status]}; color:white; padding:4px 12px; border-radius:20px; font-size:0.75rem;">${statusLabels[app.status]}</span></div></div>`; }); 
+    filtered.forEach(app => { 
+        const qualBadge = app.qualificationChecked && app.qualificationResult ? 
+            (app.qualificationResult.qualified ? '🏅' : '🚫') : '';
+        html += `<div class="student-list-item" onclick="viewApplicationDetails('${app.applicationId}')" style="cursor:pointer;">
+            <div class="student-info">
+                <span class="student-name">${app.fullName} ${qualBadge}</span>
+                <span class="student-details">${app.applicationId} | ${app.program} | ${app.phone}</span>
+                <small>Submitted: ${new Date(app.submittedAt).toLocaleDateString()}</small>
+                ${app.examAttempts ? `<small style="color: #666;">📝 ${app.examAttempts.length} attempt(s)</small>` : ''}
+            </div>
+            <div style="text-align:right;">
+                <span style="background:${statusColors[app.status] || '#95a5a6'}; color:white; padding:4px 12px; border-radius:20px; font-size:0.75rem; display:inline-block; margin-bottom:4px;">
+                    ${statusLabels[app.status] || app.status}
+                </span>
+            </div>
+        </div>`; 
+    }); 
     container.innerHTML = html; 
 }
 // ============================================
@@ -4103,15 +4155,18 @@ function clearAdmissionSearch() {
 // Update the existing filterAdmissions function to work with search
 function filterAdmissions() {
     const searchInput = document.getElementById('admissionSearchInput');
-    const query = searchInput.value.trim().toLowerCase();
+    const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
     
     const container = document.getElementById('admissionsList');
-    const statusFilter = document.getElementById('admissionStatusFilter').value;
-    const programFilter = document.getElementById('admissionProgramFilter').value;
+    const statusFilter = document.getElementById('admissionStatusFilter');
+    const programFilter = document.getElementById('admissionProgramFilter');
+    
+    const statusValue = statusFilter ? statusFilter.value : 'all';
+    const programValue = programFilter ? programFilter.value : 'all';
     
     let filtered = allApplications.filter(a => {
-        const matchesStatus = statusFilter === 'all' || a.status === statusFilter;
-        const matchesProgram = programFilter === 'all' || a.program === programFilter;
+        const matchesStatus = statusValue === 'all' || a.status === statusValue;
+        const matchesProgram = programValue === 'all' || a.program === programValue;
         const matchesSearch = !query || 
             (a.fullName || '').toLowerCase().includes(query) ||
             (a.applicationId || '').toLowerCase().includes(query) ||
@@ -4119,6 +4174,8 @@ function filterAdmissions() {
             (a.program || '').toLowerCase().includes(query);
         return matchesStatus && matchesProgram && matchesSearch;
     });
+    
+    if (!container) return;
     
     if (filtered.length === 0) {
         container.innerHTML = '<p style="text-align:center; padding:40px;">No applications found.</p>';
